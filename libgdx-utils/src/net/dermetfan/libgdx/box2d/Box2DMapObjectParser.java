@@ -375,9 +375,6 @@ public class Box2DMapObjectParser {
 					polygon.setVertices(toFloatArray(vertices.items));
 				}
 
-				// put the vertices of the polygon in an ArrayList
-				// removed
-
 				// get the split triangle vertices in a List
 				FloatArray triangleVertices = new EarClippingTriangulator().computeTriangles(polygon.getTransformedVertices());
 
