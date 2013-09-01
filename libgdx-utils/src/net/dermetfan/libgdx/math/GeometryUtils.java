@@ -16,11 +16,18 @@
 
 package net.dermetfan.libgdx.math;
 
+import java.util.Random;
+
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Polygon;
 import com.badlogic.gdx.math.Vector2;
 
 /** contains some useful methods for geometric calculations */
 public abstract class GeometryUtils {
+
+	/** a {@link Random} used to seed */
+	public static final Random seededRandom = new Random();
 
 	/** @return a Vector2 representing the size of a rectangle containing all given vertices */
 	public static Vector2 size(Vector2[] vertices) {
@@ -62,6 +69,25 @@ public abstract class GeometryUtils {
 		for(int i = 0; i < y.length; i++)
 			y[i] = vertices[i].y;
 		return y;
+	}
+
+	/**
+	 * scales the given float array to have the given min and max values
+	 * @param values the values to scale
+	 * @param min the desired minimal value in the array
+	 * @param max the desired maximal value in the array
+	 * @return the rescaled array
+	 */
+	public static float[] rescale(float[] values, float min, float max) {
+		float tmp = amplitude(values) / (max - min);
+		for(int i = 0; i < values.length; i++)
+			values[i] = values[i] / tmp;
+
+		tmp = min - min(values);
+		for(int i = 0; i < values.length; i++)
+			values[i] += tmp;
+
+		return values;
 	}
 
 	/**
@@ -197,6 +223,112 @@ public abstract class GeometryUtils {
 		}
 
 		return true;
+	}
+
+	/**
+	 * generates a map using the diamond-square algorithm and a seed
+	 * @param seed the seed to use
+	 * @see #diamondSquareMap(int, int, int, float)
+	 */
+	public static float[][] diamondSquareMap(int n, int scaleX, int scaleY, float smoothness, long seed) {
+		seededRandom.setSeed(seed);
+
+		Random oldRandom = MathUtils.random;
+		MathUtils.random = seededRandom;
+
+		float[][] map = diamondSquareMap(n, scaleX, scaleY, smoothness);
+
+		MathUtils.random = oldRandom;
+
+		return map;
+	}
+
+	/**
+	 * generates a map using the diamond-square algorithm
+	 * @param n has influence on level of detail and map size (costly!) (must not be negative)
+	 * @param scaleX scales the map in width
+	 * @param scaleY scales the map in height
+	 * @param smoothness how smooth the transitions should be (0 = roughest, infinity = smoothest) 
+	 * @return a map generated using the diamond-square algorithm
+	 */
+	public static float[][] diamondSquareMap(int n, int scaleX, int scaleY, float smoothness) {
+		// http://www.youtube.com/watch?v=XoAxThXeN8I
+		// http://www.gameprogrammer.com/fractal.html
+		// http://javagamexyz.blogspot.com.au/2013/03/terrain-generation.html (basically copied from there, but at least understood)
+
+		if(n < 0)
+			throw new IllegalArgumentException("n must not be negative");
+
+		float[][] map;
+		int power = (int) Math.pow(2, n), width = scaleX * power + 1, height = scaleY * power + 1;
+
+		try {
+			map = new float[width][height];
+		} catch(NegativeArraySizeException fail) {
+			throw new IllegalArgumentException("can't generate a negative sized map: " + width + "x" + height);
+		}
+
+		int step = power / 2;
+		float h = 1;
+
+		// initialize grid points
+		for(int x = 0; x < width; x += step * 2)
+			for(int y = 0; y < height; y += step * 2)
+				map[x][y] = MathUtils.random(h * 2);
+
+		float sum;
+
+		while(step > 0) {
+			// diamond step
+			for(int x = step; x < width; x += step * 2)
+				for(int y = step; y < height; y += step * 2) {
+					sum = map[x - step][y - step] // top left
+							+ map[x - step][y + step] // bottom left
+							+ map[x + step][y + step] // bottom right
+							+ map[x + step][y - step]; // top right
+					map[x][y] = sum / 4 + MathUtils.random(-h, h);
+				}
+
+			// square step
+			int count, switcher = 1;
+
+			for(int x = 0; x < width; x += step) {
+				for(int y = step * switcher; y < height; y += step * 2) {
+					sum = 0;
+					count = 0;
+
+					if(x - step >= 0) {
+						sum += map[x - step][y];
+						count++;
+					}
+					if(x + step < width) {
+						sum += map[x + step][y];
+						count++;
+					}
+					if(y - step >= 0) {
+						sum += map[x][y - step];
+						count++;
+					}
+					if(y + step < height) {
+						sum += map[x][y + step];
+						count++;
+					}
+
+					if(count > 0)
+						map[x][y] = sum / count + MathUtils.random(-h, h);
+					else {
+						map[x][y] = 0;
+						Gdx.app.log("dermetfan", "If you see this message, please send the following information to serverkorken@googlemail.com:\nn: " + n + ", scaleX: " + scaleX + ", scaleY: " + scaleY + ", smoothness: " + smoothness + ", sum: " + sum + ", count: " + count + ", step: " + step + ", switcher: " + switcher + ", h: " + h + "\nThank you!");
+					}
+				}
+				switcher = Math.abs(switcher - 1);
+			}
+
+			step /= 2;
+			h /= smoothness;
+		}
+
+		return map;
 	}
 
 }
