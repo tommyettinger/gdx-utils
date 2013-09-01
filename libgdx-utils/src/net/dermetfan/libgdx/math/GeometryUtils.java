@@ -78,10 +78,10 @@ public abstract class GeometryUtils {
 	 * @param max the desired maximal value in the array
 	 * @return the rescaled array
 	 */
-	public static float[] rescale(float[] values, float min, float max) {
+	public static float[] scale(float[] values, float min, float max) {
 		float tmp = amplitude(values) / (max - min);
 		for(int i = 0; i < values.length; i++)
-			values[i] = values[i] / tmp;
+			values[i] /= tmp;
 
 		tmp = min - min(values);
 		for(int i = 0; i < values.length; i++)
