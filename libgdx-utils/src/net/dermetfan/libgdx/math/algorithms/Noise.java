@@ -2,6 +2,8 @@ package net.dermetfan.libgdx.math.algorithms;
 
 import java.util.Random;
 
+import com.badlogic.gdx.math.MathUtils;
+
 public abstract class Noise {
 
 	/** the seed used by {@link #random} */
@@ -27,12 +29,49 @@ public abstract class Noise {
 	}
 
 	/**
+	 * generates a height map using the midpoint-displacement algorithm
+	 * @param n level of detail
+	 * @param scaleX scale of the x axis
+	 * @param scaleY scale of the y axis
+	 * @param range the range used for random values
+	 * @param smoothness the smoothness of the transitions
+	 * @param initializeRandomly if init should be ignored to use random values instead
+	 * @param init the value used to initialize the grid
+	 * @return a height map generated using the midpoint-displacement algorithm
+	 */
+	public static float[][] midpointDisplacement(int n, int scaleX, int scaleY, float range, float smoothness, boolean initializeRandomly, float init) {
+		int x, y, power = (int) Math.pow(2, n), width = scaleX * power + 1, height = scaleY * power + 1, step;
+		float[][] map = new float[width][height];
+		boolean sy, sx;
+
+		for(x = 0; x < width; x += power)
+			for(y = 0; y < height; y += power)
+				map[x][y] = initializeRandomly ? MathUtils.random(range * 2) : init;
+
+		for(step = power / 2; step > 0; step /= 2, range /= smoothness) {
+			sx = false;
+			for(x = 0; x < width; x += step, sx = !sx) {
+				sy = false;
+				for(y = 0; y < height; y += step, sy = !sy)
+					if(sx || sy)
+						if(sx && sy)
+							map[x][y] = (map[x - step][y - step] + map[x + step][y - step] + map[x - step][y + step] + map[x + step][y + step]) / 4 + MathUtils.random(-range, range);
+						else if(sx)
+							map[x][y] = (map[x - step][y] + map[x + step][y]) / 2 + MathUtils.random(-range, range);
+						else
+							map[x][y] = (map[x][y - step] + map[x][y + step]) / 2 + MathUtils.random(-range, range);
+			}
+		}
+		return map;
+	}
+	
+	/**
 	 * generates a height map using the diamond-square algorithm
 	 * @param n level of detail
 	 * @param scaleX scale of the x axis
 	 * @param scaleY scale of the y axis
-	 * @param smoothness the smoothness of the transitions
 	 * @param range the range used for random values
+	 * @param smoothness the smoothness of the transitions
 	 * @param wrapX if the map should wrap on the x axis
 	 * @param wrapY if the map should wrap on the y axis
 	 * @param initializeRandomly if init should be ignored to use random values instead

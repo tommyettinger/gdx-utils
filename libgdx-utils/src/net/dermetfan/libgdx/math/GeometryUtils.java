@@ -16,16 +16,11 @@
 
 package net.dermetfan.libgdx.math;
 
-import java.util.Random;
-
 import com.badlogic.gdx.math.Polygon;
 import com.badlogic.gdx.math.Vector2;
 
 /** contains some useful methods for geometric calculations */
 public abstract class GeometryUtils {
-
-	/** a {@link Random} used to seed */
-	public static final Random seededRandom = new Random();
 
 	/** @return a Vector2 representing the size of a rectangle containing all given vertices */
 	public static Vector2 size(Vector2[] vertices) {
