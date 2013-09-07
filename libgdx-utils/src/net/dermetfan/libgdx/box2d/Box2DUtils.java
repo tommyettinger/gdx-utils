@@ -15,8 +15,8 @@
  */
 package net.dermetfan.libgdx.box2d;
 
-import static java.lang.Math.cos;
-import static java.lang.Math.sin;
+import static com.badlogic.gdx.math.MathUtils.cos;
+import static com.badlogic.gdx.math.MathUtils.sin;
 import static net.dermetfan.libgdx.math.GeometryUtils.amplitude;
 import static net.dermetfan.libgdx.math.GeometryUtils.filterX;
 import static net.dermetfan.libgdx.math.GeometryUtils.filterY;
@@ -36,12 +36,20 @@ import com.badlogic.gdx.physics.box2d.Shape.Type;
 /** provides methods for geometric operations with Box2D bodies, fixtures and shapes */
 public abstract class Box2DUtils {
 
+	/** temporary {@link Vector2} used by some methods that have an optional output parameter if it's not given
+	 *  @warning not safe to use as it may change often */
+	public static Vector2 tmp = new Vector2();
+
+	/** temporary {@link Vector2 Vector2[]} used by some methods that have an optional outpout parameter if it's not given
+	 *  @warning not safe to use as it may change often */
+	public static Vector2[] tmpArray = new Vector2[0];
+
 	/** @return the vertices of all fixtures of the given body
 	 *  @see #vertices(Shape) */
-	public static Vector2[] vertices(Body body) {
+	public static Vector2[] vertices(Body body, Vector2[] output) {
 		Vector2[][] fixtureVertices = new Vector2[body.getFixtureList().size()][]; // caching fixture vertices for performance
 		for(int i = 0; i < fixtureVertices.length; i++)
-			fixtureVertices[i] = vertices(body.getFixtureList().get(i));
+			fixtureVertices[i] = vertices(body.getFixtureList().get(i), tmpArray);
 
 		int vertexCount = 0;
 		int fvi = -1;
@@ -51,33 +59,41 @@ public abstract class Box2DUtils {
 			else
 				vertexCount += fixtureVertices[++fvi].length;
 
-		Vector2[] vertices = new Vector2[vertexCount];
+		output = new Vector2[vertexCount];
 		int vi = -1;
 		for(Vector2[] verts : fixtureVertices)
 			for(Vector2 vertice : verts)
-				vertices[++vi] = vertice;
+				output[++vi] = vertice;
 
-		return vertices;
+		return output;
+	}
+
+	/** @see #vertices(Body, Vector2[]) */
+	public static Vector2[] vertices(Body body) {
+		return vertices(body, tmpArray);
 	}
 
 	/** @see #vertices(Shape) */
+	public static Vector2[] vertices(Fixture fixture, Vector2[] output) {
+		return vertices(fixture.getShape(), output);
+	}
+
+	/** @see #vertices(Fixture, Vector2[]) */
 	public static Vector2[] vertices(Fixture fixture) {
-		return vertices(fixture.getShape());
+		return vertices(fixture, tmpArray);
 	}
 
 	/** @return the vertices of the given Shape */
-	public static Vector2[] vertices(Shape shape) {
-		Vector2[] vertices;
-
+	public static Vector2[] vertices(Shape shape, Vector2[] output) {
 		switch(shape.getType()) {
 		case Polygon:
 			PolygonShape polygonShape = (PolygonShape) shape;
 
-			vertices = new Vector2[polygonShape.getVertexCount()];
+			output = new Vector2[polygonShape.getVertexCount()];
 
-			for(int i = 0; i < vertices.length; i++) {
-				vertices[i] = new Vector2();
-				polygonShape.getVertex(i, vertices[i]);
+			for(int i = 0; i < output.length; i++) {
+				output[i] = new Vector2();
+				polygonShape.getVertex(i, output[i]);
 			}
 			break;
 		case Edge:
@@ -88,22 +104,22 @@ public abstract class Box2DUtils {
 			edgeShape.getVertex1(vertex1);
 			edgeShape.getVertex2(vertex2);
 
-			vertices = new Vector2[] {vertex1, vertex2};
+			output = new Vector2[] {vertex1, vertex2};
 			break;
 		case Chain:
 			ChainShape chainShape = (ChainShape) shape;
 
-			vertices = new Vector2[chainShape.getVertexCount()];
+			output = new Vector2[chainShape.getVertexCount()];
 
-			for(int i = 0; i < vertices.length; i++) {
-				vertices[i] = new Vector2();
-				chainShape.getVertex(i, vertices[i]);
+			for(int i = 0; i < output.length; i++) {
+				output[i] = new Vector2();
+				chainShape.getVertex(i, output[i]);
 			}
 			break;
 		case Circle:
 			CircleShape circleShape = (CircleShape) shape;
 
-			vertices = new Vector2[] {
+			output = new Vector2[] {
 					new Vector2(circleShape.getPosition().x - circleShape.getRadius(), circleShape.getPosition().y + circleShape.getRadius()), // top left
 					new Vector2(circleShape.getPosition().x - circleShape.getRadius(), circleShape.getPosition().y - circleShape.getRadius()), // bottom left
 					new Vector2(circleShape.getPosition().x + circleShape.getRadius(), circleShape.getPosition().y - circleShape.getRadius()), // bottom right
@@ -114,13 +130,17 @@ public abstract class Box2DUtils {
 			throw new IllegalArgumentException("Shapes of the type '" + shape.getType().name() + "' are not supported");
 		}
 
-		return vertices;
+		return output;
+	}
+
+	/** @see #vertices(Shape, Vector2[]) */
+	public static Vector2[] vertices(Shape shape) {
+		return vertices(shape, tmpArray);
 	}
 
 	/** @return the minimal x value of the vertices of all fixtures of the the given Body */
 	public static float minX(Body body) {
-		float x = Float.POSITIVE_INFINITY;
-		float tmp;
+		float x = Float.POSITIVE_INFINITY, tmp;
 		for(Fixture fixture : body.getFixtureList())
 			x = (tmp = minX(fixture)) < x ? tmp : x;
 		return x;
@@ -128,8 +148,7 @@ public abstract class Box2DUtils {
 
 	/** @return the minimal y value of the vertices of all fixtures of the the given Body */
 	public static float minY(Body body) {
-		float y = Float.POSITIVE_INFINITY;
-		float tmp;
+		float y = Float.POSITIVE_INFINITY, tmp;
 		for(Fixture fixture : body.getFixtureList())
 			y = (tmp = minY(fixture)) < y ? tmp : y;
 		return y;
@@ -137,8 +156,7 @@ public abstract class Box2DUtils {
 
 	/** @return the maximal x value of the vertices of all fixtures of the the given Body */
 	public static float maxX(Body body) {
-		float x = Float.NEGATIVE_INFINITY;
-		float tmp;
+		float x = Float.NEGATIVE_INFINITY, tmp;
 		for(Fixture fixture : body.getFixtureList())
 			x = (tmp = maxX(fixture)) > x ? tmp : x;
 		return x;
@@ -146,8 +164,7 @@ public abstract class Box2DUtils {
 
 	/** @return the maximal y value of the vertices of all fixtures of the the given Body */
 	public static float maxY(Body body) {
-		float y = Float.NEGATIVE_INFINITY;
-		float tmp;
+		float y = Float.NEGATIVE_INFINITY, tmp;
 		for(Fixture fixture : body.getFixtureList())
 			y = (tmp = maxY(fixture)) > y ? tmp : y;
 		return y;
@@ -175,9 +192,7 @@ public abstract class Box2DUtils {
 
 	/** @return the width of the given Body */
 	public static float width(Body body) {
-		float min = Float.POSITIVE_INFINITY;
-		float max = Float.NEGATIVE_INFINITY;
-		float tmp;
+		float min = Float.POSITIVE_INFINITY, max = Float.NEGATIVE_INFINITY, tmp;
 
 		for(Fixture fixture : body.getFixtureList()) {
 			min = (tmp = minX(fixture)) < min ? tmp : min;
@@ -189,9 +204,7 @@ public abstract class Box2DUtils {
 
 	/** @return the height of the given Body */
 	public static float height(Body body) {
-		float min = Float.POSITIVE_INFINITY;
-		float max = Float.NEGATIVE_INFINITY;
-		float tmp;
+		float min = Float.POSITIVE_INFINITY, max = Float.NEGATIVE_INFINITY, tmp;
 
 		for(Fixture fixture : body.getFixtureList()) {
 			min = (tmp = minY(fixture)) < min ? tmp : min;
@@ -221,11 +234,21 @@ public abstract class Box2DUtils {
 		return amplitude(filterY(vertices(shape)));
 	}
 
+	/** @see #size(Shape) */
+	public static Vector2 size(Shape shape, Vector2 output) {
+		if(shape.getType() == Type.Circle) // no call to #vertices(Shape) for performance
+			return output.set(shape.getRadius() * 2, shape.getRadius() * 2);
+		return output.set(width(shape), height(shape));
+	}
+
 	/** @return the size of the given Shape */
 	public static Vector2 size(Shape shape) {
-		if(shape.getType() == Type.Circle) // no call to #vertices(Shape) for performance
-			return new Vector2(shape.getRadius() * 2, shape.getRadius() * 2);
-		return new Vector2(width(shape), height(shape));
+		return size(shape, tmp);
+	}
+
+	/** @see #positionRelative(CircleShape) */
+	public static Vector2 positionRelative(CircleShape shape, Vector2 output) {
+		return output.set(shape.getPosition());
 	}
 
 	/** @return the relative position of the given CircleShape to its Body */
@@ -235,32 +258,46 @@ public abstract class Box2DUtils {
 
 	/** @return the relative position of the given Shape to its Body
 	 *  @param rotation the rotation of the body in radians */
-	public static Vector2 positionRelative(Shape shape, float rotation) {
-		Vector2 position = new Vector2();
-
+	public static Vector2 positionRelative(Shape shape, float rotation, Vector2 output) {
 		// get the position without rotation
-		Vector2[] vertices = vertices(shape);
-		position.set(max(filterX(vertices)) - amplitude(filterX(vertices)) / 2, max(filterY(vertices)) - amplitude(filterY(vertices)) / 2);
+		Vector2[] vertices = vertices(shape, tmpArray);
+		output.set(max(filterX(vertices)) - amplitude(filterX(vertices)) / 2, max(filterY(vertices)) - amplitude(filterY(vertices)) / 2);
 
 		// transform position according to rotation
 		// http://stackoverflow.com/questions/1469149/calculating-vertices-of-a-rotated-rectangle
-		float xx = position.x, xy = position.y, yx = position.x, yy = position.y;
+		float xx = output.x, xy = output.y, yx = output.x, yy = output.y;
 
-		xx = (float) (xx * cos(rotation) - xy * sin(rotation));
-		yy = (float) (yx * sin(rotation) + yy * cos(rotation));
+		xx = xx * cos(rotation) - xy * sin(rotation);
+		yy = yx * sin(rotation) + yy * cos(rotation);
 
-		return position.set(xx, yy);
+		return output.set(xx, yy);
+	}
+
+	/** @see #positionRelative(Shape, float, Vector2) */
+	public static Vector2 positionRelative(Shape shape, float rotation) {
+		return positionRelative(shape, rotation, tmp);
+	}
+
+	/** @see #position(Fixture) */
+	public static Vector2 position(Fixture fixture, Vector2 output) {
+		return output.set(position(fixture.getShape(), fixture.getBody()));
 	}
 
 	/** @return the position of the given Fixture in world coordinates */
 	public static Vector2 position(Fixture fixture) {
-		return position(fixture.getShape(), fixture.getBody());
+		return position(fixture.getShape(), fixture.getBody(), tmp);
+	}
+
+	/** @see #position(Shape, Body) */
+	public static Vector2 position(Shape shape, Body body, Vector2 output) {
+		return output.set(body.getPosition().add(positionRelative(shape, body.getTransform().getRotation(), output)));
 	}
 
 	/** @return the position of the given Shape in world coordinates
+	 *  @param shape the Shape which position to get
 	 *  @param body the Body the given Shape is attached to */
 	public static Vector2 position(Shape shape, Body body) {
-		return body.getPosition().add(positionRelative(shape, body.getTransform().getRotation()));
+		return body.getPosition().add(positionRelative(shape, body.getTransform().getRotation(), tmp));
 	}
 
 }
