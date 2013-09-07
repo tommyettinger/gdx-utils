@@ -22,9 +22,19 @@ import com.badlogic.gdx.math.Vector2;
 /** contains some useful methods for geometric calculations */
 public abstract class GeometryUtils {
 
+	/** a temporary variable used by some methods
+	 *  @warning not safe to use as it may change any time */
+	public static Vector2 tmpVec = new Vector2();
+
+	/** @see #tmpVec */
+	public static Vector2[] tmpVecArr;
+
+	/** @see #tmpVec */
+	public static float[] tmpFloatArr;
+
 	/** @return a Vector2 representing the size of a rectangle containing all given vertices */
 	public static Vector2 size(Vector2[] vertices) {
-		return new Vector2(amplitude(filterX(vertices)), amplitude(filterY(vertices)));
+		return tmpVec.set(amplitude(filterX(vertices)), amplitude(filterY(vertices)));
 	}
 
 	/** @return the peak-to-peak amplitude of the given array */
@@ -50,18 +60,18 @@ public abstract class GeometryUtils {
 
 	/** @return the x values of the given vertices */
 	public static float[] filterX(Vector2[] vertices) {
-		float[] x = new float[vertices.length];
-		for(int i = 0; i < x.length; i++)
-			x[i] = vertices[i].x;
-		return x;
+		tmpFloatArr = new float[vertices.length];
+		for(int i = 0; i < tmpFloatArr.length; i++)
+			tmpFloatArr[i] = vertices[i].x;
+		return tmpFloatArr;
 	}
 
 	/** @return the y values of the given vertices */
 	public static float[] filterY(Vector2[] vertices) {
-		float[] y = new float[vertices.length];
-		for(int i = 0; i < y.length; i++)
-			y[i] = vertices[i].y;
-		return y;
+		tmpFloatArr = new float[vertices.length];
+		for(int i = 0; i < tmpFloatArr.length; i++)
+			tmpFloatArr[i] = vertices[i].y;
+		return tmpFloatArr;
 	}
 
 	/**
@@ -88,16 +98,16 @@ public abstract class GeometryUtils {
 	 * @return the float[] converted from the given Vector2[]
 	 */
 	public static float[] toFloatArray(Vector2[] vector2s) {
-		float[] floats = new float[vector2s.length * 2];
+		tmpFloatArr = new float[vector2s.length * 2];
 
 		int vi = -1;
-		for(int i = 0; i < floats.length; i++)
+		for(int i = 0; i < tmpFloatArr.length; i++)
 			if(i % 2 == 0)
-				floats[i] = vector2s[++vi].x;
+				tmpFloatArr[i] = vector2s[++vi].x;
 			else
-				floats[i] = vector2s[vi].y;
+				tmpFloatArr[i] = vector2s[vi].y;
 
-		return floats;
+		return tmpFloatArr;
 	}
 
 	/**
@@ -108,13 +118,13 @@ public abstract class GeometryUtils {
 		if(floats.length % 2 != 0)
 			throw new IllegalArgumentException("the float array's length is not dividable by two, so it won't make up a Vector2 array: " + floats.length);
 
-		Vector2[] vector2s = new Vector2[floats.length / 2];
+		tmpVecArr = new Vector2[floats.length / 2];
 
 		int fi = -1;
-		for(int i = 0; i < vector2s.length; i++)
-			vector2s[i] = new Vector2(floats[++fi], floats[++fi]);
+		for(int i = 0; i < tmpVecArr.length; i++)
+			tmpVecArr[i] = new Vector2(floats[++fi], floats[++fi]);
 
-		return vector2s;
+		return tmpVecArr;
 	}
 
 	/**
@@ -138,10 +148,10 @@ public abstract class GeometryUtils {
 
 		int vertice = -1;
 		for(int i = 0; i < polygons.length; i++) {
-			Vector2[] verts = new Vector2[vertexCounts[i]];
-			for(int i2 = 0; i2 < verts.length; i2++)
-				verts[i2] = vertices[++vertice];
-			polygons[i] = new Polygon(toFloatArray(verts));
+			tmpVecArr = new Vector2[vertexCounts[i]];
+			for(int i2 = 0; i2 < tmpVecArr.length; i2++)
+				tmpVecArr[i2] = vertices[++vertice];
+			polygons[i] = new Polygon(toFloatArray(tmpVecArr));
 		}
 
 		return polygons;
@@ -196,14 +206,14 @@ public abstract class GeometryUtils {
 	public static boolean isConvex(Vector2[] vertices) {
 		// http://www.sunshine2k.de/coding/java/Polygon/Convex/polygon.htm
 
-		Vector2 p, v, u, tmp;
+		Vector2 p, v, u;
 		float res = 0;
 		for(int i = 0; i < vertices.length; i++) {
 			p = vertices[i];
-			tmp = vertices[(i + 1) % vertices.length];
+			tmpVec = vertices[(i + 1) % vertices.length];
 			v = new Vector2();
-			v.x = tmp.x - p.x;
-			v.y = tmp.y - p.y;
+			v.x = tmpVec.x - p.x;
+			v.y = tmpVec.y - p.y;
 			u = vertices[(i + 2) % vertices.length];
 
 			if(i == 0) // in first loop direction is unknown, so save it in res
