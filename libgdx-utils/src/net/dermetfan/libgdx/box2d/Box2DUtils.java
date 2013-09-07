@@ -36,20 +36,22 @@ import com.badlogic.gdx.physics.box2d.Shape.Type;
 /** provides methods for geometric operations with Box2D bodies, fixtures and shapes */
 public abstract class Box2DUtils {
 
-	/** temporary {@link Vector2} used by some methods that have an optional output parameter if it's not given
+	/** temporary {@link Vector2} used by some methods
 	 *  @warning not safe to use as it may change often */
-	public static Vector2 tmp = new Vector2();
+	public static Vector2 tmpVec = new Vector2();
 
-	/** temporary {@link Vector2 Vector2[]} used by some methods that have an optional outpout parameter if it's not given
-	 *  @warning not safe to use as it may change often */
-	public static Vector2[] tmpArray = new Vector2[0];
+	/** @see #tmpVec */
+	public static Vector2 tmpVec2 = new Vector2();
+
+	/** @see #tmpVec */
+	public static Vector2[] tmpVecArr;
 
 	/** @return the vertices of all fixtures of the given body
 	 *  @see #vertices(Shape) */
 	public static Vector2[] vertices(Body body, Vector2[] output) {
 		Vector2[][] fixtureVertices = new Vector2[body.getFixtureList().size()][]; // caching fixture vertices for performance
 		for(int i = 0; i < fixtureVertices.length; i++)
-			fixtureVertices[i] = vertices(body.getFixtureList().get(i), tmpArray);
+			fixtureVertices[i] = vertices(body.getFixtureList().get(i), tmpVecArr);
 
 		int vertexCount = 0;
 		int fvi = -1;
@@ -70,7 +72,7 @@ public abstract class Box2DUtils {
 
 	/** @see #vertices(Body, Vector2[]) */
 	public static Vector2[] vertices(Body body) {
-		return vertices(body, tmpArray);
+		return vertices(body, tmpVecArr);
 	}
 
 	/** @see #vertices(Shape) */
@@ -80,7 +82,7 @@ public abstract class Box2DUtils {
 
 	/** @see #vertices(Fixture, Vector2[]) */
 	public static Vector2[] vertices(Fixture fixture) {
-		return vertices(fixture, tmpArray);
+		return vertices(fixture, tmpVecArr);
 	}
 
 	/** @return the vertices of the given Shape */
@@ -99,12 +101,10 @@ public abstract class Box2DUtils {
 		case Edge:
 			EdgeShape edgeShape = (EdgeShape) shape;
 
-			Vector2 vertex1 = new Vector2(),
-			vertex2 = new Vector2();
-			edgeShape.getVertex1(vertex1);
-			edgeShape.getVertex2(vertex2);
+			edgeShape.getVertex1(tmpVec);
+			edgeShape.getVertex2(tmpVec2);
 
-			output = new Vector2[] {vertex1, vertex2};
+			output = new Vector2[] {tmpVec, tmpVec2};
 			break;
 		case Chain:
 			ChainShape chainShape = (ChainShape) shape;
@@ -135,7 +135,7 @@ public abstract class Box2DUtils {
 
 	/** @see #vertices(Shape, Vector2[]) */
 	public static Vector2[] vertices(Shape shape) {
-		return vertices(shape, tmpArray);
+		return vertices(shape, tmpVecArr);
 	}
 
 	/** @return the minimal x value of the vertices of all fixtures of the the given Body */
@@ -243,7 +243,7 @@ public abstract class Box2DUtils {
 
 	/** @return the size of the given Shape */
 	public static Vector2 size(Shape shape) {
-		return size(shape, tmp);
+		return size(shape, tmpVec);
 	}
 
 	/** @see #positionRelative(CircleShape) */
@@ -260,8 +260,8 @@ public abstract class Box2DUtils {
 	 *  @param rotation the rotation of the body in radians */
 	public static Vector2 positionRelative(Shape shape, float rotation, Vector2 output) {
 		// get the position without rotation
-		Vector2[] vertices = vertices(shape, tmpArray);
-		output.set(max(filterX(vertices)) - amplitude(filterX(vertices)) / 2, max(filterY(vertices)) - amplitude(filterY(vertices)) / 2);
+		tmpVecArr = vertices(shape, tmpVecArr);
+		output.set(max(filterX(tmpVecArr)) - amplitude(filterX(tmpVecArr)) / 2, max(filterY(tmpVecArr)) - amplitude(filterY(tmpVecArr)) / 2);
 
 		// transform position according to rotation
 		// http://stackoverflow.com/questions/1469149/calculating-vertices-of-a-rotated-rectangle
@@ -275,7 +275,7 @@ public abstract class Box2DUtils {
 
 	/** @see #positionRelative(Shape, float, Vector2) */
 	public static Vector2 positionRelative(Shape shape, float rotation) {
-		return positionRelative(shape, rotation, tmp);
+		return positionRelative(shape, rotation, tmpVec);
 	}
 
 	/** @see #position(Fixture) */
@@ -285,7 +285,7 @@ public abstract class Box2DUtils {
 
 	/** @return the position of the given Fixture in world coordinates */
 	public static Vector2 position(Fixture fixture) {
-		return position(fixture.getShape(), fixture.getBody(), tmp);
+		return position(fixture.getShape(), fixture.getBody(), tmpVec);
 	}
 
 	/** @see #position(Shape, Body) */
@@ -297,7 +297,7 @@ public abstract class Box2DUtils {
 	 *  @param shape the Shape which position to get
 	 *  @param body the Body the given Shape is attached to */
 	public static Vector2 position(Shape shape, Body body) {
-		return body.getPosition().add(positionRelative(shape, body.getTransform().getRotation(), tmp));
+		return body.getPosition().add(positionRelative(shape, body.getTransform().getRotation(), tmpVec));
 	}
 
 }
