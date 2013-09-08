@@ -33,8 +33,13 @@ public abstract class GeometryUtils {
 	public static float[] tmpFloatArr;
 
 	/** @return a Vector2 representing the size of a rectangle containing all given vertices */
+	public static Vector2 size(Vector2[] vertices, Vector2 output) {
+		return output.set(amplitude(filterX(vertices)), amplitude(filterY(vertices)));
+	}
+
+	/** @see #size(Vector2[], Vector2) */
 	public static Vector2 size(Vector2[] vertices) {
-		return tmpVec.set(amplitude(filterX(vertices)), amplitude(filterY(vertices)));
+		return size(vertices, tmpVec);
 	}
 
 	/** @return the peak-to-peak amplitude of the given array */
@@ -59,19 +64,29 @@ public abstract class GeometryUtils {
 	}
 
 	/** @return the x values of the given vertices */
+	public static float[] filterX(Vector2[] vertices, float[] output) {
+		output = new float[vertices.length];
+		for(int i = 0; i < output.length; i++)
+			output[i] = vertices[i].x;
+		return output;
+	}
+
+	/** @see #filterX(Vector2[], float[]) */
 	public static float[] filterX(Vector2[] vertices) {
-		tmpFloatArr = new float[vertices.length];
-		for(int i = 0; i < tmpFloatArr.length; i++)
-			tmpFloatArr[i] = vertices[i].x;
-		return tmpFloatArr;
+		return filterX(vertices, tmpFloatArr);
 	}
 
 	/** @return the y values of the given vertices */
+	public static float[] filterY(Vector2[] vertices, float[] output) {
+		output = new float[vertices.length];
+		for(int i = 0; i < output.length; i++)
+			output[i] = vertices[i].y;
+		return output;
+	}
+
+	/** @see #filterY(Vector2[], float[]) */
 	public static float[] filterY(Vector2[] vertices) {
-		tmpFloatArr = new float[vertices.length];
-		for(int i = 0; i < tmpFloatArr.length; i++)
-			tmpFloatArr[i] = vertices[i].y;
-		return tmpFloatArr;
+		return filterY(vertices, tmpFloatArr);
 	}
 
 	/**
@@ -97,34 +112,44 @@ public abstract class GeometryUtils {
 	 * @param vector2s the Vector2[] to convert to a float[]
 	 * @return the float[] converted from the given Vector2[]
 	 */
-	public static float[] toFloatArray(Vector2[] vector2s) {
-		tmpFloatArr = new float[vector2s.length * 2];
+	public static float[] toFloatArray(Vector2[] vector2s, float[] output) {
+		output = new float[vector2s.length * 2];
 
 		int vi = -1;
-		for(int i = 0; i < tmpFloatArr.length; i++)
+		for(int i = 0; i < output.length; i++)
 			if(i % 2 == 0)
-				tmpFloatArr[i] = vector2s[++vi].x;
+				output[i] = vector2s[++vi].x;
 			else
-				tmpFloatArr[i] = vector2s[vi].y;
+				output[i] = vector2s[vi].y;
 
-		return tmpFloatArr;
+		return output;
+	}
+
+	/** @see #toFloatArray(Vector2[], float[]) */
+	public static float[] toFloatArray(Vector2[] vector2s) {
+		return toFloatArray(vector2s, tmpFloatArr);
 	}
 
 	/**
 	 * @param floats the float[] to convert to a Vector2[]
 	 * @return the Vector2[] converted from the given float[]
 	 */
-	public static Vector2[] toVector2Array(float[] floats) {
+	public static Vector2[] toVector2Array(float[] floats, Vector2[] output) {
 		if(floats.length % 2 != 0)
 			throw new IllegalArgumentException("the float array's length is not dividable by two, so it won't make up a Vector2 array: " + floats.length);
 
-		tmpVecArr = new Vector2[floats.length / 2];
+		output = new Vector2[floats.length / 2];
 
 		int fi = -1;
-		for(int i = 0; i < tmpVecArr.length; i++)
-			tmpVecArr[i] = new Vector2(floats[++fi], floats[++fi]);
+		for(int i = 0; i < output.length; i++)
+			output[i] = new Vector2(floats[++fi], floats[++fi]);
 
-		return tmpVecArr;
+		return output;
+	}
+
+	/** @see #toVector2Array(float[], Vector2[]) */
+	public static Vector2[] toVector2Array(float[] floats) {
+		return toVector2Array(floats, tmpVecArr);
 	}
 
 	/**
