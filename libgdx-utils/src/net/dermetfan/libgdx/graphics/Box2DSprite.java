@@ -37,7 +37,7 @@ import com.badlogic.gdx.utils.ObjectMap;
 
 /**
  * A {@link Box2DSprite} is a {@link Sprite} with additional drawing information and the abililty to draw itself on a given {@link Body} or {@link Fixture}.
- * It is supposed to be put in the user data of {@link Body Bodies} or {@link Fixture Fixtures}.
+ * It is supposed to be put in the user data of {@link Fixture Fixtures} or {@link Body Bodies}. The Fixture's user data is recommend though to make use of caching which will increase performance!
  * 
  * @author dermetfan
  */
@@ -65,11 +65,11 @@ public class Box2DSprite extends Sprite {
 		super(sprite);
 	}
 
-	/** a temporary map to store the bodies / fixtures which user data Box2DSprites are in in {@link #draw(SpriteBatch, World)} if enableZ is true */
+	/** a temporary map to store the bodies / fixtures which user data Box2DSprites are in in {@link #draw(SpriteBatch, World, boolean)}*/
 	private static ObjectMap<Box2DSprite, Object> tmpZBox2DSpriteMap = new ObjectMap<Box2DSprite, Object>(0);
 
 	/** a {@link Comparator} used to sort {@link Box2DSprite Box2DSprites} by their {@link Box2DSprite#z z index} in {@link #draw(SpriteBatch, World)} */
-	private static Comparator<Box2DSprite> zSorter = new Comparator<Box2DSprite>() {
+	private static Comparator<Box2DSprite> zComparator = new Comparator<Box2DSprite>() {
 
 		@Override
 		public int compare(Box2DSprite s1, Box2DSprite s2) {
@@ -100,7 +100,7 @@ public class Box2DSprite extends Sprite {
 			}
 
 			Array<Box2DSprite> keys = tmpZBox2DSpriteMap.keys().toArray();
-			keys.sort(zSorter);
+			keys.sort(zComparator);
 
 			for(Box2DSprite key : keys) {
 				Object value = tmpZBox2DSpriteMap.get(key);
@@ -119,20 +119,29 @@ public class Box2DSprite extends Sprite {
 						((Box2DSprite) fixture.getUserData()).draw(batch, fixture);
 			}
 		}
-
 	}
-	
+
+	/** cached position {@link Vector2} used in {@link #draw(SpriteBatch, Fixture)} for performance */
+	private final Vector2 tmpPosition = new Vector2();
+
 	/** draws this {@link Box2DSprite} on the given {@link Fixture} */
 	public void draw(SpriteBatch batch, Fixture fixture) {
 		batch.setColor(getColor());
-		batch.draw(this, position(fixture).x - width(fixture) / 2 + getX(), position(fixture).y - height(fixture) / 2 + getY(), isUseOriginX() ? getOriginX() : width(fixture) / 2, isUseOriginY() ? getOriginY() : height(fixture) / 2, isAdjustWidth() ? width(fixture) : getWidth(), isAdjustHeight() ? height(fixture) : getHeight(), getScaleX(), getScaleY(), fixture.getBody().getAngle() * MathUtils.radiansToDegrees + getRotation());
+		float width = width(fixture), height = height(fixture);
+		tmpPosition.set(position(fixture));
+		batch.draw(this, tmpPosition.x - width / 2 + getX(), tmpPosition.y - height / 2 + getY(), isUseOriginX() ? getOriginX() : width / 2, isUseOriginY() ? getOriginY() : height / 2, isAdjustWidth() ? width : getWidth(), isAdjustHeight() ? height : getHeight(), getScaleX(), getScaleY(), fixture.getBody().getAngle() * MathUtils.radiansToDegrees + getRotation());
 	}
+
+	/** cached center {@link Vector2} used in {@link #draw(SpriteBatch, Body)} for performance */
+	private final Vector2 tmpCenter = new Vector2();
 
 	/** draws this {@link Box2DSprite} on the given {@link Body} */
 	public void draw(SpriteBatch batch, Body body) {
 		batch.setColor(getColor());
-		Vector2 center = new Vector2(minX(body) + width(body) / 2, minY(body) + height(body) / 2);
-		batch.draw(this, body.getWorldPoint(center).x - width(body) / 2 + getX(), body.getWorldPoint(center).y - height(body) / 2 + getY(), isUseOriginX() ? getOriginX() : width(body) / 2, isUseOriginY() ? getOriginY() : height(body) / 2, isAdjustWidth() ? width(body) : getWidth(), isAdjustHeight() ? height(body) : getHeight(), getScaleX(), getScaleY(), body.getAngle() * MathUtils.radiansToDegrees + getRotation());
+		float width = width(body), height = height(body);
+		tmpCenter.set(minX(body) + width / 2, minY(body) + height / 2);
+		tmpPosition.set(body.getWorldPoint(tmpCenter));
+		batch.draw(this, tmpPosition.x - width / 2 + getX(), tmpPosition.y - height / 2 + getY(), isUseOriginX() ? getOriginX() : width / 2, isUseOriginY() ? getOriginY() : height / 2, isAdjustWidth() ? width : getWidth(), isAdjustHeight() ? height : getHeight(), getScaleX(), getScaleY(), body.getAngle() * MathUtils.radiansToDegrees + getRotation());
 	}
 
 	/** @return the {@link #z} */
@@ -203,6 +212,16 @@ public class Box2DSprite extends Sprite {
 	/** @param userData the userData to set */
 	public void setUserData(Object userData) {
 		this.userData = userData;
+	}
+
+	/** @return the {@link #zComparator} */
+	public static Comparator<Box2DSprite> getZComparator() {
+		return zComparator;
+	}
+
+	/** @param zComparator the {@link #zComparator} to set */
+	public static void setZComparator(Comparator<Box2DSprite> zComparator) {
+		Box2DSprite.zComparator = zComparator;
 	}
 
 }
