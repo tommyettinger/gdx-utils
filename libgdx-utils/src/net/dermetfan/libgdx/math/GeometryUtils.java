@@ -19,7 +19,10 @@ package net.dermetfan.libgdx.math;
 import com.badlogic.gdx.math.Polygon;
 import com.badlogic.gdx.math.Vector2;
 
-/** contains some useful methods for geometric calculations */
+/**
+ * contains some useful methods for geometric calculations
+ * @author dermetfan
+ */
 public abstract class GeometryUtils {
 
 	/** a temporary variable used by some methods

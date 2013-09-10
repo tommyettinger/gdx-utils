@@ -35,7 +35,10 @@ import com.badlogic.gdx.physics.box2d.Shape;
 import com.badlogic.gdx.physics.box2d.Shape.Type;
 import com.badlogic.gdx.utils.ObjectMap;
 
-/** provides methods for geometric operations with Box2D bodies, fixtures and shapes */
+/**
+ * provides methods for geometric operations with Box2D bodies, fixtures and shapes
+ * @author dermetfan
+ */
 public abstract class Box2DUtils {
 
 	/** cached method results */
