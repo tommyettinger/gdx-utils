@@ -2,6 +2,10 @@ package net.dermetfan.libgdx;
 
 import com.badlogic.gdx.utils.Array;
 
+/**
+ * Manages {@link Cutscene Cutscenes}
+ * @author dermetfan
+ */
 public class CutsceneManager {
 
 	/** the currently active {@link Cutscene Cutscenes} */

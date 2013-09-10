@@ -23,7 +23,10 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.Fixture;
 
-/** A {@link Box2DSprite} using an {@link AnimatedSprite} for animation */
+/**
+ * A {@link Box2DSprite} using an {@link AnimatedSprite} for animation
+ * @author dermetfan
+ */
 public class AnimatedBox2DSprite extends Box2DSprite {
 
 	/** the {@link AnimatedSprite} used for animation */
