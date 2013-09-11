@@ -18,6 +18,7 @@ package net.dermetfan.libgdx.math;
 
 import com.badlogic.gdx.math.Polygon;
 import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.math.Vector3;
 
 /**
  * contains some useful methods for geometric calculations
@@ -254,6 +255,24 @@ public abstract class GeometryUtils {
 		}
 
 		return true;
+	}
+
+	/**
+	 * converts point to its coordinates on an isometric grid
+	 * @param point the point to convert
+	 * @param cellWidth the width of the grid cells
+	 * @param cellHeight the height of the grid cells
+	 * @return the given point converted to its coordinates on an isometric grid
+	 */
+	public static Vector2 toIsometricGridPoint(Vector2 point, float cellWidth, float cellHeight) {
+		point.x = (point.x /= cellWidth) - ((point.y = (point.y - cellHeight / 2) / cellHeight + point.x) - point.x);
+		return point;
+	}
+
+	/** @see #toIsometricGridPoint(Vector2, float, float) */
+	public static Vector3 toIsometricGridPoint(Vector3 point, float cellWidth, float cellHeight) {
+		point.x = (point.x /= cellWidth) - ((point.y = (point.y - cellHeight / 2) / cellHeight + point.x) - point.x);
+		return point;
 	}
 
 }
