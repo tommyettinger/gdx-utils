@@ -66,7 +66,6 @@ import com.badlogic.gdx.physics.box2d.joints.RopeJointDef;
 import com.badlogic.gdx.physics.box2d.joints.WeldJointDef;
 import com.badlogic.gdx.physics.box2d.joints.WheelJointDef;
 import com.badlogic.gdx.utils.Array;
-import com.badlogic.gdx.utils.FloatArray;
 import com.badlogic.gdx.utils.ObjectMap;
 
 /**
@@ -80,6 +79,8 @@ import com.badlogic.gdx.utils.ObjectMap;
  * For type, you have to choose {@link Aliases#body}, {@link Aliases#fixture} or {@link Aliases#object}.<br/>
  * To add Fixtures to a Body, add a {@link Aliases#body} property with the same value to each Fixture of a Body.<br/>
  * To create {@link Joint Joints}, add any object to the layer and just put everything needed in its properties. Note that you use the editors unit here which will be converted to Box2D meters automatically using {@link Aliases#unitScale}.
+ * 
+ * For more information visit the <a href="https://bitbucket.org/dermetfan/libgdx-utils/wiki/Box2DMapObjectParser">wiki</a>.
  * 
  * @author dermetfan
  */
@@ -198,21 +199,21 @@ public class Box2DMapObjectParser {
 		for(MapObject object : layer.getObjects()) {
 			if(!ignoreMapUnitScale)
 				unitScale = getProperty(layer.getProperties(), aliases.unitScale, unitScale);
-			if(object.getProperties().get("type", String.class).equals(aliases.body))
+			if(object.getProperties().get("type", "", String.class).equals(aliases.body))
 				createBody(world, object);
 		}
 
 		for(MapObject object : layer.getObjects()) {
 			if(!ignoreMapUnitScale)
 				unitScale = getProperty(layer.getProperties(), aliases.unitScale, unitScale);
-			if(object.getProperties().get("type", String.class).equals(aliases.fixture))
+			if(object.getProperties().get("type", "", String.class).equals(aliases.fixture))
 				createFixtures(object);
 		}
 
 		for(MapObject object : layer.getObjects()) {
 			if(!ignoreMapUnitScale)
 				unitScale = getProperty(layer.getProperties(), aliases.unitScale, unitScale);
-			if(object.getProperties().get("type", String.class).equals(aliases.joint))
+			if(object.getProperties().get("type", "", String.class).equals(aliases.joint))
 				createJoint(object);
 		}
 
@@ -362,45 +363,39 @@ public class Box2DMapObjectParser {
 	 * @return an array of parsed {@link Fixture Fixtures}
 	 */
 	public Fixture[] createFixtures(MapObject mapObject) {
-		if(mapObject instanceof PolygonMapObject) {
-			Polygon polygon = ((PolygonMapObject) mapObject).getPolygon();
+		Polygon polygon;
 
-			if(!isConvex(polygon)) {
-				// ensure the vertices are in counterclockwise order (not really necessary according to EarClippingTriangulator's javadoc, but sometimes better)
-				if(areVerticesClockwise(polygon)) {
-					Array<Vector2> vertices = new Array<Vector2>(toVector2Array(polygon.getVertices()));
-					Vector2 first = vertices.removeIndex(0);
-					vertices.reverse();
-					vertices.insert(0, first);
-					polygon.setVertices(toFloatArray(vertices.items));
-				}
+		if(!(mapObject instanceof PolygonMapObject) || isConvex(polygon = ((PolygonMapObject) mapObject).getPolygon()))
+			return new Fixture[] {createFixture(mapObject)};
 
-				// get the split triangle vertices in a List
-				FloatArray triangleVertices = new EarClippingTriangulator().computeTriangles(polygon.getTransformedVertices());
-
-				// put the triangles' vertices in a Vector2 array
-				Vector2[] triangleVerts = toVector2Array(triangleVertices.items);
-
-				// create the triangles as polygons
-				Polygon[] triangles = toPolygonArray(triangleVerts, 3);
-
-				// create the fixtures of the triangles
-				Fixture[] fixtures = new Fixture[triangles.length];
-				for(int i = 0; i < triangles.length; i++) {
-					PolygonMapObject triangleObject = new PolygonMapObject(triangles[i]);
-					triangleObject.setColor(mapObject.getColor());
-					triangleObject.setName(mapObject.getName());
-					triangleObject.setOpacity(mapObject.getOpacity());
-					triangleObject.setVisible(mapObject.isVisible());
-					triangleObject.getProperties().putAll(mapObject.getProperties());
-					fixtures[i] = createFixture(triangleObject);
-				}
-
-				return fixtures;
-			}
+		// ensure the vertices are in counterclockwise order (not really necessary according to EarClippingTriangulator's javadoc, but sometimes better)
+		if(areVerticesClockwise(polygon)) {
+			Array<Vector2> vertices = new Array<Vector2>(toVector2Array(polygon.getVertices()));
+			Vector2 first = vertices.removeIndex(0);
+			vertices.reverse();
+			vertices.insert(0, first);
+			polygon.setVertices(toFloatArray(vertices.items));
 		}
 
-		return new Fixture[] {createFixture(mapObject)};
+		// put the triangles' vertices in a Vector2 array
+		Vector2[] triangleVertices = toVector2Array(new EarClippingTriangulator().computeTriangles(polygon.getTransformedVertices()).items);
+
+		// create the triangles as polygons
+		Polygon[] triangles = toPolygonArray(triangleVertices, 3);
+
+		// create the fixtures of the triangles
+		Fixture[] fixtures = new Fixture[triangles.length];
+		for(int i = 0; i < triangles.length; i++) {
+			PolygonMapObject triangleObject = new PolygonMapObject(triangles[i]);
+			triangleObject.setColor(mapObject.getColor());
+			triangleObject.setName(mapObject.getName());
+			triangleObject.setOpacity(mapObject.getOpacity());
+			triangleObject.setVisible(mapObject.isVisible());
+			triangleObject.getProperties().putAll(mapObject.getProperties());
+			fixtures[i] = createFixture(triangleObject);
+		}
+
+		return fixtures;
 	}
 
 	/**
@@ -566,17 +561,15 @@ public class Box2DMapObjectParser {
 	 * @return a human readable {@link String} containing the hierarchy of the {@link MapObjects} of the given {@link Map}
 	 */
 	public String getHierarchy(Map map) {
-		String hierarchy = map.getClass().getSimpleName() + "\n";
+		String hierarchy = map.getClass().getSimpleName() + "\n", key, layerHierarchy;
 
 		Iterator<String> keys = map.getProperties().getKeys();
-		while(keys.hasNext()) {
-			String key = keys.next();
-			hierarchy += key + ": " + map.getProperties().get(key) + "\n";
-		}
+		while(keys.hasNext())
+			hierarchy += (key = keys.next()) + ": " + map.getProperties().get(key) + "\n";
 
 		for(MapLayer layer : map.getLayers()) {
 			hierarchy += "\t" + layer.getName() + " (" + layer.getClass().getSimpleName() + "):\n";
-			String layerHierarchy = getHierarchy(layer).replace("\n", "\n\t\t");
+			layerHierarchy = getHierarchy(layer).replace("\n", "\n\t\t");
 			layerHierarchy = layerHierarchy.endsWith("\n\t\t") ? layerHierarchy.substring(0, layerHierarchy.lastIndexOf("\n\t\t")) : layerHierarchy;
 			hierarchy += !layerHierarchy.equals("") ? "\t\t" + layerHierarchy : layerHierarchy;
 		}
@@ -589,15 +582,13 @@ public class Box2DMapObjectParser {
 	 * @return a human readable {@link String} containing the hierarchy of the {@link MapObjects} of the given {@link MapLayer}
 	 */
 	public String getHierarchy(MapLayer layer) {
-		String hierarchy = "";
+		String hierarchy = "", key;
 
 		for(MapObject object : layer.getObjects()) {
 			hierarchy += object.getName() + " (" + object.getClass().getSimpleName() + "):\n";
 			Iterator<String> keys = object.getProperties().getKeys();
-			while(keys.hasNext()) {
-				String key = keys.next();
-				hierarchy += "\t" + key + ": " + object.getProperties().get(key) + "\n";
-			}
+			while(keys.hasNext())
+				hierarchy += "\t" + (key = keys.next()) + ": " + object.getProperties().get(key) + "\n";
 		}
 
 		return hierarchy;

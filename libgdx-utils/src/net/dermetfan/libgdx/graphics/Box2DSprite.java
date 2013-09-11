@@ -27,6 +27,7 @@ import java.util.Comparator;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Body;
@@ -55,9 +56,34 @@ public class Box2DSprite extends Sprite {
 	/** a user data object replacing the user data that this {@link Box2DSprite} replaces if it's set as user data */
 	private Object userData;
 
+	/** @see Sprite#Sprite() */
+	public Box2DSprite() {
+		super();
+	}
+
+	/** @see Sprite#Sprite(Texture, int, int) */
+	public Box2DSprite(Texture texture, int srcWidth, int srcHeight) {
+		super(texture, srcWidth, srcHeight);
+	}
+
+	/** @see Sprite#Sprite(Texture, int, int, int, int) */
+	public Box2DSprite(Texture texture, int srcX, int srcY, int srcWidth, int srcHeight) {
+		super(texture, srcX, srcY, srcWidth, srcHeight);
+	}
+
+	/** @see Sprite#Sprite(TextureRegion, int, int, int, int) */
+	public Box2DSprite(TextureRegion region, int srcX, int srcY, int srcWidth, int srcHeight) {
+		super(region, srcX, srcY, srcWidth, srcHeight);
+	}
+
 	/** @see Sprite#Sprite(Texture) */
 	public Box2DSprite(Texture texture) {
 		super(texture);
+	}
+
+	/** @see Sprite#Sprite(TextureRegion) */
+	public Box2DSprite(TextureRegion region) {
+		super(region);
 	}
 
 	/** @see Sprite#Sprite(Sprite) */
