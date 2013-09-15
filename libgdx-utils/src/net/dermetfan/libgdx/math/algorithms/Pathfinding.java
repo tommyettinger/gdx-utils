@@ -58,6 +58,7 @@ public abstract class Pathfinding {
 				for(Node neighbour : node.neighbours) {
 					if(neighbour.total < lowestTotal) {
 						lowestTotal = neighbour.total;
+						// TODO the problem is here, this counts all neighbors that have a lower total than the previous neighbor on to the pathSize but it should only be added the one that has the lowest total of of all neighbors 
 						node = neighbour;
 						pathSize++;
 					} else
@@ -67,8 +68,14 @@ public abstract class Pathfinding {
 			
 			// find out path
 			output = new Node[pathSize];
-			while(node != start)
-				output[--pathSize] = node = node.parent;
+			while(node != start) {
+				if(pathSize < 1) {
+					System.out.println("pathSize is " + (pathSize - 1));
+					break;
+				}
+				output[--pathSize] = node.parent;
+				node = node.parent;
+			}
 
 			for(int i = 0; i < output.length; i++)
 				System.out.println(i + ": " + output[i]);
