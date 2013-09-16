@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package net.dermetfan.libgdx.math.algorithms;
+package net.dermetfan.libgdx.math;
 
 import java.util.Random;
 

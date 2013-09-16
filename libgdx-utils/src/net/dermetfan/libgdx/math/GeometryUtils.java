@@ -202,7 +202,7 @@ public abstract class GeometryUtils {
 			area -= vertices[x2] * vertices[y1];
 		}
 
-		return area /= 2f;
+		return area /= 2;
 	}
 
 	/**
@@ -215,6 +215,8 @@ public abstract class GeometryUtils {
 
 	/** @see #areVerticesClockwise(Polygon) */
 	public static boolean areVerticesClockwise(float[] vertices) {
+		if(vertices.length <= 4)
+			return true;
 		return area(vertices) < 0;
 	}
 
