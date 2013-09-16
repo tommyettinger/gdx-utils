@@ -215,7 +215,7 @@ public abstract class BayazitDecomposer {
 	 * @param point This is set to the intersection point if an intersection is detected.
 	 * @return True if an intersection is detected, false otherwise.
 	 * 
-	 * @author Jeremy Bell
+	 * Author: Jeremy Bell
 	 */
 	public static boolean lineIntersect(Vector2 point1, Vector2 point2, Vector2 point3, Vector2 point4, boolean firstIsSegment, boolean secondIsSegment, Vector2 point) {
 		point = new Vector2();
@@ -534,7 +534,6 @@ public abstract class BayazitDecomposer {
 		 * Reduces the polygon by distance.
 		 * @param vertices
 		 * @param distance The distance between points. Points closer than this will be 'joined'
-		 * @return
 		 */
 		public static Array<Vector2> reduceByDistance(Array<Vector2> vertices, float distance) {
 			// We can't simplify polygons under 3 vertices
@@ -560,7 +559,6 @@ public abstract class BayazitDecomposer {
 		 * Reduces the polygon by removing the Nth vertex in the vertices list.
 		 * @param vertices
 		 * @param nth The Nth point to remove. Example: 5.
-		 * @return
 		 */
 		public static Array<Vector2> reduceByNth(Array<Vector2> vertices, int nth) {
 			// We can't simplify polygons under 3 vertices

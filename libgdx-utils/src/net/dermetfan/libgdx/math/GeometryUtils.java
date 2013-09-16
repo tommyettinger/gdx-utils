@@ -27,7 +27,7 @@ import com.badlogic.gdx.math.Vector3;
 public abstract class GeometryUtils {
 
 	/** a temporary variable used by some methods
-	 *  @warning not safe to use as it may change any time */
+	 *  warning not safe to use as it may change any time */
 	public static Vector2 tmpVec = new Vector2();
 
 	/** @see #tmpVec */

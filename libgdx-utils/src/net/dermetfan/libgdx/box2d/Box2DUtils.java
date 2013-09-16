@@ -69,7 +69,7 @@ public abstract class Box2DUtils {
 	private static int autoShapeCacheMaxSize = Integer.MAX_VALUE;
 
 	/** temporary {@link Vector2} used by some methods
-	 *  @warning not safe to use as it may change unexpectedly */
+	 *  warning: not safe to use as it may change unexpectedly */
 	public static Vector2 tmpVec = new Vector2();
 
 	/** @see #tmpVec */
