@@ -373,19 +373,17 @@ public class Box2DMapObjectParser {
 		if(!(mapObject instanceof PolygonMapObject) || isConvex(polygon = ((PolygonMapObject) mapObject).getPolygon()))
 			return new Fixture[] {createFixture(mapObject)};
 
-		// ensure the vertices are in counterclockwise order (not really necessary according to EarClippingTriangulator's javadoc, but sometimes better)
-		if(areVerticesClockwise(polygon)) {
-			Array<Vector2> vertices = new Array<Vector2>(toVector2Array(polygon.getVertices()));
-			Vector2 first = vertices.removeIndex(0);
-			vertices.reverse();
-			vertices.insert(0, first);
-			polygon.setVertices(toFloatArray(vertices.items));
-		}
-
 		Polygon[] convexPolygons;
-		if(triangulate)
+		if(triangulate) {
+			if(areVerticesClockwise(polygon)) { // ensure the vertices are in counterclockwise order (not really necessary according to EarClippingTriangulator's javadoc, but sometimes better)
+				Array<Vector2> vertices = new Array<Vector2>(toVector2Array(polygon.getVertices()));
+				Vector2 first = vertices.removeIndex(0);
+				vertices.reverse();
+				vertices.insert(0, first);
+				polygon.setVertices(toFloatArray(vertices.items));
+			}
 			convexPolygons = toPolygonArray(toVector2Array(new EarClippingTriangulator().computeTriangles(polygon.getTransformedVertices()).toArray()), 3);
-		else {
+		} else {
 			Array<Array<Vector2>> convexPolys = BayazitDecomposer.convexPartition(new Array<Vector2>(toVector2Array(polygon.getTransformedVertices())));
 			convexPolygons = new Polygon[convexPolys.size];
 			for(int i = 0; i < convexPolygons.length; i++)
