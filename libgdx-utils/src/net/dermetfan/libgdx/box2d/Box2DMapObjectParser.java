@@ -24,6 +24,8 @@ import static net.dermetfan.libgdx.math.GeometryUtils.toVector2Array;
 
 import java.util.Iterator;
 
+import net.dermetfan.libgdx.math.BayazitDecomposer;
+
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.maps.Map;
 import com.badlogic.gdx.maps.MapLayer;
@@ -97,6 +99,9 @@ public class Box2DMapObjectParser {
 
 	/** the dimensions of a tile, used to transform positions (ignore / set to 1 if the used map is not a tile map) */
 	private float tileWidth = 1, tileHeight = 1;
+
+	/** if concave polygons should be triangulated instead of being decomposed into convex polygons */
+	private boolean triangulate;
 
 	/** the parsed {@link Body Bodies} */
 	private ObjectMap<String, Body> bodies = new ObjectMap<String, Body>();
@@ -377,22 +382,26 @@ public class Box2DMapObjectParser {
 			polygon.setVertices(toFloatArray(vertices.items));
 		}
 
-		// put the triangles' vertices in a Vector2 array
-		Vector2[] triangleVertices = toVector2Array(new EarClippingTriangulator().computeTriangles(polygon.getTransformedVertices()).items);
+		Polygon[] convexPolygons;
+		if(triangulate)
+			convexPolygons = toPolygonArray(toVector2Array(new EarClippingTriangulator().computeTriangles(polygon.getTransformedVertices()).toArray()), 3);
+		else {
+			Array<Array<Vector2>> convexPolys = BayazitDecomposer.convexPartition(new Array<Vector2>(toVector2Array(polygon.getTransformedVertices())));
+			convexPolygons = new Polygon[convexPolys.size];
+			for(int i = 0; i < convexPolygons.length; i++)
+				convexPolygons[i] = new Polygon(toFloatArray((Vector2[]) convexPolys.get(i).toArray(Vector2.class)));
+		}
 
-		// create the triangles as polygons
-		Polygon[] triangles = toPolygonArray(triangleVertices, 3);
-
-		// create the fixtures of the triangles
-		Fixture[] fixtures = new Fixture[triangles.length];
-		for(int i = 0; i < triangles.length; i++) {
-			PolygonMapObject triangleObject = new PolygonMapObject(triangles[i]);
-			triangleObject.setColor(mapObject.getColor());
-			triangleObject.setName(mapObject.getName());
-			triangleObject.setOpacity(mapObject.getOpacity());
-			triangleObject.setVisible(mapObject.isVisible());
-			triangleObject.getProperties().putAll(mapObject.getProperties());
-			fixtures[i] = createFixture(triangleObject);
+		// create the fixtures using the convex polygons
+		Fixture[] fixtures = new Fixture[convexPolygons.length];
+		for(int i = 0; i < fixtures.length; i++) {
+			PolygonMapObject convexObject = new PolygonMapObject(convexPolygons[i]);
+			convexObject.setColor(mapObject.getColor());
+			convexObject.setName(mapObject.getName());
+			convexObject.setOpacity(mapObject.getOpacity());
+			convexObject.setVisible(mapObject.isVisible());
+			convexObject.getProperties().putAll(mapObject.getProperties());
+			fixtures[i] = createFixture(convexObject);
 		}
 
 		return fixtures;
@@ -632,6 +641,16 @@ public class Box2DMapObjectParser {
 	/** @param tileHeight the {@link #tileHeight} to set */
 	public void setTileHeight(float tileHeight) {
 		this.tileHeight = tileHeight;
+	}
+
+	/** @return the {@link #triangulate} */
+	public boolean isTriangulate() {
+		return triangulate;
+	}
+
+	/** @param triangulate the {@link #triangulate} to set */
+	public void setTriangulate(boolean triangulate) {
+		this.triangulate = triangulate;
 	}
 
 	/** @return the {@link Aliases} */
