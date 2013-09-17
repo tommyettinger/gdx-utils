@@ -60,7 +60,7 @@ public abstract class Box2DUtils {
 	}
 
 	/** cached {@link Shape Shapes} and their vertices */
-	public static final ObjectMap<Shape, ShapeCache> shapeCache = new ObjectMap<Shape, ShapeCache>(1);
+	public static final ObjectMap<Shape, ShapeCache> shapeCache = new ObjectMap<Shape, ShapeCache>();
 
 	/** if new {@link Shape} passed in {@link #vertices(Shape)} should be automatically added to the {@link #shapeCache} */
 	private static boolean autoShapeCache = true;
