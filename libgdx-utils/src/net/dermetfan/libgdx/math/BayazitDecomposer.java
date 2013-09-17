@@ -103,13 +103,9 @@ public abstract class BayazitDecomposer {
 							double score = 1 / (squareDist(at(i, vertices),
 									at(j, vertices)) + 1);
 							if(reflex(j, vertices)) {
-								if(rightOn(at(j - 1, vertices),
-										at(j, vertices), at(i, vertices))
-										&& leftOn(at(j + 1, vertices),
-												at(j, vertices),
-												at(i, vertices))) {
+								if(rightOn(at(j - 1, vertices), at(j, vertices), at(i, vertices)) && leftOn(at(j + 1, vertices), at(j, vertices), at(i, vertices)))
 									score += 3;
-								} else
+								else
 									score += 2;
 							} else
 								score += 1;

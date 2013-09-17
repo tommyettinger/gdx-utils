@@ -91,9 +91,6 @@ public class Box2DSprite extends Sprite {
 		super(sprite);
 	}
 
-	/** a temporary map to store the bodies / fixtures which user data Box2DSprites are in in {@link #draw(SpriteBatch, World, boolean)}*/
-	private static ObjectMap<Box2DSprite, Object> tmpZBox2DSpriteMap = new ObjectMap<Box2DSprite, Object>(0);
-
 	/** a {@link Comparator} used to sort {@link Box2DSprite Box2DSprites} by their {@link Box2DSprite#z z index} in {@link #draw(SpriteBatch, World)} */
 	private static Comparator<Box2DSprite> zComparator = new Comparator<Box2DSprite>() {
 
@@ -103,6 +100,9 @@ public class Box2DSprite extends Sprite {
 		}
 
 	};
+
+	/** a temporary map to store the bodies / fixtures which user data Box2DSprites are in in {@link #draw(SpriteBatch, World, boolean)}*/
+	private static ObjectMap<Box2DSprite, Object> tmpZMap = new ObjectMap<Box2DSprite, Object>(0);
 
 	/** temporary variable used in {@link #draw(SpriteBatch, World)} */
 	private static Array<Body> tmpBodies = new Array<Body>(0);
@@ -119,23 +119,23 @@ public class Box2DSprite extends Sprite {
 		if(sortByZ) {
 			for(Body body : tmpBodies) {
 				if(body.getUserData() instanceof Box2DSprite)
-					tmpZBox2DSpriteMap.put((Box2DSprite) body.getUserData(), body);
+					tmpZMap.put((Box2DSprite) body.getUserData(), body);
 				for(Fixture fixture : body.getFixtureList())
 					if(fixture.getUserData() instanceof Box2DSprite)
-						tmpZBox2DSpriteMap.put((Box2DSprite) fixture.getUserData(), fixture);
+						tmpZMap.put((Box2DSprite) fixture.getUserData(), fixture);
 			}
 
-			Array<Box2DSprite> keys = tmpZBox2DSpriteMap.keys().toArray();
+			Array<Box2DSprite> keys = tmpZMap.keys().toArray();
 			keys.sort(zComparator);
 
 			for(Box2DSprite key : keys) {
-				Object value = tmpZBox2DSpriteMap.get(key);
+				Object value = tmpZMap.get(key);
 				if(value instanceof Body)
 					key.draw(batch, (Body) value);
 				else
 					key.draw(batch, (Fixture) value);
 			}
-			tmpZBox2DSpriteMap.clear();
+			tmpZMap.clear();
 		} else {
 			for(Body body : tmpBodies) {
 				if(body.getUserData() instanceof Box2DSprite)
@@ -200,6 +200,11 @@ public class Box2DSprite extends Sprite {
 		this.adjustHeight = adjustHeight;
 	}
 
+	/** @param adjustSize {@link #adjustWidth} and {@link #adjustHeight} will be set to this */
+	public void setAdjustSize(boolean adjustSize) {
+		adjustWidth = adjustHeight = adjustSize;
+	}
+
 	/** @return the if the x origin of this {@link Box2DSprite} should be used when it's being drawn */
 	public boolean isUseOriginX() {
 		return useOriginX;
@@ -218,6 +223,11 @@ public class Box2DSprite extends Sprite {
 	/** @param useOriginY if the y origin of this {@link Box2DSprite} should be used when it's being drawn */
 	public void setUseOriginY(boolean useOriginY) {
 		this.useOriginY = useOriginY;
+	}
+
+	/** @param useOrigin {@link #useOriginX} and {@link #useOriginY} will be set to this */
+	public void setUseOrigin(boolean useOrigin) {
+		useOriginX = useOriginY = useOrigin;
 	}
 
 	/** @see Sprite#setSize(float, float) */
