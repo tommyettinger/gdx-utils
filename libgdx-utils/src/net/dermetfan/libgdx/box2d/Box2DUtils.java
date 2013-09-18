@@ -81,7 +81,7 @@ public abstract class Box2DUtils {
 	/** @return the vertices of all fixtures of the given body
 	 *  @see #vertices(Shape) */
 	public static Vector2[] vertices(Body body, Vector2[] output) {
-		Vector2[][] fixtureVertices = new Vector2[body.getFixtureList().size()][]; // caching fixture vertices for performance
+		Vector2[][] fixtureVertices = new Vector2[body.getFixtureList().size][]; // caching fixture vertices for performance
 		for(int i = 0; i < fixtureVertices.length; i++)
 			fixtureVertices[i] = vertices(body.getFixtureList().get(i), tmpVecArr);
 

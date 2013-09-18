@@ -382,7 +382,12 @@ public class Box2DMapObjectParser {
 				vertices.insert(0, first);
 				polygon.setVertices(toFloatArray(vertices.items));
 			}
-			convexPolygons = toPolygonArray(toVector2Array(new EarClippingTriangulator().computeTriangles(polygon.getTransformedVertices()).toArray()), 3);
+			Vector2[] polygonVertices = toVector2Array(polygon.getTransformedVertices());
+			short[] indices = new EarClippingTriangulator().computeTriangles(toFloatArray(polygonVertices)).toArray();
+			Vector2[] vertices = new Vector2[indices.length];
+			for(int i = 0; i < indices.length; i++)
+				vertices[i] = polygonVertices[indices[i]];
+			convexPolygons = toPolygonArray(vertices, 3);
 		} else {
 			Array<Array<Vector2>> convexPolys = BayazitDecomposer.convexPartition(new Array<Vector2>(toVector2Array(polygon.getTransformedVertices())));
 			convexPolygons = new Polygon[convexPolys.size];
