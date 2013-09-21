@@ -75,7 +75,17 @@ public abstract class TileAnimator {
 	public static void animateTiles(TiledMapTile[] tiles, TiledMapTileLayer target, String animationKey, String intervalKey, String orderedKey, String frameKey) {
 		ObjectMap<String, Array<StaticTiledMapTile>> animations = filterFrames(tiles, animationKey);
 		sortFrames(animations, orderedKey, frameKey);
+		animateTiles(animations, target, animationKey, intervalKey);
+	}
 
+	/**
+	 * animates the {@link TiledMapTileLayer target layer} using the given animations
+	 * @param animations the animations to use
+	 * @param target the {@link TiledMapTileLayer} to target
+	 * @param animationKey the key used to tell if a tile is a frame
+	 * @param intervalKey the key used to get the animation interval (duration each frame is displayed)
+	 */
+	public static void animateTiles(ObjectMap<String, Array<StaticTiledMapTile>> animations, TiledMapTileLayer target, String animationKey, String intervalKey) {
 		TiledMapTile tile;
 		MapProperties tileProperties;
 
