@@ -2,160 +2,157 @@ package net.dermetfan.libgdx.math;
 
 import com.badlogic.gdx.math.Vector2;
 
-public abstract class Pathfinding {
+public abstract class AStar {
 
-	public abstract static class AStar {
+	public static class Node {
 
-		public static class Node {
+		public Vector2 position;
+		public float weight, g_cost, h_heuristic, f_totalCost;
+		public boolean blocked;
+		public Node parent, neighbors[];
 
-			public Vector2 position;
-			public float weight, g_cost, h_heuristic, f_totalCost;
-			public boolean blocked;
-			public Node parent, neighbors[];
-
-			public Node(float x, float y, float weight, boolean blocked) {
-				position = new Vector2(x, y);
-				this.weight = weight;
-				this.blocked = blocked;
-			}
-
-		}
-
-		//		public static Node[] findPath(Node start, Node end, Node[] nodes) {
-		////			OPEN = priority queue containing START
-		//			Array<Node> open = new Array<Node>();
-		//			open.add(start);
-		////			CLOSED = empty set
-		//			Array<Node> closed = new Array<Node>();
-		////			while lowest rank in OPEN is not the GOAL:
-		//			Node current;
-		//			while(open.contains(end, true)) {
-		////			  current = remove lowest rank item from OPEN
-		//			  current = open.pop();
-		////			  add current to CLOSED
-		//			  closed.add(current);
-		////			  for neighbors of current:
-		//			  for(Node neighbor : current.neighbors) {
-		////			    cost = g(current) + movementcost(current, neighbor)
-		////			    if neighbor in OPEN and cost less than g(neighbor):
-		////			      remove neighbor from OPEN, because new path is better
-		////			    if neighbor in CLOSED and cost less than g(neighbor): **
-		////			      remove neighbor from CLOSED
-		////			    if neighbor not in OPEN and neighbor not in CLOSED:
-		////			      set g(neighbor) to cost
-		////			      add neighbor to OPEN
-		////			      set priority queue rank to g(neighbor) + h(neighbor)
-		////			      set neighbor's parent to current
-		//			  }
-		//			}
-		////			reconstruct reverse path from goal to start
-		////			by following parent pointers
-		//			return null;
-		//		}
-		//		
-		//	}
-		//	
-		//}
-		//
-		//		public static Node[] findPath(Node start, Node end, Node[] nodes) {
-		//			Array<Node> open = new Array<Node>(), closed = new Array<Node>();
-		//
-		//			Node current;
-		//
-		//			open.add(start);
-		//			long startTime = TimeUtils.millis();
-		//			while(!closed.contains(end, true) && TimeUtils.millis() - startTime < 1000) {
-		//
-		//				current = findLowestFNode(open);
-		//				closed.add(current);
-		//
-		//				for(Node neighbor : current.neighbors) {
-		//					if(neighbor.blocked || closed.contains(neighbor, true))
-		//						continue;
-		//					if(!open.contains(neighbor, true))
-		//						open.add(neighbor);
-		//					neighbor.parent = current;
-		//					neighbor.f_totalCost = (neighbor.g_cost = neighbor.parent.f_totalCost + neighbor.weight) + (neighbor.h_heuristic = neighbor.position.dst(end.position));
-		//					if(open.contains(neighbor, true))
-		//						if(neighbor.g_cost < neighbor.parent.g_cost) {
-		//							neighbor.parent = current;
-		//							neighbor.f_totalCost = (neighbor.g_cost = neighbor.parent.f_totalCost + neighbor.weight) + neighbor.h_heuristic;
-		//						}
-		//				}
-		//
-		//			}
-		//			
-		//			Array<Node> path = new Array<Node>(Node.class);
-		//
-		//			current = end;
-		//			while(current != start) {
-		//				path.add(current);
-		//				current = current.parent;
-		//			}
-		//			path.add(current);
-		//
-		//			return path.toArray();
-		//		}
-		//
-		//		public static Node findLowestFNode(Array<Node> nodes) {
-		//			Node lowestFNode = nodes.first();
-		//			for(Node node : nodes)
-		//				if(node.f_totalCost < lowestFNode.f_totalCost)
-		//					lowestFNode = node;
-		//			return lowestFNode;
-		//		}
-		//
-		//	}
-		//}
-		//
-		public static Node[] findPath(Node start, Node end, Node[] nodes) {
-			// calculate heuristics
-			for(Node node : nodes)
-				node.h_heuristic = node.position.dst(end.position);
-
-			// find path
-			int pathSize = 1;
-			Node current = start, previous = start;
-			while(current != end && pathSize < nodes.length) {
-				current.parent = previous;
-
-				// calculate neighbor total costs
-				for(Node neighbor : current.neighbors)
-					neighbor.f_totalCost = current.f_totalCost + neighbor.weight + neighbor.h_heuristic + (neighbor.blocked ? 1000 : 0);
-
-				// get neighbor with lowest total cost
-				Node cheapestNeighbor = current.neighbors[0];
-				for(Node neighbor : current.neighbors)
-					if(neighbor.f_totalCost < cheapestNeighbor.f_totalCost)
-						cheapestNeighbor = neighbor;
-
-				previous = current;
-				current = cheapestNeighbor;
-				pathSize++;
-			}
-
-			end.parent = previous;
-
-			// trace back path // until current.parent is previous
-			Node[] path = new Node[pathSize];
-
-			// current is end
-			// until current is start
-			int i = pathSize - 1;
-			while(current != start) {
-
-				path[i] = current;
-				current = current.parent;
-
-				i--;
-			}
-
-			return path;
+		public Node(float x, float y, float weight, boolean blocked) {
+			position = new Vector2(x, y);
+			this.weight = weight;
+			this.blocked = blocked;
 		}
 
 	}
 
+	//		public static Node[] findPath(Node start, Node end, Node[] nodes) {
+	////			OPEN = priority queue containing START
+	//			Array<Node> open = new Array<Node>();
+	//			open.add(start);
+	////			CLOSED = empty set
+	//			Array<Node> closed = new Array<Node>();
+	////			while lowest rank in OPEN is not the GOAL:
+	//			Node current;
+	//			while(open.contains(end, true)) {
+	////			  current = remove lowest rank item from OPEN
+	//			  current = open.pop();
+	////			  add current to CLOSED
+	//			  closed.add(current);
+	////			  for neighbors of current:
+	//			  for(Node neighbor : current.neighbors) {
+	////			    cost = g(current) + movementcost(current, neighbor)
+	////			    if neighbor in OPEN and cost less than g(neighbor):
+	////			      remove neighbor from OPEN, because new path is better
+	////			    if neighbor in CLOSED and cost less than g(neighbor): **
+	////			      remove neighbor from CLOSED
+	////			    if neighbor not in OPEN and neighbor not in CLOSED:
+	////			      set g(neighbor) to cost
+	////			      add neighbor to OPEN
+	////			      set priority queue rank to g(neighbor) + h(neighbor)
+	////			      set neighbor's parent to current
+	//			  }
+	//			}
+	////			reconstruct reverse path from goal to start
+	////			by following parent pointers
+	//			return null;
+	//		}
+	//		
+	//	}
+	//	
+	//}
+	//
+	//		public static Node[] findPath(Node start, Node end, Node[] nodes) {
+	//			Array<Node> open = new Array<Node>(), closed = new Array<Node>();
+	//
+	//			Node current;
+	//
+	//			open.add(start);
+	//			long startTime = TimeUtils.millis();
+	//			while(!closed.contains(end, true) && TimeUtils.millis() - startTime < 1000) {
+	//
+	//				current = findLowestFNode(open);
+	//				closed.add(current);
+	//
+	//				for(Node neighbor : current.neighbors) {
+	//					if(neighbor.blocked || closed.contains(neighbor, true))
+	//						continue;
+	//					if(!open.contains(neighbor, true))
+	//						open.add(neighbor);
+	//					neighbor.parent = current;
+	//					neighbor.f_totalCost = (neighbor.g_cost = neighbor.parent.f_totalCost + neighbor.weight) + (neighbor.h_heuristic = neighbor.position.dst(end.position));
+	//					if(open.contains(neighbor, true))
+	//						if(neighbor.g_cost < neighbor.parent.g_cost) {
+	//							neighbor.parent = current;
+	//							neighbor.f_totalCost = (neighbor.g_cost = neighbor.parent.f_totalCost + neighbor.weight) + neighbor.h_heuristic;
+	//						}
+	//				}
+	//
+	//			}
+	//			
+	//			Array<Node> path = new Array<Node>(Node.class);
+	//
+	//			current = end;
+	//			while(current != start) {
+	//				path.add(current);
+	//				current = current.parent;
+	//			}
+	//			path.add(current);
+	//
+	//			return path.toArray();
+	//		}
+	//
+	//		public static Node findLowestFNode(Array<Node> nodes) {
+	//			Node lowestFNode = nodes.first();
+	//			for(Node node : nodes)
+	//				if(node.f_totalCost < lowestFNode.f_totalCost)
+	//					lowestFNode = node;
+	//			return lowestFNode;
+	//		}
+	//
+	//	}
+	//}
+	//
+	public static Node[] findPath(Node start, Node end, Node[] nodes) {
+		// calculate heuristics
+		for(Node node : nodes)
+			node.h_heuristic = node.position.dst(end.position);
+
+		// find path
+		int pathSize = 1;
+		Node current = start, previous = start;
+		while(current != end && pathSize < nodes.length) {
+			current.parent = previous;
+
+			// calculate neighbor total costs
+			for(Node neighbor : current.neighbors)
+				neighbor.f_totalCost = current.f_totalCost + neighbor.weight + neighbor.h_heuristic + (neighbor.blocked ? 1000 : 0);
+
+			// get neighbor with lowest total cost
+			Node cheapestNeighbor = current.neighbors[0];
+			for(Node neighbor : current.neighbors)
+				if(neighbor.f_totalCost < cheapestNeighbor.f_totalCost)
+					cheapestNeighbor = neighbor;
+
+			previous = current;
+			current = cheapestNeighbor;
+			pathSize++;
+		}
+
+		end.parent = previous;
+
+		// trace back path // until current.parent is previous
+		Node[] path = new Node[pathSize];
+
+		// current is end
+		// until current is start
+		int i = pathSize - 1;
+		while(current != start) {
+
+			path[i] = current;
+			current = current.parent;
+
+			i--;
+		}
+
+		return path;
+	}
+
 }
+
 //
 //
 //
