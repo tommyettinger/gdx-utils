@@ -16,7 +16,11 @@
 
 package net.dermetfan.libgdx.maps;
 
+import java.util.Iterator;
+
 import com.badlogic.gdx.maps.MapProperties;
+import com.badlogic.gdx.maps.tiled.TiledMapTile;
+import com.badlogic.gdx.maps.tiled.TiledMapTileSet;
 
 /**
  * provides useful methods when dealing with maps
@@ -57,6 +61,22 @@ public abstract class MapUtils {
 			return (T) new Byte(Byte.parseByte(value.toString()));
 
 		return (T) value;
+	}
+
+	/**
+	 * creates an array of TiledMapTiles from a {@link TiledMapTileSet}
+	 * @param tiles the {@link TiledMapTileSet} to create an array from
+	 * @return the array of TiledMapTiles
+	 */
+	public static TiledMapTile[] toTiledMapTileArray(TiledMapTileSet tiles) {
+		TiledMapTile[] tileArray = new TiledMapTile[tiles.size()];
+
+		int i = -1;
+		Iterator<TiledMapTile> tileIterator = tiles.iterator();
+		while(tileIterator.hasNext())
+			tileArray[++i] = tileIterator.next();
+
+		return tileArray;
 	}
 
 }
