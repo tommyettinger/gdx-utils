@@ -17,7 +17,6 @@
 package net.dermetfan.libgdx.maps;
 
 import java.util.Comparator;
-import java.util.Iterator;
 
 import com.badlogic.gdx.maps.MapProperties;
 import com.badlogic.gdx.maps.tiled.TiledMapTile;
@@ -89,23 +88,7 @@ public abstract class TileAnimator {
 
 	/** @see #animateTiles(TiledMapTile[], TiledMapTileLayer, String, String, String, String) */
 	public static void animateTiles(TiledMapTileSet tiles, TiledMapTileLayer target, String animationKey, String intervalKey, String orderedKey, String frameKey) {
-		animateTiles(toTiledMapTileArray(tiles), target, animationKey, intervalKey, orderedKey, frameKey);
-	}
-
-	/**
-	 * creates an array of TiledMapTiles from a {@link TiledMapTileSet}
-	 * @param tiles the {@link TiledMapTileSet} to create an array from
-	 * @return the array of TiledMapTiles
-	 */
-	public static TiledMapTile[] toTiledMapTileArray(TiledMapTileSet tiles) {
-		TiledMapTile[] tileArray = new TiledMapTile[tiles.size()];
-
-		int i = -1;
-		Iterator<TiledMapTile> tileIterator = tiles.iterator();
-		while(tileIterator.hasNext())
-			tileArray[++i] = tileIterator.next();
-
-		return tileArray;
+		animateTiles(MapUtils.toTiledMapTileArray(tiles), target, animationKey, intervalKey, orderedKey, frameKey);
 	}
 
 	/**
@@ -169,7 +152,6 @@ public abstract class TileAnimator {
 
 			@Override
 			public int compare(StaticTiledMapTile tile1, StaticTiledMapTile tile2) {
-				// int tile1Frame = tile1.getProperties().get(frameKey, -1, Integer.class), tile2Frame = tile2.getProperties().get(frameKey, -1, Integer.class);
 				int tile1Frame = MapUtils.getProperty(tile1.getProperties(), frameKey, -1), tile2Frame = MapUtils.getProperty(tile2.getProperties(), frameKey, -1);
 				return tile1Frame < tile2Frame ? -1 : tile1Frame > tile2Frame ? 1 : 0;
 			}
