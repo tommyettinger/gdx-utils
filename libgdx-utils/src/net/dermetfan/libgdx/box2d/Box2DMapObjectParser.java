@@ -21,6 +21,7 @@ import static net.dermetfan.libgdx.math.GeometryUtils.isConvex;
 import static net.dermetfan.libgdx.math.GeometryUtils.toFloatArray;
 import static net.dermetfan.libgdx.math.GeometryUtils.toPolygonArray;
 import static net.dermetfan.libgdx.math.GeometryUtils.toVector2Array;
+import static net.dermetfan.libgdx.maps.MapUtils.getProperty;
 
 import java.util.Iterator;
 
@@ -545,30 +546,6 @@ public class Box2DMapObjectParser {
 	}
 
 	/**
-	 * internal method for easier access of {@link MapProperties}
-	 * @param properties the {@link MapProperties} from which to get a property
-	 * @param property the key of the desired property
-	 * @param defaultValue the default value to return in case the value of the given key cannot be returned
-	 * @return the property value associated with the given property key
-	 */
-	@SuppressWarnings("unchecked")
-	private <T> T getProperty(MapProperties properties, String property, T defaultValue) {
-		if(properties.get(property) == null)
-			return defaultValue;
-		if(defaultValue.getClass() == Float.class)
-			if(properties.get(property).getClass() == Integer.class)
-				return (T) new Float(properties.get(property, Integer.class));
-			else
-				return (T) new Float(Float.parseFloat(properties.get(property, String.class)));
-		else if(defaultValue.getClass() == Short.class)
-			return (T) new Short(Short.parseShort(properties.get(property, String.class)));
-		else if(defaultValue.getClass() == Boolean.class)
-			return (T) new Boolean(Boolean.parseBoolean(properties.get(property, String.class)));
-		else
-			return (T) properties.get(property, defaultValue.getClass());
-	}
-
-	/**
 	 * @param map the {@link Map} which hierarchy to print
 	 * @return a human readable {@link String} containing the hierarchy of the {@link MapObjects} of the given {@link Map}
 	 */
@@ -685,83 +662,7 @@ public class Box2DMapObjectParser {
 	public static class Aliases {
 
 		/** the aliases */
-		public String
-				type = "type",
-				bodyType = "bodyType",
-				dynamicBody = "DynamicBody",
-				kinematicBody = "KinematicBody",
-				staticBody = "StaticBody",
-				active = "active",
-				allowSleep = "allowSleep",
-				angle = "angle",
-				angularDamping = "angularDamping",
-				angularVelocity = "angularVelocity",
-				awake = "awake",
-				bullet = "bullet",
-				fixedRotation = "fixedRotation",
-				gravityunitScale = "gravityunitScale",
-				linearDamping = "linearDamping",
-				linearVelocityX = "linearVelocityX",
-				linearVelocityY = "linearVelocityY",
-				density = "density",
-				categoryBits = "categoryBits",
-				groupIndex = "groupIndex",
-				maskBits = "maskBits",
-				friciton = "friction",
-				isSensor = "isSensor",
-				restitution = "restitution",
-				body = "body",
-				fixture = "fixture",
-				joint = "joint",
-				jointType = "jointType",
-				distanceJoint = "DistanceJoint",
-				frictionJoint = "FrictionJoint",
-				gearJoint = "GearJoint",
-				mouseJoint = "MouseJoint",
-				prismaticJoint = "PrismaticJoint",
-				pulleyJoint = "PulleyJoint",
-				revoluteJoint = "RevoluteJoint",
-				ropeJoint = "RopeJoint",
-				weldJoint = "WeldJoint",
-				wheelJoint = "WheelJoint",
-				bodyA = "bodyA",
-				bodyB = "bodyB",
-				collideConnected = "collideConnected",
-				dampingRatio = "dampingRatio",
-				frequencyHz = "frequencyHz",
-				length = "length",
-				localAnchorAX = "localAnchorAX",
-				localAnchorAY = "localAnchorAY",
-				localAnchorBX = "localAnchorBX",
-				localAnchorBY = "localAnchorBY",
-				maxForce = "maxForce",
-				maxTorque = "maxTorque",
-				joint1 = "joint1",
-				joint2 = "joint2",
-				ratio = "ratio",
-				targetX = "targetX",
-				targetY = "targetY",
-				enableLimit = "enableLimit",
-				enableMotor = "enableMotor",
-				localAxisAX = "localAxisAX",
-				localAxisAY = "localAxisAY",
-				lowerTranslation = "lowerTranslation",
-				maxMotorForce = "maxMotorForce",
-				motorSpeed = "motorSpeed",
-				referenceAngle = "referenceAngle",
-				upperTranslation = "upperTranslation",
-				groundAnchorAX = "groundAnchorAX",
-				groundAnchorAY = "groundAnchorAY",
-				groundAnchorBX = "groundAnchorBX",
-				groundAnchorBY = "groundAnchorBY",
-				lengthA = "lengthA",
-				lengthB = "lengthB",
-				lowerAngle = "lowerAngle",
-				maxMotorTorque = "maxMotorTorque",
-				upperAngle = "upperAngle",
-				maxLength = "maxLength",
-				object = "object",
-				unitScale = "unitScale";
+		public String type = "type", bodyType = "bodyType", dynamicBody = "DynamicBody", kinematicBody = "KinematicBody", staticBody = "StaticBody", active = "active", allowSleep = "allowSleep", angle = "angle", angularDamping = "angularDamping", angularVelocity = "angularVelocity", awake = "awake", bullet = "bullet", fixedRotation = "fixedRotation", gravityunitScale = "gravityunitScale", linearDamping = "linearDamping", linearVelocityX = "linearVelocityX", linearVelocityY = "linearVelocityY", density = "density", categoryBits = "categoryBits", groupIndex = "groupIndex", maskBits = "maskBits", friciton = "friction", isSensor = "isSensor", restitution = "restitution", body = "body", fixture = "fixture", joint = "joint", jointType = "jointType", distanceJoint = "DistanceJoint", frictionJoint = "FrictionJoint", gearJoint = "GearJoint", mouseJoint = "MouseJoint", prismaticJoint = "PrismaticJoint", pulleyJoint = "PulleyJoint", revoluteJoint = "RevoluteJoint", ropeJoint = "RopeJoint", weldJoint = "WeldJoint", wheelJoint = "WheelJoint", bodyA = "bodyA", bodyB = "bodyB", collideConnected = "collideConnected", dampingRatio = "dampingRatio", frequencyHz = "frequencyHz", length = "length", localAnchorAX = "localAnchorAX", localAnchorAY = "localAnchorAY", localAnchorBX = "localAnchorBX", localAnchorBY = "localAnchorBY", maxForce = "maxForce", maxTorque = "maxTorque", joint1 = "joint1", joint2 = "joint2", ratio = "ratio", targetX = "targetX", targetY = "targetY", enableLimit = "enableLimit", enableMotor = "enableMotor", localAxisAX = "localAxisAX", localAxisAY = "localAxisAY", lowerTranslation = "lowerTranslation", maxMotorForce = "maxMotorForce", motorSpeed = "motorSpeed", referenceAngle = "referenceAngle", upperTranslation = "upperTranslation", groundAnchorAX = "groundAnchorAX", groundAnchorAY = "groundAnchorAY", groundAnchorBX = "groundAnchorBX", groundAnchorBY = "groundAnchorBY", lengthA = "lengthA", lengthB = "lengthB", lowerAngle = "lowerAngle", maxMotorTorque = "maxMotorTorque", upperAngle = "upperAngle", maxLength = "maxLength", object = "object", unitScale = "unitScale";
 	}
 
 }
