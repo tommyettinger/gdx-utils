@@ -259,6 +259,11 @@ public abstract class GeometryUtils {
 		return true;
 	}
 
+	/** @see #toIsometricGridPoint(Vector2, float, float) */
+	public static Vector2 toIsometricGridPoint(float x, float y, float cellWidth, float cellHeight) {
+		return new Vector2(x = (x /= cellWidth) - ((y = (y - cellHeight / 2) / cellHeight + x) - x), y);
+	}
+	
 	/**
 	 * converts point to its coordinates on an isometric grid
 	 * @param point the point to convert
