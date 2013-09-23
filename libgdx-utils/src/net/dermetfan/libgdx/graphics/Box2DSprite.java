@@ -53,7 +53,10 @@ public class Box2DSprite extends Sprite {
 	/** if the origin of this {@link Box2DSprite} should be used when it's drawn (false by default) */
 	private boolean useOriginX, useOriginY;
 
-	/** a user data object replacing the user data that this {@link Box2DSprite} replaces if it's set as user data */
+	/**
+	 * a user data object replacing the user data that this {@link Box2DSprite} replaces if it's set as user data
+	 * @deprecated Estimated unnecessary. If you use this and its removal would be a problem for you, please <a href="http://dermetfan.bplaced.net/aboutme.php">message</a> me.
+	 */
 	private Object userData;
 
 	/** @see Sprite#Sprite() */
