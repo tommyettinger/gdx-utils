@@ -9,7 +9,7 @@ import com.badlogic.gdx.utils.Array;
 public class CutsceneManager {
 
 	/** the currently active {@link Cutscene Cutscenes} */
-	private Array<Cutscene> cutscenes = new Array<Cutscene>();
+	private final Array<Cutscene> cutscenes = new Array<Cutscene>();
 
 	/** adds a {@link Cutscene} to the {@link #cutscenes} so it will be {@link #update(float) updated} and calls {@link Cutscene#init() init()} on it*/
 	public void start(Cutscene cutscene) {
@@ -33,11 +33,6 @@ public class CutsceneManager {
 	/** @return the {@link #cutscenes} */
 	public Array<Cutscene> getCutscenes() {
 		return cutscenes;
-	}
-
-	/** @param cutscenes the {@link #cutscenes} to set */
-	public void setCutscenes(Array<Cutscene> cutscenes) {
-		this.cutscenes = cutscenes;
 	}
 
 	public static interface Cutscene {
