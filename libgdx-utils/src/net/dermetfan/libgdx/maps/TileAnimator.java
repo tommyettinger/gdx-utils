@@ -16,6 +16,9 @@
 
 package net.dermetfan.libgdx.maps;
 
+import static net.dermetfan.libgdx.maps.MapUtils.getProperty;
+import static net.dermetfan.libgdx.maps.MapUtils.toTiledMapTileArray;
+
 import java.util.Comparator;
 
 import com.badlogic.gdx.maps.MapProperties;
@@ -66,39 +69,42 @@ public abstract class TileAnimator {
 	/**
 	 * animates the tiles that have the animationKey in the target layer
 	 * @param tiles the tiles to create {@link AnimatedTiledMapTile animated tiles} from
-	 * @param target the target {@link TiledMapTileLayer layer}
+	 * @param layer the target {@link TiledMapTileLayer layer}
 	 * @param animationKey the key used to tell if a tile is a frame
 	 * @param intervalKey the key used to get the animation interval (duration each frame is displayed)
 	 * @param orderedKey the key used to tell if the frames of an animation should be ordered
 	 * @param frameKey the key used to get the frame number of a frame tile in its animation
 	 */
-	public static void animateTiles(TiledMapTile[] tiles, TiledMapTileLayer target, String animationKey, String intervalKey, String orderedKey, String frameKey) {
+	public static void animateLayer(TiledMapTile[] tiles, TiledMapTileLayer layer, String animationKey, String intervalKey, String orderedKey, String frameKey) {
 		ObjectMap<String, Array<StaticTiledMapTile>> animations = filterFrames(tiles, animationKey);
 		sortFrames(animations, orderedKey, frameKey);
-		animateTiles(animations, target, animationKey, intervalKey);
+		animateTiles(animations, layer, animationKey, intervalKey);
+	}
+
+	/** @see #animateLayer(TiledMapTile[], TiledMapTileLayer, String, String, String, String) */
+	public static void animateLayer(TiledMapTileSet tiles, TiledMapTileLayer target, String animationKey, String intervalKey, String orderedKey, String frameKey) {
+		animateLayer(toTiledMapTileArray(tiles), target, animationKey, intervalKey, orderedKey, frameKey);
 	}
 
 	/**
 	 * animates the {@link TiledMapTileLayer target layer} using the given animations
 	 * @param animations the animations to use
-	 * @param target the {@link TiledMapTileLayer} to target
+	 * @param layer the {@link TiledMapTileLayer} to target
 	 * @param animationKey the key used to tell if a tile is a frame
 	 * @param intervalKey the key used to get the animation interval (duration each frame is displayed)
 	 */
-	public static void animateTiles(ObjectMap<String, Array<StaticTiledMapTile>> animations, TiledMapTileLayer target, String animationKey, String intervalKey) {
+	public static void animateTiles(ObjectMap<String, Array<StaticTiledMapTile>> animations, TiledMapTileLayer layer, String animationKey, String intervalKey) {
 		TiledMapTile tile;
 		MapProperties tileProperties;
 
 		Cell cell;
-		for(int x = 0; x < target.getWidth(); x++)
-			for(int y = 0; y < target.getHeight(); y++)
-				if((cell = target.getCell(x, y)) != null && (tile = cell.getTile()) != null && (tileProperties = tile.getProperties()).containsKey(animationKey))
-					cell.setTile(new AnimatedTiledMapTile(MapUtils.getProperty(tileProperties, intervalKey, 1 / 3f), animations.get(tileProperties.get(animationKey, String.class))));
-	}
-
-	/** @see #animateTiles(TiledMapTile[], TiledMapTileLayer, String, String, String, String) */
-	public static void animateTiles(TiledMapTileSet tiles, TiledMapTileLayer target, String animationKey, String intervalKey, String orderedKey, String frameKey) {
-		animateTiles(MapUtils.toTiledMapTileArray(tiles), target, animationKey, intervalKey, orderedKey, frameKey);
+		for (int x = 0; x < layer.getWidth(); x++)
+			for (int y = 0; y < layer.getHeight(); y++)
+				if ((cell = layer.getCell(x, y)) != null && (tile = cell.getTile()) != null && (tileProperties = tile.getProperties()).containsKey(animationKey)) {
+					AnimatedTiledMapTile animatedTile = new AnimatedTiledMapTile(getProperty(tileProperties, intervalKey, 1 / 3f), animations.get(tileProperties.get(animationKey, String.class)));
+					animatedTile.getProperties().putAll(tile.getProperties());
+					cell.setTile(animatedTile);
+				}
 	}
 
 	/**
@@ -113,19 +119,20 @@ public abstract class TileAnimator {
 		MapProperties tileProperties;
 		String animationName;
 
-		for(TiledMapTile tile : tiles) {
-			if(!(tile instanceof StaticTiledMapTile))
+		for (TiledMapTile tile : tiles) {
+			if (!(tile instanceof StaticTiledMapTile))
 				continue;
 
 			tileProperties = tile.getProperties();
 
-			if(tileProperties.containsKey(animationKey)) {
+			if (tileProperties.containsKey(animationKey)) {
 				animationName = tileProperties.get(animationKey, String.class);
-				if(!animations.containsKey(animationName))
+				if (!animations.containsKey(animationName))
 					animations.put(animationName, new Array<StaticTiledMapTile>(3));
 				animations.get(animationName).add((StaticTiledMapTile) tile);
 			}
-		};
+		}
+		;
 
 		return animations;
 	}
@@ -141,10 +148,10 @@ public abstract class TileAnimator {
 	public static ObjectMap<String, Array<StaticTiledMapTile>> sortFrames(ObjectMap<String, Array<StaticTiledMapTile>> animations, String orderedKey, String frameKey) {
 		Entry<String, Array<StaticTiledMapTile>> entry;
 		Entries<String, Array<StaticTiledMapTile>> entries = animations.entries();
-		while(entries.hasNext) {
+		while (entries.hasNext) {
 			entry = entries.next();
-			for(StaticTiledMapTile entryTile : entry.value)
-				if(entryTile.getProperties().containsKey(orderedKey)) {
+			for (StaticTiledMapTile entryTile : entry.value)
+				if (entryTile.getProperties().containsKey(orderedKey)) {
 					sortFrames(entry.value, frameKey);
 					break;
 				}
@@ -162,7 +169,7 @@ public abstract class TileAnimator {
 
 			@Override
 			public int compare(StaticTiledMapTile tile1, StaticTiledMapTile tile2) {
-				int tile1Frame = MapUtils.getProperty(tile1.getProperties(), frameKey, -1), tile2Frame = MapUtils.getProperty(tile2.getProperties(), frameKey, -1);
+				int tile1Frame = getProperty(tile1.getProperties(), frameKey, -1), tile2Frame = getProperty(tile2.getProperties(), frameKey, -1);
 				return tile1Frame < tile2Frame ? -1 : tile1Frame > tile2Frame ? 1 : 0;
 			}
 
