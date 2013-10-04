@@ -14,11 +14,9 @@
  * limitations under the License.
  */
 
-package net.dermetfan.libgdx.math;
+package net.dermetfan.util.math;
 
 import java.util.Random;
-
-import com.badlogic.gdx.math.MathUtils;
 
 /**
  * provides noise algorithms
@@ -44,7 +42,7 @@ public abstract class Noise {
 	 */
 	public static float[] midpointDisplacement(float[] values, float range, float smoothness) {
 		for(int i = 0; i < values.length; i++, range /= smoothness)
-			values[i] = (values[(i - 1 + values.length) % values.length] + values[(i + 1) % values.length]) / 2 + (random.nextFloat() * range * 2 - range);
+			values[i] = (values[(i - 1 + values.length) % values.length] + values[(i + 1) % values.length]) / 2 + random(-range, range);
 		return values;
 	}
 
@@ -66,7 +64,7 @@ public abstract class Noise {
 
 		for(x = 0; x < width; x += power)
 			for(y = 0; y < height; y += power)
-				map[x][y] = initializeRandomly ? MathUtils.random(range * 2) : init;
+				map[x][y] = initializeRandomly ? random(-range, range) : init;
 
 		for(step = power / 2; step > 0; step /= 2, range /= smoothness) {
 			sx = false;
@@ -75,16 +73,16 @@ public abstract class Noise {
 				for(y = 0; y < height; y += step, sy = !sy)
 					if(sx || sy)
 						if(sx && sy)
-							map[x][y] = (map[x - step][y - step] + map[x + step][y - step] + map[x - step][y + step] + map[x + step][y + step]) / 4 + MathUtils.random(-range, range);
+							map[x][y] = (map[x - step][y - step] + map[x + step][y - step] + map[x - step][y + step] + map[x + step][y + step]) / 4 + random(-range, range);
 						else if(sx)
-							map[x][y] = (map[x - step][y] + map[x + step][y]) / 2 + MathUtils.random(-range, range);
+							map[x][y] = (map[x - step][y] + map[x + step][y]) / 2 + random(-range, range);
 						else
-							map[x][y] = (map[x][y - step] + map[x][y + step]) / 2 + MathUtils.random(-range, range);
+							map[x][y] = (map[x][y - step] + map[x][y + step]) / 2 + random(-range, range);
 			}
 		}
 		return map;
 	}
-	
+
 	/**
 	 * generates a height map using the diamond-square algorithm
 	 * @param n level of detail
@@ -105,18 +103,18 @@ public abstract class Noise {
 		// seed the grid
 		for(x = 0; x < width; x += power)
 			for(y = 0; y < height; y += power)
-				map[x][y] = initializeRandomly ? random.nextFloat() * range * 2 - range : init;
+				map[x][y] = initializeRandomly ? random(-range, range) : init;
 
 		for(power /= 2; power > 0; power /= 2, range /= smoothness) {
 			// square step
 			for(x = power; x < width; x += power * 2)
 				for(y = power; y < height; y += power * 2)
-					map[x][y] = (map[x - power][y - power] + map[x - power][y + power] + map[x + power][y + power] + map[x + power][y - power]) / 4 + (random.nextFloat() * range * 2 - range);
+					map[x][y] = (map[x - power][y - power] + map[x - power][y + power] + map[x + power][y + power] + map[x + power][y - power]) / 4 + random(-range, range);
 
 			// diamond step
 			for(x = 0; x < width - (wrapX ? 1 : 0); x += power)
 				for(y = power * (1 - x / power % 2); y < height - (wrapY ? 1 : 0); y += power * 2) {
-					map[x][y] = (avg = (map[(x - power + width - 1) % (width - 1)][y] + map[(x + power) % (width - 1)][y] + map[x][(y - power + height - 1) % (height - 1)] + map[x][(y + power) % (height - 1)]) / 4) + (random.nextFloat() * range * 2 - range);
+					map[x][y] = (avg = (map[(x - power + width - 1) % (width - 1)][y] + map[(x + power) % (width - 1)][y] + map[x][(y - power + height - 1) % (height - 1)] + map[x][(y + power) % (height - 1)]) / 4) + random(-range, range);
 
 					if(wrapX && x == 0)
 						map[width - 1][y] = avg;
@@ -126,6 +124,10 @@ public abstract class Noise {
 		}
 
 		return map;
+	}
+
+	public static float random(float start, float end) {
+		return start + random.nextFloat() * (end - start);
 	}
 
 	/** @param seedEnabled if {@link #seed} should be used */

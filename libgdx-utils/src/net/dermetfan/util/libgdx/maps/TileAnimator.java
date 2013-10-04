@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-package net.dermetfan.libgdx.maps;
+package net.dermetfan.util.libgdx.maps;
 
-import static net.dermetfan.libgdx.maps.MapUtils.getProperty;
-import static net.dermetfan.libgdx.maps.MapUtils.toTiledMapTileArray;
+import static net.dermetfan.util.libgdx.maps.MapUtils.getProperty;
+import static net.dermetfan.util.libgdx.maps.MapUtils.toTiledMapTileArray;
 
 import java.util.Comparator;
 
@@ -78,7 +78,7 @@ public abstract class TileAnimator {
 	public static void animateLayer(TiledMapTile[] tiles, TiledMapTileLayer layer, String animationKey, String orderedKey, String frameKey, String intervalKey, float defaultInterval) {
 		ObjectMap<String, Array<StaticTiledMapTile>> animations = filterFrames(tiles, animationKey);
 		sortFrames(animations, orderedKey, frameKey);
-		animateTiles(animations, layer, animationKey, intervalKey, defaultInterval);
+		animateLayer(animations, layer, animationKey, intervalKey, defaultInterval);
 	}
 
 	/** @see #animateLayer(TiledMapTile[], TiledMapTileLayer, String, String, String, String) */
@@ -89,12 +89,12 @@ public abstract class TileAnimator {
 	/**
 	 * animates the {@link TiledMapTileLayer target layer} using the given animations
 	 * @param animations the animations to use
-	 * @param layer the {@link TiledMapTileLayer} to target
+	 * @param layer the {@link TiledMapTileLayer} which tiles to animate
 	 * @param animationKey the key used to tell if a tile is a frame
 	 * @param intervalKey The key used to get the animation interval (duration each frame is displayed). If not found, 1 / 3f will be used as duration.
 	 * @param defaultInterval the interval used if no value is found for the intervalKey
 	 */
-	public static void animateTiles(ObjectMap<String, Array<StaticTiledMapTile>> animations, TiledMapTileLayer layer, String animationKey, String intervalKey, float defaultInterval) {
+	public static void animateLayer(ObjectMap<String, Array<StaticTiledMapTile>> animations, TiledMapTileLayer layer, String animationKey, String intervalKey, float defaultInterval) {
 		TiledMapTile tile;
 		MapProperties tileProperties;
 

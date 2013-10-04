@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package net.dermetfan.libgdx.graphics;
+package net.dermetfan.util.libgdx.graphics;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Graphics;
@@ -24,13 +24,13 @@ import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 
 /**
- * An {@link AnimatedSprite} holds an {@link Animation} and sets the {@link Texture} of its super type {@link Sprite} to the correct one according to the information in the {@link Animation}.
+ * An {@link AnimatedSprite} holds an {@link Animation} and sets the {@link Texture} of its super type {@link Sprite} to the correct one according to the information in the {@link Animation}.<br/>
  * Usage:
- * <pre>Animation animation = new Animation(1 / 3f, new TextureRegion(frame1), new TextureRegion(frame2), new TextureRegion(frame3));
+ * <code><pre>Animation animation = new Animation(1 / 3f, new TextureRegion(frame1), new TextureRegion(frame2), new TextureRegion(frame3));
 animation.setPlayMode(Animation.LOOP);
-animatedSprite = new AnimatedSprite(animation);</pre>
- * Draw it using any of the {@link Sprite Sprite's} draw methods:
-<pre>animatedSprite.draw(batch);</pre> 
+animatedSprite = new AnimatedSprite(animation);</pre></code>
+ * Draw it using any of the {@link Sprite Sprite's} draw methods:<br/>
+<code>animatedSprite.draw(batch);</code> 
  * 
  * @author dermetfan
  */
