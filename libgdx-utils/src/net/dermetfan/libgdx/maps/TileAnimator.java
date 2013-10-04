@@ -75,15 +75,15 @@ public abstract class TileAnimator {
 	 * @param orderedKey the key used to tell if the frames of an animation should be ordered
 	 * @param frameKey the key used to get the frame number of a frame tile in its animation
 	 */
-	public static void animateLayer(TiledMapTile[] tiles, TiledMapTileLayer layer, String animationKey, String intervalKey, String orderedKey, String frameKey) {
+	public static void animateLayer(TiledMapTile[] tiles, TiledMapTileLayer layer, String animationKey, String orderedKey, String frameKey, String intervalKey, float defaultInterval) {
 		ObjectMap<String, Array<StaticTiledMapTile>> animations = filterFrames(tiles, animationKey);
 		sortFrames(animations, orderedKey, frameKey);
-		animateTiles(animations, layer, animationKey, intervalKey, 1 / 3f);
+		animateTiles(animations, layer, animationKey, intervalKey, defaultInterval);
 	}
 
 	/** @see #animateLayer(TiledMapTile[], TiledMapTileLayer, String, String, String, String) */
-	public static void animateLayer(TiledMapTileSet tiles, TiledMapTileLayer target, String animationKey, String intervalKey, String orderedKey, String frameKey) {
-		animateLayer(toTiledMapTileArray(tiles), target, animationKey, intervalKey, orderedKey, frameKey);
+	public static void animateLayer(TiledMapTileSet tiles, TiledMapTileLayer target, String animationKey, String orderedKey, String frameKey, String intervalKey, float defaultInterval) {
+		animateLayer(toTiledMapTileArray(tiles), target, animationKey, orderedKey, frameKey, intervalKey, defaultInterval);
 	}
 
 	/**
