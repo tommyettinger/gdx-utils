@@ -78,7 +78,7 @@ public abstract class TileAnimator {
 	public static void animateLayer(TiledMapTile[] tiles, TiledMapTileLayer layer, String animationKey, String intervalKey, String orderedKey, String frameKey) {
 		ObjectMap<String, Array<StaticTiledMapTile>> animations = filterFrames(tiles, animationKey);
 		sortFrames(animations, orderedKey, frameKey);
-		animateTiles(animations, layer, animationKey, intervalKey);
+		animateTiles(animations, layer, animationKey, intervalKey, 1 / 3f);
 	}
 
 	/** @see #animateLayer(TiledMapTile[], TiledMapTileLayer, String, String, String, String) */
@@ -91,17 +91,18 @@ public abstract class TileAnimator {
 	 * @param animations the animations to use
 	 * @param layer the {@link TiledMapTileLayer} to target
 	 * @param animationKey the key used to tell if a tile is a frame
-	 * @param intervalKey the key used to get the animation interval (duration each frame is displayed)
+	 * @param intervalKey The key used to get the animation interval (duration each frame is displayed). If not found, 1 / 3f will be used as duration.
+	 * @param defaultInterval the interval used if no value is found for the intervalKey
 	 */
-	public static void animateTiles(ObjectMap<String, Array<StaticTiledMapTile>> animations, TiledMapTileLayer layer, String animationKey, String intervalKey) {
+	public static void animateTiles(ObjectMap<String, Array<StaticTiledMapTile>> animations, TiledMapTileLayer layer, String animationKey, String intervalKey, float defaultInterval) {
 		TiledMapTile tile;
 		MapProperties tileProperties;
 
 		Cell cell;
-		for (int x = 0; x < layer.getWidth(); x++)
-			for (int y = 0; y < layer.getHeight(); y++)
-				if ((cell = layer.getCell(x, y)) != null && (tile = cell.getTile()) != null && (tileProperties = tile.getProperties()).containsKey(animationKey)) {
-					AnimatedTiledMapTile animatedTile = new AnimatedTiledMapTile(getProperty(tileProperties, intervalKey, 1 / 3f), animations.get(tileProperties.get(animationKey, String.class)));
+		for(int x = 0; x < layer.getWidth(); x++)
+			for(int y = 0; y < layer.getHeight(); y++)
+				if((cell = layer.getCell(x, y)) != null && (tile = cell.getTile()) != null && (tileProperties = tile.getProperties()).containsKey(animationKey)) {
+					AnimatedTiledMapTile animatedTile = new AnimatedTiledMapTile(getProperty(tileProperties, intervalKey, defaultInterval), animations.get(tileProperties.get(animationKey, String.class)));
 					animatedTile.getProperties().putAll(tile.getProperties());
 					cell.setTile(animatedTile);
 				}
@@ -111,7 +112,7 @@ public abstract class TileAnimator {
 	 * filters the tiles that are frames
 	 * @param tiles all tiles
 	 * @param animationKey the key used to tell if a tile is a frame
-	 * @return an array of tiles that are frames
+	 * @return an {@link ObjectMap} which values are tiles that are frames and which keys are their animation names
 	 */
 	public static ObjectMap<String, Array<StaticTiledMapTile>> filterFrames(TiledMapTile[] tiles, String animationKey) {
 		ObjectMap<String, Array<StaticTiledMapTile>> animations = new ObjectMap<String, Array<StaticTiledMapTile>>();
@@ -119,20 +120,19 @@ public abstract class TileAnimator {
 		MapProperties tileProperties;
 		String animationName;
 
-		for (TiledMapTile tile : tiles) {
-			if (!(tile instanceof StaticTiledMapTile))
+		for(TiledMapTile tile : tiles) {
+			if(!(tile instanceof StaticTiledMapTile))
 				continue;
 
 			tileProperties = tile.getProperties();
 
-			if (tileProperties.containsKey(animationKey)) {
+			if(tileProperties.containsKey(animationKey)) {
 				animationName = tileProperties.get(animationKey, String.class);
-				if (!animations.containsKey(animationName))
+				if(!animations.containsKey(animationName))
 					animations.put(animationName, new Array<StaticTiledMapTile>(3));
 				animations.get(animationName).add((StaticTiledMapTile) tile);
 			}
 		}
-		;
 
 		return animations;
 	}
@@ -148,10 +148,10 @@ public abstract class TileAnimator {
 	public static ObjectMap<String, Array<StaticTiledMapTile>> sortFrames(ObjectMap<String, Array<StaticTiledMapTile>> animations, String orderedKey, String frameKey) {
 		Entry<String, Array<StaticTiledMapTile>> entry;
 		Entries<String, Array<StaticTiledMapTile>> entries = animations.entries();
-		while (entries.hasNext) {
+		while(entries.hasNext) {
 			entry = entries.next();
-			for (StaticTiledMapTile entryTile : entry.value)
-				if (entryTile.getProperties().containsKey(orderedKey)) {
+			for(StaticTiledMapTile entryTile : entry.value)
+				if(entryTile.getProperties().containsKey(orderedKey)) {
 					sortFrames(entry.value, frameKey);
 					break;
 				}
