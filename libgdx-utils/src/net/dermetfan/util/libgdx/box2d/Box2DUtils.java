@@ -14,15 +14,15 @@
  * limitations under the License.
  */
 
-package net.dermetfan.libgdx.box2d;
+package net.dermetfan.util.libgdx.box2d;
 
 import static com.badlogic.gdx.math.MathUtils.cos;
 import static com.badlogic.gdx.math.MathUtils.sin;
-import static net.dermetfan.libgdx.math.GeometryUtils.amplitude;
-import static net.dermetfan.libgdx.math.GeometryUtils.filterX;
-import static net.dermetfan.libgdx.math.GeometryUtils.filterY;
-import static net.dermetfan.libgdx.math.GeometryUtils.max;
-import static net.dermetfan.libgdx.math.GeometryUtils.min;
+import static net.dermetfan.util.libgdx.math.GeometryUtils.filterX;
+import static net.dermetfan.util.libgdx.math.GeometryUtils.filterY;
+import static net.dermetfan.util.math.MathUtils.amplitude;
+import static net.dermetfan.util.math.MathUtils.max;
+import static net.dermetfan.util.math.MathUtils.min;
 
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Body;
@@ -154,11 +154,10 @@ public abstract class Box2DUtils {
 			case Circle:
 				CircleShape circleShape = (CircleShape) shape;
 
-				output = new Vector2[] {
-						new Vector2(circleShape.getPosition().x - circleShape.getRadius(), circleShape.getPosition().y + circleShape.getRadius()), // top left
-						new Vector2(circleShape.getPosition().x - circleShape.getRadius(), circleShape.getPosition().y - circleShape.getRadius()), // bottom left
-						new Vector2(circleShape.getPosition().x + circleShape.getRadius(), circleShape.getPosition().y - circleShape.getRadius()), // bottom right
-						new Vector2(circleShape.getPosition().x + circleShape.getRadius(), circleShape.getPosition().y + circleShape.getRadius()) // top right
+				output = new Vector2[] {new Vector2(circleShape.getPosition().x - circleShape.getRadius(), circleShape.getPosition().y + circleShape.getRadius()), // top left
+				new Vector2(circleShape.getPosition().x - circleShape.getRadius(), circleShape.getPosition().y - circleShape.getRadius()), // bottom left
+				new Vector2(circleShape.getPosition().x + circleShape.getRadius(), circleShape.getPosition().y - circleShape.getRadius()), // bottom right
+				new Vector2(circleShape.getPosition().x + circleShape.getRadius(), circleShape.getPosition().y + circleShape.getRadius()) // top right
 				};
 				break;
 			default:

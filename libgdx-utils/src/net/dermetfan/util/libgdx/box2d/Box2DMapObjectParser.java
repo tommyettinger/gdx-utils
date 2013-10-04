@@ -14,18 +14,18 @@
  * limitations under the License.
  */
 
-package net.dermetfan.libgdx.box2d;
+package net.dermetfan.util.libgdx.box2d;
 
-import static net.dermetfan.libgdx.math.GeometryUtils.areVerticesClockwise;
-import static net.dermetfan.libgdx.math.GeometryUtils.isConvex;
-import static net.dermetfan.libgdx.math.GeometryUtils.toFloatArray;
-import static net.dermetfan.libgdx.math.GeometryUtils.toPolygonArray;
-import static net.dermetfan.libgdx.math.GeometryUtils.toVector2Array;
-import static net.dermetfan.libgdx.maps.MapUtils.getProperty;
+import static net.dermetfan.util.libgdx.maps.MapUtils.getProperty;
+import static net.dermetfan.util.libgdx.math.GeometryUtils.areVerticesClockwise;
+import static net.dermetfan.util.libgdx.math.GeometryUtils.isConvex;
+import static net.dermetfan.util.libgdx.math.GeometryUtils.toFloatArray;
+import static net.dermetfan.util.libgdx.math.GeometryUtils.toPolygonArray;
+import static net.dermetfan.util.libgdx.math.GeometryUtils.toVector2Array;
 
 import java.util.Iterator;
 
-import net.dermetfan.libgdx.math.BayazitDecomposer;
+import net.dermetfan.util.libgdx.math.BayazitDecomposer;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.maps.Map;
@@ -196,7 +196,7 @@ public class Box2DMapObjectParser {
 		for(MapObject object : layer.getObjects()) {
 			if(!ignoreMapUnitScale)
 				unitScale = getProperty(layer.getProperties(), aliases.unitScale, unitScale);
-			if(object.getProperties().get("type", "", String.class).equals(aliases.object)) {
+			if(getProperty(object.getProperties(), aliases.type, "").equals(aliases.object)) {
 				createBody(world, object);
 				createFixtures(object);
 			}
@@ -205,21 +205,21 @@ public class Box2DMapObjectParser {
 		for(MapObject object : layer.getObjects()) {
 			if(!ignoreMapUnitScale)
 				unitScale = getProperty(layer.getProperties(), aliases.unitScale, unitScale);
-			if(object.getProperties().get("type", "", String.class).equals(aliases.body))
+			if(getProperty(object.getProperties(), aliases.type, "").equals(aliases.body))
 				createBody(world, object);
 		}
 
 		for(MapObject object : layer.getObjects()) {
 			if(!ignoreMapUnitScale)
 				unitScale = getProperty(layer.getProperties(), aliases.unitScale, unitScale);
-			if(object.getProperties().get("type", "", String.class).equals(aliases.fixture))
+			if(getProperty(object.getProperties(), aliases.type, "").equals(aliases.fixture))
 				createFixtures(object);
 		}
 
 		for(MapObject object : layer.getObjects()) {
 			if(!ignoreMapUnitScale)
 				unitScale = getProperty(layer.getProperties(), aliases.unitScale, unitScale);
-			if(object.getProperties().get("type", "", String.class).equals(aliases.joint))
+			if(getProperty(object.getProperties(), aliases.type, "").equals(aliases.joint))
 				createJoint(object);
 		}
 
@@ -235,12 +235,12 @@ public class Box2DMapObjectParser {
 	public Body createBody(World world, MapObject mapObject) {
 		MapProperties properties = mapObject.getProperties();
 
-		String type = properties.get("type", String.class);
+		String type = getProperty(properties, aliases.type, "");
 		if(!type.equals(aliases.body) && !type.equals(aliases.object))
-			throw new IllegalArgumentException("type of " + mapObject + " is  \"" + type + "\" instead of \"" + aliases.body + "\" or \"" + aliases.object + "\"");
+			throw new IllegalArgumentException(aliases.type + " of " + mapObject + " is  \"" + type + "\" instead of \"" + aliases.body + "\" or \"" + aliases.object + "\"");
 
 		BodyDef bodyDef = new BodyDef();
-		bodyDef.type = properties.get(aliases.bodyType, String.class) != null ? properties.get(aliases.bodyType, String.class).equals(aliases.dynamicBody) ? BodyType.DynamicBody : properties.get(aliases.bodyType, String.class).equals(aliases.kinematicBody) ? BodyType.KinematicBody : properties.get(aliases.bodyType, String.class).equals(aliases.staticBody) ? BodyType.StaticBody : bodyDef.type : bodyDef.type;
+		bodyDef.type = getProperty(properties, aliases.bodyType, aliases.staticBody).equals(aliases.staticBody) ? BodyType.StaticBody : getProperty(properties, aliases.bodyType, aliases.dynamicBody).equals(aliases.dynamicBody) ? BodyType.DynamicBody : getProperty(properties, aliases.bodyType, aliases.kinematicBody).equals(aliases.kinematicBody) ? BodyType.KinematicBody : bodyDef.type;
 		bodyDef.active = getProperty(properties, aliases.active, bodyDef.active);
 		bodyDef.allowSleep = getProperty(properties, aliases.allowSleep, bodyDef.allowSleep);
 		bodyDef.angle = getProperty(properties, aliases.angle, bodyDef.angle);
@@ -277,12 +277,12 @@ public class Box2DMapObjectParser {
 	public Fixture createFixture(MapObject mapObject) {
 		MapProperties properties = mapObject.getProperties();
 
-		String type = properties.get("type", String.class);
+		String type = getProperty(properties, aliases.type, "");
 
-		Body body = bodies.get(type.equals(aliases.object) ? mapObject.getName() : properties.get(aliases.body, String.class));
+		Body body = bodies.get(type.equals(aliases.object) ? mapObject.getName() : getProperty(properties, aliases.body, ""));
 
 		if(!type.equals(aliases.fixture) && !type.equals(aliases.object))
-			throw new IllegalArgumentException("type of " + mapObject + " is  \"" + type + "\" instead of \"" + aliases.fixture + "\" or \"" + aliases.object + "\"");
+			throw new IllegalArgumentException(aliases.type + " of " + mapObject + " is  \"" + type + "\" instead of \"" + aliases.fixture + "\" or \"" + aliases.object + "\"");
 
 		FixtureDef fixtureDef = new FixtureDef();
 		Shape shape = null;
@@ -421,11 +421,11 @@ public class Box2DMapObjectParser {
 
 		JointDef jointDef = null;
 
-		String type = properties.get("type", String.class);
+		String type = getProperty(properties, aliases.type, "");
 		if(!type.equals(aliases.joint))
-			throw new IllegalArgumentException("type of " + mapObject + " is  \"" + type + "\" instead of \"" + aliases.joint + "\"");
+			throw new IllegalArgumentException(aliases.type + " of " + mapObject + " is  \"" + type + "\" instead of \"" + aliases.joint + "\"");
 
-		String jointType = properties.get(aliases.jointType, String.class);
+		String jointType = getProperty(properties, aliases.jointType, "");
 
 		// get all possible values
 		if(jointType.equals(aliases.distanceJoint)) {
@@ -447,8 +447,8 @@ public class Box2DMapObjectParser {
 			jointDef = frictionJointDef;
 		} else if(jointType.equals(aliases.gearJoint)) {
 			GearJointDef gearJointDef = new GearJointDef();
-			gearJointDef.joint1 = joints.get(properties.get(aliases.joint1, String.class));
-			gearJointDef.joint2 = joints.get(properties.get(aliases.joint2, String.class));
+			gearJointDef.joint1 = joints.get(getProperty(properties, aliases.joint1, ""));
+			gearJointDef.joint2 = joints.get(getProperty(properties, aliases.joint2, ""));
 			gearJointDef.ratio = getProperty(properties, aliases.ratio, gearJointDef.ratio);
 
 			jointDef = gearJointDef;
@@ -526,8 +526,8 @@ public class Box2DMapObjectParser {
 			jointDef = wheelJointDef;
 		}
 
-		jointDef.bodyA = bodies.get(properties.get(aliases.bodyA, String.class));
-		jointDef.bodyB = bodies.get(properties.get(aliases.bodyB, String.class));
+		jointDef.bodyA = bodies.get(getProperty(properties, aliases.bodyA, ""));
+		jointDef.bodyB = bodies.get(getProperty(properties, aliases.bodyB, ""));
 		jointDef.collideConnected = getProperty(properties, aliases.collideConnected, jointDef.collideConnected);
 
 		Joint joint = jointDef.bodyA.getWorld().createJoint(jointDef);
@@ -662,82 +662,7 @@ public class Box2DMapObjectParser {
 	public static class Aliases {
 
 		/** the aliases */
-		public String type = "type",
-					  bodyType = "bodyType",
-					  dynamicBody = "DynamicBody",
-					  kinematicBody = "KinematicBody",
-					  staticBody = "StaticBody",
-					  active = "active",
-					  allowSleep = "allowSleep",
-					  angle = "angle",
-					  angularDamping = "angularDamping",
-					  angularVelocity = "angularVelocity",
-					  awake = "awake",
-					  bullet = "bullet",
-					  fixedRotation = "fixedRotation",
-					  gravityunitScale = "gravityunitScale",
-					  linearDamping = "linearDamping",
-					  linearVelocityX = "linearVelocityX",
-					  linearVelocityY = "linearVelocityY",
-					  density = "density",
-					  categoryBits = "categoryBits",
-					  groupIndex = "groupIndex",
-					  maskBits = "maskBits",
-					  friciton = "friction",
-					  isSensor = "isSensor",
-					  restitution = "restitution",
-					  body = "body",
-					  fixture = "fixture",
-					  joint = "joint",
-					  jointType = "jointType",
-					  distanceJoint = "DistanceJoint",
-					  frictionJoint = "FrictionJoint",
-					  gearJoint = "GearJoint",
-					  mouseJoint = "MouseJoint",
-					  prismaticJoint = "PrismaticJoint",
-					  pulleyJoint = "PulleyJoint",
-					  revoluteJoint = "RevoluteJoint",
-					  ropeJoint = "RopeJoint",
-					  weldJoint = "WeldJoint",
-					  wheelJoint = "WheelJoint",
-					  bodyA = "bodyA",
-					  bodyB = "bodyB",
-					  collideConnected = "collideConnected",
-					  dampingRatio = "dampingRatio",
-					  frequencyHz = "frequencyHz",
-					  length = "length",
-					  localAnchorAX = "localAnchorAX",
-					  localAnchorAY = "localAnchorAY",
-					  localAnchorBX = "localAnchorBX",
-					  localAnchorBY = "localAnchorBY",
-					  maxForce = "maxForce",
-					  maxTorque = "maxTorque",
-					  joint1 = "joint1",
-					  joint2 = "joint2",
-					  ratio = "ratio",
-					  targetX = "targetX",
-					  targetY = "targetY",
-					  enableLimit = "enableLimit",
-					  enableMotor = "enableMotor",
-					  localAxisAX = "localAxisAX",
-					  localAxisAY = "localAxisAY",
-					  lowerTranslation = "lowerTranslation",
-					  maxMotorForce = "maxMotorForce",
-					  motorSpeed = "motorSpeed",
-					  referenceAngle = "referenceAngle",
-					  upperTranslation = "upperTranslation",
-					  groundAnchorAX = "groundAnchorAX",
-					  groundAnchorAY = "groundAnchorAY",
-					  groundAnchorBX = "groundAnchorBX",
-					  groundAnchorBY = "groundAnchorBY",
-					  lengthA = "lengthA",
-					  lengthB = "lengthB",
-					  lowerAngle = "lowerAngle",
-					  maxMotorTorque = "maxMotorTorque",
-					  upperAngle = "upperAngle",
-					  maxLength = "maxLength",
-					  object = "object",
-					  unitScale = "unitScale";
+		public String type = "type", bodyType = "bodyType", dynamicBody = "DynamicBody", kinematicBody = "KinematicBody", staticBody = "StaticBody", active = "active", allowSleep = "allowSleep", angle = "angle", angularDamping = "angularDamping", angularVelocity = "angularVelocity", awake = "awake", bullet = "bullet", fixedRotation = "fixedRotation", gravityunitScale = "gravityunitScale", linearDamping = "linearDamping", linearVelocityX = "linearVelocityX", linearVelocityY = "linearVelocityY", density = "density", categoryBits = "categoryBits", groupIndex = "groupIndex", maskBits = "maskBits", friciton = "friction", isSensor = "isSensor", restitution = "restitution", body = "body", fixture = "fixture", joint = "joint", jointType = "jointType", distanceJoint = "DistanceJoint", frictionJoint = "FrictionJoint", gearJoint = "GearJoint", mouseJoint = "MouseJoint", prismaticJoint = "PrismaticJoint", pulleyJoint = "PulleyJoint", revoluteJoint = "RevoluteJoint", ropeJoint = "RopeJoint", weldJoint = "WeldJoint", wheelJoint = "WheelJoint", bodyA = "bodyA", bodyB = "bodyB", collideConnected = "collideConnected", dampingRatio = "dampingRatio", frequencyHz = "frequencyHz", length = "length", localAnchorAX = "localAnchorAX", localAnchorAY = "localAnchorAY", localAnchorBX = "localAnchorBX", localAnchorBY = "localAnchorBY", maxForce = "maxForce", maxTorque = "maxTorque", joint1 = "joint1", joint2 = "joint2", ratio = "ratio", targetX = "targetX", targetY = "targetY", enableLimit = "enableLimit", enableMotor = "enableMotor", localAxisAX = "localAxisAX", localAxisAY = "localAxisAY", lowerTranslation = "lowerTranslation", maxMotorForce = "maxMotorForce", motorSpeed = "motorSpeed", referenceAngle = "referenceAngle", upperTranslation = "upperTranslation", groundAnchorAX = "groundAnchorAX", groundAnchorAY = "groundAnchorAY", groundAnchorBX = "groundAnchorBX", groundAnchorBY = "groundAnchorBY", lengthA = "lengthA", lengthB = "lengthB", lowerAngle = "lowerAngle", maxMotorTorque = "maxMotorTorque", upperAngle = "upperAngle", maxLength = "maxLength", object = "object", unitScale = "unitScale";
 	}
 
 }

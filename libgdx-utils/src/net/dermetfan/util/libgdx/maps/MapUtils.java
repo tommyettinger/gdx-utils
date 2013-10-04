@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package net.dermetfan.libgdx.maps;
+package net.dermetfan.util.libgdx.maps;
 
 import java.util.Iterator;
 
@@ -32,7 +32,7 @@ public abstract class MapUtils {
 	 * Makes sure the return value is of the desired type. If the value of the property is not of the desired type, it will be parsed. 
 	 * @param properties the {@link MapProperties} to get the value from
 	 * @param key the key of the property
-	 * @param defaultValue the default value to return if the property has no or an empty value or if it couldn't be cast to the desired type in case the desired type is not especially supported 
+	 * @param defaultValue the value to return in case the value was null or an empty String or couldn't be returned 
 	 * @return the key's value as the type of defaultValue
 	 */
 	@SuppressWarnings("unchecked")

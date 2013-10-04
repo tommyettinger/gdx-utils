@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package net.dermetfan.libgdx.graphics;
+package net.dermetfan.util.libgdx.graphics;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Graphics;

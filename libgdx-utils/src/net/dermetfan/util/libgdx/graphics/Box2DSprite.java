@@ -14,15 +14,17 @@
  * limitations under the License.
  */
 
-package net.dermetfan.libgdx.graphics;
+package net.dermetfan.util.libgdx.graphics;
 
-import static net.dermetfan.libgdx.box2d.Box2DUtils.height;
-import static net.dermetfan.libgdx.box2d.Box2DUtils.minX;
-import static net.dermetfan.libgdx.box2d.Box2DUtils.minY;
-import static net.dermetfan.libgdx.box2d.Box2DUtils.position;
-import static net.dermetfan.libgdx.box2d.Box2DUtils.width;
+import static net.dermetfan.util.libgdx.box2d.Box2DUtils.height;
+import static net.dermetfan.util.libgdx.box2d.Box2DUtils.minX;
+import static net.dermetfan.util.libgdx.box2d.Box2DUtils.minY;
+import static net.dermetfan.util.libgdx.box2d.Box2DUtils.position;
+import static net.dermetfan.util.libgdx.box2d.Box2DUtils.width;
 
 import java.util.Comparator;
+
+import net.dermetfan.util.Accessor;
 
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Sprite;
@@ -53,10 +55,9 @@ public class Box2DSprite extends Sprite {
 	/** if the origin of this {@link Box2DSprite} should be used when it's drawn (false by default) */
 	private boolean useOriginX, useOriginY;
 
-	/**
-	 * a user data object replacing the user data that this {@link Box2DSprite} replaces if it's set as user data
-	 * @deprecated Estimated unnecessary. If you use this and its removal would be a problem for you, please <a href="http://dermetfan.bplaced.net/aboutme.php">message</a> me.
-	 */
+	/** a user data object replacing the user data that this {@link Box2DSprite} replaces if it's set as user data
+	 *  @deprecated Estimated unnecessary. If you use this and its removal would be a problem for you, please <a href="http://dermetfan.bplaced.net/aboutme.php">message</a> me. */
+	@Deprecated
 	private Object userData;
 
 	/** @see Sprite#Sprite() */
@@ -94,6 +95,17 @@ public class Box2DSprite extends Sprite {
 		super(sprite);
 	}
 
+	/** the {@link Accessor} used to get a {@link Box2DSprite} from the user data of a body or fixture */
+	private static Accessor userDataAccessor = new Accessor() {
+
+		@SuppressWarnings("unchecked")
+		@Override
+		public Box2DSprite access(Object userData) {
+			return userData instanceof Box2DSprite ? (Box2DSprite) userData : null;
+		}
+
+	};
+
 	/** a {@link Comparator} used to sort {@link Box2DSprite Box2DSprites} by their {@link Box2DSprite#z z index} in {@link #draw(SpriteBatch, World)} */
 	private static Comparator<Box2DSprite> zComparator = new Comparator<Box2DSprite>() {
 
@@ -105,10 +117,13 @@ public class Box2DSprite extends Sprite {
 	};
 
 	/** a temporary map to store the bodies / fixtures which user data Box2DSprites are in in {@link #draw(SpriteBatch, World, boolean)}*/
-	private static ObjectMap<Box2DSprite, Object> tmpZMap = new ObjectMap<Box2DSprite, Object>(0);
+	private static final ObjectMap<Box2DSprite, Object> tmpZMap = new ObjectMap<Box2DSprite, Object>(0);
 
-	/** temporary variable used in {@link #draw(SpriteBatch, World)} */
-	private static Array<Body> tmpBodies = new Array<Body>(0);
+	/** temporary variable used in {@link #draw(SpriteBatch, World, boolean)} */
+	private static final Array<Body> tmpBodies = new Array<Body>(0);
+
+	/** temporary variable used in {@link #draw(SpriteBatch, World, boolean)} */
+	private static Box2DSprite tmpBox2DSprite;
 
 	/** @see #draw(SpriteBatch, World, boolean) */
 	public static void draw(SpriteBatch batch, World world) {
@@ -119,35 +134,37 @@ public class Box2DSprite extends Sprite {
 	public static void draw(SpriteBatch batch, World world, boolean sortByZ) {
 		world.getBodies(tmpBodies);
 
-		if(sortByZ) {
+		if(!sortByZ) {
 			for(Body body : tmpBodies) {
-				if(body.getUserData() instanceof Box2DSprite)
-					tmpZMap.put((Box2DSprite) body.getUserData(), body);
+				if((tmpBox2DSprite = userDataAccessor.access(body.getUserData())) != null)
+					tmpBox2DSprite.draw(batch, body);
 				for(Fixture fixture : body.getFixtureList())
-					if(fixture.getUserData() instanceof Box2DSprite)
-						tmpZMap.put((Box2DSprite) fixture.getUserData(), fixture);
+					if((tmpBox2DSprite = userDataAccessor.access(fixture.getUserData())) != null)
+						tmpBox2DSprite.draw(batch, fixture);
 			}
-
-			Array<Box2DSprite> keys = tmpZMap.keys().toArray();
-			keys.sort(zComparator);
-
-			for(Box2DSprite key : keys) {
-				Object value = tmpZMap.get(key);
-				if(value instanceof Body)
-					key.draw(batch, (Body) value);
-				else
-					key.draw(batch, (Fixture) value);
-			}
-			tmpZMap.clear();
-		} else {
-			for(Body body : tmpBodies) {
-				if(body.getUserData() instanceof Box2DSprite)
-					((Box2DSprite) body.getUserData()).draw(batch, body);
-				for(Fixture fixture : body.getFixtureList())
-					if(fixture.getUserData() instanceof Box2DSprite)
-						((Box2DSprite) fixture.getUserData()).draw(batch, fixture);
-			}
+			return;
 		}
+
+		for(Body body : tmpBodies) {
+			if((tmpBox2DSprite = userDataAccessor.access(body.getUserData())) != null)
+				tmpZMap.put(tmpBox2DSprite, body);
+			for(Fixture fixture : body.getFixtureList())
+				if((tmpBox2DSprite = userDataAccessor.access(fixture.getUserData())) != null)
+					tmpZMap.put(tmpBox2DSprite, fixture);
+		}
+
+		Array<Box2DSprite> keys = tmpZMap.keys().toArray();
+		keys.sort(zComparator);
+
+		Object value;
+		for(Box2DSprite key : keys) {
+			value = tmpZMap.get(key);
+			if(value instanceof Body)
+				key.draw(batch, (Body) value);
+			else
+				key.draw(batch, (Fixture) value);
+		}
+		tmpZMap.clear();
 	}
 
 	/** cached position {@link Vector2} used in {@link #draw(SpriteBatch, Fixture)} for performance */
@@ -183,52 +200,52 @@ public class Box2DSprite extends Sprite {
 		this.z = z;
 	}
 
-	/** @return if the width should be adjusted to those of the {@link Fixture} this {@link Box2DSprite} is attached to */
+	/** @return the {@link #adjustWidth} */
 	public boolean isAdjustWidth() {
 		return adjustWidth;
 	}
 
-	/** @param adjustWidth if the width should be adjusted to that of the {@link Body} or {@link Fixture} this {@link Box2DSprite} is attached to */
+	/** @param adjustWidth the {@link #adjustWidth} to set */
 	public void setAdjustWidth(boolean adjustWidth) {
 		this.adjustWidth = adjustWidth;
 	}
 
-	/** @return if the height should be adjusted to that of the {@link Body} or {@link Fixture} this {@link Box2DSprite} is attached to */
+	/** @return the {@link #isAdjustHeight()} */
 	public boolean isAdjustHeight() {
 		return adjustHeight;
 	}
 
-	/** @param adjustHeight if the height should be adjusted to that of the {@link Body} or {@link Fixture} this {@link Box2DSprite} is attached to */
+	/** @param adjustHeight the {@link #adjustHeight} to set */
 	public void setAdjustHeight(boolean adjustHeight) {
 		this.adjustHeight = adjustHeight;
 	}
 
-	/** @param adjustSize {@link #adjustWidth} and {@link #adjustHeight} will be set to this */
+	/** @param adjustSize the {@link #adjustWidth} and {@link #adjustHeight} to set */
 	public void setAdjustSize(boolean adjustSize) {
 		adjustWidth = adjustHeight = adjustSize;
 	}
 
-	/** @return the if the x origin of this {@link Box2DSprite} should be used when it's being drawn */
+	/** @return the {@link #useOriginX} */
 	public boolean isUseOriginX() {
 		return useOriginX;
 	}
 
-	/** @param useOriginX if the x origin of this {@link Box2DSprite} should be used when it's being drawn */
+	/** @param useOriginX the {@link #useOriginX} to set */
 	public void setUseOriginX(boolean useOriginX) {
 		this.useOriginX = useOriginX;
 	}
 
-	/** @return if the y origin of this {@link Box2DSprite} should be used when it's being drawn */
+	/** @return the {@link #useOriginY} */
 	public boolean isUseOriginY() {
 		return useOriginY;
 	}
 
-	/** @param useOriginY if the y origin of this {@link Box2DSprite} should be used when it's being drawn */
+	/** @param useOriginY the {@link #useOriginY} to set */
 	public void setUseOriginY(boolean useOriginY) {
 		this.useOriginY = useOriginY;
 	}
 
-	/** @param useOrigin {@link #useOriginX} and {@link #useOriginY} will be set to this */
+	/** @param useOrigin the {@link #useOriginX} and {@link #useOriginY} to set */
 	public void setUseOrigin(boolean useOrigin) {
 		useOriginX = useOriginY = useOrigin;
 	}
@@ -243,12 +260,16 @@ public class Box2DSprite extends Sprite {
 		setSize(getWidth(), height);
 	}
 
-	/** @return the userData */
+	/** @return the {@link #userData}
+	 *  @deprecated */
+	@Deprecated
 	public Object getUserData() {
 		return userData;
 	}
 
-	/** @param userData the userData to set */
+	/** @param userData the {@link #userData} to set
+	 *  @deprecated */
+	@Deprecated
 	public void setUserData(Object userData) {
 		this.userData = userData;
 	}
@@ -260,7 +281,21 @@ public class Box2DSprite extends Sprite {
 
 	/** @param zComparator the {@link #zComparator} to set */
 	public static void setZComparator(Comparator<Box2DSprite> zComparator) {
+		if(zComparator == null)
+			throw new IllegalArgumentException("zComparator must not be null");
 		Box2DSprite.zComparator = zComparator;
+	}
+
+	/** @return the {@link #userDataAccessor} */
+	public static Accessor getUserDataAccessor() {
+		return userDataAccessor;
+	}
+
+	/** @param userDataAccessor the {@link #userDataAccessor} to set */
+	public static void setUserDataAccessor(Accessor userDataAccessor) {
+		if(userDataAccessor == null)
+			throw new IllegalArgumentException("userDataAccessor must not be null");
+		Box2DSprite.userDataAccessor = userDataAccessor;
 	}
 
 }

@@ -14,7 +14,9 @@
  * limitations under the License.
  */
 
-package net.dermetfan.libgdx.math;
+package net.dermetfan.util.libgdx.math;
+
+import static net.dermetfan.util.math.MathUtils.amplitude;
 
 import com.badlogic.gdx.math.Polygon;
 import com.badlogic.gdx.math.Vector2;
@@ -46,27 +48,6 @@ public abstract class GeometryUtils {
 		return size(vertices, tmpVec);
 	}
 
-	/** @return the peak-to-peak amplitude of the given array */
-	public static float amplitude(float[] f) {
-		return Math.abs(max(f) - min(f));
-	}
-
-	/** @return the largest element of the given array */
-	public static float max(float[] floats) {
-		float max = Float.NEGATIVE_INFINITY;
-		for(float f : floats)
-			max = f > max ? f : max;
-		return max;
-	}
-
-	/** @return the smallest element of the given array */
-	public static float min(float[] floats) {
-		float min = Float.POSITIVE_INFINITY;
-		for(float f : floats)
-			min = f < min ? f : min;
-		return min;
-	}
-
 	/** @return the x values of the given vertices */
 	public static float[] filterX(Vector2[] vertices, float[] output) {
 		output = new float[vertices.length];
@@ -91,25 +72,6 @@ public abstract class GeometryUtils {
 	/** @see #filterY(Vector2[], float[]) */
 	public static float[] filterY(Vector2[] vertices) {
 		return filterY(vertices, tmpFloatArr);
-	}
-
-	/**
-	 * scales the given float array to have the given min and max values
-	 * @param values the values to scale
-	 * @param min the desired minimal value in the array
-	 * @param max the desired maximal value in the array
-	 * @return the rescaled array
-	 */
-	public static float[] scale(float[] values, float min, float max) {
-		float tmp = amplitude(values) / (max - min);
-		for(int i = 0; i < values.length; i++)
-			values[i] /= tmp;
-
-		tmp = min - min(values);
-		for(int i = 0; i < values.length; i++)
-			values[i] += tmp;
-
-		return values;
 	}
 
 	/**
@@ -186,25 +148,6 @@ public abstract class GeometryUtils {
 		return polygons;
 	}
 
-	/** @see Polygon#area() */
-	public static float area(float[] vertices) {
-		// from com.badlogic.gdx.math.Polygon#area()
-		float area = 0;
-
-		int x1, y1, x2, y2;
-		for(int i = 0; i < vertices.length; i += 2) {
-			x1 = i;
-			y1 = i + 1;
-			x2 = (i + 2) % vertices.length;
-			y2 = (i + 3) % vertices.length;
-
-			area += vertices[x1] * vertices[y2];
-			area -= vertices[x2] * vertices[y1];
-		}
-
-		return area /= 2;
-	}
-
 	/**
 	 * @param polygon the polygon, assumed to be simple
 	 * @return if the vertices are in clockwise order 
@@ -228,6 +171,25 @@ public abstract class GeometryUtils {
 	/** @see #isConvex(Vector2[]) */
 	public static boolean isConvex(Polygon polygon) {
 		return isConvex(polygon.getVertices());
+	}
+
+	/** @return the area of the polygon */
+	public static float area(float[] vertices) {
+		// from com.badlogic.gdx.math.Polygon#area()
+		float area = 0;
+
+		int x1, y1, x2, y2;
+		for(int i = 0; i < vertices.length; i += 2) {
+			x1 = i;
+			y1 = i + 1;
+			x2 = (i + 2) % vertices.length;
+			y2 = (i + 3) % vertices.length;
+
+			area += vertices[x1] * vertices[y2];
+			area -= vertices[x2] * vertices[y1];
+		}
+
+		return area /= 2;
 	}
 
 	/**

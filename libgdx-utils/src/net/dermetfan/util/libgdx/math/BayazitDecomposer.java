@@ -1,7 +1,7 @@
-package net.dermetfan.libgdx.math;
+package net.dermetfan.util.libgdx.math;
 
-import static net.dermetfan.libgdx.math.GeometryUtils.areVerticesClockwise;
-import static net.dermetfan.libgdx.math.GeometryUtils.toFloatArray;
+import static net.dermetfan.util.libgdx.math.GeometryUtils.areVerticesClockwise;
+import static net.dermetfan.util.libgdx.math.GeometryUtils.toFloatArray;
 
 import java.security.InvalidParameterException;
 
@@ -55,7 +55,7 @@ public abstract class BayazitDecomposer {
 		Vector2 upperInt = new Vector2(); // intersection points
 		int lowerIndex = 0, upperIndex = 0;
 		Array<Vector2> lowerPoly, upperPoly;
-		for(int i = 0; i < vertices.size; ++i) {
+		for(int i = 0; i < vertices.size; ++i)
 			if(reflex(i, vertices)) {
 				lowerDist = upperDist = Float.MAX_VALUE; // std::numeric_limits<qreal>::max();
 				for(int j = 0; j < vertices.size; ++j) {
@@ -98,10 +98,9 @@ public abstract class BayazitDecomposer {
 					double highestScore = 0, bestIndex = lowerIndex;
 					while(upperIndex < lowerIndex)
 						upperIndex += vertices.size;
-					for(int j = lowerIndex; j <= upperIndex; ++j) {
+					for(int j = lowerIndex; j <= upperIndex; ++j)
 						if(canSee(i, j, vertices)) {
-							double score = 1 / (squareDist(at(i, vertices),
-									at(j, vertices)) + 1);
+							double score = 1 / (squareDist(at(i, vertices), at(j, vertices)) + 1);
 							if(reflex(j, vertices)) {
 								if(rightOn(at(j - 1, vertices), at(j, vertices), at(i, vertices)) && leftOn(at(j + 1, vertices), at(j, vertices), at(i, vertices)))
 									score += 3;
@@ -114,7 +113,6 @@ public abstract class BayazitDecomposer {
 								highestScore = score;
 							}
 						}
-					}
 					lowerPoly = copy(i, (int) bestIndex, vertices);
 					upperPoly = copy((int) bestIndex, i, vertices);
 				}
@@ -122,7 +120,6 @@ public abstract class BayazitDecomposer {
 				list.addAll(convexPartition(upperPoly));
 				return list;
 			}
-		}
 		// polygon is already convex
 		if(vertices.size > maxPolygonVertices) {
 			lowerPoly = copy(0, vertices.size / 2, vertices);
@@ -147,17 +144,13 @@ public abstract class BayazitDecomposer {
 		if(reflex(i, vertices)) {
 			if(leftOn(at(i, vertices), at(i - 1, vertices), at(j, vertices)) && rightOn(at(i, vertices), at(i + 1, vertices), at(j, vertices)))
 				return false;
-		} else {
-			if(rightOn(at(i, vertices), at(i + 1, vertices), at(j, vertices)) || leftOn(at(i, vertices), at(i - 1, vertices), at(j, vertices)))
-				return false;
-		}
+		} else if(rightOn(at(i, vertices), at(i + 1, vertices), at(j, vertices)) || leftOn(at(i, vertices), at(i - 1, vertices), at(j, vertices)))
+			return false;
 		if(reflex(j, vertices)) {
 			if(leftOn(at(j, vertices), at(j - 1, vertices), at(i, vertices)) && rightOn(at(j, vertices), at(j + 1, vertices), at(i, vertices)))
 				return false;
-		} else {
-			if(rightOn(at(j, vertices), at(j + 1, vertices), at(i, vertices)) || leftOn(at(j, vertices), at(j - 1, vertices), at(i, vertices)))
-				return false;
-		}
+		} else if(rightOn(at(j, vertices), at(j + 1, vertices), at(i, vertices)) || leftOn(at(j, vertices), at(j - 1, vertices), at(i, vertices)))
+			return false;
 		for(int k = 0; k < vertices.size; ++k) {
 			if((k + 1) % vertices.size == i || k == i || (k + 1) % vertices.size == j || k == j)
 				continue; // ignore incident edges
@@ -241,7 +234,7 @@ public abstract class BayazitDecomposer {
 				// segment 2
 				// means the line segments intersect, since we know it is on
 				// segment 1 as well.
-				if(!secondIsSegment || ub >= 0.0f && ub <= 1.0f) {
+				if(!secondIsSegment || ub >= 0.0f && ub <= 1.0f)
 					// check if they are coincident (no collision in this case)
 					if(ua != 0f || ub != 0f) {
 						// There is an intersection
@@ -249,7 +242,6 @@ public abstract class BayazitDecomposer {
 						point.y = point1.y + ua * d;
 						return true;
 					}
-				}
 			}
 		}
 		return false;
@@ -405,8 +397,7 @@ public abstract class BayazitDecomposer {
 			 * r>1 Point is on the forward extension of AB 0<r<1 Point is interior
 			 * to AB
 			 */
-			double r = ((p.x - A.x) * (B.x - A.x) + (p.y - A.y) * (B.y - A.y))
-					/ ((B.x - A.x) * (B.x - A.x) + (B.y - A.y) * (B.y - A.y));
+			double r = ((p.x - A.x) * (B.x - A.x) + (p.y - A.y) * (B.y - A.y)) / ((B.x - A.x) * (B.x - A.x) + (B.y - A.y) * (B.y - A.y));
 			if(r <= 0.0)
 				return distancePointPoint(p, A);
 			if(r >= 1.0)
@@ -415,11 +406,8 @@ public abstract class BayazitDecomposer {
 			 * (2) (Ay-Cy)(Bx-Ax)-(Ax-Cx)(By-Ay) s = -----------------------------
 			 * Curve^2 Then the distance from C to Point = |s|*Curve.
 			 */
-			double s = ((A.y - p.y) * (B.x - A.x) - (A.x - p.x) * (B.y - A.y))
-					/ ((B.x - A.x) * (B.x - A.x) + (B.y - A.y) * (B.y - A.y));
-			return Math.abs(s)
-					* Math.sqrt((B.x - A.x) * (B.x - A.x) + (B.y - A.y)
-							* (B.y - A.y));
+			double s = ((A.y - p.y) * (B.x - A.x) - (A.x - p.x) * (B.y - A.y)) / ((B.x - A.x) * (B.x - A.x) + (B.y - A.y) * (B.y - A.y));
+			return Math.abs(s) * Math.sqrt((B.x - A.x) * (B.x - A.x) + (B.y - A.y) * (B.y - A.y));
 		}
 
 		// From physics2d.net

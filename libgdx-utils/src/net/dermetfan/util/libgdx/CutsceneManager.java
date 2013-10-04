@@ -1,4 +1,4 @@
-package net.dermetfan.libgdx;
+package net.dermetfan.util.libgdx;
 
 import com.badlogic.gdx.utils.Array;
 
