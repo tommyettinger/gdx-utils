@@ -81,7 +81,7 @@ public abstract class TileAnimator {
 		animateLayer(animations, layer, animationKey, intervalKey, defaultInterval);
 	}
 
-	/** @see #animateLayer(TiledMapTile[], TiledMapTileLayer, String, String, String, String) */
+	/** @see #animateLayer(TiledMapTile[], TiledMapTileLayer, String, String, String, String, float) */
 	public static void animateLayer(TiledMapTileSet tiles, TiledMapTileLayer target, String animationKey, String orderedKey, String frameKey, String intervalKey, float defaultInterval) {
 		animateLayer(toTiledMapTileArray(tiles), target, animationKey, orderedKey, frameKey, intervalKey, defaultInterval);
 	}
