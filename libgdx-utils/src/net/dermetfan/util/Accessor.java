@@ -1,8 +1,11 @@
 package net.dermetfan.util;
 
-/** a generic accessor */
+/** a generic accessor
+ *  @author dermetfan */
 public interface Accessor {
 
-	public <T> T access(Object object);
+	/** @param object the O to access
+	 *  @return the accessed T from O */
+	public <T, O> T access(O object);
 
 }
