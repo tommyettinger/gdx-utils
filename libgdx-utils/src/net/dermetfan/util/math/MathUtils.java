@@ -3,6 +3,14 @@ package net.dermetfan.util.math;
 /** math utility methods */
 public class MathUtils {
 
+	/** @return the sum of all values in the given array */
+	public static float sum(float[] values) {
+		float sum = 0;
+		for(float v : values)
+			sum += v;
+		return sum;
+	}
+
 	/** @return the peak-to-peak amplitude of the given array */
 	public static float amplitude(float[] f) {
 		return Math.abs(max(f) - min(f));

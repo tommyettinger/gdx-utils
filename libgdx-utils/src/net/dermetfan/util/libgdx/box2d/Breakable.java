@@ -1,6 +1,7 @@
 package net.dermetfan.util.libgdx.box2d;
 
 import net.dermetfan.util.Accessor;
+import net.dermetfan.util.math.MathUtils;
 
 import com.badlogic.gdx.physics.box2d.Contact;
 import com.badlogic.gdx.physics.box2d.ContactImpulse;
@@ -11,14 +12,15 @@ import com.badlogic.gdx.utils.Array;
 
 public class Breakable implements ContactListener {
 
-	/** the force needed to break */
-	private float force;
+	/** how much force the breakable can bear */
+	private float robustness;
 
-	public Breakable(float force) {
-		this.force = force;
+	/** creates a new Breakable with the given {@link #robustness} */
+	public Breakable(float robustness) {
+		this.robustness = robustness;
 	}
 
-	/** the {@link Accessor} used to access user data*/
+	/** The {@link Accessor} used to access user data. */
 	private static Accessor userDataAccessor = new Accessor() {
 
 		@SuppressWarnings("unchecked")
@@ -29,12 +31,13 @@ public class Breakable implements ContactListener {
 
 	};
 
-	private static Array<Fixture> brokenFixtures = new Array<Fixture>(0);
+	/** the fixtures that broke in the last timestep */
+	private static final Array<Fixture> brokenFixtures = new Array<Fixture>(0);
 
 	public static void update() {
 		for(Fixture fixture : brokenFixtures) {
 			brokenFixtures.removeValue(fixture, true);
-			fixture.getBody().destroyFixture(fixture); // TODO if body has no fixtures left, destroy it? is that wanted?
+			fixture.getBody().destroyFixture(fixture); // TODO if body has no fixtures left, destroy it? is that desired?
 		}
 	}
 
@@ -52,28 +55,29 @@ public class Breakable implements ContactListener {
 
 	@Override
 	public void postSolve(Contact contact, ContactImpulse impulse) {
-		// TODO break bodies
-		// TODO use actual impulse instead of tangent speed
-		if(userDataAccessor.access(contact.getFixtureA().getUserData()) != null) {
-			System.out.println("breakable in fixutre a user data");
-			if(contact.getTangentSpeed() >= force)
-				brokenFixtures.add(contact.getFixtureA());
-		}
-		if(userDataAccessor.access(contact.getFixtureB().getUserData()) != null) {
-			System.out.println("breakable in fixutre b user data");
-			if(contact.getTangentSpeed() >= force)
-				brokenFixtures.add(contact.getFixtureB());
-		}
+		// TODO break bodies as well
+
+		Fixture a = contact.getFixtureA(), b = contact.getFixtureB();
+		if(userDataAccessor.access(a.getUserData()) != null && MathUtils.sum(impulse.getNormalImpulses()) > robustness && !brokenFixtures.contains(a, true))
+			brokenFixtures.add(a);
+
+		if(userDataAccessor.access(b.getUserData()) != null && MathUtils.sum(impulse.getNormalImpulses()) > robustness && !brokenFixtures.contains(b, true))
+			brokenFixtures.add(b);
 	}
 
-	/** @return the {@link #force} */
-	public float getForce() {
-		return force;
+	/** @return the {@link #robustness} */
+	public float getRobustness() {
+		return robustness;
 	}
 
-	/** @param force the {@link #force} to set */
-	public void setForce(float force) {
-		this.force = force;
+	/** @param robustness the {@link #robustness} to set */
+	public void setRobustness(float robustness) {
+		this.robustness = robustness;
+	}
+
+	/** @return the {@link #brokenFixtures} */
+	public static Array<Fixture> getBrokenFixtures() {
+		return brokenFixtures;
 	}
 
 	/** @return the {@link #userDataAccessor} */
