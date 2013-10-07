@@ -141,4 +141,9 @@ public class MouseJointAdapter extends InputAdapter {
 		return joint;
 	}
 
+	/** @param joint the {@link #joint} to set */
+	public void setJoint(MouseJoint joint) {
+		this.joint = joint;
+	}
+
 }
