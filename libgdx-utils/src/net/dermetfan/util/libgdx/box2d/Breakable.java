@@ -1,3 +1,19 @@
+/**
+ * Copyright 2013 Robin Stumm (serverkorken@googlemail.com, http://dermetfan.bplaced.net)
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package net.dermetfan.util.libgdx.box2d;
 
 import net.dermetfan.util.Accessor;
@@ -11,12 +27,10 @@ import com.badlogic.gdx.physics.box2d.Fixture;
 import com.badlogic.gdx.physics.box2d.Manifold;
 import com.badlogic.gdx.utils.Array;
 
-/**
- * Breaks bodies or fixtures if they get hit too hard. Put in fixture's or body's user data and set {@link Notifier} as {@link ContactListener}.<br/>
- * Don't forget to call {@link #destroy()} after every time step.<br/>
- * You can manually destroy fixtures or bodies using the {@link #destroy(Fixture, boolean, boolean)} and {@link #destroy(Body)} methods.
- * @author dermetfan
- */
+/** Breaks bodies or fixtures if they get hit too hard. Put in fixture's or body's user data and set {@link Notifier} as {@link ContactListener}.<br/>
+ *  Don't forget to call {@link #destroy()} after every time step.<br/>
+ *  You can manually destroy fixtures or bodies using the {@link #destroy(Fixture, boolean, boolean)} and {@link #destroy(Body)} methods.
+ *  @author dermetfan */
 public class Breakable {
 
 	/** calls {@link Breakable#strain(Contact, ContactImpulse)} in {@link ContactListener#postSolve(Contact, ContactImpulse) postSolve} */
