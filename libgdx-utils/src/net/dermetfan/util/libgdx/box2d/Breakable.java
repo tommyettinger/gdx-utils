@@ -33,7 +33,7 @@ import com.badlogic.gdx.utils.Array;
  *  @author dermetfan */
 public class Breakable {
 
-	/** calls {@link Breakable#strain(Contact, ContactImpulse)} in {@link ContactListener#postSolve(Contact, ContactImpulse) postSolve} */
+	/** calls {@link Breakable#strain(Contact, ContactImpulse) strain} in {@link #postSolve(Contact, ContactImpulse) postSolve} */
 	public static class Notifier implements ContactListener {
 
 		@Override
@@ -55,6 +55,17 @@ public class Breakable {
 
 	}
 
+	/** a callback for a {@link Breakable} if its container (body was destroyed */
+	public static interface Callback {
+
+		/** called by {@link #destroyedBody(Body)} */
+		public void destroyedBody(Body body);
+
+		/** called by {@link #destroyedFixture(Fixture)} */
+		public void destroyedFixture(Fixture fixture);
+
+	}
+
 	/** how much force the Breakable can bear */
 	private float resistance;
 
@@ -63,6 +74,9 @@ public class Breakable {
 
 	/** if the fixture's body (in case the Breakable is used for a fixture) should be destroyed if the fixture is destroyed and it was the bodie's last one (true by default) */
 	private boolean breakBodyWithoutFixtures = true;
+
+	/** the {@link Callback} called when the {@link Breakable}'s container is destroyed */
+	private Callback callback;
 
 	/** the fixtures that broke in {@link #strain(Contact, ContactImpulse)} */
 	private static final Array<Fixture> brokenFixtures = new Array<Fixture>(0);
@@ -123,8 +137,13 @@ public class Breakable {
 	 *  @param breakBodyWithoutFixtures {@link #breakBodyWithoutFixtures}
 	 *  @param breakBody {@link #breakBody} */
 	public static void destroy(Fixture fixture, boolean breakBodyWithoutFixtures, boolean breakBody) {
-		if(!brokenFixtures.contains(fixture, true))
-			brokenFixtures.add(fixture);
+		if(brokenFixtures.contains(fixture, true))
+			return;
+
+		brokenFixtures.add(fixture);
+		Breakable breakable = userDataAccessor.access(fixture.getUserData());
+		if(breakable != null && breakable.callback != null)
+			breakable.callback.destroyedFixture(fixture);
 
 		Body body = fixture.getBody();
 		if(brokenBodies.contains(body, true))
@@ -143,8 +162,14 @@ public class Breakable {
 
 	/** @param body the {@link Body} to destroy */
 	public static void destroy(Body body) {
-		if(!brokenBodies.contains(body, true))
-			brokenBodies.add(body);
+		if(brokenBodies.contains(body, true))
+			return;
+
+		brokenBodies.add(body);
+
+		Breakable breakable = userDataAccessor.access(body.getUserData());
+		if(breakable != null && breakable.callback != null)
+			breakable.callback.destroyedBody(body);
 	}
 
 	/** @return the {@link #resistance} */
@@ -175,6 +200,16 @@ public class Breakable {
 	/** @param breakBodyWithoutFixtures the {@link #breakBodyWithoutFixtures} to set */
 	public void setBreakBodyWithoutFixtures(boolean breakBodyWithoutFixtures) {
 		this.breakBodyWithoutFixtures = breakBodyWithoutFixtures;
+	}
+
+	/** @return the {@link #callback} */
+	public Callback getCallback() {
+		return callback;
+	}
+
+	/** @param callback the {@link #callback} to set */
+	public void setCallback(Callback callback) {
+		this.callback = callback;
 	}
 
 	/** @return the {@link #brokenFixtures} */
