@@ -55,7 +55,7 @@ public class Breakable {
 
 	}
 
-	/** a callback for a {@link Breakable} if its container (body was destroyed */
+	/** a callback for a {@link Breakable} if its container (body or fixture) was destroyed (for example to play a sound) */
 	public static interface Callback {
 
 		/** called by {@link #destroyedBody(Body)} */
