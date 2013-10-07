@@ -95,9 +95,40 @@ public class Breakable {
 
 	};
 
-	/** creates a new Breakable with the given {@link #resistance} */
-	public Breakable(float robustness) {
-		resistance = robustness;
+	/** @see #Breakable(float, boolean) */
+	public Breakable(float resistance) {
+		this(resistance, false);
+	}
+
+	/** @see #Breakable(float, boolean, boolean) */
+	public Breakable(float resistance, boolean breakBody) {
+		this(resistance, breakBody, true);
+	}
+
+	/** @see #Breakable(float, boolean, boolean, Callback) */
+	public Breakable(float resistance, boolean breakBody, boolean breakBodyWithoutFixtures) {
+		this(resistance, breakBody, breakBodyWithoutFixtures, null);
+	}
+
+	/** @see #Breakable(float, boolean, boolean, Callback) */
+	public Breakable(float resistance, Callback callback) {
+		this(resistance, false, true, callback);
+	}
+
+	/** @see #Breakable(float, boolean, boolean, Callback) */
+	public Breakable(float resistance, boolean breakBody, Callback callback) {
+		this(resistance, breakBody, true, callback);
+	}
+
+	/** @param resistance the {@link #resistance}
+	 *  @param breakBody the {@link #breakBody}
+	 *  @param breakBodyWithoutFixtures the {@link #breakBodyWithoutFixtures}
+	 *  @param callback the {@link #callback} */
+	public Breakable(float resistance, boolean breakBody, boolean breakBodyWithoutFixtures, Callback callback) {
+		this.resistance = resistance;
+		this.breakBody = breakBody;
+		this.breakBodyWithoutFixtures = breakBodyWithoutFixtures;
+		this.callback = callback;
 	}
 
 	/** destroys all bodies in {@link #brokenBodies} and fixtures in {@link #brokenFixtures} */
