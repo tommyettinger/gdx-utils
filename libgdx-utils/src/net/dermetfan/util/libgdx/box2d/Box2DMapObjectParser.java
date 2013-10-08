@@ -269,13 +269,13 @@ public class Box2DMapObjectParser {
 			((PolygonShape) shape).setAsBox(width / 2, height / 2, tmp.set(x - body.getPosition().x + width / 2, y - body.getPosition().y + height / 2), body.getAngle());
 		} else if(mapObject instanceof PolygonMapObject) {
 			shape = new PolygonShape();
-			Polygon polygon = new Polygon(((PolygonMapObject) mapObject).getPolygon().getVertices());
+			Polygon polygon = new Polygon(((PolygonMapObject) mapObject).getPolygon().getTransformedVertices());
 			polygon.setPosition(polygon.getX() * unitScale - body.getPosition().x, polygon.getY() * unitScale - body.getPosition().y);
 			polygon.setScale(unitScale, unitScale);
 			((PolygonShape) shape).set(polygon.getTransformedVertices());
 		} else if(mapObject instanceof PolylineMapObject) {
 			shape = new ChainShape();
-			Polyline polyline = new Polyline(((PolylineMapObject) mapObject).getPolyline().getVertices());
+			Polyline polyline = new Polyline(((PolylineMapObject) mapObject).getPolyline().getTransformedVertices());
 			polyline.setPosition(polyline.getX() * unitScale - body.getPosition().x, polyline.getY() * unitScale - body.getPosition().y);
 			polyline.setScale(unitScale, unitScale);
 			((ChainShape) shape).createChain(polyline.getTransformedVertices());
