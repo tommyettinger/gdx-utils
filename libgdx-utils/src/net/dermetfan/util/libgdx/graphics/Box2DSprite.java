@@ -95,8 +95,8 @@ public class Box2DSprite extends Sprite {
 		super(sprite);
 	}
 
-	/** the {@link Accessor} used to get a {@link Box2DSprite} from the user data of a body or fixture */
-	private static Accessor userDataAccessor = new Accessor() {
+	/** the {@link #userDataAccessor} used by default */
+	public final static Accessor defaultUserDataAccessor = new Accessor() {
 
 		@SuppressWarnings("unchecked")
 		@Override
@@ -105,6 +105,9 @@ public class Box2DSprite extends Sprite {
 		}
 
 	};
+
+	/** the {@link Accessor} used to get a {@link Box2DSprite} from the user data of a body or fixture */
+	private static Accessor userDataAccessor = defaultUserDataAccessor;
 
 	/** a {@link Comparator} used to sort {@link Box2DSprite Box2DSprites} by their {@link Box2DSprite#z z index} in {@link #draw(SpriteBatch, World)} */
 	private static Comparator<Box2DSprite> zComparator = new Comparator<Box2DSprite>() {
