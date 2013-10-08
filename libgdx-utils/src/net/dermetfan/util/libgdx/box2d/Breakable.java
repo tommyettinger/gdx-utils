@@ -84,8 +84,8 @@ public class Breakable {
 	/** the bodies that broke in {@link #strain(Contact, ContactImpulse)} */
 	private static final Array<Body> brokenBodies = new Array<Body>(0);
 
-	/** the {@link Accessor} used to access user data */
-	private static Accessor userDataAccessor = new Accessor() {
+	/** the {@link #userDataAccessor} used by default */
+	public static final Accessor defaultUserDataAccessor = new Accessor() {
 
 		@SuppressWarnings("unchecked")
 		@Override
@@ -94,6 +94,9 @@ public class Breakable {
 		}
 
 	};
+
+	/** the {@link Accessor} used to access user data */
+	private static Accessor userDataAccessor = defaultUserDataAccessor;
 
 	/** @see #Breakable(float, boolean) */
 	public Breakable(float resistance) {
