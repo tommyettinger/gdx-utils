@@ -96,7 +96,6 @@ public class MouseJointAdapter extends InputAdapter {
 
 		camera.unproject(tmp.set(screenX, screenY, 0));
 		joint.setTarget(tmp2.set(tmp.x, tmp.y));
-		System.out.println(joint.getMaxForce());
 
 		return true;
 	}
