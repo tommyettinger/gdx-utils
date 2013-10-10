@@ -75,8 +75,13 @@ public class MouseJointAdapter extends InputAdapter {
 				if(fixture.testPoint(tmp.x, tmp.y)) {
 					jointDef.bodyB = body;
 					jointDef.target.set(tmp.x, tmp.y);
-					if(adaptMaxForceToBodyMass)
+					if(adaptMaxForceToBodyMass) {
+						float maxForce = jointDef.maxForce;
 						jointDef.maxForce *= body.getMass();
+						joint = (MouseJoint) world.createJoint(jointDef);
+						jointDef.maxForce = maxForce;
+						return true;
+					}
 					joint = (MouseJoint) world.createJoint(jointDef);
 					return true;
 				}
@@ -91,6 +96,7 @@ public class MouseJointAdapter extends InputAdapter {
 
 		camera.unproject(tmp.set(screenX, screenY, 0));
 		joint.setTarget(tmp2.set(tmp.x, tmp.y));
+		System.out.println(joint.getMaxForce());
 
 		return true;
 	}
