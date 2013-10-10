@@ -21,6 +21,8 @@ import java.util.Iterator;
 import com.badlogic.gdx.maps.MapProperties;
 import com.badlogic.gdx.maps.tiled.TiledMapTile;
 import com.badlogic.gdx.maps.tiled.TiledMapTileSet;
+import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.math.Vector3;
 
 /**
  * provides useful methods when dealing with maps
@@ -77,6 +79,29 @@ public abstract class MapUtils {
 			tileArray[++i] = tileIterator.next();
 
 		return tileArray;
+	}
+
+	/** @see #toIsometricGridPoint(Vector2, float, float) */
+	public static Vector2 toIsometricGridPoint(float x, float y, float cellWidth, float cellHeight) {
+		return toIsometricGridPoint(new Vector2(x, y), cellWidth, cellHeight);
+	}
+
+	/**
+	 * converts point to its coordinates on an isometric grid
+	 * @param point the point to convert
+	 * @param cellWidth the width of the grid cells
+	 * @param cellHeight the height of the grid cells
+	 * @return the given point converted to its coordinates on an isometric grid
+	 */
+	public static Vector2 toIsometricGridPoint(Vector2 point, float cellWidth, float cellHeight) {
+		point.x = (point.x /= cellWidth) - ((point.y = (point.y - cellHeight / 2) / cellHeight + point.x) - point.x);
+		return point;
+	}
+
+	/** @see #toIsometricGridPoint(Vector2, float, float) */
+	public static Vector3 toIsometricGridPoint(Vector3 point, float cellWidth, float cellHeight) {
+		point.x = (point.x /= cellWidth) - ((point.y = (point.y - cellHeight / 2) / cellHeight + point.x) - point.x);
+		return point;
 	}
 
 }
