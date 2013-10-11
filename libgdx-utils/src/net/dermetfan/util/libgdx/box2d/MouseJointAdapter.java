@@ -23,10 +23,9 @@ import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.Fixture;
 import com.badlogic.gdx.physics.box2d.JointDef;
-import com.badlogic.gdx.physics.box2d.World;
+import com.badlogic.gdx.physics.box2d.QueryCallback;
 import com.badlogic.gdx.physics.box2d.joints.MouseJoint;
 import com.badlogic.gdx.physics.box2d.joints.MouseJointDef;
-import com.badlogic.gdx.utils.Array;
 
 /** an {@link InputAdapter} managing a {@link MouseJoint}
  *  @author dermetfan */
@@ -50,8 +49,28 @@ public class MouseJointAdapter extends InputAdapter {
 	/** a temporary variable */
 	private final Vector2 tmp2 = new Vector2();
 
-	/** a temporary variable */
-	private final Array<Body> tmpBodies = new Array<Body>();
+	/** used to instantiate {@link #joint} in {@link #touchDown(int, int, int, int)} */
+	private final QueryCallback queryCallback = new QueryCallback() {
+
+		@Override
+		public boolean reportFixture(Fixture fixture) {
+			if(!fixture.testPoint(tmp2))
+				return false;
+
+			jointDef.bodyB = fixture.getBody();
+			jointDef.target.set(tmp2);
+			if(adaptMaxForceToBodyMass) {
+				float maxForce = jointDef.maxForce;
+				jointDef.maxForce *= fixture.getBody().getMass();
+				joint = (MouseJoint) jointDef.bodyA.getWorld().createJoint(jointDef);
+				jointDef.maxForce = maxForce;
+				return false;
+			}
+			joint = (MouseJoint) jointDef.bodyA.getWorld().createJoint(jointDef);
+			return false;
+		}
+
+	};
 
 	/** constructs a {@link MouseJointAdapter} using the given {@link MouseJointDef}
 	 *  @param jointDef The {@link MouseJointDef} to use. <strong>Note that its {@link JointDef#bodyB bodyB} will be changed by the {@link MouseJointAdapter} so it can be null but {@link JointDef#bodyA bodyA} has to be set!</strong> 
@@ -66,26 +85,7 @@ public class MouseJointAdapter extends InputAdapter {
 	@Override
 	public boolean touchDown(int screenX, int screenY, int pointer, int button) {
 		camera.unproject(tmp.set(screenX, screenY, 0));
-
-		World world = jointDef.bodyA.getWorld();
-
-		world.getBodies(tmpBodies);
-		for(Body body : tmpBodies)
-			for(Fixture fixture : body.getFixtureList())
-				if(fixture.testPoint(tmp.x, tmp.y)) {
-					jointDef.bodyB = body;
-					jointDef.target.set(tmp.x, tmp.y);
-					if(adaptMaxForceToBodyMass) {
-						float maxForce = jointDef.maxForce;
-						jointDef.maxForce *= body.getMass();
-						joint = (MouseJoint) world.createJoint(jointDef);
-						jointDef.maxForce = maxForce;
-						return true;
-					}
-					joint = (MouseJoint) world.createJoint(jointDef);
-					return true;
-				}
-
+		jointDef.bodyA.getWorld().QueryAABB(queryCallback, tmp2.set(tmp.x, tmp.y).x, tmp2.y, tmp2.x, tmp2.y);
 		return false;
 	}
 
@@ -96,7 +96,6 @@ public class MouseJointAdapter extends InputAdapter {
 
 		camera.unproject(tmp.set(screenX, screenY, 0));
 		joint.setTarget(tmp2.set(tmp.x, tmp.y));
-
 		return true;
 	}
 
@@ -106,8 +105,6 @@ public class MouseJointAdapter extends InputAdapter {
 			return false;
 
 		jointDef.bodyA.getWorld().destroyJoint(joint);
-		joint = null;
-
 		return true;
 	}
 
