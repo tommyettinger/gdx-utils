@@ -105,6 +105,7 @@ public class MouseJointAdapter extends InputAdapter {
 			return false;
 
 		jointDef.bodyA.getWorld().destroyJoint(joint);
+		joint = null;
 		return true;
 	}
 
