@@ -240,6 +240,7 @@ public class Box2DMapObjectParser {
 		bodyDef.position.set(getProperty(properties, aliases.x, bodyDef.position.x) * unitScale, getProperty(properties, aliases.y, bodyDef.position.y) * unitScale);
 
 		Body body = world.createBody(bodyDef);
+		body.setUserData(getProperty(properties, aliases.userData, body.getUserData()));
 
 		bodies.put(findAvailableName(mapObject.getName(), bodies), body);
 
@@ -316,6 +317,7 @@ public class Box2DMapObjectParser {
 		fixtureDef.restitution = getProperty(properties, aliases.restitution, fixtureDef.restitution);
 
 		Fixture fixture = body.createFixture(fixtureDef);
+		fixture.setUserData(getProperty(properties, aliases.userData, fixture.getUserData()));
 
 		shape.dispose();
 
@@ -478,6 +480,7 @@ public class Box2DMapObjectParser {
 		jointDef.collideConnected = getProperty(properties, aliases.collideConnected, jointDef.collideConnected);
 
 		Joint joint = jointDef.bodyA.getWorld().createJoint(jointDef);
+		joint.setUserData(getProperty(properties, aliases.userData, joint.getUserData()));
 
 		joints.put(findAvailableName(mapObject.getName(), joints), joint);
 
@@ -608,7 +611,7 @@ public class Box2DMapObjectParser {
 	public static class Aliases {
 
 		/** the aliases */
-		public String x = "x", y = "y", type = "type", bodyType = "bodyType", dynamicBody = "DynamicBody", kinematicBody = "KinematicBody", staticBody = "StaticBody", active = "active", allowSleep = "allowSleep", angle = "angle", angularDamping = "angularDamping", angularVelocity = "angularVelocity", awake = "awake", bullet = "bullet", fixedRotation = "fixedRotation", gravityunitScale = "gravityunitScale", linearDamping = "linearDamping", linearVelocityX = "linearVelocityX", linearVelocityY = "linearVelocityY", density = "density", categoryBits = "categoryBits", groupIndex = "groupIndex", maskBits = "maskBits", friciton = "friction", isSensor = "isSensor", restitution = "restitution", body = "body", fixture = "fixture", joint = "joint", jointType = "jointType", distanceJoint = "DistanceJoint", frictionJoint = "FrictionJoint", gearJoint = "GearJoint", mouseJoint = "MouseJoint", prismaticJoint = "PrismaticJoint", pulleyJoint = "PulleyJoint", revoluteJoint = "RevoluteJoint", ropeJoint = "RopeJoint", weldJoint = "WeldJoint", wheelJoint = "WheelJoint", bodyA = "bodyA", bodyB = "bodyB", collideConnected = "collideConnected", dampingRatio = "dampingRatio", frequencyHz = "frequencyHz", length = "length", localAnchorAX = "localAnchorAX", localAnchorAY = "localAnchorAY", localAnchorBX = "localAnchorBX", localAnchorBY = "localAnchorBY", maxForce = "maxForce", maxTorque = "maxTorque", joint1 = "joint1", joint2 = "joint2", ratio = "ratio", targetX = "targetX", targetY = "targetY", enableLimit = "enableLimit", enableMotor = "enableMotor", localAxisAX = "localAxisAX", localAxisAY = "localAxisAY", lowerTranslation = "lowerTranslation", maxMotorForce = "maxMotorForce", motorSpeed = "motorSpeed", referenceAngle = "referenceAngle", upperTranslation = "upperTranslation", groundAnchorAX = "groundAnchorAX", groundAnchorAY = "groundAnchorAY", groundAnchorBX = "groundAnchorBX", groundAnchorBY = "groundAnchorBY", lengthA = "lengthA", lengthB = "lengthB", lowerAngle = "lowerAngle", maxMotorTorque = "maxMotorTorque", upperAngle = "upperAngle", maxLength = "maxLength", object = "object", unitScale = "unitScale";
+		public String x = "x", y = "y", type = "type", bodyType = "bodyType", dynamicBody = "DynamicBody", kinematicBody = "KinematicBody", staticBody = "StaticBody", active = "active", allowSleep = "allowSleep", angle = "angle", angularDamping = "angularDamping", angularVelocity = "angularVelocity", awake = "awake", bullet = "bullet", fixedRotation = "fixedRotation", gravityunitScale = "gravityunitScale", linearDamping = "linearDamping", linearVelocityX = "linearVelocityX", linearVelocityY = "linearVelocityY", density = "density", categoryBits = "categoryBits", groupIndex = "groupIndex", maskBits = "maskBits", friciton = "friction", isSensor = "isSensor", restitution = "restitution", body = "body", fixture = "fixture", joint = "joint", jointType = "jointType", distanceJoint = "DistanceJoint", frictionJoint = "FrictionJoint", gearJoint = "GearJoint", mouseJoint = "MouseJoint", prismaticJoint = "PrismaticJoint", pulleyJoint = "PulleyJoint", revoluteJoint = "RevoluteJoint", ropeJoint = "RopeJoint", weldJoint = "WeldJoint", wheelJoint = "WheelJoint", bodyA = "bodyA", bodyB = "bodyB", collideConnected = "collideConnected", dampingRatio = "dampingRatio", frequencyHz = "frequencyHz", length = "length", localAnchorAX = "localAnchorAX", localAnchorAY = "localAnchorAY", localAnchorBX = "localAnchorBX", localAnchorBY = "localAnchorBY", maxForce = "maxForce", maxTorque = "maxTorque", joint1 = "joint1", joint2 = "joint2", ratio = "ratio", targetX = "targetX", targetY = "targetY", enableLimit = "enableLimit", enableMotor = "enableMotor", localAxisAX = "localAxisAX", localAxisAY = "localAxisAY", lowerTranslation = "lowerTranslation", maxMotorForce = "maxMotorForce", motorSpeed = "motorSpeed", referenceAngle = "referenceAngle", upperTranslation = "upperTranslation", groundAnchorAX = "groundAnchorAX", groundAnchorAY = "groundAnchorAY", groundAnchorBX = "groundAnchorBX", groundAnchorBY = "groundAnchorBY", lengthA = "lengthA", lengthB = "lengthB", lowerAngle = "lowerAngle", maxMotorTorque = "maxMotorTorque", upperAngle = "upperAngle", maxLength = "maxLength", object = "object", unitScale = "unitScale", userData = "userData";
 	}
 
 }

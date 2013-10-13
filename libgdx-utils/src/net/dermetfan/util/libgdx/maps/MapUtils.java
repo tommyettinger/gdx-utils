@@ -41,8 +41,10 @@ public abstract class MapUtils {
 	public static <T> T getProperty(MapProperties properties, String key, T defaultValue) {
 		Object value = properties.get(key);
 
-		if(value == null || value == "")
+		if(value == null || value.getClass() == String.class && ((String) value).isEmpty())
 			return defaultValue;
+		else if(defaultValue == null)
+			return (T) value;
 
 		if(defaultValue.getClass() == Boolean.class && value.getClass() != Boolean.class)
 			return (T) new Boolean(Boolean.parseBoolean(value.toString()));
