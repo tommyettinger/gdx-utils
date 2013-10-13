@@ -33,41 +33,58 @@ import com.badlogic.gdx.utils.Array;
  *  @author dermetfan */
 public class Breakable {
 
-	/** calls {@link Breakable#strain(Contact, ContactImpulse) strain} in {@link #postSolve(Contact, ContactImpulse) postSolve} */
+	/** calls {@link Breakable#strain(Contact, ContactImpulse) strain} in {@link #postSolve(Contact, ContactImpulse) postSolve}
+	 *  @author dermetfan */
 	public static class Notifier implements ContactListener {
 
+		/** does nothing */
 		@Override
 		public void beginContact(Contact contact) {
 		}
 
+		/** does nothing */
 		@Override
 		public void preSolve(Contact contact, Manifold oldManifold) {
 		}
 
+		/** calls {@link Breakable#strain(Contact, ContactImpulse)} */
 		@Override
 		public void postSolve(Contact contact, ContactImpulse impulse) {
 			strain(contact, impulse);
 		}
 
+		/** does nothing */
 		@Override
 		public void endContact(Contact contact) {
 		}
 
 	}
 
-	/** a callback for a {@link Breakable} if its container (body or fixture) was destroyed (for example to play a sound) */
+	/** a callback for a {@link Breakable} if its container (body or fixture) was destroyed (for example to play a sound)
+	 *  @author dermetfan */
 	public static interface Callback {
 
-		/** called by {@link #destroyedBody(Body)} */
+		/** called by {@link Breakable#strain(Contact, ContactImpulse)}
+		 *  @param fixture the strained fixture
+		 *  @param contact the straining contact
+		 *  @param impulse the straining ContactImpulse
+		 *  @param normalImpulse the sum of the normal impulses of impulse
+		 *  @param tangentImpulse the sum of the tangent impulses of impulse */
+		public void strained(Fixture fixture, Contact contact, ContactImpulse impulse, float normalImpulse, float tangentImpulse);
+
+		/** called by {@link Breakable#destroyedBody(Body)} */
 		public void destroyedBody(Body body);
 
-		/** called by {@link #destroyedFixture(Fixture)} */
+		/** called by {@link Breakable#destroyedFixture(Fixture)} */
 		public void destroyedFixture(Fixture fixture);
 
 	}
 
 	/** how much force the Breakable can bear */
-	private float resistance;
+	private float normalResistance;
+
+	/** how much friction the Breakable can bear */
+	private float tangentResistance = 100;
 
 	/** if the fixture's body (in case the Breakable is used for a fixture) should be destroyed if the fixture is destroyed (false by default) */
 	private boolean breakBody;
@@ -79,10 +96,10 @@ public class Breakable {
 	private Callback callback;
 
 	/** the fixtures that broke in {@link #strain(Contact, ContactImpulse)} */
-	private static final Array<Fixture> brokenFixtures = new Array<Fixture>(0);
+	public static final Array<Fixture> brokenFixtures = new Array<Fixture>(0);
 
 	/** the bodies that broke in {@link #strain(Contact, ContactImpulse)} */
-	private static final Array<Body> brokenBodies = new Array<Body>(0);
+	public static final Array<Body> brokenBodies = new Array<Body>(0);
 
 	/** the {@link #userDataAccessor} used by default */
 	public static final Accessor defaultUserDataAccessor = new Accessor() {
@@ -95,43 +112,50 @@ public class Breakable {
 
 	};
 
-	/** the {@link Accessor} used to access user data */
+	/** the {@link Accessor} used to access a Breakable in user data (must return a Breakable in {@link Accessor#access(Object) access}) */
 	private static Accessor userDataAccessor = defaultUserDataAccessor;
 
-	/** @see #Breakable(float, boolean) */
-	public Breakable(float resistance) {
-		this(resistance, false);
+	/** @see #Breakable(float, float, boolean) */
+	public Breakable(float normalResistance, float tangentResistance) {
+		this(normalResistance, tangentResistance, false);
 	}
 
-	/** @see #Breakable(float, boolean, boolean) */
-	public Breakable(float resistance, boolean breakBody) {
-		this(resistance, breakBody, true);
+	/** @see #Breakable(float, float, boolean, boolean) */
+	public Breakable(float normalResistance, float tangentResistance, boolean breakBody) {
+		this(normalResistance, tangentResistance, breakBody, true);
 	}
 
-	/** @see #Breakable(float, boolean, boolean, Callback) */
-	public Breakable(float resistance, boolean breakBody, boolean breakBodyWithoutFixtures) {
-		this(resistance, breakBody, breakBodyWithoutFixtures, null);
+	/** @see #Breakable(float, float, boolean, boolean, Callback) */
+	public Breakable(float normalResistance, float tangentResistance, boolean breakBody, boolean breakBodyWithoutFixtures) {
+		this(normalResistance, tangentResistance, breakBody, breakBodyWithoutFixtures, null);
 	}
 
-	/** @see #Breakable(float, boolean, boolean, Callback) */
-	public Breakable(float resistance, Callback callback) {
-		this(resistance, false, true, callback);
+	/** @see #Breakable(float, float, boolean, Callback) */
+	public Breakable(float normalResistance, float tangentResistance, Callback callback) {
+		this(normalResistance, tangentResistance, false, callback);
 	}
 
-	/** @see #Breakable(float, boolean, boolean, Callback) */
-	public Breakable(float resistance, boolean breakBody, Callback callback) {
-		this(resistance, breakBody, true, callback);
+	/** @see #Breakable(float, float, boolean, boolean, Callback) */
+	public Breakable(float normalResistance, float tangentResistance, boolean breakBody, Callback callback) {
+		this(normalResistance, tangentResistance, breakBody, true, callback);
 	}
 
-	/** @param resistance the {@link #resistance}
+	/** @param normalResistance the {@link #normalResistance}
+	 * 	@param tangentResistance the {@link #tangentResistance}
 	 *  @param breakBody the {@link #breakBody}
 	 *  @param breakBodyWithoutFixtures the {@link #breakBodyWithoutFixtures}
 	 *  @param callback the {@link #callback} */
-	public Breakable(float resistance, boolean breakBody, boolean breakBodyWithoutFixtures, Callback callback) {
-		this.resistance = resistance;
+	public Breakable(float normalResistance, float tangentResistance, boolean breakBody, boolean breakBodyWithoutFixtures, Callback callback) {
+		this.normalResistance = normalResistance;
+		this.tangentResistance = tangentResistance;
 		this.breakBody = breakBody;
 		this.breakBodyWithoutFixtures = breakBodyWithoutFixtures;
 		this.callback = callback;
+	}
+
+	/** constructs a new Breakable exactly like the given other one */
+	public Breakable(Breakable other) {
+		this(other.normalResistance, other.tangentResistance, other.breakBody, other.breakBodyWithoutFixtures, other.callback);
 	}
 
 	/** destroys all bodies in {@link #brokenBodies} and fixtures in {@link #brokenFixtures} */
@@ -148,21 +172,32 @@ public class Breakable {
 
 	/** {@link #destroy(Fixture, boolean, boolean) destroys}/{@link #destroy(Body) destroys} all fixtures/bodies involved in the given Contact if they could not bear the given impulse */
 	public static void strain(Contact contact, ContactImpulse impulse) {
-		Breakable breakable;
-		float impulseSum = MathUtils.sum(impulse.getNormalImpulses());
+		float normalImpulse = MathUtils.sum(impulse.getNormalImpulses()), tangentImpulse = Math.abs(MathUtils.sum(impulse.getTangentImpulses()));
 
 		Fixture fixtureA = contact.getFixtureA(), fixtureB = contact.getFixtureB();
-		if((breakable = userDataAccessor.access(fixtureA.getUserData())) != null && impulseSum > breakable.resistance)
-			destroy(fixtureA, breakable.breakBodyWithoutFixtures, breakable.breakBody);
+		Breakable breakable = userDataAccessor.access(fixtureA.getUserData());
+		if(breakable != null) {
+			if(breakable.callback != null)
+				breakable.callback.strained(fixtureA, contact, impulse, normalImpulse, tangentImpulse);
+			if(normalImpulse > breakable.normalResistance || tangentImpulse > breakable.tangentResistance)
+				destroy(fixtureA, breakable.breakBodyWithoutFixtures, breakable.breakBody);
+		}
 
-		if((breakable = userDataAccessor.access(fixtureB.getUserData())) != null && impulseSum > breakable.resistance)
-			destroy(fixtureB, breakable.breakBodyWithoutFixtures, breakable.breakBody);
+		breakable = userDataAccessor.access(fixtureB.getUserData());
+		if(breakable != null) {
+			if(breakable.callback != null)
+				breakable.callback.strained(fixtureB, contact, impulse, normalImpulse, tangentImpulse);
+			if(normalImpulse > breakable.normalResistance || tangentImpulse > breakable.tangentResistance)
+				destroy(fixtureB, breakable.breakBodyWithoutFixtures, breakable.breakBody);
+		}
 
 		Body bodyA = fixtureA.getBody(), bodyB = fixtureB.getBody();
-		if((breakable = userDataAccessor.access(bodyA.getUserData())) != null && impulseSum > breakable.resistance)
+		breakable = userDataAccessor.access(bodyA.getUserData());
+		if(breakable != null && (normalImpulse > breakable.normalResistance || tangentImpulse > breakable.tangentResistance))
 			destroy(bodyA);
 
-		if((breakable = userDataAccessor.access(bodyB.getUserData())) != null && impulseSum > breakable.resistance)
+		breakable = userDataAccessor.access(bodyB.getUserData());
+		if(breakable != null && (normalImpulse > breakable.normalResistance || tangentImpulse > breakable.tangentResistance))
 			destroy(bodyB);
 	}
 
@@ -185,12 +220,14 @@ public class Breakable {
 
 		Array<Fixture> bodyFixtureList = body.getFixtureList();
 
-		int brokenFixturesOfBody = 1;
-		for(Fixture fixt : brokenFixtures)
-			if(bodyFixtureList.contains(fixt, true))
-				brokenFixturesOfBody++;
+		boolean bodyWillStillHaveFixtures = false;
+		for(Fixture bodyFixture : bodyFixtureList)
+			if(!brokenFixtures.contains(bodyFixture, true)) {
+				bodyWillStillHaveFixtures = true;
+				break;
+			}
 
-		if(breakBodyWithoutFixtures && bodyFixtureList.size <= brokenFixturesOfBody || breakBody)
+		if(breakBodyWithoutFixtures && !bodyWillStillHaveFixtures || breakBody)
 			destroy(body);
 	}
 
@@ -206,14 +243,24 @@ public class Breakable {
 			breakable.callback.destroyedBody(body);
 	}
 
-	/** @return the {@link #resistance} */
-	public float getResistance() {
-		return resistance;
+	/** @return the {@link #normalResistance} */
+	public float getNormalResistance() {
+		return normalResistance;
 	}
 
-	/** @param resistance the {@link #resistance} to set */
-	public void setResistance(float resistance) {
-		this.resistance = resistance;
+	/** @param normalResistance the {@link #normalResistance} to set */
+	public void setNormalResistance(float normalResistance) {
+		this.normalResistance = normalResistance;
+	}
+
+	/** @return the {@link #tangentResistance} */
+	public float getTangentResistance() {
+		return tangentResistance;
+	}
+
+	/** @param tangentResistance the {@link #tangentResistance} to set */
+	public void setTangentResistance(float tangentResistance) {
+		this.tangentResistance = tangentResistance;
 	}
 
 	/** @return the {@link #breakBody} */
@@ -263,6 +310,8 @@ public class Breakable {
 
 	/** @param userDataAccessor the {@link #userDataAccessor} to set */
 	public static void setUserDataAccessor(Accessor userDataAccessor) {
+		if(userDataAccessor == null)
+			throw new IllegalArgumentException("userDataAccessor must not be null");
 		Breakable.userDataAccessor = userDataAccessor;
 	}
 
