@@ -24,6 +24,7 @@ import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.Fixture;
 import com.badlogic.gdx.physics.box2d.JointDef;
 import com.badlogic.gdx.physics.box2d.QueryCallback;
+import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.physics.box2d.joints.MouseJoint;
 import com.badlogic.gdx.physics.box2d.joints.MouseJointDef;
 import com.badlogic.gdx.utils.Array;
@@ -166,6 +167,9 @@ public class MouseJointAdapter extends InputAdapter {
 	/** if {@link #touchDragged(int, int, int)} should be called with {@link #pointer} on {@link #mouseMoved(int, int)} */
 	private boolean mouseMoved;
 
+	/** if a simple iteration over all fixtures in the world should be used instead of a {@link World#QueryAABB(QueryCallback, float, float, float, float) query} (will fix no creation of a mouse joint for overlapping AABBs, false by default) */
+	private boolean bruteIterationMode;
+
 	/** the {@link MouseJointDef} used to create {@link #joint} */
 	private MouseJointDef jointDef;
 
@@ -177,6 +181,9 @@ public class MouseJointAdapter extends InputAdapter {
 
 	/** a temporary variable */
 	private final Vector2 tmp2 = new Vector2(), tmp3 = new Vector2();
+
+	/** a temporary variable used in {@link #bruteIterationMode} */
+	private Array<Body> tmp4;
 
 	/** called by {@link #touchDown(int, int, int, int)}, instantiates {@link #joint} if {@link Callback#touched(Fixture, Vector2) touched} of {@link #callback} returns <code>true</code> */
 	private final QueryCallback queryCallback = new QueryCallback() {
@@ -223,6 +230,7 @@ public class MouseJointAdapter extends InputAdapter {
 		this(other.jointDef, other.adaptMaxForceToBodyMass, other.camera, other.pointer);
 		callback = other.callback;
 		mouseMoved = other.mouseMoved;
+		setBruteIterationMode(other.bruteIterationMode);
 	}
 
 	/** uses {@link #queryCallback} to create {@link #joint} if {@link #joint} is <code>null</code>*/
@@ -232,7 +240,15 @@ public class MouseJointAdapter extends InputAdapter {
 			return false;
 
 		camera.unproject(tmp.set(screenX, screenY, 0));
-		jointDef.bodyA.getWorld().QueryAABB(queryCallback, tmp2.set(tmp.x, tmp.y).x, tmp2.y, tmp2.x, tmp2.y);
+		tmp2.set(tmp.x, tmp.y);
+		if(!bruteIterationMode)
+			jointDef.bodyA.getWorld().QueryAABB(queryCallback, tmp2.x, tmp2.y, tmp2.x, tmp2.y);
+		else {
+			jointDef.bodyA.getWorld().getBodies(tmp4);
+			for(Body body : tmp4)
+				for(Fixture fixture : body.getFixtureList())
+					queryCallback.reportFixture(fixture);
+		}
 		return true;
 	}
 
@@ -330,6 +346,22 @@ public class MouseJointAdapter extends InputAdapter {
 	/** @param mouseMoved the {@link #mouseMoved} to set */
 	public void setMouseMoved(boolean mouseMoved) {
 		this.mouseMoved = mouseMoved;
+	}
+
+	/** @return the {@link #bruteIterationMode} */
+	public boolean isBruteIterationMode() {
+		return bruteIterationMode;
+	}
+
+	/** @param bruteIterationMode the {@link #bruteIterationMode} to set */
+	public void setBruteIterationMode(boolean bruteIterationMode) {
+		if(this.bruteIterationMode = bruteIterationMode)
+			tmp4 = new Array<Body>();
+		else {
+			if(tmp4 != null)
+				tmp4.clear();
+			tmp4 = null;
+		}
 	}
 
 	/** @return the {@link #jointDef} */
