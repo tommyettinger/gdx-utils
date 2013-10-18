@@ -27,15 +27,129 @@ import com.badlogic.gdx.physics.box2d.Fixture;
 import com.badlogic.gdx.physics.box2d.Manifold;
 import com.badlogic.gdx.utils.Array;
 
-/** Breaks bodies or fixtures if they get hit too hard. Put in fixture's or body's user data and set {@link Notifier} as {@link ContactListener}.<br/>
- *  Don't forget to call {@link #destroy()} after every time step.<br/>
- *  You can manually destroy fixtures or bodies using the {@link #destroy(Fixture, boolean, boolean)} and {@link #destroy(Body)} methods.
+/** Breaks bodies or fixtures if they get hit too hard. Put in fixture's or body's user data and set {@link Manager} as {@link ContactListener}.<br/>
+ *  Don't forget to call {@link Manager#destroy()} after every world time step.<br/>
+ *  You can manually destroy fixtures or bodies using the {@link Manager#destroy(Fixture, boolean, boolean)} and {@link Manager#destroy(Body)} methods.
  *  @author dermetfan */
 public class Breakable {
 
-	/** calls {@link Breakable#strain(Contact, ContactImpulse) strain} in {@link #postSolve(Contact, ContactImpulse) postSolve}
+	/** Manages the {@link Breakable Breakables} of the Contacts it receives. <strong>Do not forget to set as ContactListener and to call {@link #destroy()} after every world step.</strong>
 	 *  @author dermetfan */
-	public static class Notifier implements ContactListener {
+	public static class Manager implements ContactListener {
+
+		/** the fixtures that broke in {@link #strain(Contact, ContactImpulse)} */
+		public final Array<Fixture> brokenFixtures = new Array<Fixture>(1);
+
+		/** the bodies that broke in {@link #strain(Contact, ContactImpulse)} */
+		public final Array<Body> brokenBodies = new Array<Body>(1);
+
+		/** the {@link #userDataAccessor} used by default */
+		public static final Accessor defaultUserDataAccessor = new Accessor() {
+
+			@SuppressWarnings("unchecked")
+			@Override
+			public Breakable access(Object userData) {
+				return userData instanceof Breakable ? (Breakable) userData : null;
+			}
+
+		};
+
+		/** the {@link Accessor} used to access a Breakable in user data (must return a Breakable in {@link #access(Object) access}) */
+		private Accessor userDataAccessor = defaultUserDataAccessor;
+
+		/** instantiates a new {@link Manager} */
+		public Manager() {
+		}
+
+		/** instantiates a new {@link Manager} with the given {@link #userDataAccessor} */
+		public Manager(Accessor userDataAccessor) {
+			setUserDataAccessor(userDataAccessor);
+		}
+
+		/** actually destroys all bodies in {@link #brokenBodies} and fixtures in {@link #brokenFixtures} */
+		public void destroy() {
+			for(Fixture fixture : brokenFixtures) {
+				brokenFixtures.removeValue(fixture, true);
+				fixture.getBody().destroyFixture(fixture);
+			}
+			for(Body body : brokenBodies) {
+				brokenBodies.removeValue(body, true);
+				body.getWorld().destroyBody(body);
+			}
+		}
+
+		/** {@link #destroy(Fixture, boolean, boolean) destroys}/{@link #destroy(Body) destroys} all fixtures/bodies involved in the given Contact if they could not bear the given impulse */
+		public void strain(Contact contact, ContactImpulse impulse) {
+			float normalImpulse = MathUtils.sum(impulse.getNormalImpulses()), tangentImpulse = Math.abs(MathUtils.sum(impulse.getTangentImpulses()));
+
+			Fixture fixtureA = contact.getFixtureA(), fixtureB = contact.getFixtureB();
+			Breakable breakable = userDataAccessor.access(fixtureA.getUserData());
+			if(breakable != null) {
+				if(breakable.callback != null)
+					breakable.callback.strained(fixtureA, breakable, contact, impulse, normalImpulse, tangentImpulse);
+				if(normalImpulse > breakable.normalResistance || tangentImpulse > breakable.tangentResistance)
+					destroy(fixtureA, breakable.breakBodyWithoutFixtures, breakable.breakBody);
+			}
+
+			breakable = userDataAccessor.access(fixtureB.getUserData());
+			if(breakable != null) {
+				if(breakable.callback != null)
+					breakable.callback.strained(fixtureB, breakable, contact, impulse, normalImpulse, tangentImpulse);
+				if(normalImpulse > breakable.normalResistance || tangentImpulse > breakable.tangentResistance)
+					destroy(fixtureB, breakable.breakBodyWithoutFixtures, breakable.breakBody);
+			}
+
+			Body bodyA = fixtureA.getBody(), bodyB = fixtureB.getBody();
+			breakable = userDataAccessor.access(bodyA.getUserData());
+			if(breakable != null && (normalImpulse > breakable.normalResistance || tangentImpulse > breakable.tangentResistance))
+				destroy(bodyA);
+
+			breakable = userDataAccessor.access(bodyB.getUserData());
+			if(breakable != null && (normalImpulse > breakable.normalResistance || tangentImpulse > breakable.tangentResistance))
+				destroy(bodyB);
+		}
+
+		/** destroys the given fixture (and its body depending on {@link #breakBodyWithoutFixtures} and {@link #breakBody})
+		 *  @param fixture the {@link Fixture} to destroy
+		 *  @param breakBodyWithoutFixtures {@link #breakBodyWithoutFixtures}
+		 *  @param breakBody {@link #breakBody} */
+		public void destroy(Fixture fixture, boolean breakBodyWithoutFixtures, boolean breakBody) {
+			if(brokenFixtures.contains(fixture, true))
+				return;
+
+			brokenFixtures.add(fixture);
+			Breakable breakable = userDataAccessor.access(fixture.getUserData());
+			if(breakable != null && breakable.callback != null)
+				breakable.callback.destroyedFixture(fixture, breakable);
+
+			Body body = fixture.getBody();
+			if(brokenBodies.contains(body, true))
+				return;
+
+			if(breakBody) {
+				destroy(body);
+				return;
+			}
+
+			if(breakBodyWithoutFixtures) {
+				for(Fixture bodyFixture : body.getFixtureList())
+					if(!brokenFixtures.contains(bodyFixture, true))
+						return;
+				destroy(body);
+			}
+		}
+
+		/** @param body the {@link Body} to destroy */
+		public void destroy(Body body) {
+			if(brokenBodies.contains(body, true))
+				return;
+
+			brokenBodies.add(body);
+
+			Breakable breakable = userDataAccessor.access(body.getUserData());
+			if(breakable != null && breakable.callback != null)
+				breakable.callback.destroyedBody(body, breakable);
+		}
 
 		/** does nothing */
 		@Override
@@ -47,7 +161,7 @@ public class Breakable {
 		public void preSolve(Contact contact, Manifold oldManifold) {
 		}
 
-		/** calls {@link Breakable#strain(Contact, ContactImpulse)} */
+		/** calls {@link #strain(Contact, ContactImpulse)} */
 		@Override
 		public void postSolve(Contact contact, ContactImpulse impulse) {
 			strain(contact, impulse);
@@ -58,25 +172,48 @@ public class Breakable {
 		public void endContact(Contact contact) {
 		}
 
+		/** @return the {@link #brokenFixtures} */
+		public Array<Fixture> getBrokenFixtures() {
+			return brokenFixtures;
+		}
+
+		/** @return the {@link #brokenBodies} */
+		public Array<Body> getBrokenBodies() {
+			return brokenBodies;
+		}
+
+		/** @return the {@link #userDataAccessor} */
+		public Accessor getUserDataAccessor() {
+			return userDataAccessor;
+		}
+
+		/** @param userDataAccessor the {@link #userDataAccessor} to set */
+		public void setUserDataAccessor(Accessor userDataAccessor) {
+			if(userDataAccessor == null)
+				throw new IllegalArgumentException("userDataAccessor must not be null");
+			this.userDataAccessor = userDataAccessor;
+		}
+
 	}
 
 	/** a callback for a {@link Breakable} if its container (body or fixture) was destroyed (for example to play a sound)
 	 *  @author dermetfan */
 	public static interface Callback {
 
-		/** called by {@link Breakable#strain(Contact, ContactImpulse)}
+		/** called by {@link Manager#strain(Contact, ContactImpulse)}
 		 *  @param fixture the strained fixture
+		 *  @param breakable the Breakable instance that called this Callback
 		 *  @param contact the straining contact
 		 *  @param impulse the straining ContactImpulse
 		 *  @param normalImpulse the sum of the normal impulses of impulse
 		 *  @param tangentImpulse the sum of the tangent impulses of impulse */
-		public void strained(Fixture fixture, Contact contact, ContactImpulse impulse, float normalImpulse, float tangentImpulse);
+		public void strained(Fixture fixture, Breakable breakable, Contact contact, ContactImpulse impulse, float normalImpulse, float tangentImpulse);
 
-		/** called by {@link Breakable#destroyedBody(Body)} */
-		public void destroyedBody(Body body);
+		/** called by {@link Manager#destroy(Body)} */
+		public void destroyedBody(Body body, Breakable breakable);
 
-		/** called by {@link Breakable#destroyedFixture(Fixture)} */
-		public void destroyedFixture(Fixture fixture);
+		/** called by {@link Manager#destroy(Fixture, boolean, boolean)} */
+		public void destroyedFixture(Fixture fixture, Breakable breakable);
 
 	}
 
@@ -94,26 +231,6 @@ public class Breakable {
 
 	/** the {@link Callback} called when the {@link Breakable}'s container is destroyed */
 	private Callback callback;
-
-	/** the fixtures that broke in {@link #strain(Contact, ContactImpulse)} */
-	public static final Array<Fixture> brokenFixtures = new Array<Fixture>(0);
-
-	/** the bodies that broke in {@link #strain(Contact, ContactImpulse)} */
-	public static final Array<Body> brokenBodies = new Array<Body>(0);
-
-	/** the {@link #userDataAccessor} used by default */
-	public static final Accessor defaultUserDataAccessor = new Accessor() {
-
-		@SuppressWarnings("unchecked")
-		@Override
-		public Breakable access(Object userData) {
-			return userData instanceof Breakable ? (Breakable) userData : null;
-		}
-
-	};
-
-	/** the {@link Accessor} used to access a Breakable in user data (must return a Breakable in {@link Accessor#access(Object) access}) */
-	private static Accessor userDataAccessor = defaultUserDataAccessor;
 
 	/** @see #Breakable(float, float, boolean) */
 	public Breakable(float normalResistance, float tangentResistance) {
@@ -156,91 +273,6 @@ public class Breakable {
 	/** constructs a new Breakable exactly like the given other one */
 	public Breakable(Breakable other) {
 		this(other.normalResistance, other.tangentResistance, other.breakBody, other.breakBodyWithoutFixtures, other.callback);
-	}
-
-	/** destroys all bodies in {@link #brokenBodies} and fixtures in {@link #brokenFixtures} */
-	public static void destroy() {
-		for(Fixture fixture : brokenFixtures) {
-			brokenFixtures.removeValue(fixture, true);
-			fixture.getBody().destroyFixture(fixture);
-		}
-		for(Body body : brokenBodies) {
-			brokenBodies.removeValue(body, true);
-			body.getWorld().destroyBody(body);
-		}
-	}
-
-	/** {@link #destroy(Fixture, boolean, boolean) destroys}/{@link #destroy(Body) destroys} all fixtures/bodies involved in the given Contact if they could not bear the given impulse */
-	public static void strain(Contact contact, ContactImpulse impulse) {
-		float normalImpulse = MathUtils.sum(impulse.getNormalImpulses()), tangentImpulse = Math.abs(MathUtils.sum(impulse.getTangentImpulses()));
-
-		Fixture fixtureA = contact.getFixtureA(), fixtureB = contact.getFixtureB();
-		Breakable breakable = userDataAccessor.access(fixtureA.getUserData());
-		if(breakable != null) {
-			if(breakable.callback != null)
-				breakable.callback.strained(fixtureA, contact, impulse, normalImpulse, tangentImpulse);
-			if(normalImpulse > breakable.normalResistance || tangentImpulse > breakable.tangentResistance)
-				destroy(fixtureA, breakable.breakBodyWithoutFixtures, breakable.breakBody);
-		}
-
-		breakable = userDataAccessor.access(fixtureB.getUserData());
-		if(breakable != null) {
-			if(breakable.callback != null)
-				breakable.callback.strained(fixtureB, contact, impulse, normalImpulse, tangentImpulse);
-			if(normalImpulse > breakable.normalResistance || tangentImpulse > breakable.tangentResistance)
-				destroy(fixtureB, breakable.breakBodyWithoutFixtures, breakable.breakBody);
-		}
-
-		Body bodyA = fixtureA.getBody(), bodyB = fixtureB.getBody();
-		breakable = userDataAccessor.access(bodyA.getUserData());
-		if(breakable != null && (normalImpulse > breakable.normalResistance || tangentImpulse > breakable.tangentResistance))
-			destroy(bodyA);
-
-		breakable = userDataAccessor.access(bodyB.getUserData());
-		if(breakable != null && (normalImpulse > breakable.normalResistance || tangentImpulse > breakable.tangentResistance))
-			destroy(bodyB);
-	}
-
-	/** destroys the given fixture (and its body depending on breakBodyWithoutFixtures and breakBody)
-	 *  @param fixture the {@link Fixture} to destroy
-	 *  @param breakBodyWithoutFixtures {@link #breakBodyWithoutFixtures}
-	 *  @param breakBody {@link #breakBody} */
-	public static void destroy(Fixture fixture, boolean breakBodyWithoutFixtures, boolean breakBody) {
-		if(brokenFixtures.contains(fixture, true))
-			return;
-
-		brokenFixtures.add(fixture);
-		Breakable breakable = userDataAccessor.access(fixture.getUserData());
-		if(breakable != null && breakable.callback != null)
-			breakable.callback.destroyedFixture(fixture);
-
-		Body body = fixture.getBody();
-		if(brokenBodies.contains(body, true))
-			return;
-
-		Array<Fixture> bodyFixtureList = body.getFixtureList();
-
-		boolean bodyWillStillHaveFixtures = false;
-		for(Fixture bodyFixture : bodyFixtureList)
-			if(!brokenFixtures.contains(bodyFixture, true)) {
-				bodyWillStillHaveFixtures = true;
-				break;
-			}
-
-		if(breakBodyWithoutFixtures && !bodyWillStillHaveFixtures || breakBody)
-			destroy(body);
-	}
-
-	/** @param body the {@link Body} to destroy */
-	public static void destroy(Body body) {
-		if(brokenBodies.contains(body, true))
-			return;
-
-		brokenBodies.add(body);
-
-		Breakable breakable = userDataAccessor.access(body.getUserData());
-		if(breakable != null && breakable.callback != null)
-			breakable.callback.destroyedBody(body);
 	}
 
 	/** @return the {@link #normalResistance} */
@@ -291,28 +323,6 @@ public class Breakable {
 	/** @param callback the {@link #callback} to set */
 	public void setCallback(Callback callback) {
 		this.callback = callback;
-	}
-
-	/** @return the {@link #brokenFixtures} */
-	public static Array<Fixture> getBrokenFixtures() {
-		return brokenFixtures;
-	}
-
-	/** @return the {@link #brokenBodies} */
-	public static Array<Body> getBrokenBodies() {
-		return brokenBodies;
-	}
-
-	/** @return the {@link #userDataAccessor} */
-	public static Accessor getUserDataAccessor() {
-		return userDataAccessor;
-	}
-
-	/** @param userDataAccessor the {@link #userDataAccessor} to set */
-	public static void setUserDataAccessor(Accessor userDataAccessor) {
-		if(userDataAccessor == null)
-			throw new IllegalArgumentException("userDataAccessor must not be null");
-		Breakable.userDataAccessor = userDataAccessor;
 	}
 
 }
