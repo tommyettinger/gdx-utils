@@ -54,7 +54,7 @@ public class Breakable {
 
 		};
 
-		/** the {@link Accessor} used to access a Breakable in user data (must return a Breakable in {@link #access(Object) access}) */
+		/** the {@link Accessor} used to access a Breakable in user data ({@link Accessor#access(Object) access} must return a Breakable) */
 		private Accessor userDataAccessor = defaultUserDataAccessor;
 
 		/** instantiates a new {@link Manager} */
