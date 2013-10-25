@@ -18,25 +18,23 @@ package net.dermetfan.util.libgdx.maps;
 
 import java.util.Iterator;
 
+import net.dermetfan.util.libgdx.Tmp;
+
 import com.badlogic.gdx.maps.MapProperties;
 import com.badlogic.gdx.maps.tiled.TiledMapTile;
 import com.badlogic.gdx.maps.tiled.TiledMapTileSet;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 
-/**
- * provides useful methods when dealing with maps
- * @author dermetfan
- */
+/** provides useful methods when dealing with maps
+ *  @author dermetfan */
 public abstract class MapUtils {
 
-	/**
-	 * Makes sure the return value is of the desired type. If the value of the property is not of the desired type, it will be parsed. 
-	 * @param properties the {@link MapProperties} to get the value from
-	 * @param key the key of the property
-	 * @param defaultValue the value to return in case the value was null or an empty String or couldn't be returned 
-	 * @return the key's value as the type of defaultValue
-	 */
+	/** Makes sure the return value is of the desired type. If the value of the property is not of the desired type, it will be parsed. 
+	 *  @param properties the {@link MapProperties} to get the value from
+	 *  @param key the key of the property
+	 *  @param defaultValue the value to return in case the value was null or an empty String or couldn't be returned 
+	 *  @return the key's value as the type of defaultValue */
 	@SuppressWarnings("unchecked")
 	public static <T> T getProperty(MapProperties properties, String key, T defaultValue) {
 		Object value = properties.get(key);
@@ -67,11 +65,9 @@ public abstract class MapUtils {
 		return (T) value;
 	}
 
-	/**
-	 * creates an array of TiledMapTiles from a {@link TiledMapTileSet}
-	 * @param tiles the {@link TiledMapTileSet} to create an array from
-	 * @return the array of TiledMapTiles
-	 */
+	/** creates an array of TiledMapTiles from a {@link TiledMapTileSet}
+	 *  @param tiles the {@link TiledMapTileSet} to create an array from
+	 *  @return the array of TiledMapTiles */
 	public static TiledMapTile[] toTiledMapTileArray(TiledMapTileSet tiles) {
 		TiledMapTile[] tileArray = new TiledMapTile[tiles.size()];
 
@@ -83,27 +79,24 @@ public abstract class MapUtils {
 		return tileArray;
 	}
 
-	/** @see #toIsometricGridPoint(Vector2, float, float) */
-	public static Vector2 toIsometricGridPoint(float x, float y, float cellWidth, float cellHeight) {
-		return toIsometricGridPoint(new Vector2(x, y), cellWidth, cellHeight);
-	}
-
-	/**
-	 * converts point to its coordinates on an isometric grid
-	 * @param point the point to convert
-	 * @param cellWidth the width of the grid cells
-	 * @param cellHeight the height of the grid cells
-	 * @return the given point converted to its coordinates on an isometric grid
-	 */
+	/** converts point to its coordinates on an isometric grid
+	 *  @param point the point to convert
+	 *  @param cellWidth the width of the grid cells
+	 *  @param cellHeight the height of the grid cells
+	 *  @return the given point converted to its coordinates on an isometric grid */
 	public static Vector2 toIsometricGridPoint(Vector2 point, float cellWidth, float cellHeight) {
 		point.x = (point.x /= cellWidth) - ((point.y = (point.y - cellHeight / 2) / cellHeight + point.x) - point.x);
 		return point;
 	}
 
 	/** @see #toIsometricGridPoint(Vector2, float, float) */
+	public static Vector2 toIsometricGridPoint(float x, float y, float cellWidth, float cellHeight) {
+		return toIsometricGridPoint(Tmp.vec2_0.set(x, y), cellWidth, cellHeight);
+	}
+
+	/** @see #toIsometricGridPoint(Vector2, float, float) */
 	public static Vector3 toIsometricGridPoint(Vector3 point, float cellWidth, float cellHeight) {
-		point.x = (point.x /= cellWidth) - ((point.y = (point.y - cellHeight / 2) / cellHeight + point.x) - point.x);
-		return point;
+		return point.set(toIsometricGridPoint(Tmp.vec2_0.set(point.x, point.y), cellWidth, cellHeight).x, Tmp.vec2_0.y, 0);
 	}
 
 }

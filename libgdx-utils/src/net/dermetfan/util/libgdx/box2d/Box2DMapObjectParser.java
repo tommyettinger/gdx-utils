@@ -25,6 +25,7 @@ import static net.dermetfan.util.libgdx.math.GeometryUtils.toVector2Array;
 
 import java.util.Iterator;
 
+import net.dermetfan.util.libgdx.Tmp;
 import net.dermetfan.util.libgdx.math.BayazitDecomposer;
 
 import com.badlogic.gdx.maps.Map;
@@ -108,9 +109,6 @@ public class Box2DMapObjectParser {
 
 	/** the parsed {@link Joint Joints} */
 	private ObjectMap<String, Joint> joints = new ObjectMap<String, Joint>();
-
-	/** a temporary {@link Vector2} */
-	private final Vector2 tmp = new Vector2();
 
 	/** creates a new {@link Box2DMapObjectParser} with the default {@link Aliases} */
 	public Box2DMapObjectParser() {
@@ -267,7 +265,7 @@ public class Box2DMapObjectParser {
 			shape = new PolygonShape();
 			Rectangle rectangle = ((RectangleMapObject) mapObject).getRectangle();
 			float x = rectangle.x * unitScale, y = rectangle.y * unitScale, width = rectangle.width * unitScale, height = rectangle.height * unitScale;
-			((PolygonShape) shape).setAsBox(width / 2, height / 2, tmp.set(x - body.getPosition().x + width / 2, y - body.getPosition().y + height / 2), body.getAngle());
+			((PolygonShape) shape).setAsBox(width / 2, height / 2, Tmp.vec2_0.set(x - body.getPosition().x + width / 2, y - body.getPosition().y + height / 2), body.getAngle());
 		} else if(mapObject instanceof PolygonMapObject) {
 			shape = new PolygonShape();
 			Polygon polygon = new Polygon(((PolygonMapObject) mapObject).getPolygon().getTransformedVertices());
@@ -286,7 +284,7 @@ public class Box2DMapObjectParser {
 			Circle circle = new Circle(mapObjectCircle.x, mapObjectCircle.y, mapObjectCircle.radius);
 			circle.setPosition(circle.x * unitScale - body.getPosition().x, circle.y * unitScale - body.getPosition().y);
 			circle.radius *= unitScale;
-			((CircleShape) shape).setPosition(tmp.set(circle.x, circle.y));
+			((CircleShape) shape).setPosition(Tmp.vec2_0.set(circle.x, circle.y));
 			((CircleShape) shape).setRadius(circle.radius);
 		} else if(mapObject instanceof EllipseMapObject) {
 			Ellipse ellipse = ((EllipseMapObject) mapObject).getEllipse();

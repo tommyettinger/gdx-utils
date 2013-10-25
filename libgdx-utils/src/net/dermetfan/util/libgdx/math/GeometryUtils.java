@@ -17,19 +17,14 @@
 package net.dermetfan.util.libgdx.math;
 
 import static net.dermetfan.util.math.MathUtils.amplitude;
+import net.dermetfan.util.libgdx.Tmp;
 
 import com.badlogic.gdx.math.Polygon;
 import com.badlogic.gdx.math.Vector2;
 
-/**
- * contains some useful methods for geometric calculations
- * @author dermetfan
- */
+/** provides some useful methods for geometric calculations
+ *  @author dermetfan */
 public abstract class GeometryUtils {
-
-	/** a temporary variable used by some methods
-	 *  warning not safe to use as it may change any time */
-	private static final Vector2 tmpVec = new Vector2();
 
 	/** @see #tmpVec */
 	private static Vector2[] tmpVecArr;
@@ -44,7 +39,7 @@ public abstract class GeometryUtils {
 
 	/** @see #size(Vector2[], Vector2) */
 	public static Vector2 size(Vector2[] vertices) {
-		return size(vertices, tmpVec);
+		return size(vertices, Tmp.vec2_0);
 	}
 
 	/** @return the x values of the given vertices */
@@ -73,10 +68,8 @@ public abstract class GeometryUtils {
 		return filterY(vertices, tmpFloatArr);
 	}
 
-	/**
-	 * @param vector2s the Vector2[] to convert to a float[]
-	 * @return the float[] converted from the given Vector2[]
-	 */
+	/** @param vector2s the Vector2[] to convert to a float[]
+	 *  @return the float[] converted from the given Vector2[] */
 	public static float[] toFloatArray(Vector2[] vector2s, float[] output) {
 		output = new float[vector2s.length * 2];
 
@@ -95,10 +88,8 @@ public abstract class GeometryUtils {
 		return toFloatArray(vector2s, tmpFloatArr);
 	}
 
-	/**
-	 * @param floats the float[] to convert to a Vector2[]
-	 * @return the Vector2[] converted from the given float[]
-	 */
+	/** @param floats the float[] to convert to a Vector2[]
+	 *  @return the Vector2[] converted from the given float[] */
 	public static Vector2[] toVector2Array(float[] floats, Vector2[] output) {
 		if(floats.length % 2 != 0)
 			throw new IllegalArgumentException("the float array's length is not dividable by two, so it won't make up a Vector2 array: " + floats.length);
@@ -117,10 +108,8 @@ public abstract class GeometryUtils {
 		return toVector2Array(floats, tmpVecArr);
 	}
 
-	/**
-	 * @param vertexCount the number of vertices for each {@link Polygon}
-	 * @see #toPolygonArray(Vector2[], int[])
-	 */
+	/** @param vertexCount the number of vertices for each {@link Polygon}
+	 *  @see #toPolygonArray(Vector2[], int[]) */
 	public static Polygon[] toPolygonArray(Vector2[] vertices, int vertexCount) {
 		int[] vertexCounts = new int[vertices.length / vertexCount];
 		for(int i = 0; i < vertexCounts.length; i++)
@@ -128,11 +117,9 @@ public abstract class GeometryUtils {
 		return toPolygonArray(vertices, vertexCounts);
 	}
 
-	/**
-	 * @param vertices the vertices which should be split into a {@link Polygon} array
-	 * @param vertexCounts the number of vertices of each {@link Polygon}
-	 * @return the {@link Polygon} array extracted from the vertices
-	 */
+	/** @param vertices the vertices which should be split into a {@link Polygon} array
+	 *  @param vertexCounts the number of vertices of each {@link Polygon}
+	 *  @return the {@link Polygon} array extracted from the vertices */
 	public static Polygon[] toPolygonArray(Vector2[] vertices, int[] vertexCounts) {
 		Polygon[] polygons = new Polygon[vertexCounts.length];
 
@@ -147,10 +134,8 @@ public abstract class GeometryUtils {
 		return polygons;
 	}
 
-	/**
-	 * @param polygon the polygon, assumed to be simple
-	 * @return if the vertices are in clockwise order 
-	 */
+	/** @param polygon the polygon, assumed to be simple
+	 *  @return if the vertices are in clockwise order */
 	public static boolean areVerticesClockwise(Polygon polygon) {
 		return polygon.area() < 0;
 	}
@@ -191,21 +176,18 @@ public abstract class GeometryUtils {
 		return area /= 2;
 	}
 
-	/**
-	 * @param vertices the vertices of the polygon to examine for convexity
-	 * @return if the polygon is convex
-	 */
+	/** @param vertices the vertices of the polygon to examine for convexity
+	 *  @return if the polygon is convex */
 	public static boolean isConvex(Vector2[] vertices) {
 		// http://www.sunshine2k.de/coding/java/Polygon/Convex/polygon.htm
 
-		Vector2 p, v, u;
+		Vector2 p, v = Tmp.vec2_1, u;
 		float res = 0;
 		for(int i = 0; i < vertices.length; i++) {
 			p = vertices[i];
-			tmpVec.set(vertices[(i + 1) % vertices.length]);
-			v = new Vector2();
-			v.x = tmpVec.x - p.x;
-			v.y = tmpVec.y - p.y;
+			Tmp.vec2_0.set(vertices[(i + 1) % vertices.length]);
+			v.x = Tmp.vec2_0.x - p.x;
+			v.y = Tmp.vec2_0.y - p.y;
 			u = vertices[(i + 2) % vertices.length];
 
 			if(i == 0) // in first loop direction is unknown, so save it in res

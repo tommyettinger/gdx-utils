@@ -23,19 +23,15 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.Fixture;
 
-/**
- * A {@link Box2DSprite} using an {@link AnimatedSprite} for animation
- * @author dermetfan
- */
+/** A {@link Box2DSprite} using an {@link AnimatedSprite} for animation
+ *  @author dermetfan */
 public class AnimatedBox2DSprite extends Box2DSprite {
 
 	/** the {@link AnimatedSprite} used for animation */
 	private AnimatedSprite animatedSprite;
 
-	/**
-	 * creates a new {@link AnimatedBox2DSprite} with the given {@link AnimatedSprite}
-	 * @param animatedSprite the {@link AnimatedSprite} to use 
-	 */
+	/** creates a new {@link AnimatedBox2DSprite} with the given {@link AnimatedSprite}
+	 *  @param animatedSprite the {@link AnimatedSprite} to use */
 	public AnimatedBox2DSprite(AnimatedSprite animatedSprite) {
 		super(animatedSprite);
 		this.animatedSprite = animatedSprite;
@@ -129,6 +125,26 @@ public class AnimatedBox2DSprite extends Box2DSprite {
 	/** @see AnimatedSprite#setAutoUpdate(boolean) */
 	public void setAutoUpdate(boolean autoUpdate) {
 		animatedSprite.setAutoUpdate(autoUpdate);
+	}
+
+	/** @see AnimatedSprite#isKeepSize() */
+	public boolean isKeepSize() {
+		return animatedSprite.isKeepSize();
+	}
+
+	/** @see AnimatedSprite#setKeepSize(boolean) */
+	public void setKeepSize(boolean keepSize) {
+		animatedSprite.setKeepSize(keepSize);
+	}
+
+	/** @see AnimatedSprite#isCenterFrames() */
+	public boolean isCenterFrames() {
+		return animatedSprite.isCenterFrames();
+	}
+
+	/** @see AnimatedSprite#setCenterFrames(boolean) */
+	public void setCenterFrames(boolean centerFrames) {
+		animatedSprite.setCenterFrames(centerFrames);
 	}
 
 }

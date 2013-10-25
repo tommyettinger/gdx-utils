@@ -23,6 +23,7 @@ import static net.dermetfan.util.libgdx.math.GeometryUtils.filterY;
 import static net.dermetfan.util.math.MathUtils.amplitude;
 import static net.dermetfan.util.math.MathUtils.max;
 import static net.dermetfan.util.math.MathUtils.min;
+import net.dermetfan.util.libgdx.Tmp;
 
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Body;
@@ -35,10 +36,8 @@ import com.badlogic.gdx.physics.box2d.Shape;
 import com.badlogic.gdx.physics.box2d.Shape.Type;
 import com.badlogic.gdx.utils.ObjectMap;
 
-/**
- * provides methods for geometric operations with Box2D bodies, fixtures and shapes
- * @author dermetfan
- */
+/** provides methods for geometric operations with Box2D bodies, fixtures and shapes
+ *  @author dermetfan */
 public abstract class Box2DUtils {
 
 	/** cached method results */
@@ -68,14 +67,8 @@ public abstract class Box2DUtils {
 	/** the maximum of {@link Shape Shapes} and their vertices to automatically cache if {@link #autoShapeCache} is true */
 	private static int autoShapeCacheMaxSize = Integer.MAX_VALUE;
 
-	/** temporary {@link Vector2} used by some methods
+	/** temporary {@link Vector2} array used by some methods
 	 *  warning: not safe to use as it may change unexpectedly */
-	public static Vector2 tmpVec = new Vector2();
-
-	/** @see #tmpVec */
-	public static Vector2 tmpVec2 = new Vector2();
-
-	/** @see #tmpVec */
 	public static Vector2[] tmpVecArr;
 
 	/** @return the vertices of all fixtures of the given body
@@ -136,10 +129,10 @@ public abstract class Box2DUtils {
 			case Edge:
 				EdgeShape edgeShape = (EdgeShape) shape;
 
-				edgeShape.getVertex1(tmpVec);
-				edgeShape.getVertex2(tmpVec2);
+				edgeShape.getVertex1(Tmp.vec2_0);
+				edgeShape.getVertex2(Tmp.vec2_1);
 
-				output = new Vector2[] {tmpVec, tmpVec2};
+				output = new Vector2[] {Tmp.vec2_0, Tmp.vec2_1};
 				break;
 			case Chain:
 				ChainShape chainShape = (ChainShape) shape;
@@ -314,7 +307,7 @@ public abstract class Box2DUtils {
 
 	/** @return the size of the given Shape */
 	public static Vector2 size(Shape shape) {
-		return size(shape, tmpVec);
+		return size(shape, Tmp.vec2_0);
 	}
 
 	/** @see #positionRelative(CircleShape) */
@@ -355,7 +348,7 @@ public abstract class Box2DUtils {
 
 	/** @see #positionRelative(Shape, float, Vector2) */
 	public static Vector2 positionRelative(Shape shape, float rotation) {
-		return positionRelative(shape, rotation, tmpVec);
+		return positionRelative(shape, rotation, Tmp.vec2_0);
 	}
 
 	/** @see #position(Fixture) */
@@ -365,7 +358,7 @@ public abstract class Box2DUtils {
 
 	/** @return the position of the given Fixture in world coordinates */
 	public static Vector2 position(Fixture fixture) {
-		return position(fixture.getShape(), fixture.getBody(), tmpVec);
+		return position(fixture.getShape(), fixture.getBody(), Tmp.vec2_0);
 	}
 
 	/** @see #position(Shape, Body) */
@@ -377,7 +370,7 @@ public abstract class Box2DUtils {
 	 *  @param shape the Shape which position to get
 	 *  @param body the Body the given Shape is attached to */
 	public static Vector2 position(Shape shape, Body body) {
-		return body.getPosition().add(positionRelative(shape, body.getTransform().getRotation(), tmpVec));
+		return body.getPosition().add(positionRelative(shape, body.getTransform().getRotation(), Tmp.vec2_0));
 	}
 
 	/** @return the autoShapeCache */
