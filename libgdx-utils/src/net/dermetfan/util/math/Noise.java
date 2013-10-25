@@ -18,10 +18,8 @@ package net.dermetfan.util.math;
 
 import java.util.Random;
 
-/**
- * provides noise algorithms
- * @author dermetfan
- */
+/** provides noise algorithms
+ *  @author dermetfan */
 public abstract class Noise {
 
 	/** the seed used by {@link #random} */
@@ -33,30 +31,26 @@ public abstract class Noise {
 	/** the {@link Random} used to generate pseudo-random values */
 	private static Random random = new Random();
 
-	/**
-	 * randomizes a given float array using the midpoint-displacement algorithm
-	 * @param values the float array to randomize
-	 * @param range the range used for random values
-	 * @param smoothness the smoothness of the transitions
-	 * @return the randomized float array
-	 */
+	/** randomizes a given float array using the midpoint-displacement algorithm
+	 *  @param values the float array to randomize
+	 *  @param range the range used for random values
+	 *  @param smoothness the smoothness of the transitions
+	 *  @return the randomized float array */
 	public static float[] midpointDisplacement(float[] values, float range, float smoothness) {
 		for(int i = 0; i < values.length; i++, range /= smoothness)
 			values[i] = (values[(i - 1 + values.length) % values.length] + values[(i + 1) % values.length]) / 2 + random(-range, range);
 		return values;
 	}
 
-	/**
-	 * generates a height map using the midpoint-displacement algorithm
-	 * @param n level of detail
-	 * @param scaleX scale of the x axis
-	 * @param scaleY scale of the y axis
-	 * @param range the range used for random values
-	 * @param smoothness the smoothness of the transitions
-	 * @param initializeRandomly if init should be ignored to use random values instead
-	 * @param init the value used to initialize the grid
-	 * @return a height map generated using the midpoint-displacement algorithm
-	 */
+	/** generates a height map using the midpoint-displacement algorithm
+	 *  @param n level of detail
+	 *  @param scaleX scale of the x axis
+	 *  @param scaleY scale of the y axis
+	 *  @param range the range used for random values
+	 *  @param smoothness the smoothness of the transitions
+	 *  @param initializeRandomly if init should be ignored to use random values instead
+	 *  @param init the value used to initialize the grid
+	 *  @return a height map generated using the midpoint-displacement algorithm */
 	public static float[][] midpointDisplacement(int n, int scaleX, int scaleY, float range, float smoothness, boolean initializeRandomly, float init) {
 		int x, y, power = (int) Math.pow(2, n), width = scaleX * power + 1, height = scaleY * power + 1, step;
 		float[][] map = new float[width][height];
@@ -83,19 +77,17 @@ public abstract class Noise {
 		return map;
 	}
 
-	/**
-	 * generates a height map using the diamond-square algorithm
-	 * @param n level of detail
-	 * @param scaleX scale of the x axis
-	 * @param scaleY scale of the y axis
-	 * @param range the range used for random values
-	 * @param smoothness the smoothness of the transitions
-	 * @param wrapX if the map should wrap on the x axis
-	 * @param wrapY if the map should wrap on the y axis
-	 * @param initializeRandomly if init should be ignored to use random values instead
-	 * @param init the value used to initialize the grid
-	 * @return a height map generated using the diamond-square algorithm
-	 */
+	/** generates a height map using the diamond-square algorithm
+	 *  @param n level of detail
+	 *  @param scaleX scale of the x axis
+	 *  @param scaleY scale of the y axis
+	 *  @param range the range used for random values
+	 *  @param smoothness the smoothness of the transitions
+	 *  @param wrapX if the map should wrap on the x axis
+	 *  @param wrapY if the map should wrap on the y axis
+	 *  @param initializeRandomly if init should be ignored to use random values instead
+	 *  @param init the value used to initialize the grid
+	 *  @return a height map generated using the diamond-square algorithm */
 	public static float[][] diamondSquare(int n, int scaleX, int scaleY, float smoothness, float range, boolean wrapX, boolean wrapY, boolean initializeRandomly, float init) {
 		int power = (int) Math.pow(2, n), width = scaleX * power + 1, height = scaleY * power + 1, x, y;
 		float map[][] = new float[width][height], avg;
@@ -126,6 +118,8 @@ public abstract class Noise {
 		return map;
 	}
 
+	/** a copy of {@link com.badlogic.gdx.math.MathUtils#random(float, float)} using the {@link #random Random object} of {@link Noise}
+	 *  @return a random value between start (inclusive) and end (exclusive) */
 	public static float random(float start, float end) {
 		return start + random.nextFloat() * (end - start);
 	}

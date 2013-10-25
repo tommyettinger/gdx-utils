@@ -25,25 +25,22 @@ import static net.dermetfan.util.libgdx.box2d.Box2DUtils.width;
 import java.util.Comparator;
 
 import net.dermetfan.util.Accessor;
+import net.dermetfan.util.libgdx.Tmp;
 
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.MathUtils;
-import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.Fixture;
 import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.ObjectMap;
 
-/**
- * A {@link Box2DSprite} is a {@link Sprite} with additional drawing information and the abililty to draw itself on a given {@link Body} or {@link Fixture}.
- * It is supposed to be put in the user data of {@link Fixture Fixtures} or {@link Body Bodies}. The Fixture's user data is recommend though to make use of caching which will increase performance!
- * 
- * @author dermetfan
- */
+/** A {@link Box2DSprite} is a {@link Sprite} with additional drawing information and the abililty to draw itself on a given {@link Body} or {@link Fixture}.
+ *  It is supposed to be put in the user data of {@link Fixture Fixtures} or {@link Body Bodies}. The Fixture's user data is recommend though to make use of caching which will increase performance!
+ *  @author dermetfan */
 public class Box2DSprite extends Sprite {
 
 	/** the z index for sorted drawing */
@@ -165,27 +162,21 @@ public class Box2DSprite extends Sprite {
 		tmpZMap.clear();
 	}
 
-	/** cached position {@link Vector2} used in {@link #draw(SpriteBatch, Fixture)} for performance */
-	private final Vector2 tmpPosition = new Vector2();
-
 	/** draws this {@link Box2DSprite} on the given {@link Fixture} */
 	public void draw(SpriteBatch batch, Fixture fixture) {
 		batch.setColor(getColor());
 		float width = width(fixture), height = height(fixture);
-		tmpPosition.set(position(fixture));
-		batch.draw(this, tmpPosition.x - width / 2 + getX(), tmpPosition.y - height / 2 + getY(), isUseOriginX() ? getOriginX() : width / 2, isUseOriginY() ? getOriginY() : height / 2, isAdjustWidth() ? width : getWidth(), isAdjustHeight() ? height : getHeight(), getScaleX(), getScaleY(), fixture.getBody().getAngle() * MathUtils.radiansToDegrees + getRotation());
+		Tmp.vec2_0.set(position(fixture));
+		batch.draw(this, Tmp.vec2_0.x - width / 2 + getX(), Tmp.vec2_0.y - height / 2 + getY(), isUseOriginX() ? getOriginX() : width / 2, isUseOriginY() ? getOriginY() : height / 2, isAdjustWidth() ? width : getWidth(), isAdjustHeight() ? height : getHeight(), getScaleX(), getScaleY(), fixture.getBody().getAngle() * MathUtils.radiansToDegrees + getRotation());
 	}
-
-	/** cached center {@link Vector2} used in {@link #draw(SpriteBatch, Body)} for performance */
-	private final Vector2 tmpCenter = new Vector2();
 
 	/** draws this {@link Box2DSprite} on the given {@link Body} */
 	public void draw(SpriteBatch batch, Body body) {
 		batch.setColor(getColor());
 		float width = width(body), height = height(body);
-		tmpCenter.set(minX(body) + width / 2, minY(body) + height / 2);
-		tmpPosition.set(body.getWorldPoint(tmpCenter));
-		batch.draw(this, tmpPosition.x - width / 2 + getX(), tmpPosition.y - height / 2 + getY(), isUseOriginX() ? getOriginX() : width / 2, isUseOriginY() ? getOriginY() : height / 2, isAdjustWidth() ? width : getWidth(), isAdjustHeight() ? height : getHeight(), getScaleX(), getScaleY(), body.getAngle() * MathUtils.radiansToDegrees + getRotation());
+		Tmp.vec2_0.set(minX(body) + width / 2, minY(body) + height / 2);
+		Tmp.vec2_0.set(body.getWorldPoint(Tmp.vec2_0));
+		batch.draw(this, Tmp.vec2_0.x - width / 2 + getX(), Tmp.vec2_0.y - height / 2 + getY(), isUseOriginX() ? getOriginX() : width / 2, isUseOriginY() ? getOriginY() : height / 2, isAdjustWidth() ? width : getWidth(), isAdjustHeight() ? height : getHeight(), getScaleX(), getScaleY(), body.getAngle() * MathUtils.radiansToDegrees + getRotation());
 	}
 
 	/** @return the {@link #z} */
