@@ -19,6 +19,20 @@ package net.dermetfan.util.math;
 /** math utility methods */
 public class MathUtils {
 
+	/** @return value, min or max */
+	public static float clamp(float value, float min, float max) {
+		if(value < min)
+			return min;
+		if(value > max)
+			return max;
+		return value;
+	}
+
+	/** @return {@code replacement} if {@code value} is NaN */
+	public static float replaceNaN(float value, float replacement) {
+		return Float.isNaN(value) ? replacement : value;
+	}
+
 	/** @return the sum of all values in the given array */
 	public static float sum(float[] values) {
 		float sum = 0;
@@ -112,6 +126,20 @@ public class MathUtils {
 		for(int i = 0; i < boxed.length; i++)
 			boxed[i] = values[i];
 		return boxed;
+	}
+
+	/** @param sum the sum at which to return the element
+	 *  @param elements the elements from which to return one when {@code sum} is reached
+	 *  @param values the values to add to each other to calculate {@code sum}
+	 *  @return the element from {@code elements} when {@code sum} was reached by adding the given {@code values} together */
+	public static <T> T elementAtSum(float sum, T[] elements, float[] values) {
+		float totalTime = 0;
+		for(int i = 0; i < values.length; i++) {
+			totalTime += values[i];
+			if(totalTime >= sum)
+				return elements[i];
+		}
+		return totalTime <= 0 ? elements[0] : elements[elements.length - 1];
 	}
 
 }
