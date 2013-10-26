@@ -92,7 +92,7 @@ public class Appender {
 	}
 
 	/** @see #update(float)
-	 *  @see #append(CharSequence, boolean) */
+	 *  @see #append(CharSequence) */
 	public CharSequence updateAndAppend(CharSequence seq, float delta) {
 		update(delta);
 		return append(seq);

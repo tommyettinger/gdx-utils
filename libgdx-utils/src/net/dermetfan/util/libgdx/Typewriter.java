@@ -37,6 +37,10 @@ public class Typewriter {
 	/** the {@link Appender} used for the cursor */
 	private Appender appender = new Appender(new CharSequence[] {"|", ""}, .5f);
 
+	/** instantiates a {@code Typewriter} using the default values */
+	public Typewriter() {
+	}
+
 	/** instantiates a new {@code Typewriter} with the given cursor */
 	public Typewriter(CharSequence cursor) {
 		appender.getAppendices()[0] = cursor;

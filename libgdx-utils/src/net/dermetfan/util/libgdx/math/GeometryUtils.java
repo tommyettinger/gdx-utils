@@ -26,10 +26,10 @@ import com.badlogic.gdx.math.Vector2;
  *  @author dermetfan */
 public abstract class GeometryUtils {
 
-	/** a temporary variable */
+	/** a temporary array */
 	private static Vector2[] tmpVecArr;
 
-	/** @see #tmpVec */
+	/** a temporary array */
 	private static float[] tmpFloatArr;
 
 	/** @return a Vector2 representing the size of a rectangle containing all given vertices */
