@@ -16,11 +16,27 @@
 
 package net.dermetfan.util;
 
-import java.util.Arrays;
-
-/** Miscellaneous utility methods 
+/** array utility methods 
  *  @author dermetfan */
-public abstract class MiscUtils {
+public abstract class ArrayUtils {
+
+	/** @return an array of the unboxed values of the given values
+	 *  @see Float#floatValue() */
+	public static float[] unbox(Float[] values) {
+		float[] unboxed = new float[values.length];
+		for(int i = 0; i < unboxed.length; i++)
+			unboxed[i] = values[i].floatValue();
+		return unboxed;
+	}
+
+	/** @return an array of the boxed values of the given values
+	 *  @see #unbox(Float[]) */
+	public static Float[] box(float[] values) {
+		Float[] boxed = new Float[values.length];
+		for(int i = 0; i < boxed.length; i++)
+			boxed[i] = values[i];
+		return boxed;
+	}
 
 	/** selects the given {@code indices} from the given {@code elements}
 	 *  @param elements the elements to select from
@@ -65,8 +81,6 @@ public abstract class MiscUtils {
 				break;
 		}
 
-		System.out.println(length);
-
 		if(length == elements.length)
 			return elements;
 
@@ -110,13 +124,6 @@ public abstract class MiscUtils {
 			selection[si] = elements[ei];
 
 		return selection;
-	}
-
-	public static void main(String[] args) {
-		Integer[] array = new Integer[] {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
-
-		System.out.println(Arrays.toString(skipselect(array, 0, 1)));
-		System.out.println(Arrays.toString(skipselect(array, new int[] {0, 0}, null)));
 	}
 
 }

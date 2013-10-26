@@ -65,19 +65,19 @@ public class MathUtils {
 	/** @param value the desired value
 	 *  @param values the values to inspect
 	 *  @param range values out of this range will not be returned
-	 *  @return the nearest to value in values, NaN if none is found */
+	 *  @return the nearest to value in values, {@code NaN} if none is found */
 	public static float nearest(float value, float[] values, float range) {
-		float diff, smallestDiff = Float.POSITIVE_INFINITY, closest = Float.NaN;
+		float diff, smallestDiff = Float.POSITIVE_INFINITY, nearest = Float.NaN;
 
 		for(float candidate : values) {
 			if(candidate == value)
 				return value;
 			if((diff = Math.abs(candidate - value)) < smallestDiff)
 				if((smallestDiff = diff) <= range)
-					closest = candidate;
+					nearest = candidate;
 		}
 
-		return closest;
+		return nearest;
 	}
 
 	/** @return the nearest to value in values
@@ -110,36 +110,16 @@ public class MathUtils {
 		return values;
 	}
 
-	/** @return an array of the unboxed values of the given values
-	 *  @see Float#floatValue() */
-	public static float[] unbox(Float[] values) {
-		float[] unboxed = new float[values.length];
-		for(int i = 0; i < unboxed.length; i++)
-			unboxed[i] = values[i].floatValue();
-		return unboxed;
-	}
-
-	/** @return an array of the boxed values of the given values
-	 *  @see #unbox(Float[]) */
-	public static Float[] box(float[] values) {
-		Float[] boxed = new Float[values.length];
-		for(int i = 0; i < boxed.length; i++)
-			boxed[i] = values[i];
-		return boxed;
-	}
-
 	/** @param sum the sum at which to return the element
+	 *  @param values the values to add together to calculate {@code sum}
 	 *  @param elements the elements from which to return one when {@code sum} is reached
-	 *  @param values the values to add to each other to calculate {@code sum}
 	 *  @return the element from {@code elements} when {@code sum} was reached by adding the given {@code values} together */
-	public static <T> T elementAtSum(float sum, T[] elements, float[] values) {
-		float totalTime = 0;
-		for(int i = 0; i < values.length; i++) {
-			totalTime += values[i];
-			if(totalTime >= sum)
+	public static <T> T elementAtSum(float sum, float[] values, T[] elements) {
+		float total = 0;
+		for(int i = 0; i < values.length; i++)
+			if((total += values[i]) >= sum)
 				return elements[i];
-		}
-		return totalTime <= 0 ? elements[0] : elements[elements.length - 1];
+		return total <= 0 ? elements[0] : elements[elements.length - 1];
 	}
 
 }
