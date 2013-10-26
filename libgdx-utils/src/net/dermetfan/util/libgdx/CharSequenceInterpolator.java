@@ -57,7 +57,7 @@ public class CharSequenceInterpolator {
 	 *  @param interpolation the {@code Interpolation} to use
 	 *  @return a {@link CharSequence#subSequence(int, int) subsequence} representing the given {@code str} from {@code beginIndex} to {@code endIndex} with its {@link CharSequence#length() length} interpolated using the given {@code interpolation} */
 	public static CharSequence interpolate(CharSequence str, float time, float charsPerSecond, int beginIndex, int endIndex, Interpolation interpolation) {
-		return str.subSequence(beginIndex, (int) com.badlogic.gdx.math.MathUtils.clamp(MathUtils.replaceNaN(interpolation.apply(beginIndex, endIndex, linear(time, charsPerSecond, endIndex - beginIndex)), 0), beginIndex, endIndex));
+		return str.subSequence(beginIndex, (int) MathUtils.clamp(MathUtils.replaceNaN(interpolation.apply(beginIndex, endIndex, linear(time, charsPerSecond, endIndex - beginIndex)), 0), beginIndex, endIndex));
 	}
 
 	/** the {@link Interpolation} to use */
