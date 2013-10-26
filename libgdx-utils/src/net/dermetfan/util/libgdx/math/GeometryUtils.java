@@ -26,7 +26,7 @@ import com.badlogic.gdx.math.Vector2;
  *  @author dermetfan */
 public abstract class GeometryUtils {
 
-	/** @see #tmpVec */
+	/** a temporary variable */
 	private static Vector2[] tmpVecArr;
 
 	/** @see #tmpVec */
@@ -44,7 +44,8 @@ public abstract class GeometryUtils {
 
 	/** @return the x values of the given vertices */
 	public static float[] filterX(Vector2[] vertices, float[] output) {
-		output = new float[vertices.length];
+		if(output == null || output.length != vertices.length)
+			output = new float[vertices.length];
 		for(int i = 0; i < output.length; i++)
 			output[i] = vertices[i].x;
 		return output;
@@ -57,7 +58,8 @@ public abstract class GeometryUtils {
 
 	/** @return the y values of the given vertices */
 	public static float[] filterY(Vector2[] vertices, float[] output) {
-		output = new float[vertices.length];
+		if(output == null || output.length != vertices.length)
+			output = new float[vertices.length];
 		for(int i = 0; i < output.length; i++)
 			output[i] = vertices[i].y;
 		return output;
@@ -71,10 +73,10 @@ public abstract class GeometryUtils {
 	/** @param vector2s the Vector2[] to convert to a float[]
 	 *  @return the float[] converted from the given Vector2[] */
 	public static float[] toFloatArray(Vector2[] vector2s, float[] output) {
-		output = new float[vector2s.length * 2];
+		if(output == null || output.length != vector2s.length * 2)
+			output = new float[vector2s.length * 2];
 
-		int vi = -1;
-		for(int i = 0; i < output.length; i++)
+		for(int i = 0, vi = -1; i < output.length; i++)
 			if(i % 2 == 0)
 				output[i] = vector2s[++vi].x;
 			else
@@ -94,11 +96,14 @@ public abstract class GeometryUtils {
 		if(floats.length % 2 != 0)
 			throw new IllegalArgumentException("the float array's length is not dividable by two, so it won't make up a Vector2 array: " + floats.length);
 
-		output = new Vector2[floats.length / 2];
+		if(output == null || output.length != floats.length / 2) {
+			output = new Vector2[floats.length / 2];
+			for(int i = 0; i < output.length; i++)
+				output[i] = new Vector2();
+		}
 
-		int fi = -1;
-		for(int i = 0; i < output.length; i++)
-			output[i] = new Vector2(floats[++fi], floats[++fi]);
+		for(int i = 0, fi = -1; i < output.length; i++)
+			output[i].set(floats[++fi], floats[++fi]);
 
 		return output;
 	}
