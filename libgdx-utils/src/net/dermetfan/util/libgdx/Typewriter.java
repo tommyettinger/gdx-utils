@@ -1,85 +1,123 @@
+/**
+ * Copyright 2013 Robin Stumm (serverkorken@googlemail.com, http://dermetfan.bplaced.net)
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package net.dermetfan.util.libgdx;
 
-import net.dermetfan.util.Appendor;
+import net.dermetfan.util.Appender;
 
+import com.badlogic.gdx.math.Interpolation;
+
+/** A Typewriter writing a {@code CharSequence}.<br/>
+ *  Uses a {@link CharSequenceInterpolator} and {@link Appender}, so {@link Interpolation Interpolations} and custom {@link Appender#setAppendices(CharSequence[]) cursors} can be used.
+ *  @author dermetfan */
 public class Typewriter {
 
-	private CharSequenceInterpolator interpolator = new CharSequenceInterpolator(40);
-	private Appendor appendor = new Appendor(new CharSequence[] {"|", ""}, .5f);
+	/** if the {@link #appender cursor} should be shown when the {@code Typewriter} is typing (false by default) */
 	private boolean cursorWhileTyping = false;
+
+	/** if the {@link #appender cursor} should be shown when the {@code Typewriter} is done typing (true by default) */
 	private boolean cursorAfterTyping = true;
 
-	public Typewriter(CharSequence cursor, boolean cursorWhileTyping, boolean cursorAfterTyping) {
-		this(cursorWhileTyping, cursorAfterTyping);
-		appendor.getAppendixes()[0] = cursor;
+	/** the {@link CharSequenceInterpolator} used to type */
+	private CharSequenceInterpolator interpolator = new CharSequenceInterpolator(40);
+
+	/** the {@link Appender} used for the cursor */
+	private Appender appender = new Appender(new CharSequence[] {"|", ""}, .5f);
+
+	/** instantiates a new {@code Typewriter} with the given cursor */
+	public Typewriter(CharSequence cursor) {
+		appender.getAppendices()[0] = cursor;
 	}
 
+	/** instantiates a new {@code Typewriter} with the given {@link #cursorWhileTyping} and {@link #cursorAfterTyping} */
 	public Typewriter(boolean cursorWhileTyping, boolean cursorAfterTyping) {
 		this.cursorWhileTyping = cursorWhileTyping;
 		this.cursorAfterTyping = cursorAfterTyping;
 	}
 
+	/** instantiates a new {@code Typewriter} with the given cursor, {@link #cursorWhileTyping} and {@link #cursorAfterTyping}
+	 *  @see #Typewriter(boolean, boolean) */
+	public Typewriter(CharSequence cursor, boolean cursorWhileTyping, boolean cursorAfterTyping) {
+		this(cursorWhileTyping, cursorAfterTyping);
+		appender.getAppendices()[0] = cursor;
+	}
+
+	/**  updates the time the {@code Typewriter} had to type */
 	public void update(float delta) {
 		interpolator.update(delta);
-		appendor.update(delta);
+		appender.update(delta);
 	}
 
-	public CharSequence type(CharSequence str) {
-		CharSequence seq = interpolator.interpolate(str);
-		if(seq.length() == str.length()) {
+	/** @return the given {@code CharSequence} as far is it could be typed, with or without cursor */
+	public CharSequence type(CharSequence seq) {
+		CharSequence str = interpolator.interpolate(seq);
+		if(str.length() == seq.length()) {
 			if(cursorAfterTyping)
-				seq = appendor.append(seq);
+				str = appender.append(str);
 		} else if(cursorWhileTyping)
-			seq = appendor.append(seq);
-		return seq;
+			str = appender.append(str);
+		return str;
 	}
 
+	/** @see #update(float)
+	 *  @see #type(CharSequence) */
 	public CharSequence updateAndType(CharSequence str, float delta) {
 		update(delta);
 		return type(str);
 	}
 
-	//	public void setCursor(CharSequence cursor) {
-	//		float showCursorDuration = appendor.getDurations().length < 1 ? .5f : appendor.getDurations()[0];
-	//		float hideCursorDuration = appendor.getDurations().length < 2 ? .5f : appendor.getDurations()[1];
-	//		setCursor(cursor, showCursorDuration, hideCursorDuration);
-	//	}
-	//
-	//	public void setCursor(CharSequence cursor, float showCursorDuration, float hideCursorDuration) {
-	//		appendor.set(new CharSequence[] {cursor, ""}, new float[] {showCursorDuration, hideCursorDuration});
-	//	}
-	//
-	//	public CharSequence getCursor() {
-	//		return appendor.getAppendixes()[0];
-	//	}
-	//
-	public void setCursors(CharSequence[] cursors) {
-		CharSequence[] curs = new CharSequence[cursors.length * 2];
-		for(int i = 0; i < curs.length; i++)
-			curs[i] = i % 2 == 0 ? cursors[i / 2] : "";
-		float[] durations = appendor.getDurations();
-		float[] durs = new float[cursors.length * 2];
-		for(int i = 0; i < durs.length; i++)
-			durs[i] = durations[i < durations.length ? i : i - durations.length];
-		appendor.set(curs, durs);
+	/** @see CharSequenceInterpolator#getCharsPerSecond() */
+	public float getCharsPerSecond() {
+		return interpolator.getCharsPerSecond();
 	}
 
-	public CharSequence[] getCursors() {
-		return appendor.getAppendixes();
+	/** @see CharSequenceInterpolator#setCharsPerSecond(float) */
+	public void setCharsPerSecond(float charsPerSecond) {
+		interpolator.setCharsPerSecond(charsPerSecond);
 	}
 
-	//
-	//	public void setCursorDurations(float showCursorDuration, float hideCursorDuration) {
-	//		appendor.setDurations(new float[] {showCursorDuration, hideCursorDuration});
-	//	}
-	//
-	//	public void setCursorDurations(float[] cursorDurations) {
-	//		appendor.setDurations(cursorDurations);
-	//	}
-	//
-	//	public float[] getCursorDurations() {
-	//		return appendor.getDurations();
-	//	}
+	/** @see CharSequenceInterpolator#getTime() */
+	public float getTime() {
+		return interpolator.getTime();
+	}
+
+	/** @see CharSequenceInterpolator#setTime(float) */
+	public void setTime(float time) {
+		interpolator.setTime(time);
+	}
+
+	/** @return the {@link #cursorWhileTyping} */
+	public boolean isCursorWhileTyping() {
+		return cursorWhileTyping;
+	}
+
+	/** @param cursorWhileTyping the {@link #cursorWhileTyping} to set */
+	public void setCursorWhileTyping(boolean cursorWhileTyping) {
+		this.cursorWhileTyping = cursorWhileTyping;
+	}
+
+	/** @return the {@link #cursorAfterTyping} */
+	public boolean isCursorAfterTyping() {
+		return cursorAfterTyping;
+	}
+
+	/** @param cursorAfterTyping the {@link #cursorAfterTyping} to set */
+	public void setCursorAfterTyping(boolean cursorAfterTyping) {
+		this.cursorAfterTyping = cursorAfterTyping;
+	}
 
 	/** @return the {@link #interpolator} */
 	public CharSequenceInterpolator getInterpolator() {
@@ -91,14 +129,14 @@ public class Typewriter {
 		this.interpolator = interpolator;
 	}
 
-	/** @return the {@link #appendor} */
-	public Appendor getAppendor() {
-		return appendor;
+	/** @return the {@link #appender} */
+	public Appender getAppender() {
+		return appender;
 	}
 
-	/** @param appendor the {@link #appendor} to set */
-	public void setAppendor(Appendor appendor) {
-		this.appendor = appendor;
+	/** @param appender the {@link #appender} to set */
+	public void setAppender(Appender appender) {
+		this.appender = appender;
 	}
 
 }
