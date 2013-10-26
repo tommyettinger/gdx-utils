@@ -20,8 +20,8 @@ package net.dermetfan.util;
  *  @author dermetfan */
 public abstract class ArrayUtils {
 
-	/** @return an array of the unboxed values of the given values
-	 *  @see Float#floatValue() */
+	/** @return an array of the unboxed values from the given values
+	 *  @see #box(float[]) */
 	public static float[] unbox(Float[] values) {
 		float[] unboxed = new float[values.length];
 		for(int i = 0; i < unboxed.length; i++)
@@ -29,7 +29,7 @@ public abstract class ArrayUtils {
 		return unboxed;
 	}
 
-	/** @return an array of the boxed values of the given values
+	/** @return an array of the boxed values from the given values
 	 *  @see #unbox(Float[]) */
 	public static Float[] box(float[] values) {
 		Float[] boxed = new Float[values.length];
@@ -50,18 +50,8 @@ public abstract class ArrayUtils {
 		return selection;
 	}
 
-	/** <p>
-	 *  	Skips and selects repeatedly. Stops when {@code elements} has no more values. When {@code skips} has no more values, {@code infiniteSkips} will be used.<br/>
-	 * 		If {@code skips} is null or has a length of zero, {@link #skipselect(Object[], int)} will be used with {@code infiniteSkips}.<br/>
-	 *  	If the length of the selection is the length of the given {@code elements} / all {@code skips} are zero, {@code elements} is returned.
-	 *  </p>
-	 *  <p>
-	 *  	For example, skipselecting [1, 4, 2] from [0, 1, 2, 3, 4, 5, 6, 7, 8, 9] will result in [1, 6, 9].<br/>
-	 *  	Skipselecting [0, 2] with negative {@code infiniteSkips} will result in [0, 3].<br/>
-	 *  	Skipselecting [0, 2] with 4 {@code infiniteSkips} will result in [0, 3, 8].<br/>
-	 *  	Skipselecting [0, 0, ...] with zero {@code infiniteSkips} will return the given {@code elements}.
-	 *  	Skipselecting [0, 1] with negative 1 {@code infiniteSkips} will return every second element ([0, 2, 4, 6, 8]).
-	 *  </p>
+	/** Skips, selects and goes to the next element repeatedly. Stops when {@code elements} has no more values. When {@code skips} has no more values, {@code repeatSkips} will be used repeatedly.<br/>
+	 *  If the length of the selection is the length of the given {@code elements}, {@code elements} is returned.
 	 *  @param elements the elements from which to select not skipped ones
 	 *  @param firstSkip the number of indices to skip initially
 	 *  @param skips the number of indices to skip after each selection
@@ -103,9 +93,9 @@ public abstract class ArrayUtils {
 		return selection;
 	}
 
-	/** Like {@link #skipselect(Object[], int[], int)} with an empty skips array.
+	/** Like {@link #skipselect(Object[], int[], int[])} with a skips array that contains only {@code firstSkip} and an infinite {@code repeatSkips} array which elements are all {@code skips}.
 	 * 	If {@code skips} is smaller than 1, {@code elements} will be returned.
-	 *  @see #skipselect(Object[], int[]) */
+	 *  @see #skipselect(Object[], int[], int[]) */
 	public static <T> T[] skipselect(T[] elements, int firstSkip, int skips) {
 		if(skips < 1)
 			return elements;
