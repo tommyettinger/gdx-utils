@@ -45,19 +45,19 @@ public class CharSequenceInterpolator {
 	}
 
 	/** @see #interpolate(CharSequence, float, float, int, int, Interpolation) */
-	public static CharSequence interpolate(CharSequence str, float time, float charsPerSecond, Interpolation interpolation) {
-		return interpolate(str, time, charsPerSecond, 0, str.length(), interpolation);
+	public static CharSequence interpolate(CharSequence seq, float time, float charsPerSecond, Interpolation interpolation) {
+		return interpolate(seq, time, charsPerSecond, 0, seq.length(), interpolation);
 	}
 
-	/** @param str the {@code CharSequence} to interpolate
+	/** @param seq the {@code CharSequence} to interpolate
 	 *  @param time the {@link #time}
 	 *  @param charsPerSecond the {@link #charsPerSecond}
 	 *  @param beginIndex the index at which the returned {@code CharSequence} should start
 	 *  @param endIndex the index at which the returned {@code CharSequence} should end if the given {@code Interpolation} {@link Interpolation#apply(float, float, float) applied} 1
 	 *  @param interpolation the {@code Interpolation} to use
-	 *  @return a {@link CharSequence#subSequence(int, int) subsequence} representing the given {@code str} from {@code beginIndex} to {@code endIndex} with its {@link CharSequence#length() length} interpolated using the given {@code interpolation} */
-	public static CharSequence interpolate(CharSequence str, float time, float charsPerSecond, int beginIndex, int endIndex, Interpolation interpolation) {
-		return str.subSequence(beginIndex, (int) MathUtils.clamp(MathUtils.replaceNaN(interpolation.apply(beginIndex, endIndex, linear(time, charsPerSecond, endIndex - beginIndex)), 0), beginIndex, endIndex));
+	 *  @return a {@link CharSequence#subSequence(int, int) subsequence} representing the given {@code seq} from {@code beginIndex} to {@code endIndex} with its {@link CharSequence#length() length} interpolated using the given {@code interpolation} */
+	public static CharSequence interpolate(CharSequence seq, float time, float charsPerSecond, int beginIndex, int endIndex, Interpolation interpolation) {
+		return seq.subSequence(beginIndex, (int) MathUtils.clamp(MathUtils.replaceNaN(interpolation.apply(beginIndex, endIndex, linear(time, charsPerSecond, endIndex - beginIndex)), 0), beginIndex, endIndex));
 	}
 
 	/** the {@link Interpolation} to use */
@@ -80,14 +80,14 @@ public class CharSequenceInterpolator {
 	}
 
 	/** @see #interpolate(CharSequence, float, float, Interpolation) */
-	public CharSequence interpolate(CharSequence str) {
-		return interpolate(str, time, charsPerSecond, interpolation);
+	public CharSequence interpolate(CharSequence seq) {
+		return interpolate(seq, time, charsPerSecond, interpolation);
 	}
 
 	/** {@link #update(float) updates} the {@link #time} and returns the {@link #interpolate(CharSequence) interpolated} given {@code CharSequence} */
-	public CharSequence updateAndInterpolate(CharSequence str, float delta) {
+	public CharSequence updateAndInterpolate(CharSequence seq, float delta) {
 		update(delta);
-		return interpolate(str);
+		return interpolate(seq);
 	}
 
 	/** @return the {@link #interpolation} */

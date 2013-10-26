@@ -78,9 +78,9 @@ public class Typewriter {
 
 	/** @see #update(float)
 	 *  @see #type(CharSequence) */
-	public CharSequence updateAndType(CharSequence str, float delta) {
+	public CharSequence updateAndType(CharSequence seq, float delta) {
 		update(delta);
-		return type(str);
+		return type(seq);
 	}
 
 	/** @see CharSequenceInterpolator#getCharsPerSecond() */
