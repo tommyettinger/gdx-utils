@@ -51,16 +51,21 @@ public abstract class MiscUtils {
 	 *  @param skips the number of indices to skip after each selection
 	 *  @param infiniteSkips The skips to use after {@code skips} has no more values. If this is negative, no more elements will be selected. 
 	 *  @return the {@code elements} that were not skipped */
-	public static <T> T[] skipselect(T[] elements, int[] skips, int infiniteSkips) {
-		if(skips.length < 1 || skips == null)
-			return skipselect(elements, 0, infiniteSkips);
+	public static <T> T[] skipselect(T[] elements, int[] skips, int[] repeatSkips) {
+		boolean normal = skips != null && skips.length > 0, repeat = repeatSkips != null && repeatSkips.length > 0;
+		if(!normal && !repeat)
+			return elements;
 
-		int length, span = 0;
-		for(length = 0; length < elements.length; length++)
-			if(span + (length >= skips.length ? infiniteSkips > -1 ? infiniteSkips : Integer.MAX_VALUE - span - 1 : skips[length]) + 1 <= elements.length)
-				span += (length >= skips.length ? infiniteSkips : skips[length]) + 1;
+		int length, span = 0, rsi = 0;
+		for(length = 0; length < elements.length; length++) {
+			int skip = normal && length < skips.length ? skips[length] : repeat ? repeatSkips[rsi >= repeatSkips.length ? rsi = 0 : rsi++] : Integer.MAX_VALUE - span - 1;
+			if(span + skip + 1 <= elements.length)
+				span += skip + 1;
 			else
 				break;
+		}
+
+		System.out.println(length);
 
 		if(length == elements.length)
 			return elements;
@@ -68,12 +73,17 @@ public abstract class MiscUtils {
 		@SuppressWarnings("unchecked")
 		T[] selection = (T[]) new Object[length];
 
-		for(int si = 0, ei = 0; si < length; si++) {
-			selection[si] = elements[ei++];
-			if(si + 1 >= skips.length)
-				ei += infiniteSkips;
+		rsi = 0;
+		for(int si = 0, ei = 0; si < length;) {
+			System.out.println("si: " + si + ", ei: " + ei);
+			selection[si++] = elements[ei++];
+			if(si >= skips.length)
+				if(repeat)
+					ei += repeatSkips[rsi >= repeatSkips.length ? rsi = 0 : rsi++];
+				else
+					break;
 			else
-				ei += skips[si + 1];
+				ei += skips[si];
 		}
 
 		return selection;
@@ -106,7 +116,7 @@ public abstract class MiscUtils {
 		Integer[] array = new Integer[] {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
 
 		System.out.println(Arrays.toString(skipselect(array, 0, 1)));
-		System.out.println(Arrays.toString(skipselect(array, new int[] {0, 1}, 1)));
+		System.out.println(Arrays.toString(skipselect(array, new int[] {0, 0}, null)));
 	}
 
 }
