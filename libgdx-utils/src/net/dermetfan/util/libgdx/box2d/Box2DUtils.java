@@ -16,10 +16,9 @@
 
 package net.dermetfan.util.libgdx.box2d;
 
-import static com.badlogic.gdx.math.MathUtils.cos;
-import static com.badlogic.gdx.math.MathUtils.sin;
 import static net.dermetfan.util.libgdx.math.GeometryUtils.filterX;
 import static net.dermetfan.util.libgdx.math.GeometryUtils.filterY;
+import static net.dermetfan.util.libgdx.math.GeometryUtils.rotate;
 import static net.dermetfan.util.math.MathUtils.amplitude;
 import static net.dermetfan.util.math.MathUtils.max;
 import static net.dermetfan.util.math.MathUtils.min;
@@ -253,8 +252,10 @@ public abstract class Box2DUtils {
 		float min = Float.POSITIVE_INFINITY, max = Float.NEGATIVE_INFINITY, tmp;
 
 		for(Fixture fixture : body.getFixtureList()) {
-			min = (tmp = minX(fixture)) < min ? tmp : min;
-			max = (tmp = maxX(fixture)) > max ? tmp : max;
+			if((tmp = minX(fixture)) < min)
+				min = tmp;
+			if((tmp = maxX(fixture)) > max)
+				max = tmp;
 		}
 
 		return Math.abs(max - min);
@@ -265,8 +266,10 @@ public abstract class Box2DUtils {
 		float min = Float.POSITIVE_INFINITY, max = Float.NEGATIVE_INFINITY, tmp;
 
 		for(Fixture fixture : body.getFixtureList()) {
-			min = (tmp = minY(fixture)) < min ? tmp : min;
-			max = (tmp = maxY(fixture)) > max ? tmp : max;
+			if((tmp = minY(fixture)) < min)
+				min = tmp;
+			if((tmp = maxY(fixture)) > max)
+				max = tmp;
 		}
 
 		return Math.abs(max - min);
@@ -331,19 +334,14 @@ public abstract class Box2DUtils {
 			tmpVecArr = vertices(shape); // the shape's vertices will hopefully be put in #shapeCache
 			if(shapeCache.containsKey(shape)) // the shape's vertices are now hopefully in #shapeCache, so let's try again
 				positionRelative(shape, rotation, output);
-			else
-				// #autoShapeCache is false or #shapeCache reached #autoShapeCacheSize
-				output.set(max(filterX(tmpVecArr)) - amplitude(filterX(tmpVecArr)) / 2, max(filterY(tmpVecArr)) - amplitude(filterY(tmpVecArr)) / 2); // so calculating manually is faster than using the methods because there won't be the containsKey checks
+			else { // #autoShapeCache is false or #shapeCache reached #autoShapeCacheMaxSize
+				float[] xs = filterX(tmpVecArr), ys = filterY(tmpVecArr);
+				output.set(max(xs) - amplitude(xs) / 2, max(ys) - amplitude(ys) / 2); // so calculating manually is faster than using the methods because there won't be the containsKey checks
+			}
 		}
 
 		// transform position according to rotation
-		// http://stackoverflow.com/questions/1469149/calculating-vertices-of-a-rotated-rectangle
-		float xx = output.x, xy = output.y, yx = output.x, yy = output.y;
-
-		xx = xx * cos(rotation) - xy * sin(rotation);
-		yy = yx * sin(rotation) + yy * cos(rotation);
-
-		return output.set(xx, yy);
+		return rotate(output, rotation);
 	}
 
 	/** @see #positionRelative(Shape, float, Vector2) */
@@ -370,7 +368,7 @@ public abstract class Box2DUtils {
 	 *  @param shape the Shape which position to get
 	 *  @param body the Body the given Shape is attached to */
 	public static Vector2 position(Shape shape, Body body) {
-		return body.getPosition().add(positionRelative(shape, body.getTransform().getRotation(), Tmp.vec2_0));
+		return body.getPosition().add(positionRelative(shape, body.getTransform().getRotation()));
 	}
 
 	/** @return the autoShapeCache */

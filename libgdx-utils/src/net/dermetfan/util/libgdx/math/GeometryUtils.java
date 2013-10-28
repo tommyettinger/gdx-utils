@@ -16,6 +16,8 @@
 
 package net.dermetfan.util.libgdx.math;
 
+import static com.badlogic.gdx.math.MathUtils.cos;
+import static com.badlogic.gdx.math.MathUtils.sin;
 import static net.dermetfan.util.math.MathUtils.amplitude;
 import net.dermetfan.util.libgdx.Tmp;
 
@@ -68,6 +70,28 @@ public abstract class GeometryUtils {
 	/** @see #filterY(Vector2[], float[]) */
 	public static float[] filterY(Vector2[] vertices) {
 		return filterY(vertices, tmpFloatArr);
+	}
+
+	/** rotates {@code point} by {@code radians} around [0:0] (local rotation)
+	 *  @param point the point to rotate
+	 *  @param radians the rotation
+	 *  @return the given {@code point} rotated by {@code radians} */
+	public static Vector2 rotate(Vector2 point, float radians) {
+		// http://stackoverflow.com/questions/1469149/calculating-vertices-of-a-rotated-rectangle
+		float xx = point.x, xy = point.y, yx = point.x, yy = point.y;
+		xx = xx * cos(radians) - xy * sin(radians);
+		yy = yx * sin(radians) + yy * cos(radians);
+		return point.set(xx, yy);
+	}
+
+	/** rotates a {@code point} around {@code center}
+	 *  @param point the point to rotate
+	 *  @param center the point around which to rotate {@code point}
+	 *  @param radians the rotation
+	 *  @return the given {@code point} rotated around {@code center} by {@code radians}
+	 *  @see #rotate(Vector2, float) */
+	public static Vector2 rotate(Vector2 point, Vector2 center, float radians) {
+		return rotate(point, radians).add(center);
 	}
 
 	/** @param vector2s the Vector2[] to convert to a float[]
