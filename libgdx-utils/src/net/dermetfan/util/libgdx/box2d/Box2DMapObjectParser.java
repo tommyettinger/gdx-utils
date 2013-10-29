@@ -22,10 +22,10 @@ import static net.dermetfan.util.libgdx.math.GeometryUtils.isConvex;
 import static net.dermetfan.util.libgdx.math.GeometryUtils.toFloatArray;
 import static net.dermetfan.util.libgdx.math.GeometryUtils.toPolygonArray;
 import static net.dermetfan.util.libgdx.math.GeometryUtils.toVector2Array;
+import static net.dermetfan.util.libgdx.math.GeometryUtils.vec2_0;
 
 import java.util.Iterator;
 
-import net.dermetfan.util.libgdx.Tmp;
 import net.dermetfan.util.libgdx.math.BayazitDecomposer;
 
 import com.badlogic.gdx.maps.Map;
@@ -265,7 +265,7 @@ public class Box2DMapObjectParser {
 			shape = new PolygonShape();
 			Rectangle rectangle = ((RectangleMapObject) mapObject).getRectangle();
 			float x = rectangle.x * unitScale, y = rectangle.y * unitScale, width = rectangle.width * unitScale, height = rectangle.height * unitScale;
-			((PolygonShape) shape).setAsBox(width / 2, height / 2, Tmp.vec2_0.set(x - body.getPosition().x + width / 2, y - body.getPosition().y + height / 2), body.getAngle());
+			((PolygonShape) shape).setAsBox(width / 2, height / 2, vec2_0.set(x - body.getPosition().x + width / 2, y - body.getPosition().y + height / 2), body.getAngle());
 		} else if(mapObject instanceof PolygonMapObject) {
 			shape = new PolygonShape();
 			Polygon polygon = new Polygon(((PolygonMapObject) mapObject).getPolygon().getTransformedVertices());
@@ -284,7 +284,7 @@ public class Box2DMapObjectParser {
 			Circle circle = new Circle(mapObjectCircle.x, mapObjectCircle.y, mapObjectCircle.radius);
 			circle.setPosition(circle.x * unitScale - body.getPosition().x, circle.y * unitScale - body.getPosition().y);
 			circle.radius *= unitScale;
-			((CircleShape) shape).setPosition(Tmp.vec2_0.set(circle.x, circle.y));
+			((CircleShape) shape).setPosition(vec2_0.set(circle.x, circle.y));
 			((CircleShape) shape).setRadius(circle.radius);
 		} else if(mapObject instanceof EllipseMapObject) {
 			Ellipse ellipse = ((EllipseMapObject) mapObject).getEllipse();

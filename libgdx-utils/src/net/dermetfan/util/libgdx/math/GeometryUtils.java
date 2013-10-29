@@ -19,7 +19,6 @@ package net.dermetfan.util.libgdx.math;
 import static com.badlogic.gdx.math.MathUtils.cos;
 import static com.badlogic.gdx.math.MathUtils.sin;
 import static net.dermetfan.util.math.MathUtils.amplitude;
-import net.dermetfan.util.libgdx.Tmp;
 
 import com.badlogic.gdx.math.Polygon;
 import com.badlogic.gdx.math.Vector2;
@@ -27,6 +26,9 @@ import com.badlogic.gdx.math.Vector2;
 /** provides some useful methods for geometric calculations
  *  @author dermetfan */
 public abstract class GeometryUtils {
+
+	/** a {@link Vector2} for temporary usage */
+	public static final Vector2 vec2_0 = new Vector2(), vec2_1 = new Vector2();
 
 	/** a temporary array */
 	private static Vector2[] tmpVecArr;
@@ -41,7 +43,7 @@ public abstract class GeometryUtils {
 
 	/** @see #size(Vector2[], Vector2) */
 	public static Vector2 size(Vector2[] vertices) {
-		return size(vertices, Tmp.vec2_0);
+		return size(vertices, vec2_0);
 	}
 
 	/** @return the x values of the given vertices */
@@ -209,14 +211,13 @@ public abstract class GeometryUtils {
 	 *  @return if the polygon is convex */
 	public static boolean isConvex(Vector2[] vertices) {
 		// http://www.sunshine2k.de/coding/java/Polygon/Convex/polygon.htm
-
-		Vector2 p, v = Tmp.vec2_1, u;
+		Vector2 p, v = vec2_1, u;
 		float res = 0;
 		for(int i = 0; i < vertices.length; i++) {
 			p = vertices[i];
-			Tmp.vec2_0.set(vertices[(i + 1) % vertices.length]);
-			v.x = Tmp.vec2_0.x - p.x;
-			v.y = Tmp.vec2_0.y - p.y;
+			vec2_0.set(vertices[(i + 1) % vertices.length]);
+			v.x = vec2_0.x - p.x;
+			v.y = vec2_0.y - p.y;
 			u = vertices[(i + 2) % vertices.length];
 
 			if(i == 0) // in first loop direction is unknown, so save it in res
