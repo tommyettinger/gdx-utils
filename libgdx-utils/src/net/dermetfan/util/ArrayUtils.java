@@ -53,9 +53,8 @@ public abstract class ArrayUtils {
 	/** Skips, selects and goes to the next element repeatedly. Stops when {@code elements} has no more values. When {@code skips} has no more values, {@code repeatSkips} will be used repeatedly.<br/>
 	 *  If the length of the selection is the length of the given {@code elements}, {@code elements} is returned.
 	 *  @param elements the elements from which to select not skipped ones
-	 *  @param firstSkip the number of indices to skip initially
 	 *  @param skips the number of indices to skip after each selection
-	 *  @param infiniteSkips The skips to use after {@code skips} has no more values. If this is negative, no more elements will be selected. 
+	 *  @param repeatSkips The skips to use repeatedly after {@code skips} has no more values. If this is null, no more elements will be selected. 
 	 *  @return the {@code elements} that were not skipped */
 	public static <T> T[] skipselect(T[] elements, int[] skips, int[] repeatSkips) {
 		boolean normal = skips != null && skips.length > 0, repeat = repeatSkips != null && repeatSkips.length > 0;
