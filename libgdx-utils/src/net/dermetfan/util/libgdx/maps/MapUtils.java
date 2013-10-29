@@ -16,9 +16,9 @@
 
 package net.dermetfan.util.libgdx.maps;
 
-import java.util.Iterator;
+import static net.dermetfan.util.libgdx.math.GeometryUtils.vec2_0;
 
-import net.dermetfan.util.libgdx.Tmp;
+import java.util.Iterator;
 
 import com.badlogic.gdx.maps.MapProperties;
 import com.badlogic.gdx.maps.tiled.TiledMapTile;
@@ -91,12 +91,12 @@ public abstract class MapUtils {
 
 	/** @see #toIsometricGridPoint(Vector2, float, float) */
 	public static Vector2 toIsometricGridPoint(float x, float y, float cellWidth, float cellHeight) {
-		return toIsometricGridPoint(Tmp.vec2_0.set(x, y), cellWidth, cellHeight);
+		return toIsometricGridPoint(vec2_0.set(x, y), cellWidth, cellHeight);
 	}
 
 	/** @see #toIsometricGridPoint(Vector2, float, float) */
 	public static Vector3 toIsometricGridPoint(Vector3 point, float cellWidth, float cellHeight) {
-		return point.set(toIsometricGridPoint(Tmp.vec2_0.set(point.x, point.y), cellWidth, cellHeight).x, Tmp.vec2_0.y, 0);
+		return point.set(toIsometricGridPoint(vec2_0.set(point.x, point.y), cellWidth, cellHeight).x, vec2_0.y, 0);
 	}
 
 }

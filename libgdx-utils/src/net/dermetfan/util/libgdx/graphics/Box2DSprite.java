@@ -21,11 +21,11 @@ import static net.dermetfan.util.libgdx.box2d.Box2DUtils.minX;
 import static net.dermetfan.util.libgdx.box2d.Box2DUtils.minY;
 import static net.dermetfan.util.libgdx.box2d.Box2DUtils.position;
 import static net.dermetfan.util.libgdx.box2d.Box2DUtils.width;
+import static net.dermetfan.util.libgdx.math.GeometryUtils.vec2_0;
 
 import java.util.Comparator;
 
 import net.dermetfan.util.Accessor;
-import net.dermetfan.util.libgdx.Tmp;
 
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Sprite;
@@ -166,17 +166,17 @@ public class Box2DSprite extends Sprite {
 	public void draw(SpriteBatch batch, Fixture fixture) {
 		batch.setColor(getColor());
 		float width = width(fixture), height = height(fixture);
-		Tmp.vec2_0.set(position(fixture));
-		batch.draw(this, Tmp.vec2_0.x - width / 2 + getX(), Tmp.vec2_0.y - height / 2 + getY(), isUseOriginX() ? getOriginX() : width / 2, isUseOriginY() ? getOriginY() : height / 2, isAdjustWidth() ? width : getWidth(), isAdjustHeight() ? height : getHeight(), getScaleX(), getScaleY(), fixture.getBody().getAngle() * MathUtils.radiansToDegrees + getRotation());
+		vec2_0.set(position(fixture));
+		batch.draw(this, vec2_0.x - width / 2 + getX(), vec2_0.y - height / 2 + getY(), isUseOriginX() ? getOriginX() : width / 2, isUseOriginY() ? getOriginY() : height / 2, isAdjustWidth() ? width : getWidth(), isAdjustHeight() ? height : getHeight(), getScaleX(), getScaleY(), fixture.getBody().getAngle() * MathUtils.radiansToDegrees + getRotation());
 	}
 
 	/** draws this {@link Box2DSprite} on the given {@link Body} */
 	public void draw(SpriteBatch batch, Body body) {
 		batch.setColor(getColor());
 		float width = width(body), height = height(body);
-		Tmp.vec2_0.set(minX(body) + width / 2, minY(body) + height / 2);
-		Tmp.vec2_0.set(body.getWorldPoint(Tmp.vec2_0));
-		batch.draw(this, Tmp.vec2_0.x - width / 2 + getX(), Tmp.vec2_0.y - height / 2 + getY(), isUseOriginX() ? getOriginX() : width / 2, isUseOriginY() ? getOriginY() : height / 2, isAdjustWidth() ? width : getWidth(), isAdjustHeight() ? height : getHeight(), getScaleX(), getScaleY(), body.getAngle() * MathUtils.radiansToDegrees + getRotation());
+		vec2_0.set(minX(body) + width / 2, minY(body) + height / 2);
+		vec2_0.set(body.getWorldPoint(vec2_0));
+		batch.draw(this, vec2_0.x - width / 2 + getX(), vec2_0.y - height / 2 + getY(), isUseOriginX() ? getOriginX() : width / 2, isUseOriginY() ? getOriginY() : height / 2, isAdjustWidth() ? width : getWidth(), isAdjustHeight() ? height : getHeight(), getScaleX(), getScaleY(), body.getAngle() * MathUtils.radiansToDegrees + getRotation());
 	}
 
 	/** @return the {@link #z} */

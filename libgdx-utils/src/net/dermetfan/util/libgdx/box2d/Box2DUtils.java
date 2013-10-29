@@ -19,10 +19,11 @@ package net.dermetfan.util.libgdx.box2d;
 import static net.dermetfan.util.libgdx.math.GeometryUtils.filterX;
 import static net.dermetfan.util.libgdx.math.GeometryUtils.filterY;
 import static net.dermetfan.util.libgdx.math.GeometryUtils.rotate;
+import static net.dermetfan.util.libgdx.math.GeometryUtils.vec2_0;
+import static net.dermetfan.util.libgdx.math.GeometryUtils.vec2_1;
 import static net.dermetfan.util.math.MathUtils.amplitude;
 import static net.dermetfan.util.math.MathUtils.max;
 import static net.dermetfan.util.math.MathUtils.min;
-import net.dermetfan.util.libgdx.Tmp;
 
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Body;
@@ -128,10 +129,10 @@ public abstract class Box2DUtils {
 			case Edge:
 				EdgeShape edgeShape = (EdgeShape) shape;
 
-				edgeShape.getVertex1(Tmp.vec2_0);
-				edgeShape.getVertex2(Tmp.vec2_1);
+				edgeShape.getVertex1(vec2_0);
+				edgeShape.getVertex2(vec2_1);
 
-				output = new Vector2[] {Tmp.vec2_0, Tmp.vec2_1};
+				output = new Vector2[] {vec2_0, vec2_1};
 				break;
 			case Chain:
 				ChainShape chainShape = (ChainShape) shape;
@@ -310,7 +311,7 @@ public abstract class Box2DUtils {
 
 	/** @return the size of the given Shape */
 	public static Vector2 size(Shape shape) {
-		return size(shape, Tmp.vec2_0);
+		return size(shape, vec2_0);
 	}
 
 	/** @see #positionRelative(CircleShape) */
@@ -346,7 +347,7 @@ public abstract class Box2DUtils {
 
 	/** @see #positionRelative(Shape, float, Vector2) */
 	public static Vector2 positionRelative(Shape shape, float rotation) {
-		return positionRelative(shape, rotation, Tmp.vec2_0);
+		return positionRelative(shape, rotation, vec2_0);
 	}
 
 	/** @see #position(Fixture) */
@@ -356,7 +357,7 @@ public abstract class Box2DUtils {
 
 	/** @return the position of the given Fixture in world coordinates */
 	public static Vector2 position(Fixture fixture) {
-		return position(fixture.getShape(), fixture.getBody(), Tmp.vec2_0);
+		return position(fixture.getShape(), fixture.getBody(), vec2_0);
 	}
 
 	/** @see #position(Shape, Body) */
