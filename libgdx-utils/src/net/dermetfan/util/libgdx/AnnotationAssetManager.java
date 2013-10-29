@@ -32,21 +32,35 @@ public class AnnotationAssetManager extends AssetManager {
 	}
 
 	/** {@link #load(Field) Loads} all fields in the given {@code container} class if they are annotated with {@link Asset} and {@link Asset#load()} is true.
-	 *  @param container the class containing the fields whose {@link AssetDescriptor AssetDescriptors} to load */
-	public void load(Class<?> container) {
+	 *  @param container the class containing the fields whose {@link AssetDescriptor AssetDescriptors} to load
+	 *  @param instance the instance of the class containing the given {@code field} (may be null if all fields in the class annotated with {@link Asset} are static) */
+	public <T> void load(Class<? extends T> container, T instance) {
 		for(Field field : container.getFields())
 			if(field.isAnnotationPresent(Asset.class) && field.getAnnotation(Asset.class).load())
-				load(field);
+				load(field, instance);
+	}
+
+	/** @param instance the instance of a container class from which to load fields annotated with {@link Asset}
+	 *  @see #load(Class, Object) */
+	public <T> void load(T instance) {
+		load(instance.getClass(), instance);
+	}
+
+	/** @param container the class with the fields annotated with {@link Asset} (must all be static, use {@link #load(Class, Object)} otherwise)
+	 *  @see #load(Class, Object) */
+	public <T> void load(Class<T> container) {
+		load(container, null);
 	}
 
 	/** {@link AssetManager#load(AssetDescriptor) Loads} the {@link AssetDescriptor} from the given field, or if the field's type is {@code String} or {@link FileHandle}, a {@link #createAssetDescriptor(Field) created} one.
-	 *  @param field the field whose {@link AssetDescriptor} to load or null if not successful */
-	public void load(Field field) {
+	 *  @param field the field whose {@link AssetDescriptor} to load or null if not successful
+	 *  @param instance the instance of the class containing the given {@code field} (may be null if all fields in the class annotated with {@link Asset} are static) */
+	public <T> void load(Field field, T instance) {
 		if(!field.isAnnotationPresent(Asset.class))
 			return;
 		if(field.getDeclaringClass() == AssetDescriptor.class)
 			try {
-				AssetDescriptor<?> descriptor = (AssetDescriptor<?>) field.get(null);
+				AssetDescriptor<?> descriptor = (AssetDescriptor<?>) field.get(instance);
 				if(descriptor != null)
 					load(descriptor);
 			} catch(IllegalArgumentException e) {
@@ -55,17 +69,24 @@ public class AnnotationAssetManager extends AssetManager {
 				e.printStackTrace();
 			}
 		else {
-			AssetDescriptor<?> descriptor = createAssetDescriptor(field);
+			AssetDescriptor<?> descriptor = createAssetDescriptor(field, instance);
 			if(descriptor != null)
 				load(descriptor);
 		}
 	}
 
+	/** @param field the static field to load
+	 *  @see #load(Field, Object) */
+	public void load(Field field) {
+		load(field, null);
+	}
+
 	/** Creates an {@link AssetDescriptor} from a field that is annotated with {@link Asset}. The field's type must be {@code String} or {@link FileHandle} and the {@link Asset#type()} must not be primitive.
 	 *  @param field the field annotated with {@link Asset} to create an {@link AssetDescriptor} from
-	 *  @return an {@link AssetDescriptor} created from the given, with {@link Asset} annotated field */
+	 *  @param instance the instance of the class containing the given {@code field}
+	 *  @return an {@link AssetDescriptor} created from the given, with {@link Asset} annotated field (may be null if all fields in the class annotated with {@link Asset} are static) */
 	@SuppressWarnings("unchecked")
-	public <T> AssetDescriptor<T> createAssetDescriptor(Field field) {
+	public <T, I> AssetDescriptor<T> createAssetDescriptor(Field field, I instance) {
 		if(!field.isAnnotationPresent(Asset.class))
 			return null;
 		Class<?> fieldType = field.getType();
@@ -81,15 +102,23 @@ public class AnnotationAssetManager extends AssetManager {
 		AssetDescriptor<T> descriptor = null;
 		try {
 			if(fieldType == String.class)
-				descriptor = new AssetDescriptor<T>((String) field.get(null), (Class<T>) asset.type());
+				descriptor = new AssetDescriptor<T>((String) field.get(instance), (Class<T>) asset.type());
 			else
-				descriptor = new AssetDescriptor<T>((FileHandle) field.get(null), (Class<T>) asset.type());
+				descriptor = new AssetDescriptor<T>((FileHandle) field.get(instance), (Class<T>) asset.type());
 		} catch(IllegalArgumentException e) {
 			e.printStackTrace();
 		} catch(IllegalAccessException e) {
 			e.printStackTrace();
 		}
 		return descriptor;
+	}
+
+	/** creates an {@link AssetDescriptor} from a static field
+	 *  @param field the field annotated with {@link Asset} to create an {@link AssetDescriptor} from (must be static)
+	 *  @return the {@link AssetDescriptor} created from the given static {@code field} annotated with {@link Asset}
+	 *  @see #createAssetDescriptor(Field, Object) */
+	public <T> AssetDescriptor<T> createAssetDescriptor(Field field) {
+		return createAssetDescriptor(field, null);
 	}
 
 }
