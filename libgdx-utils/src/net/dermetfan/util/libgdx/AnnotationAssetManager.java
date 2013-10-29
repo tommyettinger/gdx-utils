@@ -64,9 +64,9 @@ public class AnnotationAssetManager extends AssetManager {
 				if(descriptor != null)
 					load(descriptor);
 			} catch(IllegalArgumentException e) {
-				e.printStackTrace();
+				Gdx.app.error(AnnotationAssetManager.class.getSimpleName(), "couldn't access field \"" + field.getName() + "\"", e);
 			} catch(IllegalAccessException e) {
-				e.printStackTrace();
+				Gdx.app.error(AnnotationAssetManager.class.getSimpleName(), "couldn't access field \"" + field.getName() + "\"", e);
 			}
 		else {
 			AssetDescriptor<?> descriptor = createAssetDescriptor(field, instance);
@@ -106,9 +106,9 @@ public class AnnotationAssetManager extends AssetManager {
 			else
 				descriptor = new AssetDescriptor<T>((FileHandle) field.get(instance), (Class<T>) asset.type());
 		} catch(IllegalArgumentException e) {
-			e.printStackTrace();
+			Gdx.app.error(AnnotationAssetManager.class.getSimpleName(), "couldn't access field \"" + field.getName() + "\"", e);
 		} catch(IllegalAccessException e) {
-			e.printStackTrace();
+			Gdx.app.error(AnnotationAssetManager.class.getSimpleName(), "couldn't access field \"" + field.getName() + "\"", e);
 		}
 		return descriptor;
 	}
