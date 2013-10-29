@@ -1,18 +1,16 @@
-/**
- * Copyright 2013 Robin Stumm (serverkorken@googlemail.com, http://dermetfan.bplaced.net)
+/** Copyright 2013 Robin Stumm (serverkorken@googlemail.com, http://dermetfan.net/)
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ *      http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License. */
 
 package net.dermetfan.util.libgdx.graphics;
 
@@ -106,7 +104,7 @@ public class Box2DSprite extends Sprite {
 
 		@Override
 		public int compare(Box2DSprite s1, Box2DSprite s2) {
-			return s1.z - s2.z > 0 ? 1 : -1;
+			return s1.z - s2.z > 0 ? 1 : s1.z - s2.z < 0 ? -1 : 0;
 		}
 
 	};
@@ -167,7 +165,7 @@ public class Box2DSprite extends Sprite {
 		batch.setColor(getColor());
 		float width = width(fixture), height = height(fixture);
 		vec2_0.set(position(fixture));
-		batch.draw(this, vec2_0.x - width / 2 + getX(), vec2_0.y - height / 2 + getY(), isUseOriginX() ? getOriginX() : width / 2, isUseOriginY() ? getOriginY() : height / 2, isAdjustWidth() ? width : getWidth(), isAdjustHeight() ? height : getHeight(), getScaleX(), getScaleY(), fixture.getBody().getAngle() * MathUtils.radiansToDegrees + getRotation());
+		draw(batch, vec2_0.x, vec2_0.y, width, height, fixture.getBody().getAngle());
 	}
 
 	/** draws this {@link Box2DSprite} on the given {@link Body} */
@@ -176,7 +174,12 @@ public class Box2DSprite extends Sprite {
 		float width = width(body), height = height(body);
 		vec2_0.set(minX(body) + width / 2, minY(body) + height / 2);
 		vec2_0.set(body.getWorldPoint(vec2_0));
-		batch.draw(this, vec2_0.x - width / 2 + getX(), vec2_0.y - height / 2 + getY(), isUseOriginX() ? getOriginX() : width / 2, isUseOriginY() ? getOriginY() : height / 2, isAdjustWidth() ? width : getWidth(), isAdjustHeight() ? height : getHeight(), getScaleX(), getScaleY(), body.getAngle() * MathUtils.radiansToDegrees + getRotation());
+		draw(batch, vec2_0.x, vec2_0.y, width, height, body.getAngle());
+	}
+
+	/** draws this {@code Box2DSprite} on the given area */
+	public void draw(SpriteBatch batch, float x, float y, float width, float height, float rotation) {
+		batch.draw(this, x - width / 2 + getX(), y - height / 2 + getY(), isUseOriginX() ? getOriginX() : width / 2, isUseOriginY() ? getOriginY() : height / 2, isAdjustWidth() ? width : getWidth(), isAdjustHeight() ? height : getHeight(), getScaleX(), getScaleY(), rotation * MathUtils.radiansToDegrees + getRotation());
 	}
 
 	/** @return the {@link #z} */
