@@ -8,12 +8,10 @@ import java.security.InvalidParameterException;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Array;
 
-/**
- * Taken from <a href="http://code.google.com/p/box2d-editor/source/browse/editor/src/aurelienribon/bodyeditor/maths/earclipping/bayazit/BayazitDecomposer.java">Aurelien Ribon's Physics Body Editor</a><br/>
- * <br/>
- * Convex decomposition algorithm created by <a href="http://mnbayazit.com/">Mark Bayazit</a>
- * <a href="http://mnbayazit.com/406/bayazit">more information</a> about this algorithm
- */
+/** Taken from <a href="http://code.google.com/p/box2d-editor/source/browse/editor/src/aurelienribon/bodyeditor/maths/earclipping/bayazit/BayazitDecomposer.java">Aurelien Ribon's Physics Body Editor</a><br/>
+ *  <br/>
+ *  Convex decomposition algorithm created by <a href="http://mnbayazit.com/">Mark Bayazit</a>
+ *  <a href="http://mnbayazit.com/406/bayazit">more information</a> about this algorithm */
 public abstract class BayazitDecomposer {
 
 	public static final float EPSILON = 1.192092896e-07f;
@@ -37,12 +35,10 @@ public abstract class BayazitDecomposer {
 		return p;
 	}
 
-	/**
-	 * Decompose the polygon into several smaller non-concave polygon.
-	 * If the polygon is already convex, it will return the original polygon,
-	 * unless it is over Settings.MaxPolygonVertices.
-	 * Precondition: Counter Clockwise polygon
-	 */
+	/** Decompose the polygon into several smaller non-concave polygon.
+	 *  If the polygon is already convex, it will return the original polygon,
+	 *  unless it is over Settings.MaxPolygonVertices.
+	 *  Precondition: Counter Clockwise polygon */
 	public static Array<Array<Vector2>> convexPartition(Array<Vector2> vertices) {
 		// We force it to CCW as it is a precondition in this algorithm.
 		// vertices.ForceCounterClockWise();
@@ -182,30 +178,28 @@ public abstract class BayazitDecomposer {
 		return Math.abs(value1 - value2) <= EPSILON;
 	}
 
-	/**
-	 * This method detects if two line segments (or lines) intersect,
-	 * and, if so, the point of intersection. Use the firstIsSegment and
-	 * secondIsSegment parameters to set whether the
-	 * intersection point
-	 * must be on the first and second line segments. Setting these
-	 * both to true means you are doing a line-segment to line-segment
-	 * intersection. Setting one of them to true means you are doing a
-	 * line to line-segment intersection test, and so on.
-	 * Note: If two line segments are coincident, then
-	 * no intersection is detected (there are actually
-	 * infinite intersection points).
+	/** This method detects if two line segments (or lines) intersect,
+	 *  and, if so, the point of intersection. Use the firstIsSegment and
+	 *  secondIsSegment parameters to set whether the
+	 *  intersection point
+	 *  must be on the first and second line segments. Setting these
+	 *  both to true means you are doing a line-segment to line-segment
+	 *  intersection. Setting one of them to true means you are doing a
+	 *  line to line-segment intersection test, and so on.
+	 *  Note: If two line segments are coincident, then
+	 *  no intersection is detected (there are actually
+	 *  infinite intersection points).
 	 *
-	 * @param point1 The first point of the first line segment.
-	 * @param point2 The second point of the first line segment.
-	 * @param point3 The first point of the second line segment.
-	 * @param point4 The second point of the second line segment.
-	 * @param firstIsSegment Set this to true to require that the intersection point be on the first line segment.
-	 * @param secondIsSegment Set this to true to require that the intersection point be on the second line segment.
-	 * @param point This is set to the intersection point if an intersection is detected.
-	 * @return True if an intersection is detected, false otherwise.
+	 *  @param point1 The first point of the first line segment.
+	 *  @param point2 The second point of the first line segment.
+	 *  @param point3 The first point of the second line segment.
+	 *  @param point4 The second point of the second line segment.
+	 *  @param firstIsSegment Set this to true to require that the intersection point be on the first line segment.
+	 *  @param secondIsSegment Set this to true to require that the intersection point be on the second line segment.
+	 *  @param point This is set to the intersection point if an intersection is detected.
+	 *  @return True if an intersection is detected, false otherwise.
 	 * 
-	 * Author: Jeremy Bell
-	 */
+	 * Author: Jeremy Bell */
 	public static boolean lineIntersect(Vector2 point1, Vector2 point2, Vector2 point3, Vector2 point4, boolean firstIsSegment, boolean secondIsSegment, Vector2 point) {
 		point = new Vector2();
 		// these are reused later.
@@ -287,12 +281,10 @@ public abstract class BayazitDecomposer {
 		private static boolean[] usePt;
 		private static double distanceTolerance;
 
-		/**
-		 * Removes all collinear points on the polygon.
-		 * @param vertices The polygon that needs simplification.
-		 * @param collinearityTolerance The collinearity tolerance.
-		 * @return A simplified polygon.
-		 */
+		/** Removes all collinear points on the polygon.
+		 *  @param vertices The polygon that needs simplification.
+		 *  @param collinearityTolerance The collinearity tolerance.
+		 *  @return A simplified polygon. */
 		public static Array<Vector2> collinearSimplify(Array<Vector2> vertices, float collinearityTolerance) {
 			// We can't simplify polygons under 3 vertices
 			if(vertices.size < 3)
@@ -324,25 +316,21 @@ public abstract class BayazitDecomposer {
 			return value >= min && value <= max;
 		}
 
-		/**
-		 * Removes all collinear points on the polygon.
-		 * Has a default bias of 0
-		 * @param vertices The polygon that needs simplification
-		 * @return A simplified polygon.
-		 */
+		/** Removes all collinear points on the polygon.
+		 *  Has a default bias of 0
+		 *  @param vertices The polygon that needs simplification
+		 *  @return A simplified polygon. */
 		public static Array<Vector2> collinearSimplify(Array<Vector2> vertices) {
 			return collinearSimplify(vertices, 0);
 		}
 
-		/**
-		 * Ramer-Douglas-Peucker polygon simplification algorithm. This is the
-		 * general recursive version that does not use the
-		 * speed-up technique by using the Melkman convex hull.
-		 * If you pass in 0, it will remove all collinear points
-		 * @param vertices
-		 * @param distanceTolerance
-		 * @return The simplified polygon
-		 */
+		/** Ramer-Douglas-Peucker polygon simplification algorithm. This is the
+		 *  general recursive version that does not use the
+		 *  speed-up technique by using the Melkman convex hull.
+		 *  If you pass in 0, it will remove all collinear points
+		 *  @param vertices
+		 *  @param distanceTolerance
+		 *  @return The simplified polygon */
 		public static Array<Vector2> douglasPeuckerSimplify(Array<Vector2> vertices, float distanceTolerance) {
 			SimplifyTools.distanceTolerance = distanceTolerance;
 			usePt = new boolean[vertices.size];
@@ -514,11 +502,9 @@ public abstract class BayazitDecomposer {
 			return results;
 		}
 
-		/**
-		 * Reduces the polygon by distance.
-		 * @param vertices
-		 * @param distance The distance between points. Points closer than this will be 'joined'
-		 */
+		/** Reduces the polygon by distance.
+		 *  @param vertices
+		 *  @param distance The distance between points. Points closer than this will be 'joined' */
 		public static Array<Vector2> reduceByDistance(Array<Vector2> vertices, float distance) {
 			// We can't simplify polygons under 3 vertices
 			if(vertices.size < 3)
@@ -539,11 +525,9 @@ public abstract class BayazitDecomposer {
 			return simplified;
 		}
 
-		/**
-		 * Reduces the polygon by removing the Nth vertex in the vertices list.
-		 * @param vertices
-		 * @param nth The Nth point to remove. Example: 5.
-		 */
+		/** Reduces the polygon by removing the Nth vertex in the vertices list.
+		 *  @param vertices
+		 *  @param nth The Nth point to remove. Example: 5. */
 		public static Array<Vector2> reduceByNth(Array<Vector2> vertices, int nth) {
 			// We can't simplify polygons under 3 vertices
 			if(vertices.size < 3)

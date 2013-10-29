@@ -1,18 +1,16 @@
-/**
- * Copyright 2013 Robin Stumm (serverkorken@googlemail.com, http://dermetfan.bplaced.net)
+/** Copyright 2013 Robin Stumm (serverkorken@googlemail.com, http://dermetfan.net/)
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ *      http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License. */
 
 package net.dermetfan.util.libgdx.graphics;
 
@@ -23,17 +21,14 @@ import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 
-/**
- * An {@link AnimatedSprite} holds an {@link Animation} and sets the {@link Texture} of its super type {@link Sprite} to the correct one according to the information in the {@link Animation}.<br/>
- * Usage:
- * <code><pre>Animation animation = new Animation(1 / 3f, new TextureRegion(frame1), new TextureRegion(frame2), new TextureRegion(frame3));
-animation.setPlayMode(Animation.LOOP);
-animatedSprite = new AnimatedSprite(animation);</pre></code>
- * Draw it using any of the {@link Sprite Sprite's} draw methods:<br/>
-<code>animatedSprite.draw(batch);</code> 
- * 
- * @author dermetfan
- */
+/** An {@link AnimatedSprite} holds an {@link Animation} and sets the {@link Texture} of its super type {@link Sprite} to the correct one according to the information in the {@link Animation}.<br/>
+ *  Usage:
+ *  <p><code>Animation animation = new Animation(1 / 3f, frame1, frame2, frame3);<br/>
+ * 	animation.setPlayMode(Animation.LOOP);<br/>
+ * 	animatedSprite = new AnimatedSprite(animation);</code></p>
+ *  You can draw using any of the {@link Sprite Sprite's} draw methods:<br/>
+ *  <code>animatedSprite.draw(batch);</code> 
+ *  @author dermetfan */
 public class AnimatedSprite extends Sprite {
 
 	/** the {@link Animation} to display */
@@ -54,19 +49,15 @@ public class AnimatedSprite extends Sprite {
 	/** if a frame should be centered in its previous one's center if it's smaller */
 	private boolean centerFrames;
 
-	/**
-	 * creates a new {@link AnimatedSprite} with the given {@link Animation}
-	 * @param animation the {@link #animation} to use
-	 */
+	/** creates a new {@link AnimatedSprite} with the given {@link Animation}
+	 *  @param animation the {@link #animation} to use */
 	public AnimatedSprite(Animation animation) {
 		this(animation, false);
 	}
 
-	/**
-	 * creates a new {@link AnimatedSprite} with the given {@link Animation}
-	 * @param animation the {@link #animation} to use
-	 * @param keepSize the {@link #keepSize} to use
-	 */
+	/** creates a new {@link AnimatedSprite} with the given {@link Animation}
+	 *  @param animation the {@link #animation} to use
+	 *  @param keepSize the {@link #keepSize} to use */
 	public AnimatedSprite(Animation animation, boolean keepSize) {
 		super(animation.getKeyFrame(0));
 		this.animation = animation;
@@ -87,6 +78,7 @@ public class AnimatedSprite extends Sprite {
 		}
 	}
 
+	/** {@link Sprite#draw(SpriteBatch) Draws} this {@code AnimatedSprite}. If {@link #autoUpdate} is true, {@link #update()} will be called before drawing. */
 	@Override
 	public void draw(SpriteBatch spriteBatch) {
 		if(centerFrames && !keepSize) {
@@ -110,6 +102,20 @@ public class AnimatedSprite extends Sprite {
 			update();
 
 		super.draw(spriteBatch);
+	}
+
+	/** flips all frames
+	 *  @see #flipFrames(float, float, boolean, boolean) */
+	public void flipFrames(boolean flipX, boolean flipY) {
+		flipFrames(0, animation.animationDuration - animation.frameDuration / 2, flipX, flipY);
+	}
+
+	/** flips all frames from {@code startTime} to {@code endTime}
+	 *  @param startTime the animation state time of the first frame to flip
+	 *  @param endTime the animation state time of the last frame to flip */
+	public void flipFrames(float startTime, float endTime, boolean flipX, boolean flipY) {
+		for(float t = startTime; t <= endTime; t += animation.frameDuration / animation.animationDuration)
+			animation.getKeyFrame(t).flip(flipX, flipY);
 	}
 
 	/** sets {@link #playing} to true */
