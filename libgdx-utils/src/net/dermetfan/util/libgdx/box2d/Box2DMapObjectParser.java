@@ -288,7 +288,7 @@ public class Box2DMapObjectParser {
 			Ellipse ellipse = ((EllipseMapObject) mapObject).getEllipse();
 
 			if(ellipse.width == ellipse.height) {
-				CircleMapObject circleMapObject = new CircleMapObject(ellipse.x, ellipse.y, ellipse.width / 2);
+				CircleMapObject circleMapObject = new CircleMapObject(ellipse.x + ellipse.width / 2, ellipse.y + ellipse.height / 2, ellipse.width / 2);
 				circleMapObject.setName(mapObject.getName());
 				circleMapObject.getProperties().putAll(mapObject.getProperties());
 				circleMapObject.setColor(mapObject.getColor());
