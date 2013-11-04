@@ -82,28 +82,20 @@ public class Breakable {
 
 			Fixture fixtureA = contact.getFixtureA(), fixtureB = contact.getFixtureB();
 			Breakable breakable = userDataAccessor.access(fixtureA.getUserData());
-			if(breakable != null) {
-				if(breakable.callback != null)
-					breakable.callback.strained(fixtureA, breakable, contact, impulse, normalImpulse, tangentImpulse);
-				if(normalImpulse > breakable.normalResistance || tangentImpulse > breakable.tangentResistance)
-					destroy(fixtureA, breakable.breakBodyWithoutFixtures, breakable.breakBody);
-			}
+			if(breakable != null && (normalImpulse > breakable.normalResistance || tangentImpulse > breakable.tangentResistance) && (breakable.callback == null || breakable.callback != null && breakable.callback.strained(fixtureA, breakable, contact, impulse, normalImpulse, tangentImpulse)))
+				destroy(fixtureA, breakable.breakBodyWithoutFixtures, breakable.breakBody);
 
 			breakable = userDataAccessor.access(fixtureB.getUserData());
-			if(breakable != null) {
-				if(breakable.callback != null)
-					breakable.callback.strained(fixtureB, breakable, contact, impulse, normalImpulse, tangentImpulse);
-				if(normalImpulse > breakable.normalResistance || tangentImpulse > breakable.tangentResistance)
-					destroy(fixtureB, breakable.breakBodyWithoutFixtures, breakable.breakBody);
-			}
+			if(breakable != null && (normalImpulse > breakable.normalResistance || tangentImpulse > breakable.tangentResistance) && (breakable.callback == null || breakable.callback != null && breakable.callback.strained(fixtureB, breakable, contact, impulse, normalImpulse, tangentImpulse)))
+				destroy(fixtureB, breakable.breakBodyWithoutFixtures, breakable.breakBody);
 
 			Body bodyA = fixtureA.getBody(), bodyB = fixtureB.getBody();
 			breakable = userDataAccessor.access(bodyA.getUserData());
-			if(breakable != null && (normalImpulse > breakable.normalResistance || tangentImpulse > breakable.tangentResistance))
+			if(breakable != null && (normalImpulse > breakable.normalResistance || tangentImpulse > breakable.tangentResistance) && (breakable.callback == null || breakable.callback != null && breakable.callback.strained(fixtureA, breakable, contact, impulse, normalImpulse, tangentImpulse)))
 				destroy(bodyA);
 
 			breakable = userDataAccessor.access(bodyB.getUserData());
-			if(breakable != null && (normalImpulse > breakable.normalResistance || tangentImpulse > breakable.tangentResistance))
+			if(breakable != null && (normalImpulse > breakable.normalResistance || tangentImpulse > breakable.tangentResistance) && (breakable.callback == null || breakable.callback != null && breakable.callback.strained(fixtureB, breakable, contact, impulse, normalImpulse, tangentImpulse)))
 				destroy(bodyB);
 		}
 
@@ -204,8 +196,9 @@ public class Breakable {
 		 *  @param contact the straining contact
 		 *  @param impulse the straining ContactImpulse
 		 *  @param normalImpulse the sum of the normal impulses of impulse
-		 *  @param tangentImpulse the sum of the tangent impulses of impulse */
-		public void strained(Fixture fixture, Breakable breakable, Contact contact, ContactImpulse impulse, float normalImpulse, float tangentImpulse);
+		 *  @param tangentImpulse the sum of the tangent impulses of impulse
+		 *  @return false to cancel the destruction if one was going to occur */
+		public boolean strained(Fixture fixture, Breakable breakable, Contact contact, ContactImpulse impulse, float normalImpulse, float tangentImpulse);
 
 		/** called by {@link Manager#destroy(Body)} */
 		public void destroyedBody(Body body, Breakable breakable);
