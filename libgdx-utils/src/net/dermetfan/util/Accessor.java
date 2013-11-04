@@ -18,8 +18,8 @@ package net.dermetfan.util;
  *  @author dermetfan */
 public interface Accessor {
 
-	/** @param object the O to access
-	 *  @return the accessed T from O */
+	/** @param object the {@code O} to access
+	 *  @return the accessed {@code T} from {@code O} */
 	public <T, O> T access(O object);
 
 }
