@@ -107,10 +107,9 @@ public class Breakable {
 			if(brokenFixtures.contains(fixture, true))
 				return;
 
-			brokenFixtures.add(fixture);
 			Breakable breakable = userDataAccessor.access(fixture.getUserData());
-			if(breakable != null && breakable.callback != null)
-				breakable.callback.destroyedFixture(fixture, breakable);
+			if(breakable != null && breakable.callback != null && breakable.callback.destroyedFixture(fixture, breakable))
+				brokenFixtures.add(fixture);
 
 			Body body = fixture.getBody();
 			if(brokenBodies.contains(body, true))
@@ -134,11 +133,9 @@ public class Breakable {
 			if(brokenBodies.contains(body, true))
 				return;
 
-			brokenBodies.add(body);
-
 			Breakable breakable = userDataAccessor.access(body.getUserData());
-			if(breakable != null && breakable.callback != null)
-				breakable.callback.destroyedBody(body, breakable);
+			if(breakable != null && breakable.callback != null && breakable.callback.destroyedBody(body, breakable))
+				brokenBodies.add(body);
 		}
 
 		/** does nothing */
@@ -192,7 +189,7 @@ public class Breakable {
 
 		/** called by {@link Manager#strain(Contact, ContactImpulse)}
 		 *  @param fixture the strained fixture
-		 *  @param breakable the Breakable instance that called this Callback
+		 *  @param breakable the Breakable instance causing this callback to be called
 		 *  @param contact the straining contact
 		 *  @param impulse the straining ContactImpulse
 		 *  @param normalImpulse the sum of the normal impulses of impulse
@@ -200,11 +197,13 @@ public class Breakable {
 		 *  @return false to cancel the destruction if one was going to occur */
 		public boolean strained(Fixture fixture, Breakable breakable, Contact contact, ContactImpulse impulse, float normalImpulse, float tangentImpulse);
 
-		/** called by {@link Manager#destroy(Body)} */
-		public void destroyedBody(Body body, Breakable breakable);
+		/** called by {@link Manager#destroy(Body)}
+		 *  @return false to cancel the destruction */
+		public boolean destroyedBody(Body body, Breakable breakable);
 
-		/** called by {@link Manager#destroy(Fixture, boolean, boolean)} */
-		public void destroyedFixture(Fixture fixture, Breakable breakable);
+		/** called by {@link Manager#destroy(Fixture, boolean, boolean)}
+		 *  @return false to cancel the destruction */
+		public boolean destroyedFixture(Fixture fixture, Breakable breakable);
 
 	}
 
