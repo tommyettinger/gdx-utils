@@ -76,7 +76,6 @@ public abstract class ArrayUtils {
 
 		rsi = 0;
 		for(int si = 0, ei = 0; si < length;) {
-			System.out.println("si: " + si + ", ei: " + ei);
 			selection[si++] = elements[ei++];
 			if(si >= skips.length)
 				if(repeat)
