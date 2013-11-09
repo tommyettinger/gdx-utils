@@ -99,6 +99,14 @@ public class Breakable {
 				destroy(bodyB);
 		}
 
+		/** @return if the fixtures and bodies involved in the given contact should break under the given circumstances
+		 *  @param contact for {@link Callback#strained(Fixture, Breakable, Contact, ContactImpulse, float, float)}
+		 *  @param impulse for {@link Callback#strained(Fixture, Breakable, Contact, ContactImpulse, float, float)}
+		 *  @param fixture for {@link Callback#strained(Fixture, Breakable, Contact, ContactImpulse, float, float)} */
+		public static boolean shouldBreak(Breakable breakable, float normalImpulse, float tangentImpulse, Contact contact, ContactImpulse impulse, Fixture fixture) {
+			return breakable != null && (normalImpulse > breakable.normalResistance || tangentImpulse > breakable.tangentResistance) && (breakable.callback == null || breakable.callback != null && !breakable.callback.strained(fixture, breakable, contact, impulse, normalImpulse, tangentImpulse));
+		}
+
 		/** destroys the given fixture (and its body depending on {@link #breakBodyWithoutFixtures} and {@link #breakBody})
 		 *  @param fixture the {@link Fixture} to destroy
 		 *  @param breakBodyWithoutFixtures {@link #breakBodyWithoutFixtures}
@@ -107,7 +115,8 @@ public class Breakable {
 			if(brokenFixtures.contains(fixture, true))
 				return;
 
-			if(shouldBeDestroyed(fixture, userDataAccessor.<Breakable, Object>access(fixture.getUserData())))
+			Breakable breakable = userDataAccessor.access(fixture.getUserData());
+			if(breakable != null && (breakable.callback == null || breakable.callback != null && !breakable.callback.destroyedFixture(fixture, breakable)))
 				brokenFixtures.add(fixture);
 
 			Body body = fixture.getBody();
@@ -132,30 +141,9 @@ public class Breakable {
 			if(brokenBodies.contains(body, true))
 				return;
 
-			if(shouldBeDestroyed(body, userDataAccessor.<Breakable, Object>access(body.getUserData())))
+			Breakable breakable = userDataAccessor.access(body.getUserData());
+			if(breakable != null && (breakable.callback == null || breakable.callback != null && !breakable.callback.destroyedBody(body, breakable)))
 				brokenBodies.add(body);
-		}
-
-		/** @return if the fixtures and bodies involved in the given contact under the given circumstances should break
-		 *  @param contact for {@link Callback#strained(Fixture, Breakable, Contact, ContactImpulse, float, float)}
-		 *  @param impulse for {@link Callback#strained(Fixture, Breakable, Contact, ContactImpulse, float, float)}
-		 *  @param fixture for {@link Callback#strained(Fixture, Breakable, Contact, ContactImpulse, float, float)} */
-		public static boolean shouldBreak(Breakable breakable, float normalImpulse, float tangentImpulse, Contact contact, ContactImpulse impulse, Fixture fixture) {
-			return breakable != null && (normalImpulse > breakable.normalResistance || tangentImpulse > breakable.tangentResistance) && !breakable.callback.strained(fixture, breakable, contact, impulse, normalImpulse, tangentImpulse);
-		}
-
-		/** @param body the body to destroy
-		 *  @param breakable the Breakable which {@link Breakable#callback callback} will approve or decline destruction
-		 *  @return if the given body should be destroyed according to the given breakable's callback */
-		public static boolean shouldBeDestroyed(Body body, Breakable breakable) {
-			return breakable != null && !breakable.callback.destroyedBody(body, breakable);
-		}
-
-		/** @param fixture the fixture to destroy
-		 *  @param breakable the Breakable which {@link Breakable#callback callback} will approve or decline destruction
-		 *  @return if the given fixture should be destroyed according to the given breakable's callback */
-		public static boolean shouldBeDestroyed(Fixture fixture, Breakable breakable) {
-			return breakable != null && !breakable.callback.destroyedFixture(fixture, breakable);
 		}
 
 		/** does nothing */
@@ -239,28 +227,8 @@ public class Breakable {
 	/** if the fixture's body (in case the Breakable is used for a fixture) should be destroyed if the fixture is destroyed and it was the bodie's last one (true by default) */
 	private boolean breakBodyWithoutFixtures = true;
 
-	/** the {@link #callback} used by default */
-	public static final Callback defaultCallback = new Callback() {
-
-		@Override
-		public boolean strained(Fixture fixture, Breakable breakable, Contact contact, ContactImpulse impulse, float normalImpulse, float tangentImpulse) {
-			return false;
-		}
-
-		@Override
-		public boolean destroyedBody(Body body, Breakable breakable) {
-			return false;
-		}
-
-		@Override
-		public boolean destroyedFixture(Fixture fixture, Breakable breakable) {
-			return false;
-		}
-
-	};
-
 	/** the {@link Callback} called when the {@link Breakable}'s container is destroyed */
-	private Callback callback = defaultCallback;
+	private Callback callback;
 
 	/** @see #Breakable(float, float, boolean) */
 	public Breakable(float normalResistance, float tangentResistance) {
@@ -297,7 +265,7 @@ public class Breakable {
 		this.tangentResistance = tangentResistance;
 		this.breakBody = breakBody;
 		this.breakBodyWithoutFixtures = breakBodyWithoutFixtures;
-		this.callback = callback != null ? callback : defaultCallback;
+		this.callback = callback;
 	}
 
 	/** constructs a new Breakable exactly like the given other one */
