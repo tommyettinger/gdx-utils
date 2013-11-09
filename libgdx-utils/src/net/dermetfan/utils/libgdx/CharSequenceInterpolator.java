@@ -12,9 +12,9 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License. */
 
-package net.dermetfan.util.libgdx;
+package net.dermetfan.utils.libgdx;
 
-import net.dermetfan.util.math.MathUtils;
+import net.dermetfan.utils.math.MathUtils;
 
 import com.badlogic.gdx.math.Interpolation;
 

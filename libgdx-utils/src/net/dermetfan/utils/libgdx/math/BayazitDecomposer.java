@@ -1,7 +1,7 @@
-package net.dermetfan.util.libgdx.math;
+package net.dermetfan.utils.libgdx.math;
 
-import static net.dermetfan.util.libgdx.math.GeometryUtils.areVerticesClockwise;
-import static net.dermetfan.util.libgdx.math.GeometryUtils.toFloatArray;
+import static net.dermetfan.utils.libgdx.math.GeometryUtils.areVerticesClockwise;
+import static net.dermetfan.utils.libgdx.math.GeometryUtils.toFloatArray;
 
 import java.security.InvalidParameterException;
 

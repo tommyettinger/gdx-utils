@@ -12,18 +12,18 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License. */
 
-package net.dermetfan.util.libgdx.graphics;
+package net.dermetfan.utils.libgdx.graphics;
 
-import static net.dermetfan.util.libgdx.box2d.Box2DUtils.height;
-import static net.dermetfan.util.libgdx.box2d.Box2DUtils.minX;
-import static net.dermetfan.util.libgdx.box2d.Box2DUtils.minY;
-import static net.dermetfan.util.libgdx.box2d.Box2DUtils.position;
-import static net.dermetfan.util.libgdx.box2d.Box2DUtils.width;
-import static net.dermetfan.util.libgdx.math.GeometryUtils.vec2_0;
+import static net.dermetfan.utils.libgdx.box2d.Box2DUtils.height;
+import static net.dermetfan.utils.libgdx.box2d.Box2DUtils.minX;
+import static net.dermetfan.utils.libgdx.box2d.Box2DUtils.minY;
+import static net.dermetfan.utils.libgdx.box2d.Box2DUtils.position;
+import static net.dermetfan.utils.libgdx.box2d.Box2DUtils.width;
+import static net.dermetfan.utils.libgdx.math.GeometryUtils.vec2_0;
 
 import java.util.Comparator;
 
-import net.dermetfan.util.Accessor;
+import net.dermetfan.utils.Accessor;
 
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Sprite;

@@ -12,16 +12,16 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License. */
 
-package net.dermetfan.util.libgdx.box2d;
+package net.dermetfan.utils.libgdx.box2d;
 
-import static net.dermetfan.util.libgdx.math.GeometryUtils.filterX;
-import static net.dermetfan.util.libgdx.math.GeometryUtils.filterY;
-import static net.dermetfan.util.libgdx.math.GeometryUtils.rotate;
-import static net.dermetfan.util.libgdx.math.GeometryUtils.vec2_0;
-import static net.dermetfan.util.libgdx.math.GeometryUtils.vec2_1;
-import static net.dermetfan.util.math.MathUtils.amplitude;
-import static net.dermetfan.util.math.MathUtils.max;
-import static net.dermetfan.util.math.MathUtils.min;
+import static net.dermetfan.utils.libgdx.math.GeometryUtils.filterX;
+import static net.dermetfan.utils.libgdx.math.GeometryUtils.filterY;
+import static net.dermetfan.utils.libgdx.math.GeometryUtils.rotate;
+import static net.dermetfan.utils.libgdx.math.GeometryUtils.vec2_0;
+import static net.dermetfan.utils.libgdx.math.GeometryUtils.vec2_1;
+import static net.dermetfan.utils.math.MathUtils.amplitude;
+import static net.dermetfan.utils.math.MathUtils.max;
+import static net.dermetfan.utils.math.MathUtils.min;
 
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Body;

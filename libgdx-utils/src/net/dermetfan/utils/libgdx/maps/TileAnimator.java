@@ -12,10 +12,10 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License. */
 
-package net.dermetfan.util.libgdx.maps;
+package net.dermetfan.utils.libgdx.maps;
 
-import static net.dermetfan.util.libgdx.maps.MapUtils.getProperty;
-import static net.dermetfan.util.libgdx.maps.MapUtils.toTiledMapTileArray;
+import static net.dermetfan.utils.libgdx.maps.MapUtils.getProperty;
+import static net.dermetfan.utils.libgdx.maps.MapUtils.toTiledMapTileArray;
 
 import java.util.Comparator;
 

@@ -12,19 +12,19 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License. */
 
-package net.dermetfan.util.libgdx.box2d;
+package net.dermetfan.utils.libgdx.box2d;
 
-import static net.dermetfan.util.libgdx.maps.MapUtils.getProperty;
-import static net.dermetfan.util.libgdx.math.GeometryUtils.areVerticesClockwise;
-import static net.dermetfan.util.libgdx.math.GeometryUtils.isConvex;
-import static net.dermetfan.util.libgdx.math.GeometryUtils.toFloatArray;
-import static net.dermetfan.util.libgdx.math.GeometryUtils.toPolygonArray;
-import static net.dermetfan.util.libgdx.math.GeometryUtils.toVector2Array;
-import static net.dermetfan.util.libgdx.math.GeometryUtils.vec2_0;
+import static net.dermetfan.utils.libgdx.maps.MapUtils.getProperty;
+import static net.dermetfan.utils.libgdx.math.GeometryUtils.areVerticesClockwise;
+import static net.dermetfan.utils.libgdx.math.GeometryUtils.isConvex;
+import static net.dermetfan.utils.libgdx.math.GeometryUtils.toFloatArray;
+import static net.dermetfan.utils.libgdx.math.GeometryUtils.toPolygonArray;
+import static net.dermetfan.utils.libgdx.math.GeometryUtils.toVector2Array;
+import static net.dermetfan.utils.libgdx.math.GeometryUtils.vec2_0;
 
 import java.util.Iterator;
 
-import net.dermetfan.util.libgdx.math.BayazitDecomposer;
+import net.dermetfan.utils.libgdx.math.BayazitDecomposer;
 
 import com.badlogic.gdx.maps.Map;
 import com.badlogic.gdx.maps.MapLayer;
