@@ -12,15 +12,12 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License. */
 
-package net.dermetfan.util.libgdx.maps;
+package net.dermetfan.utils.libgdx.maps;
 
-import static net.dermetfan.util.libgdx.math.GeometryUtils.vec2_0;
+import static net.dermetfan.utils.libgdx.math.GeometryUtils.vec2_0;
 
 import java.util.Iterator;
 
-import net.dermetfan.util.libgdx.math.GeometryUtils;
-
-import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.maps.MapProperties;
 import com.badlogic.gdx.maps.tiled.TiledMapTile;
 import com.badlogic.gdx.maps.tiled.TiledMapTileSet;
@@ -98,17 +95,6 @@ public abstract class MapUtils {
 	/** @see #toIsometricGridPoint(Vector2, float, float) */
 	public static Vector3 toIsometricGridPoint(Vector3 point, float cellWidth, float cellHeight) {
 		return point.set(toIsometricGridPoint(vec2_0.set(point.x, point.y), cellWidth, cellHeight).x, vec2_0.y, 0);
-	}
-
-	/** Keeps the given {@link OrthographicCamera} in the given rectangle. If the rectangle is smaller than the camera viewport times the camera zoom, the camera will be centered on the rectangle.<br/>
-	 *  Note that the camera will not be {@link OrthographicCamera#update() updated}.
-	 *  @param camera the camera to keep in the rectangle
-	 *  @param x the x of the rectangle
-	 *  @param y the y of the rectangle
-	 *  @param width the width of the rectangle
-	 *  @param height the height of the rectangle */
-	public static void keepWithin(OrthographicCamera camera, float x, float y, float width, float height) {
-		camera.position.set(GeometryUtils.keepWithin(camera.position.x - camera.viewportWidth / 2 * camera.zoom, camera.position.y - camera.viewportHeight / 2 * camera.zoom, camera.viewportWidth * camera.zoom, camera.viewportHeight * camera.zoom, x, y, width, height).scl(camera.zoom), camera.position.z);
 	}
 
 }

@@ -12,7 +12,7 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License. */
 
-package net.dermetfan.util.libgdx.box2d;
+package net.dermetfan.utils.libgdx.box2d;
 
 import com.badlogic.gdx.InputAdapter;
 import com.badlogic.gdx.graphics.Camera;

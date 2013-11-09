@@ -12,7 +12,7 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License. */
 
-package net.dermetfan.util.libgdx;
+package net.dermetfan.utils.libgdx;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;

@@ -12,7 +12,7 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License. */
 
-package net.dermetfan.util.libgdx.graphics;
+package net.dermetfan.utils.libgdx.graphics;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Graphics;

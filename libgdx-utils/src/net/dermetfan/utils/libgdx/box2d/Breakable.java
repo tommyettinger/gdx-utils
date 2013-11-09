@@ -12,10 +12,10 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License. */
 
-package net.dermetfan.util.libgdx.box2d;
+package net.dermetfan.utils.libgdx.box2d;
 
-import net.dermetfan.util.Accessor;
-import net.dermetfan.util.math.MathUtils;
+import net.dermetfan.utils.Accessor;
+import net.dermetfan.utils.math.MathUtils;
 
 import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.Contact;

@@ -12,12 +12,13 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License. */
 
-package net.dermetfan.util.libgdx.math;
+package net.dermetfan.utils.libgdx.math;
 
 import static com.badlogic.gdx.math.MathUtils.cos;
 import static com.badlogic.gdx.math.MathUtils.sin;
-import static net.dermetfan.util.math.MathUtils.amplitude;
+import static net.dermetfan.utils.math.MathUtils.amplitude;
 
+import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.math.Polygon;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
@@ -264,6 +265,16 @@ public abstract class GeometryUtils {
 	/** @see #keepWithin(float, float, float, float, float, float, float, float) */
 	public static Rectangle keepWithin(Rectangle rect, Rectangle other) {
 		return rect.setPosition(keepWithin(rect.x, rect.y, rect.width, rect.height, other.x, other.y, other.width, other.height));
+	}
+
+	/** Keeps the given {@link OrthographicCamera} in the given rectangle. If the rectangle is smaller than the camera viewport times the camera zoom, the camera will be centered on the rectangle.<br/>
+	 *  Note that the camera will not be {@link OrthographicCamera#update() updated}.
+	 *  @param camera the camera to keep in the rectangle
+	 *  @see #keepWithin(float, float, float, float, float, float, float, float) */
+	public static void keepWithin(OrthographicCamera camera, float x, float y, float width, float height) {
+		Vector2 pos = keepWithin(camera.position.x - camera.viewportWidth / 2 * camera.zoom, camera.position.y - camera.viewportHeight / 2 * camera.zoom, camera.viewportWidth * camera.zoom, camera.viewportHeight * camera.zoom, x, y, width, height).scl(camera.zoom);
+		camera.position.x = pos.x + camera.viewportWidth / 2;
+		camera.position.y = pos.y + camera.viewportHeight / 2;
 	}
 
 }

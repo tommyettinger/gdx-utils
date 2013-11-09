@@ -12,9 +12,9 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License. */
 
-package net.dermetfan.util;
+package net.dermetfan.utils;
 
-import net.dermetfan.util.math.MathUtils;
+import net.dermetfan.utils.math.MathUtils;
 
 /** Appends its {@link #appendices} to a {@code CharSequence}. Determines which is the current appendix from {@link #time} and {@link #durations}.
  *  @author dermetfan */
