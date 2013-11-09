@@ -18,6 +18,7 @@ import static net.dermetfan.util.libgdx.math.GeometryUtils.vec2_0;
 
 import java.util.Iterator;
 
+import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.maps.MapProperties;
 import com.badlogic.gdx.maps.tiled.TiledMapTile;
 import com.badlogic.gdx.maps.tiled.TiledMapTileSet;
@@ -95,6 +96,28 @@ public abstract class MapUtils {
 	/** @see #toIsometricGridPoint(Vector2, float, float) */
 	public static Vector3 toIsometricGridPoint(Vector3 point, float cellWidth, float cellHeight) {
 		return point.set(toIsometricGridPoint(vec2_0.set(point.x, point.y), cellWidth, cellHeight).x, vec2_0.y, 0);
+	}
+
+	/** Keeps the given {@link OrthographicCamera} in the given rectangle. If the rectangle is smaller than the camera viewport times the camera zoom, the camera will be centered on the rectangle.<br/>
+	 *  Note that the camera will not be {@link OrthographicCamera#update() updated}.
+	 *  @param camera the camera to keep in the rectangle
+	 *  @param x the x of the rectangle
+	 *  @param y the y of the rectangle
+	 *  @param width the width of the rectangle
+	 *  @param height the height of the rectangle */
+	public static void keepWithin(OrthographicCamera camera, float x, float y, float width, float height) {
+		if(width < camera.viewportWidth * camera.zoom)
+			camera.position.x = (x + width) / 2;
+		else if(camera.position.x - camera.viewportWidth / 2 * camera.zoom < x)
+			camera.position.x = x + camera.viewportWidth / 2 * camera.zoom;
+		else if(camera.position.x + camera.viewportWidth / 2 * camera.zoom > x + width)
+			camera.position.x = x + width - camera.viewportWidth / 2 * camera.zoom;
+		if(height < camera.viewportHeight * camera.zoom)
+			camera.position.y = (y + height) / 2;
+		else if(camera.position.y - camera.viewportHeight / 2 * camera.zoom < y)
+			camera.position.y = y + camera.viewportHeight / 2 * camera.zoom;
+		else if(camera.position.y + camera.viewportHeight / 2 * camera.zoom > y + height)
+			camera.position.y = y + height - camera.viewportHeight / 2 * camera.zoom;
 	}
 
 }
