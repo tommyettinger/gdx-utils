@@ -19,6 +19,7 @@ import static com.badlogic.gdx.math.MathUtils.sin;
 import static net.dermetfan.util.math.MathUtils.amplitude;
 
 import com.badlogic.gdx.math.Polygon;
+import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 
 /** provides some useful methods for geometric calculations
@@ -228,6 +229,41 @@ public abstract class GeometryUtils {
 		}
 
 		return true;
+	}
+
+	/** Keeps the first described rectangle in the second described rectangle. If the second rectangle is smaller than the first one, the first will be centered on the second one.
+	 *  @param position the position of the first rectangle
+	 *  @param width the width of the first rectangle
+	 *  @param height the height of the first rectangle
+	 *  @param x2 the x of the second rectangle
+	 *  @param y2 the y of the second rectangle
+	 *  @param width2 the width of the second rectangle
+	 *  @param height2 the height of the second rectangle
+	 *  @return the position of the first rectangle */
+	public static Vector2 keepWithin(Vector2 position, float width, float height, float x2, float y2, float width2, float height2) {
+		if(width2 < width)
+			position.x = x2 + width2 / 2 - width / 2;
+		else if(position.x < x2)
+			position.x = x2;
+		else if(position.x + width > x2 + width2)
+			position.x = x2 + width2 - width;
+		if(height2 < height)
+			position.y = y2 + height2 / 2 - height / 2;
+		else if(position.y < y2)
+			position.y = y2;
+		else if(position.y + height > y2 + height2)
+			position.y = y2 + height2 - height;
+		return position;
+	}
+
+	/** @see #keepWithin(Vector2, float, float, float, float, float, float) */
+	public static Vector2 keepWithin(float x, float y, float width, float height, float rectX, float rectY, float rectWidth, float rectHeight) {
+		return keepWithin(vec2_0.set(x, y), width, height, rectX, rectY, rectWidth, rectHeight);
+	}
+
+	/** @see #keepWithin(float, float, float, float, float, float, float, float) */
+	public static Rectangle keepWithin(Rectangle rect, Rectangle other) {
+		return rect.setPosition(keepWithin(rect.x, rect.y, rect.width, rect.height, other.x, other.y, other.width, other.height));
 	}
 
 }

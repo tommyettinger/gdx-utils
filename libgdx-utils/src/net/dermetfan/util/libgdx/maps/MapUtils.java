@@ -18,6 +18,8 @@ import static net.dermetfan.util.libgdx.math.GeometryUtils.vec2_0;
 
 import java.util.Iterator;
 
+import net.dermetfan.util.libgdx.math.GeometryUtils;
+
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.maps.MapProperties;
 import com.badlogic.gdx.maps.tiled.TiledMapTile;
@@ -106,18 +108,7 @@ public abstract class MapUtils {
 	 *  @param width the width of the rectangle
 	 *  @param height the height of the rectangle */
 	public static void keepWithin(OrthographicCamera camera, float x, float y, float width, float height) {
-		if(width < camera.viewportWidth * camera.zoom)
-			camera.position.x = (x + width) / 2;
-		else if(camera.position.x - camera.viewportWidth / 2 * camera.zoom < x)
-			camera.position.x = x + camera.viewportWidth / 2 * camera.zoom;
-		else if(camera.position.x + camera.viewportWidth / 2 * camera.zoom > x + width)
-			camera.position.x = x + width - camera.viewportWidth / 2 * camera.zoom;
-		if(height < camera.viewportHeight * camera.zoom)
-			camera.position.y = (y + height) / 2;
-		else if(camera.position.y - camera.viewportHeight / 2 * camera.zoom < y)
-			camera.position.y = y + camera.viewportHeight / 2 * camera.zoom;
-		else if(camera.position.y + camera.viewportHeight / 2 * camera.zoom > y + height)
-			camera.position.y = y + height - camera.viewportHeight / 2 * camera.zoom;
+		camera.position.set(GeometryUtils.keepWithin(camera.position.x - camera.viewportWidth / 2 * camera.zoom, camera.position.y - camera.viewportHeight / 2 * camera.zoom, camera.viewportWidth * camera.zoom, camera.viewportHeight * camera.zoom, x, y, width, height).scl(camera.zoom), camera.position.z);
 	}
 
 }
