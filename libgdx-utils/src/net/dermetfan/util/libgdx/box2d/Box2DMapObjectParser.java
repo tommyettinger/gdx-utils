@@ -88,7 +88,7 @@ public class Box2DMapObjectParser {
 	public static class Aliases {
 
 		/** the aliases */
-		public String x = "x", y = "y", type = "type", bodyType = "bodyType", dynamicBody = "DynamicBody", kinematicBody = "KinematicBody", staticBody = "StaticBody", active = "active", allowSleep = "allowSleep", angle = "angle", angularDamping = "angularDamping", angularVelocity = "angularVelocity", awake = "awake", bullet = "bullet", fixedRotation = "fixedRotation", gravityunitScale = "gravityunitScale", linearDamping = "linearDamping", linearVelocityX = "linearVelocityX", linearVelocityY = "linearVelocityY", density = "density", categoryBits = "categoryBits", groupIndex = "groupIndex", maskBits = "maskBits", friciton = "friction", isSensor = "isSensor", restitution = "restitution", body = "body", fixture = "fixture", joint = "joint", jointType = "jointType", distanceJoint = "DistanceJoint", frictionJoint = "FrictionJoint", gearJoint = "GearJoint", mouseJoint = "MouseJoint", prismaticJoint = "PrismaticJoint", pulleyJoint = "PulleyJoint", revoluteJoint = "RevoluteJoint", ropeJoint = "RopeJoint", weldJoint = "WeldJoint", wheelJoint = "WheelJoint", bodyA = "bodyA", bodyB = "bodyB", collideConnected = "collideConnected", dampingRatio = "dampingRatio", frequencyHz = "frequencyHz", length = "length", localAnchorAX = "localAnchorAX", localAnchorAY = "localAnchorAY", localAnchorBX = "localAnchorBX", localAnchorBY = "localAnchorBY", maxForce = "maxForce", maxTorque = "maxTorque", joint1 = "joint1", joint2 = "joint2", ratio = "ratio", targetX = "targetX", targetY = "targetY", enableLimit = "enableLimit", enableMotor = "enableMotor", localAxisAX = "localAxisAX", localAxisAY = "localAxisAY", lowerTranslation = "lowerTranslation", maxMotorForce = "maxMotorForce", motorSpeed = "motorSpeed", referenceAngle = "referenceAngle", upperTranslation = "upperTranslation", groundAnchorAX = "groundAnchorAX", groundAnchorAY = "groundAnchorAY", groundAnchorBX = "groundAnchorBX", groundAnchorBY = "groundAnchorBY", lengthA = "lengthA", lengthB = "lengthB", lowerAngle = "lowerAngle", maxMotorTorque = "maxMotorTorque", upperAngle = "upperAngle", maxLength = "maxLength", object = "object", unitScale = "unitScale", userData = "userData";
+		public String x = "x", y = "y", type = "type", bodyType = "bodyType", dynamicBody = "DynamicBody", kinematicBody = "KinematicBody", staticBody = "StaticBody", active = "active", allowSleep = "allowSleep", angle = "angle", angularDamping = "angularDamping", angularVelocity = "angularVelocity", awake = "awake", bullet = "bullet", fixedRotation = "fixedRotation", gravityunitScale = "gravityunitScale", linearDamping = "linearDamping", linearVelocityX = "linearVelocityX", linearVelocityY = "linearVelocityY", density = "density", categoryBits = "categoryBits", groupIndex = "groupIndex", maskBits = "maskBits", friciton = "friction", isSensor = "isSensor", restitution = "restitution", body = "body", fixture = "fixture", joint = "joint", jointType = "jointType", distanceJoint = "DistanceJoint", frictionJoint = "FrictionJoint", gearJoint = "GearJoint", mouseJoint = "MouseJoint", prismaticJoint = "PrismaticJoint", pulleyJoint = "PulleyJoint", revoluteJoint = "RevoluteJoint", ropeJoint = "RopeJoint", weldJoint = "WeldJoint", wheelJoint = "WheelJoint", bodyA = "bodyA", bodyB = "bodyB", collideConnected = "collideConnected", dampingRatio = "dampingRatio", frequencyHz = "frequencyHz", length = "length", localAnchorAX = "localAnchorAX", localAnchorAY = "localAnchorAY", localAnchorBX = "localAnchorBX", localAnchorBY = "localAnchorBY", maxForce = "maxForce", maxTorque = "maxTorque", joint1 = "joint1", joint2 = "joint2", ratio = "ratio", targetX = "targetX", targetY = "targetY", enableLimit = "enableLimit", enableMotor = "enableMotor", localAxisAX = "localAxisAX", localAxisAY = "localAxisAY", lowerTranslation = "lowerTranslation", maxMotorForce = "maxMotorForce", motorSpeed = "motorSpeed", referenceAngle = "referenceAngle", upperTranslation = "upperTranslation", groundAnchorAX = "groundAnchorAX", groundAnchorAY = "groundAnchorAY", groundAnchorBX = "groundAnchorBX", groundAnchorBY = "groundAnchorBY", lengthA = "lengthA", lengthB = "lengthB", lowerAngle = "lowerAngle", maxMotorTorque = "maxMotorTorque", upperAngle = "upperAngle", maxLength = "maxLength", object = "object", unitScale = "unitScale", userData = "userData", tileWidth = "tilewidth", tileHeight = "tileheight";
 
 	}
 
@@ -98,10 +98,13 @@ public class Box2DMapObjectParser {
 	/** the unit scale to convert from editor units to Box2D meters */
 	private float unitScale = 1;
 
-	/** if the unit scale found in the map and it's layers should be ignored */
-	private boolean ignoreMapUnitScale = false;
+	/** if the {@link Aliases#unitScale unit scale} found in the map should be ignored */
+	private boolean ignoreMapUnitScale;
 
-	/** the dimensions of a tile, used to transform positions (ignore / set to 1 if the used map is not a tile map) */
+	/** if the {@link Aliases#unitScale unit scale} found in the layers should be ignored */
+	private boolean ignoreLayerUnitScale;
+
+	/** the dimensions of a tile, used to transform positions (ignore/set to 1 if the used map is not a tile map) */
 	private float tileWidth = 1, tileHeight = 1;
 
 	/** if concave polygons should be triangulated instead of being decomposed into convex polygons */
@@ -161,17 +164,15 @@ public class Box2DMapObjectParser {
 		this.tileHeight = tileHeight;
 	}
 
-	/**
-	 * creates the given {@link Map Map's} {@link MapObjects} in the given {@link World}  
+	/**creates the given {@link Map Map's} {@link MapObjects} in the given {@link World}  
 	 * @param world the {@link World} to create the {@link MapObjects} of the given {@link Map} in
 	 * @param map the {@link Map} which {@link MapObjects} to create in the given {@link World}
-	 * @return the given {@link World} with the parsed {@link MapObjects} of the given {@link Map} created in it
-	 */
+	 * @return the given {@link World} with the parsed {@link MapObjects} of the given {@link Map} created in it */
 	public World load(World world, Map map) {
 		if(!ignoreMapUnitScale)
 			unitScale = getProperty(map.getProperties(), aliases.unitScale, unitScale);
-		tileWidth = getProperty(map.getProperties(), "tilewidth", (int) tileWidth);
-		tileHeight = getProperty(map.getProperties(), "tileheight", (int) tileHeight);
+		tileWidth = getProperty(map.getProperties(), aliases.tileWidth, tileWidth);
+		tileHeight = getProperty(map.getProperties(), aliases.tileHeight, tileHeight);
 
 		for(MapLayer mapLayer : map.getLayers())
 			load(world, mapLayer);
@@ -185,7 +186,7 @@ public class Box2DMapObjectParser {
 	 *  @return the given {@link World} with the parsed {@link MapObjects} of the given {@link MapLayer} created in it */
 	public World load(World world, MapLayer layer) {
 		for(MapObject object : layer.getObjects()) {
-			if(!ignoreMapUnitScale)
+			if(!ignoreLayerUnitScale)
 				unitScale = getProperty(layer.getProperties(), aliases.unitScale, unitScale);
 			if(getProperty(object.getProperties(), aliases.type, "").equals(aliases.object)) {
 				createBody(world, object);
@@ -194,21 +195,21 @@ public class Box2DMapObjectParser {
 		}
 
 		for(MapObject object : layer.getObjects()) {
-			if(!ignoreMapUnitScale)
+			if(!ignoreLayerUnitScale)
 				unitScale = getProperty(layer.getProperties(), aliases.unitScale, unitScale);
 			if(getProperty(object.getProperties(), aliases.type, "").equals(aliases.body))
 				createBody(world, object);
 		}
 
 		for(MapObject object : layer.getObjects()) {
-			if(!ignoreMapUnitScale)
+			if(!ignoreLayerUnitScale)
 				unitScale = getProperty(layer.getProperties(), aliases.unitScale, unitScale);
 			if(getProperty(object.getProperties(), aliases.type, "").equals(aliases.fixture))
 				createFixtures(object);
 		}
 
 		for(MapObject object : layer.getObjects()) {
-			if(!ignoreMapUnitScale)
+			if(!ignoreLayerUnitScale)
 				unitScale = getProperty(layer.getProperties(), aliases.unitScale, unitScale);
 			if(getProperty(object.getProperties(), aliases.type, "").equals(aliases.joint))
 				createJoint(object);
@@ -390,7 +391,6 @@ public class Box2DMapObjectParser {
 
 		String jointType = getProperty(properties, aliases.jointType, "");
 
-		// get all possible values
 		if(jointType.equals(aliases.distanceJoint)) {
 			DistanceJointDef distanceJointDef = new DistanceJointDef();
 			distanceJointDef.dampingRatio = getProperty(properties, aliases.dampingRatio, distanceJointDef.dampingRatio);
@@ -554,6 +554,16 @@ public class Box2DMapObjectParser {
 	/** @param ignoreMapUnitScale the {@link #ignoreMapUnitScale} to set */
 	public void setIgnoreMapUnitScale(boolean ignoreMapUnitScale) {
 		this.ignoreMapUnitScale = ignoreMapUnitScale;
+	}
+
+	/** @return the {@link #ignoreLayerUnitScale} */
+	public boolean isIgnoreLayerUnitScale() {
+		return ignoreLayerUnitScale;
+	}
+
+	/** @param ignoreLayerUnitScale the {@link #ignoreLayerUnitScale} to set */
+	public void setIgnoreLayerUnitScale(boolean ignoreLayerUnitScale) {
+		this.ignoreLayerUnitScale = ignoreLayerUnitScale;
 	}
 
 	/** @return the {@link #tileWidth} */
