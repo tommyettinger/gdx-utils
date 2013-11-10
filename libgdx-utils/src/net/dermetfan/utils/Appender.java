@@ -67,9 +67,11 @@ public class Appender {
 	 *  @return the updated {@link #index} */
 	public float update(float delta) {
 		if((time += delta) > durations[index]) {
-			time = 0;
+			time -= durations[index];
 			if(++index >= appendices.length)
 				index = 0;
+			if(time > durations[index])
+				time -= (int) (time / durations[index]) * durations[index];
 		}
 		return index;
 	}
