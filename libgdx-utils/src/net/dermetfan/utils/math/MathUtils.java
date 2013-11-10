@@ -67,6 +67,18 @@ public class MathUtils {
 	public static float nearest(float value, float[] values, float range) {
 		float diff, smallestDiff = Float.POSITIVE_INFINITY, nearest = Float.NaN;
 
+		if(value == Float.POSITIVE_INFINITY) {
+			float max = max(values);
+			if(max - range <= value)
+				return max;
+			return nearest;
+		} else if(value == Float.NEGATIVE_INFINITY) {
+			float min = min(values);
+			if(min + range >= value)
+				return min;
+			return nearest;
+		}
+
 		for(float candidate : values) {
 			if(candidate == value)
 				return value;

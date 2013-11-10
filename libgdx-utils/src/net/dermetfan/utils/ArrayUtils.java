@@ -93,15 +93,14 @@ public abstract class ArrayUtils {
 	 * 	If {@code skips} is smaller than 1, {@code elements} will be returned.
 	 *  @see #skipselect(Object[], int[], int[]) */
 	public static <T> T[] skipselect(T[] elements, int firstSkip, int skips) {
-		if(skips < 1)
-			return elements;
-
 		int length, span = firstSkip;
-		for(length = 0; length <= elements.length; length++)
+		for(length = 0; length < elements.length; length++)
 			if(span + skips + 1 <= elements.length)
 				span += skips + 1;
-			else
+			else {
+				length++;
 				break;
+			}
 
 		@SuppressWarnings("unchecked")
 		T[] selection = (T[]) new Object[length];
