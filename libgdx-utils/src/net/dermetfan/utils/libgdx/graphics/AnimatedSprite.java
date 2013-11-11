@@ -20,6 +20,7 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 
 /** An {@link AnimatedSprite} holds an {@link Animation} and sets the {@link Texture} of its super type {@link Sprite} to the correct one according to the information in the {@link Animation}.<br/>
  *  Usage:
@@ -105,17 +106,32 @@ public class AnimatedSprite extends Sprite {
 	}
 
 	/** flips all frames
-	 *  @see #flipFrames(float, float, boolean, boolean) */
+	 *  @see #flipFrames(boolean, boolean, boolean) */
 	public void flipFrames(boolean flipX, boolean flipY) {
-		flipFrames(0, animation.animationDuration - animation.frameDuration / 2, flipX, flipY);
+		flipFrames(flipX, flipY, false);
+	}
+
+	/** flips all frames
+	 *  @see #flipFrames(float, float, boolean, boolean, boolean) */
+	public void flipFrames(boolean flipX, boolean flipY, boolean set) {
+		flipFrames(0, animation.animationDuration, flipX, flipY, set);
+	}
+
+	/** flips all frames
+	 *  @see #flipFrames(float, float, boolean, boolean, boolean) */
+	public void flipFrames(float startTime, float endTime, boolean flipX, boolean flipY) {
+		flipFrames(startTime, endTime, flipX, flipY, false);
 	}
 
 	/** flips all frames from {@code startTime} to {@code endTime}
 	 *  @param startTime the animation state time of the first frame to flip
-	 *  @param endTime the animation state time of the last frame to flip */
-	public void flipFrames(float startTime, float endTime, boolean flipX, boolean flipY) {
-		for(float t = startTime; t <= endTime; t += animation.frameDuration / animation.animationDuration)
-			animation.getKeyFrame(t).flip(flipX, flipY);
+	 *  @param endTime the animation state time of the last frame to flip
+	 *  @param set if the frames should be set to {@code flipX} and {@code flipY} instead of actually flipping them */
+	public void flipFrames(float startTime, float endTime, boolean flipX, boolean flipY, boolean set) {
+		for(float t = startTime; t < endTime; t += animation.frameDuration) {
+			TextureRegion frame = animation.getKeyFrame(t);
+			frame.flip(flipX && (set ? !frame.isFlipX() : true), flipY && (set ? !frame.isFlipY() : true));
+		}
 	}
 
 	/** sets {@link #playing} to true */
