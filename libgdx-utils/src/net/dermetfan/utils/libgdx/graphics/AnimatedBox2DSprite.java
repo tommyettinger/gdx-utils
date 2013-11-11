@@ -105,9 +105,19 @@ public class AnimatedBox2DSprite extends Box2DSprite {
 		animatedSprite.flipFrames(flipX, flipY);
 	}
 
+	/** @see AnimatedSprite#flipFrames(boolean, boolean, boolean) */
+	public void flipFrames(boolean flipX, boolean flipY, boolean invert) {
+		animatedSprite.flipFrames(flipX, flipY, invert);
+	}
+
 	/** @see AnimatedSprite#flipFrames(float, float, boolean, boolean) */
 	public void flipFrames(float startTime, float endTime, boolean flipX, boolean flipY) {
 		animatedSprite.flipFrames(startTime, endTime, flipX, flipY);
+	}
+
+	/** @see AnimatedSprite#flipFrames(float, float, boolean, boolean, boolean) */
+	public void flipFrames(float startTime, float endTime, boolean flipX, boolean flipY, boolean invert) {
+		animatedSprite.flipFrames(startTime, endTime, flipX, flipY, invert);
 	}
 
 	/** @see AnimatedSprite#isPlaying() */
