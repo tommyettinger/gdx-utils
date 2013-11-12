@@ -56,7 +56,7 @@ public abstract class Box2DUtils {
 
 	}
 
-	/** cached {@link Shape Shapes} and their vertices */
+	/** Cached {@link Shape Shapes} and their vertices. You should {@link ObjectMap#clear() clear} this when you don't use the shapes anymore. */
 	public static final ObjectMap<Shape, ShapeCache> shapeCache = new ObjectMap<Shape, ShapeCache>();
 
 	/** if new {@link Shape} passed in {@link #vertices(Shape)} should be automatically added to the {@link #shapeCache} */
@@ -71,22 +71,27 @@ public abstract class Box2DUtils {
 
 	/** @return the vertices of all fixtures of the given body
 	 *  @see #vertices(Shape) */
+	public static Vector2[][] vertices(Body body, Vector2[][] output) {
+		if(output == null || output.length != body.getFixtureList().size)
+			output = new Vector2[body.getFixtureList().size][]; // caching fixture vertices for performance
+		for(int i = 0; i < output.length; i++)
+			output[i] = vertices(body.getFixtureList().get(i), tmpVecArr);
+		return output;
+	}
+
+	/** @return the vertices of all fixtures of the given body
+	 *  @see #vertices(Shape) */
 	public static Vector2[] vertices(Body body, Vector2[] output) {
-		Vector2[][] fixtureVertices = new Vector2[body.getFixtureList().size][]; // caching fixture vertices for performance
-		for(int i = 0; i < fixtureVertices.length; i++)
-			fixtureVertices[i] = vertices(body.getFixtureList().get(i), tmpVecArr);
+		Vector2[][] vertices = vertices(body, (Vector2[][]) null);
 
 		int vertexCount = 0;
-		int fvi = -1;
-		for(Fixture fixture : body.getFixtureList())
-			if(fixture.getShape().getType() == Type.Circle) // for performance (doesn't call #vertices(Shape))
-				vertexCount += 4;
-			else
-				vertexCount += fixtureVertices[++fvi].length;
+		for(int i = 0; i < vertices.length; i++)
+			vertexCount += vertices[i].length;
 
-		output = new Vector2[vertexCount];
+		if(output == null || output.length != 4)
+			output = new Vector2[vertexCount];
 		int vi = -1;
-		for(Vector2[] verts : fixtureVertices)
+		for(Vector2[] verts : vertices)
 			for(Vector2 vertice : verts)
 				output[++vi] = vertice;
 
@@ -145,11 +150,16 @@ public abstract class Box2DUtils {
 			case Circle:
 				CircleShape circleShape = (CircleShape) shape;
 
-				output = new Vector2[] {new Vector2(circleShape.getPosition().x - circleShape.getRadius(), circleShape.getPosition().y + circleShape.getRadius()), // top left
-				new Vector2(circleShape.getPosition().x - circleShape.getRadius(), circleShape.getPosition().y - circleShape.getRadius()), // bottom left
-				new Vector2(circleShape.getPosition().x + circleShape.getRadius(), circleShape.getPosition().y - circleShape.getRadius()), // bottom right
-				new Vector2(circleShape.getPosition().x + circleShape.getRadius(), circleShape.getPosition().y + circleShape.getRadius()) // top right
-				};
+				if(output == null || output.length != 4)
+					output = new Vector2[4];
+				vec2_0.set(circleShape.getPosition().x - circleShape.getRadius(), circleShape.getPosition().y + circleShape.getRadius()); // top left
+				output[0] = output[0] != null ? output[0].set(vec2_0) : new Vector2(vec2_0);
+				vec2_0.set(circleShape.getPosition().x - circleShape.getRadius(), circleShape.getPosition().y - circleShape.getRadius()); // bottom left
+				output[1] = output[1] != null ? output[1].set(vec2_0) : new Vector2(vec2_0);
+				vec2_0.set(circleShape.getPosition().x + circleShape.getRadius(), circleShape.getPosition().y - circleShape.getRadius()); // bottom right
+				output[2] = output[2] != null ? output[2].set(vec2_0) : new Vector2(vec2_0);
+				vec2_0.set(circleShape.getPosition().x + circleShape.getRadius(), circleShape.getPosition().y + circleShape.getRadius()); // top right
+				output[3] = output[3] != null ? output[3].set(vec2_0) : new Vector2(vec2_0);
 				break;
 			default:
 				throw new IllegalArgumentException("Shapes of the type '" + shape.getType().name() + "' are not supported");
@@ -360,7 +370,7 @@ public abstract class Box2DUtils {
 
 	/** @see #position(Shape, Body) */
 	public static Vector2 position(Shape shape, Body body, Vector2 output) {
-		return output.set(body.getPosition().add(positionRelative(shape, body.getTransform().getRotation(), output)));
+		return output.set(position(shape, body));
 	}
 
 	/** @return the position of the given Shape in world coordinates
@@ -370,22 +380,22 @@ public abstract class Box2DUtils {
 		return body.getPosition().add(positionRelative(shape, body.getTransform().getRotation()));
 	}
 
-	/** @return the autoShapeCache */
+	/** @return the {@link #autoShapeCache} */
 	public static boolean isAutoShapeCache() {
 		return autoShapeCache;
 	}
 
-	/** @param autoShapeCache the autoShapeCache to set */
+	/** @param autoShapeCache the {@link #autoShapeCache} to set */
 	public static void setAutoShapeCache(boolean autoShapeCache) {
 		Box2DUtils.autoShapeCache = autoShapeCache;
 	}
 
-	/** @return the autoShapeCacheMaxSize */
+	/** @return the {@link #autoShapeCacheMaxSize} */
 	public static int getAutoShapeCacheMaxSize() {
 		return autoShapeCacheMaxSize;
 	}
 
-	/** @param autoShapeCacheMaxSize the autoShapeCacheMaxSize to set */
+	/** @param autoShapeCacheMaxSize the {@link #autoShapeCacheMaxSize} to set */
 	public static void setAutoShapeCacheMaxSize(int autoShapeCacheMaxSize) {
 		Box2DUtils.autoShapeCacheMaxSize = autoShapeCacheMaxSize;
 	}
