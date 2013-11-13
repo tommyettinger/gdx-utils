@@ -16,15 +16,14 @@ package net.dermetfan.utils.libgdx.box2d;
 
 import static net.dermetfan.utils.libgdx.maps.MapUtils.getProperty;
 import static net.dermetfan.utils.libgdx.math.GeometryUtils.areVerticesClockwise;
+import static net.dermetfan.utils.libgdx.math.GeometryUtils.decomposeIntoConvex;
 import static net.dermetfan.utils.libgdx.math.GeometryUtils.isConvex;
 import static net.dermetfan.utils.libgdx.math.GeometryUtils.toFloatArray;
-import static net.dermetfan.utils.libgdx.math.GeometryUtils.toPolygonArray;
 import static net.dermetfan.utils.libgdx.math.GeometryUtils.toVector2Array;
+import static net.dermetfan.utils.libgdx.math.GeometryUtils.triangulate;
 import static net.dermetfan.utils.libgdx.math.GeometryUtils.vec2_0;
 
 import java.util.Iterator;
-
-import net.dermetfan.utils.libgdx.math.BayazitDecomposer;
 
 import com.badlogic.gdx.maps.Map;
 import com.badlogic.gdx.maps.MapLayer;
@@ -38,7 +37,6 @@ import com.badlogic.gdx.maps.objects.PolylineMapObject;
 import com.badlogic.gdx.maps.objects.RectangleMapObject;
 import com.badlogic.gdx.maps.objects.TextureMapObject;
 import com.badlogic.gdx.math.Circle;
-import com.badlogic.gdx.math.EarClippingTriangulator;
 import com.badlogic.gdx.math.Ellipse;
 import com.badlogic.gdx.math.Polygon;
 import com.badlogic.gdx.math.Polyline;
@@ -349,18 +347,9 @@ public class Box2DMapObjectParser {
 				vertices.insert(0, first);
 				polygon.setVertices(toFloatArray(vertices.items));
 			}
-			Vector2[] polygonVertices = toVector2Array(polygon.getTransformedVertices());
-			short[] indices = new EarClippingTriangulator().computeTriangles(toFloatArray(polygonVertices)).toArray();
-			Vector2[] vertices = new Vector2[indices.length];
-			for(int i = 0; i < indices.length; i++)
-				vertices[i] = polygonVertices[indices[i]];
-			convexPolygons = toPolygonArray(vertices, 3);
-		} else {
-			Array<Array<Vector2>> convexPolys = BayazitDecomposer.convexPartition(new Array<Vector2>(toVector2Array(polygon.getTransformedVertices())));
-			convexPolygons = new Polygon[convexPolys.size];
-			for(int i = 0; i < convexPolygons.length; i++)
-				convexPolygons[i] = new Polygon(toFloatArray((Vector2[]) convexPolys.get(i).toArray(Vector2.class)));
-		}
+			convexPolygons = triangulate(polygon);
+		} else
+			convexPolygons = decomposeIntoConvex(polygon);
 
 		// create the fixtures using the convex polygons
 		Fixture[] fixtures = new Fixture[convexPolygons.length];

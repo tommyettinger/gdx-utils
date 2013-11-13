@@ -122,10 +122,12 @@ public abstract class Box2DUtils {
 			case Polygon:
 				PolygonShape polygonShape = (PolygonShape) shape;
 
-				output = new Vector2[polygonShape.getVertexCount()];
+				if(output == null || output.length != polygonShape.getVertexCount())
+					output = new Vector2[polygonShape.getVertexCount()];
 
 				for(int i = 0; i < output.length; i++) {
-					output[i] = new Vector2();
+					if(output[i] == null)
+						output[i] = new Vector2();
 					polygonShape.getVertex(i, output[i]);
 				}
 				break;
@@ -135,15 +137,28 @@ public abstract class Box2DUtils {
 				edgeShape.getVertex1(vec2_0);
 				edgeShape.getVertex2(vec2_1);
 
-				output = new Vector2[] {vec2_0, vec2_1};
+				if(output == null || output.length != 2)
+					output = new Vector2[] {vec2_0, vec2_1};
+				else {
+					if(output[0] == null)
+						output[0] = new Vector2(vec2_0);
+					else
+						output[0].set(vec2_0);
+					if(output[1] == null)
+						output[1] = new Vector2(vec2_1);
+					else
+						output[1].set(vec2_1);
+				}
 				break;
 			case Chain:
 				ChainShape chainShape = (ChainShape) shape;
 
-				output = new Vector2[chainShape.getVertexCount()];
+				if(output == null || output.length != chainShape.getVertexCount())
+					output = new Vector2[chainShape.getVertexCount()];
 
 				for(int i = 0; i < output.length; i++) {
-					output[i] = new Vector2();
+					if(output[i] == null)
+						output[i] = new Vector2();
 					chainShape.getVertex(i, output[i]);
 				}
 				break;
