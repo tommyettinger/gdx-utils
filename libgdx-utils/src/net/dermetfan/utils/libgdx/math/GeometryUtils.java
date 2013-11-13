@@ -19,9 +19,12 @@ import static com.badlogic.gdx.math.MathUtils.sin;
 import static net.dermetfan.utils.math.MathUtils.amplitude;
 
 import com.badlogic.gdx.graphics.OrthographicCamera;
+import com.badlogic.gdx.math.EarClippingTriangulator;
 import com.badlogic.gdx.math.Polygon;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.utils.Array;
+import com.badlogic.gdx.utils.ShortArray;
 
 /** provides some useful methods for geometric calculations
  *  @author dermetfan */
@@ -230,6 +233,29 @@ public abstract class GeometryUtils {
 		}
 
 		return true;
+	}
+
+	/** @param concave the concave polygon to triangulate
+	 *  @return an array of triangles representing the given concave polygon
+	 *  @see EarClippingTriangulator#computeTriangles(float[]) */
+	public static Polygon[] triangulate(Polygon concave) {
+		Vector2[] polygonVertices = toVector2Array(concave.getTransformedVertices());
+		ShortArray indices = new EarClippingTriangulator().computeTriangles(toFloatArray(polygonVertices));
+		Vector2[] vertices = new Vector2[indices.size];
+		for(int i = 0; i < indices.size; i++)
+			vertices[i] = polygonVertices[indices.get(i)];
+		return toPolygonArray(vertices, 3);
+	}
+
+	/** @param concave the concave polygon to to decompose 
+	 *  @return an array of convex polygons representing the given concave polygon
+	 *  @see BayazitDecomposer#convexPartition(Array) */
+	public static Polygon[] decomposeIntoConvex(Polygon concave) {
+		Array<Array<Vector2>> convexPolys = BayazitDecomposer.convexPartition(new Array<Vector2>(toVector2Array(concave.getTransformedVertices())));
+		Polygon[] convexPolygons = new Polygon[convexPolys.size];
+		for(int i = 0; i < convexPolygons.length; i++)
+			convexPolygons[i] = new Polygon(toFloatArray((Vector2[]) convexPolys.get(i).toArray(Vector2.class)));
+		return convexPolygons;
 	}
 
 	/** Keeps the first described rectangle in the second described rectangle. If the second rectangle is smaller than the first one, the first will be centered on the second one.
