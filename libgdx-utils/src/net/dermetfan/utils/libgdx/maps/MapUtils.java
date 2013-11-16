@@ -37,27 +37,25 @@ public abstract class MapUtils {
 	public static <T> T getProperty(MapProperties properties, String key, T defaultValue) {
 		Object value = properties.get(key);
 
-		if(value == null || value.getClass() == String.class && ((String) value).isEmpty())
+		if(value == null || defaultValue == null || value instanceof String && ((String) value).isEmpty())
 			return defaultValue;
-		else if(defaultValue == null)
-			return (T) value;
 
-		if(defaultValue.getClass() == Boolean.class && value.getClass() != Boolean.class)
+		if(defaultValue.getClass() == Boolean.class && !(value instanceof Boolean))
 			return (T) new Boolean(Boolean.parseBoolean(value.toString()));
 
-		if(defaultValue.getClass() == Integer.class && value.getClass() != Integer.class)
+		if(defaultValue.getClass() == Integer.class && !(value instanceof Integer))
 			return (T) new Integer(Integer.parseInt(value.toString()));
 
-		if(defaultValue.getClass() == Float.class && value.getClass() != Float.class)
+		if(defaultValue.getClass() == Float.class && !(value instanceof Float))
 			return (T) new Float(Float.parseFloat(value.toString()));
 
-		if(defaultValue.getClass() == Double.class && value.getClass() != Double.class)
+		if(defaultValue.getClass() == Double.class && !(value instanceof Double))
 			return (T) new Double(Double.parseDouble(value.toString()));
 
-		if(defaultValue.getClass() == Short.class && value.getClass() != Short.class)
+		if(defaultValue.getClass() == Short.class && !(value instanceof Short))
 			return (T) new Short(Short.parseShort(value.toString()));
 
-		if(defaultValue.getClass() == Byte.class && value.getClass() != Byte.class)
+		if(defaultValue.getClass() == Byte.class && !(value instanceof Byte))
 			return (T) new Byte(Byte.parseByte(value.toString()));
 
 		return (T) value;
@@ -68,12 +66,9 @@ public abstract class MapUtils {
 	 *  @return the array of TiledMapTiles */
 	public static TiledMapTile[] toTiledMapTileArray(TiledMapTileSet tiles) {
 		TiledMapTile[] tileArray = new TiledMapTile[tiles.size()];
-
-		int i = -1;
 		Iterator<TiledMapTile> tileIterator = tiles.iterator();
-		while(tileIterator.hasNext())
-			tileArray[++i] = tileIterator.next();
-
+		for(int i = 0; tileIterator.hasNext(); i++)
+			tileArray[i] = tileIterator.next();
 		return tileArray;
 	}
 
@@ -94,7 +89,10 @@ public abstract class MapUtils {
 
 	/** @see #toIsometricGridPoint(Vector2, float, float) */
 	public static Vector3 toIsometricGridPoint(Vector3 point, float cellWidth, float cellHeight) {
-		return point.set(toIsometricGridPoint(vec2_0.set(point.x, point.y), cellWidth, cellHeight).x, vec2_0.y, 0);
+		Vector2 vec2 = toIsometricGridPoint(point.x, point.y, cellWidth, cellHeight);
+		point.x = vec2.x;
+		point.y = vec2.y;
+		return point;
 	}
 
 }
