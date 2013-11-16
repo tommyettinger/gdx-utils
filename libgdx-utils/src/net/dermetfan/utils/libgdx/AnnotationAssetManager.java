@@ -70,16 +70,12 @@ public class AnnotationAssetManager extends AssetManager {
 	 *  @param field the field whose {@link AssetDescriptor} to load or null if not successful
 	 *  @param instance the instance of the class containing the given {@code field} (may be null if all fields in the class annotated with {@link Asset} are static) */
 	public <T> void load(Field field, T instance) {
-		if(!field.isAnnotationPresent(Asset.class))
-			return;
 		if(field.getDeclaringClass() == AssetDescriptor.class)
 			try {
 				AssetDescriptor<?> descriptor = (AssetDescriptor<?>) field.get(instance);
 				if(descriptor != null)
 					load(descriptor);
-			} catch(IllegalArgumentException e) {
-				Gdx.app.error(AnnotationAssetManager.class.getSimpleName(), "couldn't access field \"" + field.getName() + "\"", e);
-			} catch(IllegalAccessException e) {
+			} catch(IllegalArgumentException | IllegalAccessException e) {
 				Gdx.app.error(AnnotationAssetManager.class.getSimpleName(), "couldn't access field \"" + field.getName() + "\"", e);
 			}
 		else {
@@ -119,9 +115,7 @@ public class AnnotationAssetManager extends AssetManager {
 				descriptor = new AssetDescriptor<T>((String) field.get(instance), (Class<T>) asset.type());
 			else
 				descriptor = new AssetDescriptor<T>((FileHandle) field.get(instance), (Class<T>) asset.type());
-		} catch(IllegalArgumentException e) {
-			Gdx.app.error(AnnotationAssetManager.class.getSimpleName(), "couldn't access field \"" + field.getName() + "\"", e);
-		} catch(IllegalAccessException e) {
+		} catch(IllegalArgumentException | IllegalAccessException e) {
 			Gdx.app.error(AnnotationAssetManager.class.getSimpleName(), "couldn't access field \"" + field.getName() + "\"", e);
 		}
 		return descriptor;
