@@ -259,7 +259,7 @@ public class Breakable {
 	 * 	@param tangentResistance the {@link #tangentResistance}
 	 *  @param breakBody the {@link #breakBody}
 	 *  @param breakBodyWithoutFixtures the {@link #breakBodyWithoutFixtures}
-	 *  @param callback The {@link #callback}. If null, {@link #defaultCallback} will be used. */
+	 *  @param callback The {@link #callback}. If null, {@link #defaultListener} will be used. */
 	public Breakable(float normalResistance, float tangentResistance, boolean breakBody, boolean breakBodyWithoutFixtures, Callback callback) {
 		this.normalResistance = normalResistance;
 		this.tangentResistance = tangentResistance;

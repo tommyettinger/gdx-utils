@@ -14,6 +14,9 @@
 
 package net.dermetfan.utils.libgdx.box2d;
 
+import static net.dermetfan.utils.libgdx.math.GeometryUtils.vec2_0;
+import static net.dermetfan.utils.libgdx.math.GeometryUtils.vec2_1;
+
 import com.badlogic.gdx.InputAdapter;
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.math.Vector2;
@@ -39,7 +42,7 @@ public class MouseJointAdapter extends InputAdapter {
 		private Array<MouseJointAdapter> adapters = new Array<MouseJointAdapter>(false, 2);
 
 		/** the max size of {@link #adapters} */
-		private byte max = Byte.MAX_VALUE;
+		private byte max = -1;
 
 		/** a temporary variable */
 		private boolean tmp;
@@ -47,7 +50,7 @@ public class MouseJointAdapter extends InputAdapter {
 		/** calls {@link MouseJointAdapter#touchDown(int, int, int, int) touchDown} on all {@link #adapters} and creates a new one if necessary */
 		@Override
 		public boolean touchDown(int screenX, int screenY, int pointer, int button) {
-			if(adapters.size <= pointer && pointer + 1 < max)
+			if(adapters.size <= pointer && (pointer + 1 < max || max < 0))
 				adapters.add(newMouseJointAdapter((byte) pointer));
 			for(MouseJointAdapter adapter : adapters)
 				tmp |= adapter.touchDown(screenX, screenY, pointer, button);
@@ -108,7 +111,7 @@ public class MouseJointAdapter extends InputAdapter {
 		public void setAdapters(Array<MouseJointAdapter> adapters) {
 			if(adapters == null)
 				throw new IllegalArgumentException("adapters must not be null");
-			if(adapters.size > max)
+			if(adapters.size > max && max > 0)
 				max = (byte) adapters.size;
 			this.adapters = adapters;
 		}
@@ -117,44 +120,44 @@ public class MouseJointAdapter extends InputAdapter {
 
 	/** called on {@link MouseJointAdapter#touchDown(int, int, int, int) touchDown}, {@link MouseJointAdapter#touchDragged(int, int, int) touchDragged} and {@link MouseJointAdapter#touchUp(int, int, int, int) touchUp}
 	 *  @author dermetfan */
-	public static interface Callback {
+	public static interface Listener {
 
-		/** @return false to cancel the creation of the {@link MouseJointAdapter#joint joint} */
+		/** @return true to cancel the creation of the {@link MouseJointAdapter#joint joint} */
 		public boolean touched(Fixture fixture, Vector2 position);
 
-		/** @return false to cancel updating the target of {@link MouseJointAdapter#joint} */
+		/** @return true to cancel updating the target of {@link MouseJointAdapter#joint} */
 		public boolean dragged(MouseJoint joint, Vector2 oldPosition, Vector2 position);
 
-		/** @return false to cancel destroying the {@link MouseJointAdapter#joint joint} */
+		/** @return true to cancel destroying the {@link MouseJointAdapter#joint joint} */
 		public boolean released(MouseJoint joint, Vector2 position);
 
 	}
 
-	/** the default {@link #callback} */
-	public static final Callback defaultCallback = new Callback() {
+	/** The pointer to react to. If smaller than zero, all pointers will be accepted. */
+	private byte pointer;
+
+	/** the {@link #listener} used by default */
+	public static final Listener defaultListener = new Listener() {
 
 		@Override
 		public boolean touched(Fixture fixture, Vector2 position) {
-			return true;
+			return false;
 		}
 
 		@Override
 		public boolean dragged(MouseJoint joint, Vector2 oldPosition, Vector2 position) {
-			return true;
+			return false;
 		}
 
 		@Override
 		public boolean released(MouseJoint joint, Vector2 position) {
-			return true;
+			return false;
 		}
 
 	};
 
-	/** The pointer to react to. If smaller than zero, all pointers will be accepted. */
-	private byte pointer;
-
-	/** the {@link Callback} called by {@link #queryCallback} */
-	private Callback callback = defaultCallback;
+	/** the {@link Listener} called by {@link #queryCallback} */
+	private Listener listener = defaultListener;
 
 	/** the {@link Camera} used to convert to world coordinates */
 	private Camera camera;
@@ -177,20 +180,17 @@ public class MouseJointAdapter extends InputAdapter {
 	/** a temporary variable */
 	private final Vector3 tmp = new Vector3();
 
-	/** a temporary variable */
-	private final Vector2 tmp2 = new Vector2(), tmp3 = new Vector2();
-
 	/** a temporary variable used in {@link #bruteIterationMode} */
-	private Array<Body> tmp4;
+	private final Array<Body> tmp4 = new Array<Body>();
 
-	/** called by {@link #touchDown(int, int, int, int)}, instantiates {@link #joint} if {@link Callback#touched(Fixture, Vector2) touched} of {@link #callback} returns <code>true</code> */
+	/** called by {@link #touchDown(int, int, int, int)}, instantiates {@link #joint} if {@link Listener#touched(Fixture, Vector2) touched} of {@link #listener} returns <code>true</code> */
 	private final QueryCallback queryCallback = new QueryCallback() {
 
 		@Override
 		public boolean reportFixture(Fixture fixture) {
-			if(fixture.testPoint(tmp2) && callback.touched(fixture, tmp2)) {
+			if(fixture.testPoint(vec2_0) && !listener.touched(fixture, vec2_0)) {
 				jointDef.bodyB = fixture.getBody();
-				jointDef.target.set(tmp2);
+				jointDef.target.set(vec2_0);
 				if(adaptMaxForceToBodyMass) {
 					float maxForce = jointDef.maxForce;
 					jointDef.maxForce *= fixture.getBody().getMass();
@@ -226,7 +226,7 @@ public class MouseJointAdapter extends InputAdapter {
 	/** constructs a new {@link MouseJointAdapter} that equals the given other one */
 	public MouseJointAdapter(MouseJointAdapter other) {
 		this(other.jointDef, other.adaptMaxForceToBodyMass, other.camera, other.pointer);
-		callback = other.callback;
+		listener = other.listener;
 		mouseMoved = other.mouseMoved;
 		setBruteIterationMode(other.bruteIterationMode);
 	}
@@ -238,9 +238,9 @@ public class MouseJointAdapter extends InputAdapter {
 			return false;
 
 		camera.unproject(tmp.set(screenX, screenY, 0));
-		tmp2.set(tmp.x, tmp.y);
+		vec2_0.set(tmp.x, tmp.y);
 		if(!bruteIterationMode)
-			jointDef.bodyA.getWorld().QueryAABB(queryCallback, tmp2.x, tmp2.y, tmp2.x, tmp2.y);
+			jointDef.bodyA.getWorld().QueryAABB(queryCallback, vec2_0.x, vec2_0.y, vec2_0.x, vec2_0.y);
 		else {
 			jointDef.bodyA.getWorld().getBodies(tmp4);
 			for(Body body : tmp4)
@@ -250,15 +250,15 @@ public class MouseJointAdapter extends InputAdapter {
 		return true;
 	}
 
-	/** updates the target of {@link #joint} if {@link Callback#dragged(MouseJoint, Vector2, Vector2) dragged} of {@link #callback} returns <code>true</code> */
+	/** updates the target of {@link #joint} if {@link Listener#dragged(MouseJoint, Vector2, Vector2) dragged} of {@link #listener} returns <code>true</code> */
 	@Override
 	public boolean touchDragged(int screenX, int screenY, int pointer) {
 		if(joint == null || !reactsToPointer(pointer))
 			return false;
 
 		camera.unproject(tmp.set(screenX, screenY, 0));
-		if(callback.dragged(joint, tmp3.set(tmp2), tmp2.set(tmp.x, tmp.y)))
-			joint.setTarget(tmp2.set(tmp.x, tmp.y));
+		if(!listener.dragged(joint, vec2_1.set(vec2_0), vec2_0.set(tmp.x, tmp.y)))
+			joint.setTarget(vec2_0.set(tmp.x, tmp.y));
 
 		return true;
 	}
@@ -271,14 +271,14 @@ public class MouseJointAdapter extends InputAdapter {
 		return false;
 	}
 
-	/** destroys {@link #joint} if {@link Callback#released(MouseJoint, Vector2) released} of {@link #callback} returns <code>true</code> */
+	/** destroys {@link #joint} if {@link Listener#released(MouseJoint, Vector2) released} of {@link #listener} returns <code>true</code> */
 	@Override
 	public boolean touchUp(int screenX, int screenY, int pointer, int button) {
 		if(joint == null || !reactsToPointer(pointer))
 			return false;
 
 		camera.unproject(tmp.set(screenX, screenY, 0));
-		if(callback.released(joint, tmp2.set(tmp.x, tmp.y))) {
+		if(!listener.released(joint, vec2_0.set(tmp.x, tmp.y))) {
 			jointDef.bodyA.getWorld().destroyJoint(joint);
 			joint = null;
 			return true;
@@ -302,16 +302,14 @@ public class MouseJointAdapter extends InputAdapter {
 		this.pointer = pointer;
 	}
 
-	/** @return the {@link #callback} */
-	public Callback getCallback() {
-		return callback;
+	/** @return the {@link #listener} */
+	public Listener getListener() {
+		return listener;
 	}
 
-	/** @param callback the {@link #callback} to set */
-	public void setCallback(Callback callback) {
-		if(callback == null)
-			throw new IllegalArgumentException("callback must not be null");
-		this.callback = callback;
+	/** @param listener the {@link #listener} to set */
+	public void setListener(Listener listener) {
+		this.listener = listener != null ? listener : defaultListener;
 	}
 
 	/** @return the {@link #camera} */
@@ -354,12 +352,9 @@ public class MouseJointAdapter extends InputAdapter {
 	/** @param bruteIterationMode the {@link #bruteIterationMode} to set */
 	public void setBruteIterationMode(boolean bruteIterationMode) {
 		if(this.bruteIterationMode = bruteIterationMode)
-			tmp4 = new Array<Body>();
-		else {
-			if(tmp4 != null)
-				tmp4.clear();
-			tmp4 = null;
-		}
+			tmp4.clear();
+		else
+			tmp4.shrink();
 	}
 
 	/** @return the {@link #jointDef} */
