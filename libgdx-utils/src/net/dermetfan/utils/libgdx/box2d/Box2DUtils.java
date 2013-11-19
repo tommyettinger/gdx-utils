@@ -57,13 +57,13 @@ public abstract class Box2DUtils {
 	}
 
 	/** Cached {@link Shape Shapes} and their vertices. You should {@link ObjectMap#clear() clear} this when you don't use the shapes anymore. */
-	public static final ObjectMap<Shape, ShapeCache> shapeCache = new ObjectMap<Shape, ShapeCache>();
+	public static final ObjectMap<Shape, ShapeCache> cache = new ObjectMap<Shape, ShapeCache>();
 
-	/** if new {@link Shape} passed in {@link #vertices(Shape)} should be automatically added to the {@link #shapeCache} */
-	private static boolean autoShapeCache = true;
+	/** if new {@link Shape} passed in {@link #vertices(Shape)} should be automatically added to the {@link #cache} */
+	private static boolean autoCache = true;
 
-	/** the maximum of {@link Shape Shapes} and their vertices to automatically cache if {@link #autoShapeCache} is true */
-	private static int autoShapeCacheMaxSize = Integer.MAX_VALUE;
+	/** the maximum of {@link Shape Shapes} and their vertices to automatically cache if {@link #autoCache} is true */
+	private static int autoCacheMaxSize = Integer.MAX_VALUE;
 
 	/** temporary {@link Vector2} array used by some methods
 	 *  warning: not safe to use as it may change unexpectedly */
@@ -115,79 +115,86 @@ public abstract class Box2DUtils {
 
 	/** @return the vertices of the given Shape */
 	public static Vector2[] vertices(Shape shape, Vector2[] output) {
-		if(shapeCache.containsKey(shape))
-			return output = shapeCache.get(shape).vertices;
-		else {
-			switch(shape.getType()) {
-			case Polygon:
-				PolygonShape polygonShape = (PolygonShape) shape;
-
-				if(output == null || output.length != polygonShape.getVertexCount())
-					output = new Vector2[polygonShape.getVertexCount()];
-
-				for(int i = 0; i < output.length; i++) {
-					if(output[i] == null)
-						output[i] = new Vector2();
-					polygonShape.getVertex(i, output[i]);
-				}
-				break;
-			case Edge:
-				EdgeShape edgeShape = (EdgeShape) shape;
-
-				edgeShape.getVertex1(vec2_0);
-				edgeShape.getVertex2(vec2_1);
-
-				if(output == null || output.length != 2)
-					output = new Vector2[] {vec2_0, vec2_1};
-				else {
-					if(output[0] == null)
-						output[0] = new Vector2(vec2_0);
-					else
-						output[0].set(vec2_0);
-					if(output[1] == null)
-						output[1] = new Vector2(vec2_1);
-					else
-						output[1].set(vec2_1);
-				}
-				break;
-			case Chain:
-				ChainShape chainShape = (ChainShape) shape;
-
-				if(output == null || output.length != chainShape.getVertexCount())
-					output = new Vector2[chainShape.getVertexCount()];
-
-				for(int i = 0; i < output.length; i++) {
-					if(output[i] == null)
-						output[i] = new Vector2();
-					chainShape.getVertex(i, output[i]);
-				}
-				break;
-			case Circle:
-				CircleShape circleShape = (CircleShape) shape;
-
-				if(output == null || output.length != 4)
-					output = new Vector2[4];
-				vec2_0.set(circleShape.getPosition().x - circleShape.getRadius(), circleShape.getPosition().y + circleShape.getRadius()); // top left
-				output[0] = output[0] != null ? output[0].set(vec2_0) : new Vector2(vec2_0);
-				vec2_0.set(circleShape.getPosition().x - circleShape.getRadius(), circleShape.getPosition().y - circleShape.getRadius()); // bottom left
-				output[1] = output[1] != null ? output[1].set(vec2_0) : new Vector2(vec2_0);
-				vec2_0.set(circleShape.getPosition().x + circleShape.getRadius(), circleShape.getPosition().y - circleShape.getRadius()); // bottom right
-				output[2] = output[2] != null ? output[2].set(vec2_0) : new Vector2(vec2_0);
-				vec2_0.set(circleShape.getPosition().x + circleShape.getRadius(), circleShape.getPosition().y + circleShape.getRadius()); // top right
-				output[3] = output[3] != null ? output[3].set(vec2_0) : new Vector2(vec2_0);
-				break;
-			default:
-				throw new IllegalArgumentException("Shapes of the type '" + shape.getType().name() + "' are not supported");
-			}
-
-			if(autoShapeCache && shapeCache.size < autoShapeCacheMaxSize) {
-				Vector2[] cachedOutput = new Vector2[output.length];
-				System.arraycopy(output, 0, cachedOutput, 0, output.length);
-				shapeCache.put(shape, new ShapeCache(cachedOutput, amplitude(filterX(cachedOutput)), amplitude(filterY(cachedOutput)), min(filterX(cachedOutput)), max(filterX(cachedOutput)), min(filterY(cachedOutput)), max(filterY(cachedOutput))));
-			}
-
-			return output;
+		if(cache.containsKey(shape))
+			return output = cache.get(shape).vertices;
+		output = vertices0(shape, output);
+		if(autoCache && cache.size < autoCacheMaxSize) {
+			Vector2[] cachedOutput = new Vector2[output.length];
+			System.arraycopy(output, 0, cachedOutput, 0, output.length);
+			cache.put(shape, new ShapeCache(cachedOutput, width0(shape), height0(shape), minX0(shape), maxX0(shape), minY0(shape), maxY0(shape)));
 		}
+		return output;
+	}
+
+	/** {@link #vertices(Shape)} without caching */
+	private static Vector2[] vertices0(Shape shape, Vector2[] output) {
+		switch(shape.getType()) {
+		case Polygon:
+			PolygonShape polygonShape = (PolygonShape) shape;
+
+			if(output == null || output.length != polygonShape.getVertexCount())
+				output = new Vector2[polygonShape.getVertexCount()];
+
+			for(int i = 0; i < output.length; i++) {
+				if(output[i] == null)
+					output[i] = new Vector2();
+				polygonShape.getVertex(i, output[i]);
+			}
+			break;
+		case Edge:
+			EdgeShape edgeShape = (EdgeShape) shape;
+
+			edgeShape.getVertex1(vec2_0);
+			edgeShape.getVertex2(vec2_1);
+
+			if(output == null || output.length != 2)
+				output = new Vector2[] {vec2_0, vec2_1};
+			else {
+				if(output[0] == null)
+					output[0] = new Vector2(vec2_0);
+				else
+					output[0].set(vec2_0);
+				if(output[1] == null)
+					output[1] = new Vector2(vec2_1);
+				else
+					output[1].set(vec2_1);
+			}
+			break;
+		case Chain:
+			ChainShape chainShape = (ChainShape) shape;
+
+			if(output == null || output.length != chainShape.getVertexCount())
+				output = new Vector2[chainShape.getVertexCount()];
+
+			for(int i = 0; i < output.length; i++) {
+				if(output[i] == null)
+					output[i] = new Vector2();
+				chainShape.getVertex(i, output[i]);
+			}
+			break;
+		case Circle:
+			CircleShape circleShape = (CircleShape) shape;
+
+			if(output == null || output.length != 4)
+				output = new Vector2[4];
+			vec2_0.set(circleShape.getPosition().x - circleShape.getRadius(), circleShape.getPosition().y + circleShape.getRadius()); // top left
+			output[0] = output[0] != null ? output[0].set(vec2_0) : new Vector2(vec2_0);
+			vec2_0.set(circleShape.getPosition().x - circleShape.getRadius(), circleShape.getPosition().y - circleShape.getRadius()); // bottom left
+			output[1] = output[1] != null ? output[1].set(vec2_0) : new Vector2(vec2_0);
+			vec2_0.set(circleShape.getPosition().x + circleShape.getRadius(), circleShape.getPosition().y - circleShape.getRadius()); // bottom right
+			output[2] = output[2] != null ? output[2].set(vec2_0) : new Vector2(vec2_0);
+			vec2_0.set(circleShape.getPosition().x + circleShape.getRadius(), circleShape.getPosition().y + circleShape.getRadius()); // top right
+			output[3] = output[3] != null ? output[3].set(vec2_0) : new Vector2(vec2_0);
+			break;
+		default:
+			throw new IllegalArgumentException("Shapes of the type '" + shape.getType().name() + "' are not supported");
+		}
+		return output;
+	}
+
+	/** @see #vertices0(Shape, Vector2[]) */
+	private static Vector2[] vertices0(Shape shape) {
+		return vertices0(shape, tmpVecArr);
 	}
 
 	/** @see #vertices(Shape, Vector2[]) */
@@ -247,28 +254,52 @@ public abstract class Box2DUtils {
 		return maxY(fixture.getShape());
 	}
 
+	/** @return the minimal x value of the vertices of the given Shape */
 	public static float minX(Shape shape) {
-		if(shapeCache.containsKey(shape))
-			return shapeCache.get(shape).minX;
-		return min(filterX(vertices(shape)));
+		if(cache.containsKey(shape))
+			return cache.get(shape).minX;
+		return minX0(shape);
 	}
 
+	/** {@link #minX(Shape)} without caching */
+	private static float minX0(Shape shape) {
+		return min(filterX(vertices0(shape)));
+	}
+
+	/** @return the minimal y value of the vertices of the given Shape */
 	public static float minY(Shape shape) {
-		if(shapeCache.containsKey(shape))
-			return shapeCache.get(shape).minY;
-		return min(filterY(vertices(shape)));
+		if(cache.containsKey(shape))
+			return cache.get(shape).minY;
+		return minY0(shape);
 	}
 
+	/** {@link #minY(Shape)} without caching */
+	private static float minY0(Shape shape) {
+		return min(filterY(vertices0(shape)));
+	}
+
+	/** @return the maximal x value of the vertices of the given Shape */
 	public static float maxX(Shape shape) {
-		if(shapeCache.containsKey(shape))
-			return shapeCache.get(shape).maxX;
-		return max(filterX(vertices(shape)));
+		if(cache.containsKey(shape))
+			return cache.get(shape).maxX;
+		return maxX0(shape);
 	}
 
+	/** {@link #minX(Shape)} without caching */
+	private static float maxX0(Shape shape) {
+		return max(filterX(vertices0(shape)));
+	}
+
+	/** @return the maximal y value of the vertices of the given Shape */
 	public static float maxY(Shape shape) {
-		if(shapeCache.containsKey(shape))
-			return shapeCache.get(shape).maxY;
-		return max(filterY(vertices(shape)));
+		if(cache.containsKey(shape))
+			return cache.get(shape).maxY;
+		return maxY0(shape);
+	}
+
+	/** {@link #maxY(Shape)} without caching */
+	private static float maxY0(Shape shape) {
+		return max(filterY(vertices0(shape)));
 	}
 
 	/** @return the width of the given Body */
@@ -311,24 +342,34 @@ public abstract class Box2DUtils {
 
 	/** @return the width of the given Shape */
 	public static float width(Shape shape) {
-		if(shapeCache.containsKey(shape))
-			return shapeCache.get(shape).width;
-		return amplitude(filterX(vertices(shape)));
+		if(cache.containsKey(shape))
+			return cache.get(shape).width;
+		return width0(shape);
+	}
+
+	/** {@link #width(Shape)} without caching */
+	private static float width0(Shape shape) {
+		return amplitude(filterX(vertices0(shape)));
 	}
 
 	/** @return the height of the given Shape */
 	public static float height(Shape shape) {
-		if(shapeCache.containsKey(shape))
-			return shapeCache.get(shape).height;
-		return amplitude(filterY(vertices(shape)));
+		if(cache.containsKey(shape))
+			return cache.get(shape).height;
+		return height0(shape);
+	}
+
+	/** {@link #height(Shape)} without caching */
+	private static float height0(Shape shape) {
+		return amplitude(filterY(vertices0(shape)));
 	}
 
 	/** @see #size(Shape) */
 	public static Vector2 size(Shape shape, Vector2 output) {
 		if(shape.getType() == Type.Circle) // no call to #vertices(Shape) for performance
 			return output.set(shape.getRadius() * 2, shape.getRadius() * 2);
-		else if(shapeCache.containsKey(shape))
-			return output.set(shapeCache.get(shape).width, shapeCache.get(shape).height);
+		else if(cache.containsKey(shape))
+			return output.set(cache.get(shape).width, cache.get(shape).height);
 		return output.set(width(shape), height(shape));
 	}
 
@@ -351,14 +392,14 @@ public abstract class Box2DUtils {
 	 *  @param rotation the rotation of the body in radians */
 	public static Vector2 positionRelative(Shape shape, float rotation, Vector2 output) {
 		// get the position without rotation
-		if(shapeCache.containsKey(shape)) {
-			ShapeCache sc = shapeCache.get(shape);
+		if(cache.containsKey(shape)) {
+			ShapeCache sc = cache.get(shape);
 			output.set(sc.maxX - sc.width / 2, sc.maxY - sc.height / 2);
 		} else {
-			tmpVecArr = vertices(shape); // the shape's vertices will hopefully be put in #shapeCache
-			if(shapeCache.containsKey(shape)) // the shape's vertices are now hopefully in #shapeCache, so let's try again
+			tmpVecArr = vertices(shape); // the shape's vertices will hopefully be put in #cache
+			if(cache.containsKey(shape)) // the shape's vertices are now hopefully in #cache, so let's try again
 				positionRelative(shape, rotation, output);
-			else { // #autoShapeCache is false or #shapeCache reached #autoShapeCacheMaxSize
+			else { // #autoCache is false or #cache reached #autoCacheMaxSize
 				float[] xs = filterX(tmpVecArr), ys = filterY(tmpVecArr);
 				output.set(max(xs) - amplitude(xs) / 2, max(ys) - amplitude(ys) / 2); // so calculating manually is faster than using the methods because there won't be the containsKey checks
 			}
@@ -395,24 +436,24 @@ public abstract class Box2DUtils {
 		return body.getPosition().add(positionRelative(shape, body.getTransform().getRotation()));
 	}
 
-	/** @return the {@link #autoShapeCache} */
-	public static boolean isAutoShapeCache() {
-		return autoShapeCache;
+	/** @return the {@link #autoCache} */
+	public static boolean isAutoCache() {
+		return autoCache;
 	}
 
-	/** @param autoShapeCache the {@link #autoShapeCache} to set */
-	public static void setAutoShapeCache(boolean autoShapeCache) {
-		Box2DUtils.autoShapeCache = autoShapeCache;
+	/** @param autoCache the {@link #autoCache} to set */
+	public static void setAutoCache(boolean autoCache) {
+		Box2DUtils.autoCache = autoCache;
 	}
 
-	/** @return the {@link #autoShapeCacheMaxSize} */
-	public static int getAutoShapeCacheMaxSize() {
-		return autoShapeCacheMaxSize;
+	/** @return the {@link #autoCacheMaxSize} */
+	public static int getAutoCacheMaxSize() {
+		return autoCacheMaxSize;
 	}
 
-	/** @param autoShapeCacheMaxSize the {@link #autoShapeCacheMaxSize} to set */
-	public static void setAutoShapeCacheMaxSize(int autoShapeCacheMaxSize) {
-		Box2DUtils.autoShapeCacheMaxSize = autoShapeCacheMaxSize;
+	/** @param autoCacheMaxSize the {@link #autoCacheMaxSize} to set */
+	public static void setAutoCacheMaxSize(int autoCacheMaxSize) {
+		Box2DUtils.autoCacheMaxSize = autoCacheMaxSize;
 	}
 
 }
