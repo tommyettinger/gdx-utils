@@ -16,10 +16,10 @@ package net.dermetfan.utils;
 
 /** a generic accessor
  *  @author dermetfan */
-public interface Accessor {
+public interface Accessor<T, O> {
 
 	/** @param object the {@code O} to access
 	 *  @return the accessed {@code T} from {@code O} */
-	public <T, O> T access(O object);
+	public T access(O object);
 
 }

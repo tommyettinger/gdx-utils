@@ -86,9 +86,8 @@ public class Box2DSprite extends Sprite {
 	}
 
 	/** the {@link #userDataAccessor} used by default */
-	public final static Accessor defaultUserDataAccessor = new Accessor() {
+	public final static Accessor<Box2DSprite, Object> defaultUserDataAccessor = new Accessor<Box2DSprite, Object>() {
 
-		@SuppressWarnings("unchecked")
 		@Override
 		public Box2DSprite access(Object userData) {
 			return userData instanceof Box2DSprite ? (Box2DSprite) userData : null;
@@ -97,7 +96,7 @@ public class Box2DSprite extends Sprite {
 	};
 
 	/** the {@link Accessor} used to get a {@link Box2DSprite} from the user data of a body or fixture */
-	private static Accessor userDataAccessor = defaultUserDataAccessor;
+	private static Accessor<Box2DSprite, Object> userDataAccessor = defaultUserDataAccessor;
 
 	/** a {@link Comparator} used to sort {@link Box2DSprite Box2DSprites} by their {@link Box2DSprite#z z index} in {@link #draw(SpriteBatch, World)} */
 	private static Comparator<Box2DSprite> zComparator = new Comparator<Box2DSprite>() {
@@ -265,12 +264,12 @@ public class Box2DSprite extends Sprite {
 	}
 
 	/** @return the {@link #userDataAccessor} */
-	public static Accessor getUserDataAccessor() {
+	public static Accessor<Box2DSprite, ?> getUserDataAccessor() {
 		return userDataAccessor;
 	}
 
 	/** @param userDataAccessor the {@link #userDataAccessor} to set */
-	public static void setUserDataAccessor(Accessor userDataAccessor) {
+	public static void setUserDataAccessor(Accessor<Box2DSprite, Object> userDataAccessor) {
 		if(userDataAccessor == null)
 			throw new IllegalArgumentException("userDataAccessor must not be null");
 		Box2DSprite.userDataAccessor = userDataAccessor;

@@ -15,6 +15,7 @@
 package net.dermetfan.utils.libgdx.box2d;
 
 import static net.dermetfan.utils.libgdx.math.GeometryUtils.vec2_0;
+import net.dermetfan.utils.Accessor;
 
 import com.badlogic.gdx.math.Interpolation;
 import com.badlogic.gdx.math.MathUtils;
@@ -112,25 +113,18 @@ public class Autopilot {
 	/** the interpolation to apply to the force based on the {@link #distanceScalar} */
 	private Interpolation interpolation = Interpolation.linear;
 
-	/** used to access the position of a body (might be his center, origin, center of mass or custom) */
-	public static interface BodyLocator {
-
-		public Vector2 locate(Body body);
-
-	}
-
 	/** returns {@link Body#getPosition()} */
-	public static final BodyLocator defaultBodyLocator = new BodyLocator() {
+	public static final Accessor<Vector2, Body> defaultPositionAccessor = new Accessor<Vector2, Body>() {
 
 		@Override
-		public Vector2 locate(Body body) {
+		public Vector2 access(Body body) {
 			return body.getPosition();
 		}
 
 	};
 
 	/** used to determine a bodies position */
-	private BodyLocator bodyLocator = defaultBodyLocator;
+	private Accessor<Vector2, Body> positionAccessor = defaultPositionAccessor;
 
 	/** sets {@link #movementForce} and {@link #rotationForce} to the given {@code force}
 	 *  @see #Autopilot(Vector2, float, float) */
@@ -154,9 +148,9 @@ public class Autopilot {
 	/** {@link #move(Body, Vector2, Vector2, float, boolean) moves} the given {@code body} */
 	public void move(Body body, boolean interpolate, boolean wake) {
 		if(interpolate)
-			move(body, bodyLocator.locate(body), destination, adaptForceToMass ? body.getMass() * movementForce : movementForce, distanceScalar, interpolation, wake);
+			move(body, positionAccessor.access(body), destination, adaptForceToMass ? body.getMass() * movementForce : movementForce, distanceScalar, interpolation, wake);
 		else
-			move(body, bodyLocator.locate(body), destination, adaptForceToMass ? body.getMass() * movementForce : movementForce, wake);
+			move(body, positionAccessor.access(body), destination, adaptForceToMass ? body.getMass() * movementForce : movementForce, wake);
 	}
 
 	/** {@link #rotate(Body, Vector2, float, float, boolean) rotates} the given {@code body} */
@@ -220,14 +214,14 @@ public class Autopilot {
 		this.interpolation = interpolation;
 	}
 
-	/** @return the {@link #bodyLocator} */
-	public BodyLocator getBodyLocator() {
-		return bodyLocator;
+	/** @return the {@link #positionAccessor} */
+	public Accessor<Vector2, Body> getPositionAccessor() {
+		return positionAccessor;
 	}
 
-	/** @param bodyLocator the {@link #bodyLocator} to set */
-	public void setBodyLocator(BodyLocator bodyLocator) {
-		this.bodyLocator = bodyLocator != null ? bodyLocator : defaultBodyLocator;
+	/** @param positionAccessor the {@link #positionAccessor} to set */
+	public void setPositionAccessor(Accessor<Vector2, Body> positionAccessor) {
+		this.positionAccessor = positionAccessor != null ? positionAccessor : defaultPositionAccessor;
 	}
 
 }

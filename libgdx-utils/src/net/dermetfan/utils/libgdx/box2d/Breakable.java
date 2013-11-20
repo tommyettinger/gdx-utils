@@ -42,9 +42,8 @@ public class Breakable {
 		public final Array<Body> brokenBodies = new Array<Body>(1);
 
 		/** the {@link #userDataAccessor} used by default */
-		public static final Accessor defaultUserDataAccessor = new Accessor() {
+		public static final Accessor<Breakable, Object> defaultUserDataAccessor = new Accessor<Breakable, Object>() {
 
-			@SuppressWarnings("unchecked")
 			@Override
 			public Breakable access(Object userData) {
 				return userData instanceof Breakable ? (Breakable) userData : null;
@@ -53,14 +52,14 @@ public class Breakable {
 		};
 
 		/** the {@link Accessor} used to access a Breakable in user data ({@link Accessor#access(Object) access} must return a Breakable) */
-		private Accessor userDataAccessor = defaultUserDataAccessor;
+		private Accessor<Breakable, Object> userDataAccessor = defaultUserDataAccessor;
 
 		/** instantiates a new {@link Manager} */
 		public Manager() {
 		}
 
 		/** instantiates a new {@link Manager} with the given {@link #userDataAccessor} */
-		public Manager(Accessor userDataAccessor) {
+		public Manager(Accessor<Breakable, Object> userDataAccessor) {
 			setUserDataAccessor(userDataAccessor);
 		}
 
@@ -178,15 +177,13 @@ public class Breakable {
 		}
 
 		/** @return the {@link #userDataAccessor} */
-		public Accessor getUserDataAccessor() {
+		public Accessor<Breakable, Object> getUserDataAccessor() {
 			return userDataAccessor;
 		}
 
 		/** @param userDataAccessor the {@link #userDataAccessor} to set */
-		public void setUserDataAccessor(Accessor userDataAccessor) {
-			if(userDataAccessor == null)
-				throw new IllegalArgumentException("userDataAccessor must not be null");
-			this.userDataAccessor = userDataAccessor;
+		public void setUserDataAccessor(Accessor<Breakable, Object> userDataAccessor) {
+			this.userDataAccessor = userDataAccessor != null ? userDataAccessor : defaultUserDataAccessor;
 		}
 
 	}
@@ -219,7 +216,7 @@ public class Breakable {
 	private float normalResistance;
 
 	/** how much friction the Breakable can bear */
-	private float tangentResistance = 100;
+	private float tangentResistance;
 
 	/** if the fixture's body (in case the Breakable is used for a fixture) should be destroyed if the fixture is destroyed (false by default) */
 	private boolean breakBody;
