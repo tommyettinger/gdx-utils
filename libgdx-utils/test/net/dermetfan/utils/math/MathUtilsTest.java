@@ -2,11 +2,17 @@ package net.dermetfan.utils.math;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-import net.dermetfan.utils.math.MathUtils;
 
 import org.junit.Test;
 
 public class MathUtilsTest {
+
+	@Test
+	public void normalize() {
+		assertEquals(-com.badlogic.gdx.math.MathUtils.PI, MathUtils.normalize(-com.badlogic.gdx.math.MathUtils.PI2 * 2.5f, -com.badlogic.gdx.math.MathUtils.PI2), com.badlogic.gdx.math.MathUtils.PI / 20f);
+		assertEquals(-270, MathUtils.normalize(-360 + 90, 360), 0);
+		assertEquals(90, MathUtils.normalize(360 + 90, -360), 0);
+	}
 
 	@Test
 	public void nearest() {
