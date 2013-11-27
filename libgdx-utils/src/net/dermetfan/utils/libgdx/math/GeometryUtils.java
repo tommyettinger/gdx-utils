@@ -298,9 +298,9 @@ public abstract class GeometryUtils {
 	 *  @param camera the camera to keep in the rectangle
 	 *  @see #keepWithin(float, float, float, float, float, float, float, float) */
 	public static void keepWithin(OrthographicCamera camera, float x, float y, float width, float height) {
-		Vector2 pos = keepWithin(camera.position.x - camera.viewportWidth / 2 * camera.zoom, camera.position.y - camera.viewportHeight / 2 * camera.zoom, camera.viewportWidth * camera.zoom, camera.viewportHeight * camera.zoom, x, y, width, height).scl(camera.zoom);
-		camera.position.x = pos.x + camera.viewportWidth / 2;
-		camera.position.y = pos.y + camera.viewportHeight / 2;
+		vec2_0.set(keepWithin(camera.position.x - camera.viewportWidth / 2 * camera.zoom, camera.position.y - camera.viewportHeight / 2 * camera.zoom, camera.viewportWidth * camera.zoom, camera.viewportHeight * camera.zoom, x, y, width, height));
+		camera.position.x = vec2_0.x + camera.viewportWidth / 2 * camera.zoom;
+		camera.position.y = vec2_0.y + camera.viewportHeight / 2 * camera.zoom;
 	}
 
 }
