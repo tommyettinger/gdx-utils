@@ -17,6 +17,21 @@ package net.dermetfan.utils.math;
 /** math utility methods */
 public class MathUtils {
 
+	/** normalizes a value in a given range
+	 *  @param value the value to normalize
+	 *  @param range the range in which to normalize the given value (from -range to range)
+	 *  @return the normalized value */
+	public static float normalize(float value, float range) {
+		if(range == 0)
+			return 0;
+		range = Math.abs(range);
+		while(value > range)
+			value -= range;
+		while(value < -range)
+			value += range;
+		return value;
+	}
+
 	/** @return value, min or max */
 	public static float clamp(float value, float min, float max) {
 		if(value < min)
