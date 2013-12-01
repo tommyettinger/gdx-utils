@@ -82,7 +82,6 @@ public abstract class GeometryUtils {
 	 *  @param radians the rotation
 	 *  @return the given {@code point} rotated by {@code radians} */
 	public static Vector2 rotate(Vector2 point, float radians) {
-		// http://stackoverflow.com/questions/1469149/calculating-vertices-of-a-rotated-rectangle
 		float xx = point.x, xy = point.y, yx = point.x, yy = point.y;
 		xx = xx * cos(radians) - xy * sin(radians);
 		yy = yx * sin(radians) + yy * cos(radians);
