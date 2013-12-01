@@ -22,9 +22,8 @@ public class MathUtils {
 	 *  @param range the range in which to normalize the given value (from -range to range)
 	 *  @return the normalized value */
 	public static float normalize(float value, float range) {
-		if(range == 0)
+		if((range = Math.abs(range)) == 0)
 			return 0;
-		range = Math.abs(range);
 		while(value > range)
 			value -= range;
 		while(value < -range)
