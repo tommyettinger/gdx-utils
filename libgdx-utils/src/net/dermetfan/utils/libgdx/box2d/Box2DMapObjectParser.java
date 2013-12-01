@@ -73,7 +73,7 @@ import com.badlogic.gdx.utils.ObjectMap;
  *  If you only want specific Fixtures or Bodies, you can use the {@link #createBody(World, MapObject)} and {@link #createFixture(MapObject)} methods.<br/>
  *  <br/>
  *  How you define compatible objects in the TiledMap editor:<br/>
- *  In your object layer, right-click an object and set its properties to those of the Body / Fixture / both (in case you're creating an {@link Aliases#object object}) you'd like, as defined in the used {@link Aliases} object.<br/>
+ *  In your object layer, right-click an object and set its properties to those of the Body/Fixture/both (in case you're creating an {@link Aliases#object object}) you'd like, as defined in the used {@link Aliases} object.<br/>
  *  For type, you have to choose {@link Aliases#body}, {@link Aliases#fixture} or {@link Aliases#object}.<br/>
  *  To add Fixtures to a Body, add a {@link Aliases#body} property with the same value to each Fixture of a Body.<br/>
  *  To create {@link Joint Joints}, add any object to the layer and just put everything needed in its properties. Note that you use the editors unit here which will be converted to Box2D meters automatically using {@link Aliases#unitScale}.
@@ -91,7 +91,7 @@ public class Box2DMapObjectParser {
 	}
 
 	/** @see Aliases */
-	private Aliases aliases;
+	private Aliases aliases = new Aliases();
 
 	/** the unit scale to convert from editor units to Box2D meters */
 	private float unitScale = 1;
@@ -119,19 +119,28 @@ public class Box2DMapObjectParser {
 
 	/** creates a new {@link Box2DMapObjectParser} with the default {@link Aliases} */
 	public Box2DMapObjectParser() {
-		this(new Aliases());
 	}
 
 	/** creates a new {@link Box2DMapObjectParser} using the given {@link Aliases}
-	 *  @param aliases the {@link Aliases} to use */
+	 *  @param aliases the {@link #aliases} to use */
 	public Box2DMapObjectParser(Aliases aliases) {
 		this.aliases = aliases;
+	}
+
+	/** creates a new {@link Box2DMapObjectParser} using the given {@link Aliases}, {@link #tileWidth} and {@link #tileHeight}
+	 *  @param aliases the {@link #aliases}
+	 *  @param tileWidth the {@link #tileWidth}
+	 *  @param tileHeight the {@link #tileHeight} */
+	public Box2DMapObjectParser(Aliases aliases, float tileWidth, float tileHeight) {
+		this.aliases = aliases;
+		this.tileWidth = tileWidth;
+		this.tileHeight = tileHeight;
 	}
 
 	/** creates a new {@link Box2DMapObjectParser} using the given {@link #unitScale unitScale} and sets {@link #ignoreMapUnitScale} to true
 	 *  @param unitScale the {@link #unitScale unitScale} to use */
 	public Box2DMapObjectParser(float unitScale) {
-		this(unitScale, 1, 1);
+		this.unitScale = unitScale;
 	}
 
 	/** creates a new {@link Box2DMapObjectParser} using the given {@link #unitScale}, {@link #tileWidth}, {@link #tileHeight} and sets {@link #ignoreMapUnitScale} to true
@@ -139,18 +148,21 @@ public class Box2DMapObjectParser {
 	 *  @param tileWidth the {@link #tileWidth} to use
 	 *  @param tileHeight the {@link #tileHeight} to use */
 	public Box2DMapObjectParser(float unitScale, float tileWidth, float tileHeight) {
-		this(new Aliases(), unitScale, tileWidth, tileHeight);
+		this.unitScale = unitScale;
+		this.tileWidth = tileWidth;
+		this.tileHeight = tileHeight;
 	}
 
 	/** creates a new {@link Box2DMapObjectParser} using the given {@link Aliases} and {@link #unitScale} and sets {@link #ignoreMapUnitScale} to true
-	 *  @param aliases the {@link Aliases} to use
+	 *  @param aliases the {@link #aliases} to use
 	 *  @param unitScale the {@link #unitScale} to use */
 	public Box2DMapObjectParser(Aliases aliases, float unitScale) {
-		this(aliases, unitScale, 1, 1);
+		this.aliases = aliases;
+		this.unitScale = unitScale;
 	}
 
 	/** creates a new {@link Box2DMapObjectParser} with the given parameters and sets {@link #ignoreMapUnitScale} to true
-	 *  @param aliases the {@link Aliases} to use
+	 *  @param aliases the {@link #aliases} to use
 	 *  @param unitScale the {@link #unitScale unitScale} to use
 	 *  @param tileWidth the {@link #tileWidth} to use
 	 *  @param tileHeight the {@link #tileHeight} to use */
@@ -162,10 +174,10 @@ public class Box2DMapObjectParser {
 		this.tileHeight = tileHeight;
 	}
 
-	/**creates the given {@link Map Map's} {@link MapObjects} in the given {@link World}  
-	 * @param world the {@link World} to create the {@link MapObjects} of the given {@link Map} in
-	 * @param map the {@link Map} which {@link MapObjects} to create in the given {@link World}
-	 * @return the given {@link World} with the parsed {@link MapObjects} of the given {@link Map} created in it */
+	/** creates the given {@link Map Map's} {@link MapObjects} in the given {@link World}  
+	 *  @param world the {@link World} to create the {@link MapObjects} of the given {@link Map} in
+	 *  @param map the {@link Map} which {@link MapObjects} to create in the given {@link World}
+	 *  @return the given {@link World} with the parsed {@link MapObjects} of the given {@link Map} created in it */
 	public World load(World world, Map map) {
 		if(!ignoreMapUnitScale)
 			unitScale = getProperty(map.getProperties(), aliases.unitScale, unitScale);
