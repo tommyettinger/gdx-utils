@@ -41,22 +41,22 @@ public abstract class MapUtils {
 			return defaultValue;
 
 		if(defaultValue.getClass() == Boolean.class && !(value instanceof Boolean))
-			return (T) new Boolean(Boolean.parseBoolean(value.toString()));
+			return (T) Boolean.valueOf(value.toString());
 
 		if(defaultValue.getClass() == Integer.class && !(value instanceof Integer))
-			return (T) new Integer(Integer.parseInt(value.toString()));
+			return (T) Integer.valueOf(value.toString());
 
 		if(defaultValue.getClass() == Float.class && !(value instanceof Float))
-			return (T) new Float(Float.parseFloat(value.toString()));
+			return (T) Float.valueOf(value.toString());
 
 		if(defaultValue.getClass() == Double.class && !(value instanceof Double))
-			return (T) new Double(Double.parseDouble(value.toString()));
+			return (T) Double.valueOf(value.toString());
 
 		if(defaultValue.getClass() == Short.class && !(value instanceof Short))
-			return (T) new Short(Short.parseShort(value.toString()));
+			return (T) Short.valueOf(value.toString());
 
 		if(defaultValue.getClass() == Byte.class && !(value instanceof Byte))
-			return (T) new Byte(Byte.parseByte(value.toString()));
+			return (T) Byte.valueOf(value.toString());
 
 		return (T) value;
 	}
