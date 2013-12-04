@@ -558,7 +558,6 @@ public abstract class Box2DUtils {
 	//		switch(joint.getType()) {
 	//		case Unknown:
 	//			jointDef = new JointDef();
-	//			copy = joint.getBodyA().getWorld().createJoint(jointDef);
 	//			break;
 	//		case RevoluteJoint:
 	//			RevoluteJoint revoluteJoint = (RevoluteJoint) joint;
