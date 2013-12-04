@@ -22,19 +22,23 @@ import static net.dermetfan.utils.libgdx.math.GeometryUtils.vec2_1;
 import static net.dermetfan.utils.math.MathUtils.amplitude;
 import static net.dermetfan.utils.math.MathUtils.max;
 import static net.dermetfan.utils.math.MathUtils.min;
+import net.dermetfan.utils.libgdx.math.GeometryUtils;
 
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Body;
+import com.badlogic.gdx.physics.box2d.BodyDef;
 import com.badlogic.gdx.physics.box2d.ChainShape;
 import com.badlogic.gdx.physics.box2d.CircleShape;
 import com.badlogic.gdx.physics.box2d.EdgeShape;
+import com.badlogic.gdx.physics.box2d.Filter;
 import com.badlogic.gdx.physics.box2d.Fixture;
+import com.badlogic.gdx.physics.box2d.FixtureDef;
 import com.badlogic.gdx.physics.box2d.PolygonShape;
 import com.badlogic.gdx.physics.box2d.Shape;
 import com.badlogic.gdx.physics.box2d.Shape.Type;
 import com.badlogic.gdx.utils.ObjectMap;
 
-/** provides methods for geometric operations with Box2D bodies, fixtures and shapes
+/** provides methods for operations with Box2D {@link Body Bodies}, {@link Fixture Fixtures} and {@link Shape Shapes}
  *  @author dermetfan */
 public abstract class Box2DUtils {
 
@@ -435,6 +439,242 @@ public abstract class Box2DUtils {
 	public static Vector2 position(Shape shape, Body body) {
 		return body.getPosition().add(positionRelative(shape, body.getTransform().getRotation()));
 	}
+
+	/** creates a depe copy of a {@link Body} (without deep copying the {@link Shape Shapes} of its {@link Fixture Fixtures})<br/>
+	 *  @return {@link #copy(Body, boolean) copy(body, false)}
+	 *  @see #copy(Body, boolean) */
+	public static Body copy(Body body) {
+		return copy(body, false);
+	}
+
+	/** creates a deep copy of a {@link Body}
+	 *  @param body the {@link Body} to copy
+	 *  @param shapes if the {@link Shape Shapes} of the {@link Fixture Fixures} of the given {@code body} should be {@link #copy(Shape) copied} as well
+	 *  @return a deep copy of the given {@code body} */
+	public static Body copy(Body body, boolean shapes) {
+		BodyDef bodyDef = new BodyDef();
+		bodyDef.active = body.isActive();
+		bodyDef.allowSleep = body.isSleepingAllowed();
+		bodyDef.angle = body.getAngle();
+		bodyDef.angularDamping = body.getAngularDamping();
+		bodyDef.angularVelocity = body.getAngularVelocity();
+		bodyDef.awake = body.isAwake();
+		bodyDef.bullet = body.isBullet();
+		bodyDef.fixedRotation = body.isFixedRotation();
+		bodyDef.gravityScale = body.getGravityScale();
+		bodyDef.linearDamping = body.getLinearDamping();
+		bodyDef.linearVelocity.set(body.getLinearVelocity());
+		bodyDef.position.set(body.getPosition());
+		bodyDef.type = body.getType();
+		Body copy = body.getWorld().createBody(bodyDef);
+		copy.setUserData(body.getUserData());
+		for(Fixture fixture : body.getFixtureList())
+			copy(fixture, copy, shapes);
+		return copy;
+	}
+
+	/** creates a deep copy of a {@link Fixture} (without deep copying its {@link Shape})
+	 *  @return {@link #copy(Fixture, Body, boolean) copy(fixture, body, false)}
+	 *  @see #copy(Fixture, Body, boolean) */
+	public static Fixture copy(Fixture fixture, Body body) {
+		return copy(fixture, body, false);
+	}
+
+	/** creates a deep copy of a {@link Fixture}
+	 *  @param fixture the {@link Fixture} to copy
+	 *  @param body the {@link Body} to create a copy of the given {@code fixture} on
+	 *  @param shape if the {@link Fixture#getShape() shape} of the given {@code fixture} should be deep {@link #copy(Shape) copied} as well
+	 *  @return the copied {@link Fixture} */
+	public static Fixture copy(Fixture fixture, Body body, boolean shape) {
+		FixtureDef fixtureDef = new FixtureDef();
+		fixtureDef.density = fixture.getDensity();
+		Filter filter = fixture.getFilterData();
+		fixtureDef.filter.categoryBits = filter.categoryBits;
+		fixtureDef.filter.groupIndex = filter.groupIndex;
+		fixtureDef.filter.maskBits = filter.maskBits;
+		fixtureDef.friction = fixture.getFriction();
+		fixtureDef.isSensor = fixture.isSensor();
+		fixtureDef.restitution = fixture.getRestitution();
+		fixtureDef.shape = shape ? copy(fixture.getShape()) : fixture.getShape();
+		Fixture copy = body.createFixture(fixtureDef);
+		copy.setUserData(copy.getUserData());
+		return copy;
+	}
+
+	/** creates a deep copy of a {@link Shape}<br/>
+	 *  <strong>Note: The {@link ChainShape#setPrevVertex(float, float) previous} and {@link ChainShape#setNextVertex(float, float) next} vertex of a {@link ChainShape} will not be copied since this is not possible due to the API.</strong>
+	 *  @param shape the {@link Shape} to copy
+	 *  @return a {@link Shape} exactly like the one passed in */
+	public static Shape copy(Shape shape) {
+		Shape copy;
+		switch(shape.getType()) {
+		case Circle:
+			CircleShape circleCopy = (CircleShape) (copy = new CircleShape());
+			circleCopy.setPosition(((CircleShape) shape).getPosition());
+			break;
+		case Polygon:
+			PolygonShape polyCopy = (PolygonShape) (copy = new PolygonShape()),
+			poly = (PolygonShape) shape;
+			float[] vertices = new float[poly.getVertexCount()];
+			for(int i = 0; i < vertices.length; i++) {
+				poly.getVertex(i, vec2_0);
+				vertices[i++] = vec2_0.x;
+				vertices[i] = vec2_0.y;
+			}
+			polyCopy.set(vertices);
+			break;
+		case Edge:
+			EdgeShape edgeCopy = (EdgeShape) (copy = new EdgeShape()),
+			edge = (EdgeShape) shape;
+			edge.getVertex1(vec2_0);
+			edge.getVertex2(vec2_1);
+			edgeCopy.set(vec2_0, vec2_1);
+			break;
+		case Chain:
+			ChainShape chainCopy = (ChainShape) (copy = new ChainShape()),
+			chain = (ChainShape) shape;
+			vertices = new float[chain.getVertexCount()];
+			for(int i = 0; i < vertices.length; i++) {
+				chain.getVertex(i, vec2_0);
+				vertices[i++] = vec2_0.x;
+				vertices[i] = vec2_0.y;
+			}
+			if(chain.isLooped())
+				chainCopy.createLoop(GeometryUtils.toVector2Array(vertices));
+			else
+				chainCopy.createChain(vertices);
+			break;
+		default:
+			return shape;
+		}
+		copy.setRadius(shape.getRadius());
+		return copy;
+	}
+
+	// This method is not implemented since the Box2D API does not offer all the necessary information.
+	//	public static Joint copy(Joint joint) {
+	//		JointDef jointDef;
+	//		Joint copy;
+	//		switch(joint.getType()) {
+	//		case Unknown:
+	//			jointDef = new JointDef();
+	//			copy = joint.getBodyA().getWorld().createJoint(jointDef);
+	//			break;
+	//		case RevoluteJoint:
+	//			RevoluteJoint revoluteJoint = (RevoluteJoint) joint;
+	//			RevoluteJointDef revoluteJointDef = (RevoluteJointDef) (jointDef = new RevoluteJointDef());
+	//			revoluteJointDef.collideConnected = revoluteJointDef.collideConnected; // TODO
+	//			revoluteJointDef.enableLimit = revoluteJoint.isLimitEnabled();
+	//			revoluteJointDef.enableMotor = revoluteJoint.isMotorEnabled();
+	//			revoluteJointDef.localAnchorA.set(revoluteJoint.getAnchorA());
+	//			revoluteJointDef.localAnchorB.set(revoluteJoint.getAnchorB());
+	//			revoluteJointDef.lowerAngle = revoluteJoint.getLowerLimit();
+	//			revoluteJointDef.maxMotorTorque = revoluteJoint.getMaxMotorTorque();
+	//			revoluteJointDef.motorSpeed = revoluteJoint.getMotorSpeed();
+	//			revoluteJointDef.referenceAngle = revoluteJoint.getReferenceAngle();
+	//			revoluteJointDef.upperAngle = revoluteJoint.getUpperLimit();
+	//			break;
+	//		case PrismaticJoint:
+	//			PrismaticJoint prismaticJoint = (PrismaticJoint) joint;
+	//			PrismaticJointDef prismaticJointDef = (PrismaticJointDef) (jointDef = new PrismaticJointDef());
+	//			prismaticJointDef.collideConnected = prismaticJointDef.collideConnected; // TODO
+	//			prismaticJointDef.enableLimit = prismaticJoint.isLimitEnabled();
+	//			prismaticJointDef.enableMotor = prismaticJoint.isMotorEnabled();
+	//			prismaticJointDef.localAnchorA.set(prismaticJoint.getAnchorA());
+	//			prismaticJointDef.localAnchorB.set(prismaticJoint.getAnchorB());
+	//			prismaticJointDef.localAxisA.set(prismaticJointDef.localAxisA); // TODO
+	//			prismaticJointDef.lowerTranslation = prismaticJointDef.lowerTranslation; // TODO
+	//			prismaticJointDef.maxMotorForce = prismaticJointDef.maxMotorForce; // TODO
+	//			prismaticJointDef.motorSpeed = prismaticJoint.getMotorSpeed();
+	//			prismaticJointDef.referenceAngle = prismaticJointDef.referenceAngle; // TODO
+	//			prismaticJointDef.upperTranslation = prismaticJointDef.upperTranslation; // TODO
+	//			break;
+	//		case DistanceJoint:
+	//			DistanceJoint distanceJoint = (DistanceJoint) joint;
+	//			DistanceJointDef distanceJointDef = (DistanceJointDef) (jointDef = new DistanceJointDef());
+	//			distanceJointDef.collideConnected = distanceJointDef.collideConnected; // TODO
+	//			distanceJointDef.dampingRatio = distanceJoint.getDampingRatio();
+	//			distanceJointDef.frequencyHz = distanceJoint.getFrequency();
+	//			distanceJointDef.length = distanceJoint.getLength();
+	//			distanceJointDef.localAnchorA.set(distanceJoint.getAnchorA());
+	//			distanceJointDef.localAnchorB.set(distanceJoint.getAnchorB());
+	//			break;
+	//		case PulleyJoint:
+	//			PulleyJoint pulleyJoint = (PulleyJoint) joint;
+	//			PulleyJointDef pulleyJointDef = (PulleyJointDef) (jointDef = new PulleyJointDef());
+	//			pulleyJointDef.collideConnected = pulleyJointDef.collideConnected; // TODO
+	//			pulleyJointDef.groundAnchorA.set(pulleyJoint.getGroundAnchorA());
+	//			pulleyJointDef.groundAnchorB.set(pulleyJoint.getGroundAnchorB());
+	//			pulleyJointDef.lengthA = pulleyJoint.getLength1();
+	//			pulleyJointDef.lengthB = pulleyJoint.getLength2();
+	//			pulleyJointDef.localAnchorA.set(pulleyJoint.getAnchorA());
+	//			pulleyJointDef.localAnchorB.set(pulleyJoint.getAnchorB());
+	//			pulleyJointDef.ratio = pulleyJoint.getRatio();
+	//			break;
+	//		case MouseJoint:
+	//			MouseJoint mouseJoint = (MouseJoint) joint;
+	//			MouseJointDef mouseJointDef = (MouseJointDef) (jointDef = new MouseJointDef());
+	//			mouseJointDef.collideConnected = mouseJointDef.collideConnected; // TODO
+	//			mouseJointDef.dampingRatio = mouseJoint.getDampingRatio();
+	//			mouseJointDef.frequencyHz = mouseJoint.getFrequency();
+	//			mouseJointDef.maxForce = mouseJoint.getMaxForce();
+	//			mouseJointDef.target.set(mouseJoint.getTarget());
+	//			break;
+	//		case GearJoint:
+	//			GearJoint gearJoint = (GearJoint) joint;
+	//			GearJointDef gearJointDef = (GearJointDef) (jointDef = new GearJointDef());
+	//			gearJointDef.collideConnected = gearJointDef.collideConnected; // TODO
+	//			gearJointDef.joint1 = gearJointDef.joint1; // TODO
+	//			gearJointDef.joint2 = gearJointDef.joint2; // TODO
+	//			gearJointDef.ratio = gearJoint.getRatio();
+	//			break;
+	//		case WheelJoint:
+	//			WheelJoint wheelJoint = (WheelJoint) joint;
+	//			WheelJointDef wheelJointDef = (WheelJointDef) (jointDef = new WheelJointDef());
+	//			wheelJointDef.collideConnected = wheelJointDef.collideConnected; // TODO
+	//			wheelJointDef.dampingRatio = wheelJoint.getSpringDampingRatio();
+	//			wheelJointDef.enableMotor = wheelJointDef.enableMotor; // TODO
+	//			wheelJointDef.frequencyHz = wheelJoint.getSpringFrequencyHz();
+	//			wheelJointDef.localAnchorA.set(wheelJoint.getAnchorA());
+	//			wheelJointDef.localAnchorB.set(wheelJoint.getAnchorB());
+	//			wheelJointDef.localAxisA.set(wheelJointDef.localAxisA); // TODO
+	//			wheelJointDef.maxMotorTorque = wheelJoint.getMaxMotorTorque();
+	//			wheelJointDef.motorSpeed = wheelJoint.getMotorSpeed();
+	//			break;
+	//		case WeldJoint:
+	//			WeldJoint weldJoint = (WeldJoint) joint;
+	//			WeldJointDef weldJointDef = (WeldJointDef) (jointDef = new WeldJointDef());
+	//			weldJointDef.collideConnected = weldJointDef.collideConnected; // TODO
+	//			weldJointDef.localAnchorA.set(weldJoint.getAnchorA());
+	//			weldJointDef.localAnchorB.set(weldJoint.getAnchorB());
+	//			weldJointDef.referenceAngle = weldJoint.getReferenceAngle();
+	//			break;
+	//		case FrictionJoint:
+	//			FrictionJoint frictionJoint = (FrictionJoint) joint;
+	//			FrictionJointDef frictionJointDef = (FrictionJointDef) (jointDef = new FrictionJointDef());
+	//			frictionJointDef.collideConnected = frictionJointDef.collideConnected; // TODO
+	//			frictionJointDef.localAnchorA.set(frictionJoint.getAnchorA());
+	//			frictionJointDef.localAnchorB.set(frictionJoint.getAnchorB());
+	//			frictionJointDef.maxForce = frictionJoint.getMaxForce();
+	//			frictionJointDef.maxTorque = frictionJoint.getMaxTorque();
+	//			break;
+	//		case RopeJoint:
+	//			RopeJoint ropeJoint = (RopeJoint) joint;
+	//			RopeJointDef ropeJointDef = (RopeJointDef) (jointDef = new RopeJointDef());
+	//			ropeJointDef.localAnchorA.set(ropeJoint.getAnchorA());
+	//			ropeJointDef.localAnchorB.set(ropeJoint.getAnchorB());
+	//			ropeJointDef.maxLength = ropeJoint.getMaxLength();
+	//			break;
+	//		default:
+	//			return joint;
+	//		}
+	//		jointDef.type = joint.getType();
+	//		jointDef.bodyA = joint.getBodyA();
+	//		jointDef.bodyB = joint.getBodyB();
+	//		copy = joint.getBodyA().getWorld().createJoint(jointDef);
+	//		copy.setUserData(joint.getUserData());
+	//		return copy;
+	//	}
 
 	/** @return the {@link #autoCache} */
 	public static boolean isAutoCache() {
