@@ -156,8 +156,7 @@ public abstract class GeometryUtils {
 	public static Polygon[] toPolygonArray(Vector2[] vertices, int[] vertexCounts) {
 		Polygon[] polygons = new Polygon[vertexCounts.length];
 
-		int vertice = -1;
-		for(int i = 0; i < polygons.length; i++) {
+		for(int i = 0, vertice = -1; i < polygons.length; i++) {
 			tmpVecArr = new Vector2[vertexCounts[i]];
 			for(int i2 = 0; i2 < tmpVecArr.length; i2++)
 				tmpVecArr[i2] = vertices[++vertice];
@@ -249,7 +248,7 @@ public abstract class GeometryUtils {
 	/** @param concave the concave polygon to to decompose 
 	 *  @return an array of convex polygons representing the given concave polygon
 	 *  @see BayazitDecomposer#convexPartition(Array) */
-	public static Polygon[] decomposeIntoConvex(Polygon concave) {
+	public static Polygon[] decompose(Polygon concave) {
 		Array<Array<Vector2>> convexPolys = BayazitDecomposer.convexPartition(new Array<Vector2>(toVector2Array(concave.getTransformedVertices())));
 		Polygon[] convexPolygons = new Polygon[convexPolys.size];
 		for(int i = 0; i < convexPolygons.length; i++)

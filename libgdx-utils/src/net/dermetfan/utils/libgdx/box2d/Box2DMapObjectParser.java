@@ -16,7 +16,7 @@ package net.dermetfan.utils.libgdx.box2d;
 
 import static net.dermetfan.utils.libgdx.maps.MapUtils.getProperty;
 import static net.dermetfan.utils.libgdx.math.GeometryUtils.areVerticesClockwise;
-import static net.dermetfan.utils.libgdx.math.GeometryUtils.decomposeIntoConvex;
+import static net.dermetfan.utils.libgdx.math.GeometryUtils.decompose;
 import static net.dermetfan.utils.libgdx.math.GeometryUtils.isConvex;
 import static net.dermetfan.utils.libgdx.math.GeometryUtils.toFloatArray;
 import static net.dermetfan.utils.libgdx.math.GeometryUtils.toVector2Array;
@@ -361,7 +361,7 @@ public class Box2DMapObjectParser {
 			}
 			convexPolygons = triangulate(polygon);
 		} else
-			convexPolygons = decomposeIntoConvex(polygon);
+			convexPolygons = decompose(polygon);
 
 		// create the fixtures using the convex polygons
 		Fixture[] fixtures = new Fixture[convexPolygons.length];
