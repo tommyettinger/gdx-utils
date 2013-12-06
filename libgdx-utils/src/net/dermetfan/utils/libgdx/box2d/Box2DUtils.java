@@ -309,28 +309,24 @@ public abstract class Box2DUtils {
 	/** @return the width of the given Body */
 	public static float width(Body body) {
 		float min = Float.POSITIVE_INFINITY, max = Float.NEGATIVE_INFINITY, tmp;
-
 		for(Fixture fixture : body.getFixtureList()) {
 			if((tmp = minX(fixture)) < min)
 				min = tmp;
 			if((tmp = maxX(fixture)) > max)
 				max = tmp;
 		}
-
 		return Math.abs(max - min);
 	}
 
 	/** @return the height of the given Body */
 	public static float height(Body body) {
 		float min = Float.POSITIVE_INFINITY, max = Float.NEGATIVE_INFINITY, tmp;
-
 		for(Fixture fixture : body.getFixtureList()) {
 			if((tmp = minY(fixture)) < min)
 				min = tmp;
 			if((tmp = maxY(fixture)) > max)
 				max = tmp;
 		}
-
 		return Math.abs(max - min);
 	}
 
@@ -395,22 +391,11 @@ public abstract class Box2DUtils {
 	/** @return the relative position of the given Shape to its Body
 	 *  @param rotation the rotation of the body in radians */
 	public static Vector2 positionRelative(Shape shape, float rotation, Vector2 output) {
-		// get the position without rotation
 		if(cache.containsKey(shape)) {
 			ShapeCache sc = cache.get(shape);
-			output.set(sc.maxX - sc.width / 2, sc.maxY - sc.height / 2);
-		} else {
-			tmpVecArr = vertices(shape); // the shape's vertices will hopefully be put in #cache
-			if(cache.containsKey(shape)) // the shape's vertices are now hopefully in #cache, so let's try again
-				positionRelative(shape, rotation, output);
-			else { // #autoCache is false or #cache reached #autoCacheMaxSize
-				float[] xs = filterX(tmpVecArr), ys = filterY(tmpVecArr);
-				output.set(max(xs) - amplitude(xs) / 2, max(ys) - amplitude(ys) / 2); // so calculating manually is faster than using the methods because there won't be the containsKey checks
-			}
+			return rotate(output.set(sc.maxX - sc.width / 2, sc.maxY - sc.height / 2), rotation); // faster
 		}
-
-		// transform position according to rotation
-		return rotate(output, rotation);
+		return rotate(output.set(maxX(shape) - width(shape) / 2, maxY(shape) - height(shape) / 2), rotation);
 	}
 
 	/** @see #positionRelative(Shape, float, Vector2) */
@@ -437,7 +422,7 @@ public abstract class Box2DUtils {
 	 *  @param shape the Shape which position to get
 	 *  @param body the Body the given Shape is attached to */
 	public static Vector2 position(Shape shape, Body body) {
-		return body.getPosition().add(positionRelative(shape, body.getTransform().getRotation()));
+		return body.getPosition().add(positionRelative(shape, body.getAngle()));
 	}
 
 	/** creates a depe copy of a {@link Body} (without deep copying the {@link Shape Shapes} of its {@link Fixture Fixtures})<br/>
