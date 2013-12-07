@@ -301,12 +301,15 @@ public class Rope {
 	/** Splits this Rope at the given index and returns a new Rope consisting of the {@link #segments} before the given index.
 	 *  @param index the index of the {@link #joints Joint} to destroy
 	 *  @return a Rope consisting of the segments before the given index */
-	public Rope split(int index) {
+	public Rope split(int index) { // TODO doesn't split properly
 		Joint remove = joints.removeIndex(index);
 		remove.getBodyA().getWorld().destroyJoint(remove);
 		Body[] segs = new Body[index];
-		for(int i = 0; i < index; i++)
+		for(int i = 0; i < index; i++) {
+			Joint joint = joints.get(i);
+			joint.getBodyA().getWorld().destroyJoint(joint);
 			segs[i] = segments.removeIndex(i);
+		}
 		return new Rope(builder, segs);
 	}
 
@@ -321,8 +324,7 @@ public class Rope {
 		return segments.get(index);
 	}
 
-	/**
-	 *  @param index the index of the desired {@link #joints Joint}
+	/** @param index the index of the desired {@link #joints Joint}
 	 *  @return the {@link #joints Joint} at the given index */
 	public Joint getJoint(int index) {
 		return joints.get(index);
