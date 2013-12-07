@@ -1,11 +1,11 @@
 package net.dermetfan.utils.libgdx.box2d;
 
+import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.BodyDef;
 import com.badlogic.gdx.physics.box2d.FixtureDef;
 import com.badlogic.gdx.physics.box2d.Joint;
 import com.badlogic.gdx.physics.box2d.JointDef;
-import com.badlogic.gdx.physics.box2d.JointEdge;
 import com.badlogic.gdx.physics.box2d.Shape;
 import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.utils.Disposable;
@@ -132,30 +132,22 @@ public class Rope {
 	private final SnapshotArray<Body> segments = new SnapshotArray<Body>();
 	private final SnapshotArray<Joint> joints = new SnapshotArray<Joint>();
 
-	private void lock() {
-		segments.begin();
-		joints.begin();
-	}
-
-	private void unlock() {
-		segments.end();
-		joints.end();
-	}
-
-	public Rope(int length) {
-		segments.ensureCapacity(length - segments.size);
-		joints.ensureCapacity(length - segments.size);
-	}
-
 	public Rope(int length, Builder builder) {
 		this(length, builder, true);
 	}
 
 	public Rope(int length, Builder builder, boolean build) {
-		this(length);
+		segments.ensureCapacity(length - segments.size);
+		joints.ensureCapacity(length - segments.size);
 		this.builder = builder;
 		if(build)
 			build(length);
+	}
+
+	public Rope(Builder builder, Body... segments) {
+		this.builder = builder;
+		for(Body segment : segments)
+			addSegment(segment);
 	}
 
 	public Rope build(int length) {
@@ -170,65 +162,61 @@ public class Rope {
 		return this;
 	}
 
-	public Body createSegment(int index) { // works
+	protected Body createSegment(int index) { // works
 		return builder.createSegment(index, segments.size > 0 ? segments.peek() : null, segments.size + 1);
 	}
 
+	protected Joint createJoint(int segmentIndex1, int segmentIndex2) { // works
+		Body seg1 = segments.get(segmentIndex1), seg2 = segments.get(segmentIndex2);
+		return builder.createJoint(seg1, segmentIndex1, seg2, segmentIndex2);
+	}
+
 	public Body extend() { // works
-		unlock();
 		Body segment = createSegment(segments.size);
 		addSegment(segment);
-		lock();
 		return segment;
 	}
 
 	public void addSegment(Body segment) { // works
-		Body previous = segments.size > 0 ? segments.peek() : null;
-		unlock();
 		segments.add(segment);
 		if(segments.size > 1)
-			joints.add(builder.createJoint(previous, segments.size - 1 < 0 ? 0 : segments.size - 1, segment, segments.size));
-		lock();
+			joints.add(createJoint(segments.size - 2 < 0 ? 0 : segments.size - 2, segments.size - 1));
 	}
 
-	public Body insertSegment(int index) {
+	public Body insertSegment(int index) { // works
 		Body segment = createSegment(index);
 		insertSegment(index, segment);
 		return segment;
 	}
 
-	public void insertSegment(int index, Body segment) {
-		//		if(segment.getWorld() != segments.first().getWorld())
-		//			throw new IllegalArgumentException("The given segment body is from another Box2D World");
-		if(index > segments.size - 1 || index < 0)
-			throw new ArrayIndexOutOfBoundsException(index);
-		unlock();
-		int previousIndex = index - 1; // TODO ArrayIndexOutOfBoundsException
-		// destroy previous --> segment link
-		joints.removeIndex(previousIndex);
-		// insert segment
+	public void insertSegment(int index, Body segment) { // works
+		if(index - 1 >= 0)
+			segment.getWorld().destroyJoint(joints.removeIndex(index - 1));
 		segments.insert(index, segment);
-		// link segment with previous
-		joints.insert(previousIndex, builder.createJoint(segments.get(previousIndex), previousIndex, segment, index));
-		// link segment with next
-		joints.insert(index + 1, builder.createJoint(segment, index, segments.get(index + 1), index + 1));
-		lock();
+		if(index - 1 >= 0)
+			joints.insert(index - 1, createJoint(index - 1, index));
+		if(index + 1 < segments.size)
+			joints.insert(index, createJoint(index, index + 1));
 	}
 
-	public Body unlinkSegment(int index) {
-		unlock();
+	public Body removeSegment(int index, boolean split) { // works
 		Body segment = segments.removeIndex(index);
-		for(JointEdge edge : segment.getJointList())
-			if(joints.contains(edge.joint, true)) {
-				segment.getWorld().destroyJoint(edge.joint);
-				joints.removeValue(edge.joint, true);
-			}
-		lock();
+		if(--index >= 0)
+			segment.getWorld().destroyJoint(joints.removeIndex(index));
+		else
+			index++;
+		if(index < joints.size)
+			segment.getWorld().destroyJoint(joints.removeIndex(index));
+		if(!split) {
+			Body prevSegment = segments.get(index), nextSegment = segments.get(MathUtils.clamp(index + 1, 0, segments.size - 1));
+			if(prevSegment != nextSegment)
+				joints.insert(index, builder.createJoint(prevSegment, index, nextSegment, index + 1));
+		}
 		return segment;
 	}
 
-	public void destroySegment(int index) {
-		Body segment = unlinkSegment(index);
+	public void destroySegment(int index, boolean split) { // works
+		Body segment = removeSegment(index, split);
 		segment.getWorld().destroyBody(segment);
 	}
 
@@ -255,13 +243,13 @@ public class Rope {
 	}
 
 	/** @return the {@link #segments} */
-	public SnapshotArray<Body> getSegments() {
-		return segments;
+	public Body[] getSegments() {
+		return segments.begin();
 	}
 
 	/** @return the {@link #joints} */
-	public SnapshotArray<Joint> getJoints() {
-		return joints;
+	public Joint[] getJoints() {
+		return joints.begin();
 	}
 
 }
