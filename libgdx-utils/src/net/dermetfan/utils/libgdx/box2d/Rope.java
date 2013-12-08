@@ -319,6 +319,15 @@ public class Rope {
 		return old;
 	}
 
+	/** @param segment The {@link Body} to remove. Must be a {@link #segments segment} of this {@link Rope}.
+	 *  @return the given {@code body}
+	 *  @see #remove(int) */
+	public Body remove(Body segment) {
+		if(!segments.contains(segment, true))
+			throw new IllegalArgumentException("the given body is not a segment of this Rope");
+		return remove(segments.indexOf(segment, true));
+	}
+
 	/** removes a {@link #segments segment} from this Rope
 	 *  @param index the index of the {@link #segments segment} to remove
 	 *  @return the removed {@link #segments segment} */
@@ -338,11 +347,28 @@ public class Rope {
 		return segment;
 	}
 
+	/** @param segment the {@link Body segment} to destroy
+	 *  @see #destroy(int) */
+	public void destroy(Body segment) {
+		if(!segments.contains(segment, true))
+			throw new IllegalArgumentException("the given body must be a segment of this Rope");
+		destroy(segments.indexOf(segment, true));
+	}
+
 	/** @param index the index of the {@link #segments segment} to {@link World#destroyBody(Body) destroy}
 	 *  @see #remove(int) */
 	public void destroy(int index) {
 		Body segment = remove(index);
 		segment.getWorld().destroyBody(segment);
+	}
+
+	/** @param joint the {@link #joints Joint} at which to split this {@link Rope}
+	 *  @return the new {@link Rope}
+	 *  @see #split(int) */
+	public Rope split(Joint joint) {
+		if(!joints.contains(joint, true))
+			throw new IllegalArgumentException("the joint must be part of this Rope");
+		return split(joints.indexOf(joint, true));
 	}
 
 	/** splits this Rope at the given index and returns a new Rope consisting of the {@link #segments} up to the given {@code index}
