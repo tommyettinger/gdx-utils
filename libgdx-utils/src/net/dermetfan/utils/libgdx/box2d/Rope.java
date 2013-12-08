@@ -33,8 +33,19 @@ public class Rope {
 	 *  @author dermetfan */
 	public static interface Builder {
 
+		/** creates a segment that is going to be added to {@link Rope#segments}
+		 *  @param index the index of the segment to create
+		 *  @param previous the previously created segment
+		 *  @param length the desired length of the {@link Rope} that is being build
+		 *  @return the created segment */
 		public Body createSegment(int index, Body previous, int length);
 
+		/** connects two segments with each other using a {@link Joint}
+		 *  @param seg1 the first segment
+		 *  @param seg1index the index of the first segment
+		 *  @param seg2 the second segment
+		 *  @param seg2index the index of the second segment
+		 *  @return the created {@link Joint} */
 		public Joint createJoint(Body seg1, int seg1index, Body seg2, int seg2index);
 
 	}
@@ -43,8 +54,11 @@ public class Rope {
 	 *  @author dermetfan */
 	public static abstract class RopeBuilder implements Builder {
 
+		/** the {@link Rope} this {@link RopeBuilder} builds */
 		public final Rope rope;
 
+		/** Creates a new {@link RopeBuilder} and sets {@link #rope} to a new {@link Rope} of the given {@code length}. The {@link #rope} will not be {@link Rope#build(int) build} immediantly.
+		 *  @param length the desired length of the {@link #rope} */
 		public RopeBuilder(int length) {
 			rope = new Rope(length, this, false);
 		}
@@ -55,11 +69,22 @@ public class Rope {
 	 *  @author dermetfan */
 	public static class DefBuilder implements Builder {
 
+		/** the {@link World} in which to create segments and joints */
 		protected World world;
+
+		/** the {@link BodyDef} to use in {@link #createSegment(int, Body, int)} */
 		protected BodyDef bodyDef;
+
+		/** the {@link FixtureDef} to use in {@link #createSegment(int, Body, int)} */
 		protected FixtureDef fixtureDef;
+
+		/** the {@link JointDef} to use in {@link #createJoint(Body, int, Body, int)} */
 		protected JointDef jointDef;
 
+		/** @param world the {@link #world}
+		 *  @param bodyDef the {@link #bodyDef}
+		 *  @param fixtureDef the {@link #fixtureDef}
+		 *  @param jointDef the {@link #jointDef} */
 		public DefBuilder(World world, BodyDef bodyDef, FixtureDef fixtureDef, JointDef jointDef) {
 			this.world = world;
 			this.bodyDef = bodyDef;
@@ -67,11 +92,13 @@ public class Rope {
 			this.jointDef = jointDef;
 		}
 
+		/** @return a new {@link Body segment} created with{@link #bodyDef} and {@link #fixtureDef} */
 		@Override
 		public Body createSegment(int index, Body previous, int length) {
 			return world.createBody(bodyDef).createFixture(fixtureDef).getBody();
 		}
 
+		/** @return a new {@link JointDef} created with {@link #jointDef} */
 		@Override
 		public Joint createJoint(Body seg1, int seg1index, Body seg2, int seg2index) {
 			jointDef.bodyA = seg1;
@@ -113,14 +140,16 @@ public class Rope {
 			this.jointDef = jointDef;
 		}
 
+		/** creates a {@link Body segment} using {@link #bodyDef}, {@link #shape} and {@link #density}
+		 *  @see Body#createFixture(Shape, float) */
 		@Override
 		public Body createSegment(int index, Body previous, int length) {
 			return world.createBody(bodyDef).createFixture(shape, density).getBody();
 		}
 
+		/** @return a new {@link Joint} created with {@link #jointDef} */
 		@Override
 		public Joint createJoint(Body seg1, int seg1index, Body seg2, int seg2index) {
-			System.out.println(seg1index + (seg1 == null ? "(null)" : "") + " -> " + seg2index + (seg2 == null ? "(null)" : ""));
 			jointDef.bodyA = seg1;
 			jointDef.bodyB = seg2;
 			return world.createJoint(jointDef);
@@ -138,12 +167,15 @@ public class Rope {
 	 *  @author dermetfan */
 	public static abstract class CopyBuilder implements Builder {
 
+		/** the {@link Body} to {@link Box2DUtils#copy(Body) copy} in {@link #createSegment(int, Body, int)} */
 		protected Body template;
 
+		/** @param template the {@link #template} */
 		public CopyBuilder(Body template) {
 			this.template = template;
 		}
 
+		/** @return a {@link Box2DUtils#copy(Body) copy} of {@link #template} */
 		@Override
 		public Body createSegment(int index, Body previous, int length) {
 			return Box2DUtils.copy(template);
@@ -155,13 +187,17 @@ public class Rope {
 	 *  @author dermetfan */
 	public static abstract class JointDefCopyBuilder extends CopyBuilder {
 
+		/** the {@link JointDef} to use in {@link #createJoint(Body, int, Body, int)} */
 		protected JointDef jointDef;
 
+		/** @param template the {@link CopyBuilder#template}
+		 *  @param jointDef the {@link #jointDef} */
 		public JointDefCopyBuilder(Body template, JointDef jointDef) {
 			super(template);
 			this.jointDef = jointDef;
 		}
 
+		/** @return a new {@link Joint} created with {@link #jointDef} */
 		@Override
 		public Joint createJoint(Body seg1, int seg1index, Body seg2, int seg2index) {
 			jointDef.bodyA = seg1;
@@ -206,7 +242,7 @@ public class Rope {
 	public Rope(Builder builder, Body... segments) {
 		this.builder = builder;
 		for(Body segment : segments)
-			addSegment(segment);
+			add(segment);
 	}
 
 	/** builds this rope to the given {@code length} using the {@link #builder}
@@ -224,45 +260,47 @@ public class Rope {
 		return this;
 	}
 
-	/** @see Builder#createSegment(int, Body, int) */
-	protected Body createSegment(int index) {
+	/** Creates a {@link Body segment} using the {@link #builder} passing the correct parameters to {@link Builder#createSegment(int, Body, int)} specified by the given {@code index}. Does NOT add it to this Rope.
+	 *  @see Builder#createSegment(int, Body, int) */
+	public Body create(int index) {
 		return builder.createSegment(index, segments.size > 0 ? segments.peek() : null, segments.size + 1);
 	}
 
-	/** @see Builder#createJoint(Body, int, Body, int) */
-	protected Joint createJoint(int segmentIndex1, int segmentIndex2) {
+	/** Creates a {@link Joint joint} using the {@link #builder} passing the correct parameters to {@link Builder#createJoint(Body, int, Body, int)} specified by the given {@code index}. Does NOT add it to this Rope.
+	 *  @see Builder#createJoint(Body, int, Body, int) */
+	public Joint createJoint(int segmentIndex1, int segmentIndex2) {
 		Body seg1 = segments.get(segmentIndex1), seg2 = segments.get(segmentIndex2);
 		return builder.createJoint(seg1, segmentIndex1, seg2, segmentIndex2);
 	}
 
-	/** {@link #createSegment(int) creates} and {@link #addSegment(Body) adds} a new segment to this Rope
-	 *  @return the {@link #createSegment(int) created} and {@link #addSegment(Body) added} segment */
+	/** {@link #create(int) creates} and {@link #add(Body) adds} a new segment to this Rope
+	 *  @return the {@link #create(int) created} and {@link #add(Body) added} segment */
 	public Body extend() {
-		Body segment = createSegment(segments.size);
-		addSegment(segment);
+		Body segment = create(segments.size);
+		add(segment);
 		return segment;
 	}
 
 	/** {@link SnapshotArray#add(Object) adds} the given {@code segment} to the end of this Rope
 	 *  @param segment the {@link Body segment} to add */
-	public void addSegment(Body segment) {
+	public void add(Body segment) {
 		segments.add(segment);
 		if(segments.size > 1)
 			joints.add(createJoint(segments.size - 2 < 0 ? 0 : segments.size - 2, segments.size - 1));
 	}
 
-	/** {@link #createSegment(int) creates} a new {@link Body segment} and {@link #insertSegment(int, Body) inserts} it into this Rope
-	 *  @see #insertSegment(int, Body) */
-	public Body insertSegment(int index) {
-		Body segment = createSegment(index);
-		insertSegment(index, segment);
+	/** {@link #create(int) creates} a new {@link Body segment} and {@link #insert(int, Body) inserts} it into this Rope
+	 *  @see #insert(int, Body) */
+	public Body insert(int index) {
+		Body segment = create(index);
+		insert(index, segment);
 		return segment;
 	}
 
 	/** inserts a {@link Body segment} into this Rope
 	 *  @param index the {@link #segments index} at which to insert the given {@code segment}
 	 *  @param segment the {@link Body segment} to insert */
-	public void insertSegment(int index, Body segment) {
+	public void insert(int index, Body segment) {
 		if(index - 1 >= 0)
 			segment.getWorld().destroyJoint(joints.removeIndex(index - 1));
 		segments.insert(index, segment);
@@ -272,10 +310,19 @@ public class Rope {
 			joints.insert(index, createJoint(index, index + 1));
 	}
 
+	/** @param index the index of the segment to replace
+	 *  @param segment the {@link Body segment} to insert
+	 *  @return the {@link Body segment} that was at the given {@code index} previously */
+	public Body replace(int index, Body segment) {
+		Body old = remove(index);
+		insert(index, segment);
+		return old;
+	}
+
 	/** removes a {@link #segments segment} from this Rope
 	 *  @param index the index of the {@link #segments segment} to remove
 	 *  @return the removed {@link #segments segment} */
-	public Body removeSegment(int index) {
+	public Body remove(int index) {
 		Body segment = segments.removeIndex(index);
 		if(--index >= 0)
 			segment.getWorld().destroyJoint(joints.removeIndex(index));
@@ -292,23 +339,21 @@ public class Rope {
 	}
 
 	/** @param index the index of the {@link #segments segment} to {@link World#destroyBody(Body) destroy}
-	 *  @see #removeSegment(int) */
-	public void destroySegment(int index) {
-		Body segment = removeSegment(index);
+	 *  @see #remove(int) */
+	public void destroy(int index) {
+		Body segment = remove(index);
 		segment.getWorld().destroyBody(segment);
 	}
 
-	/** Splits this Rope at the given index and returns a new Rope consisting of the {@link #segments} before the given index.
-	 *  @param index the index of the {@link #joints Joint} to destroy
+	/** splits this Rope at the given index and returns a new Rope consisting of the {@link #segments} up to the given {@code index}
+	 *  @param jointIndex the index of the {@link #joints Joint} to destroy
 	 *  @return a Rope consisting of the segments before the given index */
-	public Rope split(int index) { // TODO doesn't split properly
-		Joint remove = joints.removeIndex(index);
-		remove.getBodyA().getWorld().destroyJoint(remove);
-		Body[] segs = new Body[index];
-		for(int i = 0; i < index; i++) {
-			Joint joint = joints.get(i);
+	public Rope split(int jointIndex) {
+		Body[] segs = new Body[jointIndex + 1];
+		for(int i = 0; i <= jointIndex; i++) {
+			Joint joint = joints.removeIndex(0);
 			joint.getBodyA().getWorld().destroyJoint(joint);
-			segs[i] = segments.removeIndex(i);
+			segs[i] = segments.removeIndex(0);
 		}
 		return new Rope(builder, segs);
 	}
