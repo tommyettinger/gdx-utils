@@ -262,7 +262,7 @@ public class Rope {
 
 	/** Creates a {@link Body segment} using the {@link #builder} passing the correct parameters to {@link Builder#createSegment(int, Body, int)} specified by the given {@code index}. Does NOT add it to this Rope.
 	 *  @see Builder#createSegment(int, Body, int) */
-	public Body create(int index) {
+	public Body createSegment(int index) {
 		return builder.createSegment(index, segments.size > 0 ? segments.peek() : null, segments.size + 1);
 	}
 
@@ -273,10 +273,10 @@ public class Rope {
 		return builder.createJoint(seg1, segmentIndex1, seg2, segmentIndex2);
 	}
 
-	/** {@link #create(int) creates} and {@link #add(Body) adds} a new segment to this Rope
-	 *  @return the {@link #create(int) created} and {@link #add(Body) added} segment */
+	/** {@link #createSegment(int) creates} and {@link #add(Body) adds} a new segment to this Rope
+	 *  @return the {@link #createSegment(int) created} and {@link #add(Body) added} segment */
 	public Body extend() {
-		Body segment = create(segments.size);
+		Body segment = createSegment(segments.size);
 		add(segment);
 		return segment;
 	}
@@ -289,10 +289,10 @@ public class Rope {
 			joints.add(createJoint(segments.size - 2 < 0 ? 0 : segments.size - 2, segments.size - 1));
 	}
 
-	/** {@link #create(int) creates} a new {@link Body segment} and {@link #insert(int, Body) inserts} it into this Rope
+	/** {@link #createSegment(int) creates} a new {@link Body segment} and {@link #insert(int, Body) inserts} it into this Rope
 	 *  @see #insert(int, Body) */
 	public Body insert(int index) {
-		Body segment = create(index);
+		Body segment = createSegment(index);
 		insert(index, segment);
 		return segment;
 	}
