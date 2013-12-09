@@ -185,7 +185,7 @@ public class Rope {
 
 	/** a {@link CopyBuilder} that uses a {@link JointDef} in {@link #createJoint(Body, int, Body, int)}
 	 *  @author dermetfan */
-	public static abstract class JointDefCopyBuilder extends CopyBuilder {
+	public static class JointDefCopyBuilder extends CopyBuilder {
 
 		/** the {@link JointDef} to use in {@link #createJoint(Body, int, Body, int)} */
 		protected JointDef jointDef;
