@@ -17,17 +17,26 @@ package net.dermetfan.utils.math;
 /** math utility methods */
 public class MathUtils {
 
+	/** normalizes a value in a given range using the range as step
+	 *  @see #normalize(float, float, float) */
+	public static float normalize(float value, float range) {
+		return normalize(value, range, range);
+	}
+
 	/** normalizes a value in a given range
 	 *  @param value the value to normalize
 	 *  @param range the range in which to normalize the given value (from -range to range)
+	 *  @param step the step to use to normalize the value
 	 *  @return the normalized value */
-	public static float normalize(float value, float range) {
+	public static float normalize(float value, float range, float step) {
 		if((range = Math.abs(range)) == 0)
-			return 0;
+			return range;
+		if((step = Math.abs(step)) == 0)
+			return value;
 		while(value > range)
-			value -= range;
+			value -= step;
 		while(value < -range)
-			value += range;
+			value += step;
 		return value;
 	}
 

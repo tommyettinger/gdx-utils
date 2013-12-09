@@ -15,6 +15,7 @@
 package net.dermetfan.utils.libgdx.box2d;
 
 import static net.dermetfan.utils.libgdx.math.GeometryUtils.vec2_0;
+import static net.dermetfan.utils.math.MathUtils.normalize;
 import net.dermetfan.utils.Accessor;
 
 import com.badlogic.gdx.math.Interpolation;
@@ -81,10 +82,7 @@ public class Autopilot {
 	public static float calculateTorque(Vector2 target, Vector2 origin, float rotation, float angularVelocity, float inertia, float force, float delta) {
 		// http://www.iforce2d.net/b2dtut/rotate-to-angle
 		float rotate = MathUtils.atan2(vec2_0.set(target).sub(origin).y, vec2_0.x) - (rotation + angularVelocity * delta);
-		while(rotate < -MathUtils.PI)
-			rotate += MathUtils.PI2;
-		while(rotate > MathUtils.PI)
-			rotate -= MathUtils.PI2;
+		rotate = normalize(rotate, MathUtils.PI, MathUtils.PI2);
 		return inertia * (rotate / MathUtils.PI2 * force * delta) / delta;
 	}
 
