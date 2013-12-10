@@ -23,8 +23,6 @@ import static net.dermetfan.utils.libgdx.math.GeometryUtils.toVector2Array;
 import static net.dermetfan.utils.libgdx.math.GeometryUtils.triangulate;
 import static net.dermetfan.utils.libgdx.math.GeometryUtils.vec2_0;
 
-import java.util.Iterator;
-
 import com.badlogic.gdx.maps.Map;
 import com.badlogic.gdx.maps.MapLayer;
 import com.badlogic.gdx.maps.MapObject;
@@ -501,40 +499,6 @@ public class Box2DMapObjectParser {
 			desiredName += duplicate;
 		}
 		return desiredName;
-	}
-
-	/** @param map the {@link Map} which hierarchy to print
-	 *  @return a human readable {@link String} of the hierarchy of the {@link MapObjects} of the given {@link Map} */
-	public String getHierarchy(Map map) {
-		String hierarchy = map.getClass().getSimpleName() + "\n", key, layerHierarchy;
-
-		Iterator<String> keys = map.getProperties().getKeys();
-		while(keys.hasNext())
-			hierarchy += (key = keys.next()) + ": " + map.getProperties().get(key) + "\n";
-
-		for(MapLayer layer : map.getLayers()) {
-			hierarchy += "\t" + layer.getName() + " (" + layer.getClass().getSimpleName() + "):\n";
-			layerHierarchy = getHierarchy(layer).replace("\n", "\n\t\t");
-			layerHierarchy = layerHierarchy.endsWith("\n\t\t") ? layerHierarchy.substring(0, layerHierarchy.lastIndexOf("\n\t\t")) : layerHierarchy;
-			hierarchy += !layerHierarchy.equals("") ? "\t\t" + layerHierarchy : layerHierarchy;
-		}
-
-		return hierarchy;
-	}
-
-	/** @param layer the {@link MapLayer} which hierarchy to print
-	 *  @return a human readable {@link String} of the hierarchy of the {@link MapObjects} of the given {@link MapLayer} */
-	public String getHierarchy(MapLayer layer) {
-		String hierarchy = "", key;
-
-		for(MapObject object : layer.getObjects()) {
-			hierarchy += object.getName() + " (" + object.getClass().getSimpleName() + "):\n";
-			Iterator<String> keys = object.getProperties().getKeys();
-			while(keys.hasNext())
-				hierarchy += "\t" + (key = keys.next()) + ": " + object.getProperties().get(key) + "\n";
-		}
-
-		return hierarchy;
 	}
 
 	/** @return the {@link #unitScale} */

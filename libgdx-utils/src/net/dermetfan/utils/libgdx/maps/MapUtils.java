@@ -18,6 +18,10 @@ import static net.dermetfan.utils.libgdx.math.GeometryUtils.vec2_0;
 
 import java.util.Iterator;
 
+import com.badlogic.gdx.maps.Map;
+import com.badlogic.gdx.maps.MapLayer;
+import com.badlogic.gdx.maps.MapObject;
+import com.badlogic.gdx.maps.MapObjects;
 import com.badlogic.gdx.maps.MapProperties;
 import com.badlogic.gdx.maps.tiled.TiledMapTile;
 import com.badlogic.gdx.maps.tiled.TiledMapTileSet;
@@ -59,6 +63,38 @@ public abstract class MapUtils {
 			return (T) Byte.valueOf(value.toString());
 
 		return (T) value;
+	}
+
+	/** @param map the {@link Map} which hierarchy to print
+	 *  @return a human readable {@link String} of the hierarchy of the {@link MapObjects} of the given {@link Map} */
+	public static String readableHierarchy(Map map) {
+		String hierarchy = map.getClass().getSimpleName() + "\n", key, layerHierarchy;
+
+		Iterator<String> keys = map.getProperties().getKeys();
+		while(keys.hasNext())
+			hierarchy += (key = keys.next()) + ": " + map.getProperties().get(key) + "\n";
+
+		for(MapLayer layer : map.getLayers()) {
+			hierarchy += "\t" + layer.getName() + " (" + layer.getClass().getSimpleName() + "):\n";
+			layerHierarchy = readableHierarchy(layer).replace("\n", "\n\t\t");
+			layerHierarchy = layerHierarchy.endsWith("\n\t\t") ? layerHierarchy.substring(0, layerHierarchy.lastIndexOf("\n\t\t")) : layerHierarchy;
+			hierarchy += !layerHierarchy.equals("") ? "\t\t" + layerHierarchy : layerHierarchy;
+		}
+
+		return hierarchy;
+	}
+
+	/** @param layer the {@link MapLayer} which hierarchy to print
+	 *  @return a human readable {@link String} of the hierarchy of the {@link MapObjects} of the given {@link MapLayer} */
+	public static String readableHierarchy(MapLayer layer) {
+		String hierarchy = "", key;
+		for(MapObject object : layer.getObjects()) {
+			hierarchy += object.getName() + " (" + object.getClass().getSimpleName() + "):\n";
+			Iterator<String> keys = object.getProperties().getKeys();
+			while(keys.hasNext())
+				hierarchy += "\t" + (key = keys.next()) + ": " + object.getProperties().get(key) + "\n";
+		}
+		return hierarchy;
 	}
 
 	/** creates an array of TiledMapTiles from a {@link TiledMapTileSet}
