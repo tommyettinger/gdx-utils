@@ -88,11 +88,14 @@ public abstract class MapUtils {
 	 *  @return a human readable {@link String} of the hierarchy of the {@link MapObjects} of the given {@link MapLayer} */
 	public static String readableHierarchy(MapLayer layer) {
 		String hierarchy = "", key;
+		Iterator<String> keys = layer.getProperties().getKeys();
+		while(keys.hasNext())
+			hierarchy += (key = keys.next()) + ": " + layer.getProperties().get(key) + "\n";
 		for(MapObject object : layer.getObjects()) {
 			hierarchy += object.getName() + " (" + object.getClass().getSimpleName() + "):\n";
-			Iterator<String> keys = object.getProperties().getKeys();
-			while(keys.hasNext())
-				hierarchy += "\t" + (key = keys.next()) + ": " + object.getProperties().get(key) + "\n";
+			Iterator<String> objectKeys = object.getProperties().getKeys();
+			while(objectKeys.hasNext())
+				hierarchy += "\t" + (key = objectKeys.next()) + ": " + object.getProperties().get(key) + "\n";
 		}
 		return hierarchy;
 	}
