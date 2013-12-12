@@ -2,6 +2,7 @@ package net.dermetfan.utils.libgdx.math;
 
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
+import net.dermetfan.utils.ArrayUtils;
 
 import org.junit.Test;
 
@@ -23,8 +24,38 @@ public class GeometryUtilsTest {
 	}
 
 	@Test
+	public void filterX_array() {
+		assertArrayEquals(ArrayUtils.box(new float[] {0, 0, 0, 0}), ArrayUtils.box(GeometryUtils.filterX(new float[] {0, 1, 0, 1, 0, 1, 0, 1})));
+	}
+
+	@Test
+	public void filterX3D() {
+		assertArrayEquals(ArrayUtils.box(new float[] {0, 0, 0, 0}), ArrayUtils.box(GeometryUtils.filterX3D(new float[] {0, 1, 2, 0, 1, 2, 0, 1, 2, 0, 1, 2})));
+	}
+
+	@Test
 	public void filterY() {
 		assertArrayEquals(new float[] {1, 2, 3}, GeometryUtils.filterY(new Vector2[] {new Vector2(5, 1), new Vector2(5, 2), new Vector2(5, 3)}), 0);
+	}
+
+	@Test
+	public void filterY_array() {
+		assertArrayEquals(new Float[] {1f, 1f, 1f, 1f}, ArrayUtils.box(GeometryUtils.filterY(new float[] {0, 1, 0, 1, 0, 1, 0, 1})));
+	}
+
+	@Test
+	public void filterY3D() {
+		assertArrayEquals(new Float[] {1f, 1f, 1f, 1f}, ArrayUtils.box(GeometryUtils.filterY3D(new float[] {0, 1, 2, 0, 1, 2, 0, 1, 2, 0, 1, 2})));
+	}
+
+	@Test
+	public void filterZ() {
+		assertArrayEquals(new Float[] {2f, 2f, 2f, 2f}, ArrayUtils.box(GeometryUtils.filterZ(new float[] {0, 1, 2, 0, 1, 2, 0, 1, 2, 0, 1, 2})));
+	}
+
+	@Test
+	public void filterW() {
+		assertArrayEquals(new Float[] {3f, 3f, 3f, 3f}, ArrayUtils.box(GeometryUtils.filterW(new float[] {0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3})));
 	}
 
 	@Test
