@@ -17,6 +17,9 @@ package net.dermetfan.utils.libgdx.math;
 import static com.badlogic.gdx.math.MathUtils.cos;
 import static com.badlogic.gdx.math.MathUtils.sin;
 import static net.dermetfan.utils.math.MathUtils.amplitude;
+import static net.dermetfan.utils.math.MathUtils.max;
+import static net.dermetfan.utils.math.MathUtils.min;
+import net.dermetfan.utils.ArrayUtils;
 
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.math.EarClippingTriangulator;
@@ -41,12 +44,37 @@ public abstract class GeometryUtils {
 
 	/** @return a Vector2 representing the size of a rectangle containing all given vertices */
 	public static Vector2 size(Vector2[] vertices, Vector2 output) {
-		return output.set(amplitude(filterX(vertices)), amplitude(filterY(vertices)));
+		return output.set(width(vertices), height(vertices));
 	}
 
 	/** @see #size(Vector2[], Vector2) */
 	public static Vector2 size(Vector2[] vertices) {
 		return size(vertices, vec2_0);
+	}
+
+	/** @return the amplitude from the min x vertice to the max x vertice */
+	public static float width(Vector2[] vertices) {
+		return amplitude(filterX(vertices));
+	}
+
+	/** @return the amplitude from the min y vertice to the max y vertice */
+	public static float height(Vector2[] vertices) {
+		return amplitude(filterY(vertices));
+	}
+
+	/** @see #width(Vector2[]) */
+	public static float width(float[] vertices) {
+		return amplitude(filterX(vertices));
+	}
+
+	/** @see #height(Vector2[]) */
+	public static float height(float[] vertices) {
+		return amplitude(filterY(vertices));
+	}
+
+	/** @return the amplitude of the min z vertice to the max z vertice */
+	public static float depth(float[] vertices) {
+		return amplitude(filterZ(vertices));
 	}
 
 	/** @return the x values of the given vertices */
@@ -63,6 +91,28 @@ public abstract class GeometryUtils {
 		return filterX(vertices, tmpFloatArr);
 	}
 
+	/** @param vertices the vertices in [x, y, x, y, ...] order
+	 *  @see #filterX(Vector2[]) */
+	public static float[] filterX(float[] vertices, float[] output) {
+		return ArrayUtils.select(vertices, -1, 2, output);
+	}
+
+	/** @see #filterX(float[], float[]) */
+	public static float[] filterX(float[] vertices) {
+		return filterX(vertices, tmpFloatArr);
+	}
+
+	/** @param vertices the vertices in [x, y, z, x, y, z, ...] order
+	 *  @see #filterX(float[], float[]) */
+	public static float[] filterX3D(float[] vertices, float[] output) {
+		return ArrayUtils.select(vertices, -2, 3, output);
+	}
+
+	/** @see #filterX3D(float[], float[]) */
+	public static float[] filterX3D(float[] vertices) {
+		return filterX3D(vertices, tmpFloatArr);
+	}
+
 	/** @return the y values of the given vertices */
 	public static float[] filterY(Vector2[] vertices, float[] output) {
 		if(output == null || output.length != vertices.length)
@@ -75,6 +125,89 @@ public abstract class GeometryUtils {
 	/** @see #filterY(Vector2[], float[]) */
 	public static float[] filterY(Vector2[] vertices) {
 		return filterY(vertices, tmpFloatArr);
+	}
+
+	/** @see #filterY(Vector2[], float[])
+	 *  @see #filterX(float[], float[])*/
+	public static float[] filterY(float[] vertices, float[] output) {
+		return ArrayUtils.select(vertices, 2, output);
+	}
+
+	/** @see #filterY(float[], float[]) */
+	public static float[] filterY(float[] vertices) {
+		return filterY(vertices, tmpFloatArr);
+	}
+
+	/** @see #filterY(float[], float[])
+	 *  @see #filterX3D(float[], float[]) */
+	public static float[] filterY3D(float[] vertices, float[] output) {
+		return ArrayUtils.select(vertices, -4, 3, output);
+	}
+
+	/** @see #filterY3D(float[], float[]) */
+	public static float[] filterY3D(float[] vertices) {
+		return filterY3D(vertices, tmpFloatArr);
+	}
+
+	/** @see #filterX(Vector2[], float[])
+	 *  @see #filterX3D(float[], float[]) */
+	public static float[] filterZ(float[] vertices, float[] output) {
+		return ArrayUtils.select(vertices, 3, output);
+	}
+
+	/** @see #filterZ(float[], float[]) */
+	public static float[] filterZ(float[] vertices) {
+		return filterZ(vertices, tmpFloatArr);
+	}
+
+	/** @see #filterX3D(float[]) */
+	public static float[] filterW(float[] vertices, float[] output) {
+		return ArrayUtils.select(vertices, 4, output);
+	}
+
+	/** @see #filterW(float[], float[]) */
+	public static float[] filterW(float[] vertices) {
+		return filterW(vertices, tmpFloatArr);
+	}
+
+	/** @return the min x value of the given vertices */
+	public static float minX(Vector2[] vertices) {
+		return min(filterX(vertices));
+	}
+
+	/** @return the min y value of the given vertices */
+	public static float minY(Vector2[] vertices) {
+		return min(filterY(vertices));
+	}
+
+	/** @return the max x value of the given vertices */
+	public static float maxX(Vector2[] vertices) {
+		return max(filterX(vertices));
+	}
+
+	/** @return the max y value of the given vertices */
+	public static float maxY(Vector2[] vertices) {
+		return max(filterY(vertices));
+	}
+
+	/** @see #minX(Vector2[]) */
+	public static float minX(float[] vertices) {
+		return min(filterX(vertices));
+	}
+
+	/** @see #minY(Vector2[]) */
+	public static float minY(float[] vertices) {
+		return min(filterY(vertices));
+	}
+
+	/** @see #maxX(Vector2[]) */
+	public static float maxX(float[] vertices) {
+		return max(filterX(vertices));
+	}
+
+	/** @see #maxY(Vector2[]) */
+	public static float maxY(float[] vertices) {
+		return max(filterY(vertices));
 	}
 
 	/** rotates {@code point} by {@code radians} around [0:0] (local rotation)

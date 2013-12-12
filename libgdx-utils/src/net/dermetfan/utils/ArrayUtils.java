@@ -36,6 +36,30 @@ public abstract class ArrayUtils {
 		return boxed;
 	}
 
+	/** @param elements the elements to select from
+	 *  @param start the array index of elements at which to start (may be negative)
+	 *  @param everyXth select every xth of elements
+	 *  @param output The array to put the values in. A new one will be instantiated if output is null or {@code output.length != elements.length / everyXth}. 
+	 *  @return the output array or a given array containing everyXth element of the given elements array */
+	public static float[] select(float[] elements, int start, int everyXth, float[] output) {
+		int outputLength = 0;
+		for(int i = start - 1; i < elements.length; i += everyXth)
+			if(i >= 0)
+				outputLength++;
+		if(output == null || output.length != outputLength)
+			output = new float[outputLength];
+		for(int oi = 0, i = start - 1; oi < output.length; i += everyXth)
+			if(i >= 0)
+				output[oi++] = elements[i];
+		return output;
+	}
+
+	/** {@link #select(float[], int, int, float[])} starting at {@code everyXth - 1}
+	 *  @see #select(float[], int, int, float[]) */
+	public static float[] select(float[] elements, int everyXth, float[] output) {
+		return select(elements, 0, everyXth, output);
+	}
+
 	/** selects the given {@code indices} from the given {@code elements}
 	 *  @param elements the elements to select from
 	 *  @param indices the indeces to select from {@code select}
