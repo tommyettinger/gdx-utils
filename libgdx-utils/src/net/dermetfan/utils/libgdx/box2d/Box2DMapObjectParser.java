@@ -293,6 +293,8 @@ public class Box2DMapObjectParser {
 		String type = getProperty(properties, aliases.type, "");
 
 		Body body = bodies.get(type.equals(aliases.object) ? mapObject.getName() : getProperty(properties, aliases.body, ""));
+		if(body == null)
+			throw new IllegalStateException("the body for the fixture " + mapObject.getName() + " does not exist");
 
 		if(!type.equals(aliases.fixture) && !type.equals(aliases.object))
 			throw new IllegalArgumentException(aliases.type + " of " + mapObject + " is  \"" + type + "\" instead of \"" + aliases.fixture + "\" or \"" + aliases.object + "\"");
