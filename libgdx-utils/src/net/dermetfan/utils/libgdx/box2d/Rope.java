@@ -107,6 +107,46 @@ public class Rope {
 			return new Connection(world.createJoint(jointDef));
 		}
 
+		/** @return the {@link #world} */
+		public World getWorld() {
+			return world;
+		}
+
+		/** @param world the {@link #world} to set */
+		public void setWorld(World world) {
+			this.world = world;
+		}
+
+		/** @return the {@link #bodyDef} */
+		public BodyDef getBodyDef() {
+			return bodyDef;
+		}
+
+		/** @param bodyDef the {@link #bodyDef} to set */
+		public void setBodyDef(BodyDef bodyDef) {
+			this.bodyDef = bodyDef;
+		}
+
+		/** @return the {@link #fixtureDef} */
+		public FixtureDef getFixtureDef() {
+			return fixtureDef;
+		}
+
+		/** @param fixtureDef the {@link #fixtureDef} to set */
+		public void setFixtureDef(FixtureDef fixtureDef) {
+			this.fixtureDef = fixtureDef;
+		}
+
+		/** @return the {@link #jointDef} */
+		public JointDef getJointDef() {
+			return jointDef;
+		}
+
+		/** @param jointDef the {@link #jointDef} to set */
+		public void setJointDef(JointDef jointDef) {
+			this.jointDef = jointDef;
+		}
+
 	}
 
 	/** A {@link Builder} that builds using a {@link BodyDef}, {@link JointDef} and {@link Shape}. Should be {@link DefShapeBuilder#dispose() dispose} if no longer used.
@@ -162,6 +202,51 @@ public class Rope {
 			shape.dispose();
 		}
 
+		/** @return the {@link #world} */
+		public World getWorld() {
+			return world;
+		}
+
+		/** @param world the {@link #world} to set */
+		public void setWorld(World world) {
+			this.world = world;
+		}
+
+		/** @return the {@link #bodyDef} */
+		public BodyDef getBodyDef() {
+			return bodyDef;
+		}
+
+		/** @param bodyDef the {@link #bodyDef} to set */
+		public void setBodyDef(BodyDef bodyDef) {
+			this.bodyDef = bodyDef;
+		}
+
+		/** @return the {@link #density} */
+		public float getDensity() {
+			return density;
+		}
+
+		/** @param density the {@link #density} to set */
+		public void setDensity(float density) {
+			this.density = density;
+		}
+
+		/** @return the {@link #jointDef} */
+		public JointDef getJointDef() {
+			return jointDef;
+		}
+
+		/** @param jointDef the {@link #jointDef} to set */
+		public void setJointDef(JointDef jointDef) {
+			this.jointDef = jointDef;
+		}
+
+		/** @return the {@link #shape} */
+		public Shape getShape() {
+			return shape;
+		}
+
 	}
 
 	/** a {@link Builder} that {@link Box2DUtils#copy(Body) copies} a {@link Body} as template in {@link #createSegment(int, Body, int)}
@@ -180,6 +265,16 @@ public class Rope {
 		@Override
 		public Body createSegment(Body previous, int index, int length) {
 			return Box2DUtils.copy(template);
+		}
+
+		/** @return the {@link #template} */
+		public Body getTemplate() {
+			return template;
+		}
+
+		/** @param template the {@link #template} to set */
+		public void setTemplate(Body template) {
+			this.template = template;
 		}
 
 	}
@@ -204,6 +299,16 @@ public class Rope {
 			jointDef.bodyA = seg1;
 			jointDef.bodyB = seg2;
 			return new Connection(template.getWorld().createJoint(jointDef));
+		}
+
+		/** @return the {@link #jointDef} */
+		public JointDef getJointDef() {
+			return jointDef;
+		}
+
+		/** @param jointDef the {@link #jointDef} to set */
+		public void setJointDef(JointDef jointDef) {
+			this.jointDef = jointDef;
 		}
 
 	}
