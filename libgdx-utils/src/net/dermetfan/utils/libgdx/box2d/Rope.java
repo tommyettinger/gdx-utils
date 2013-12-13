@@ -34,11 +34,11 @@ public class Rope {
 	public static interface Builder {
 
 		/** creates a segment that is going to be added to {@link Rope#segments}
-		 *  @param index the index of the segment to create
 		 *  @param previous the previously created segment
+		 *  @param index the index of the segment to create
 		 *  @param length the desired length of the {@link Rope} that is being build
 		 *  @return the created segment */
-		public Body createSegment(int index, Body previous, int length);
+		public Body createSegment(Body previous, int index, int length);
 
 		/** connects two segments with each other using a {@link Joint}
 		 *  @param seg1 the first segment
@@ -94,7 +94,7 @@ public class Rope {
 
 		/** @return a new {@link Body segment} created with{@link #bodyDef} and {@link #fixtureDef} */
 		@Override
-		public Body createSegment(int index, Body previous, int length) {
+		public Body createSegment(Body previous, int index, int length) {
 			return world.createBody(bodyDef).createFixture(fixtureDef).getBody();
 		}
 
@@ -143,7 +143,7 @@ public class Rope {
 		/** creates a {@link Body segment} using {@link #bodyDef}, {@link #shape} and {@link #density}
 		 *  @see Body#createFixture(Shape, float) */
 		@Override
-		public Body createSegment(int index, Body previous, int length) {
+		public Body createSegment(Body previous, int index, int length) {
 			return world.createBody(bodyDef).createFixture(shape, density).getBody();
 		}
 
@@ -177,7 +177,7 @@ public class Rope {
 
 		/** @return a {@link Box2DUtils#copy(Body) copy} of {@link #template} */
 		@Override
-		public Body createSegment(int index, Body previous, int length) {
+		public Body createSegment(Body previous, int index, int length) {
 			return Box2DUtils.copy(template);
 		}
 
@@ -215,6 +215,19 @@ public class Rope {
 
 	/** the {@link Joint Joints} of this Rope */
 	private final SnapshotArray<Joint> joints = new SnapshotArray<Joint>();
+
+	/** creates a shallow copy of the given {@link Rope} instance
+	 *  @param other the {@link Rope} to copy */
+	public Rope(Rope other) {
+		builder = other.builder;
+		segments.addAll(other.segments);
+		joints.addAll(other.joints);
+	}
+
+	/** @param builder the {@link #builder} */
+	public Rope(Builder builder) {
+		this.builder = builder;
+	}
 
 	/** creates a new Rope and {@link #build(int) builds} it to the given {@code length}
 	 *  @param length the desired length of this Rope
@@ -254,16 +267,22 @@ public class Rope {
 	/** builds this rope to the given {@code length} using the given {@link Builder} */
 	public Rope build(int length, Builder builder) {
 		while(length > 0) {
-			extend();
+			extend(builder);
 			length--;
 		}
 		return this;
 	}
 
-	/** Creates a {@link Body segment} using the {@link #builder} passing the correct parameters to {@link Builder#createSegment(int, Body, int)} specified by the given {@code index}. Does NOT add it to this Rope.
-	 *  @see Builder#createSegment(int, Body, int) */
+	/** {@link #createSegment(int, Builder) creates} a segment for the given index using the {@link #builder}
+	 *  @see #createSegment(int, Builder) */
 	public Body createSegment(int index) {
-		return builder.createSegment(index, segments.size > 0 ? segments.peek() : null, segments.size + 1);
+		return createSegment(index, builder);
+	}
+
+	/** Creates a {@link Body segment} using the given {@link Builder} passing the correct parameters to {@link Builder#createSegment(int, Body, int)} specified by the given {@code index}. Does NOT add it to this Rope.
+	 *  @see Builder#createSegment(int, Body, int) */
+	public Body createSegment(int index, Builder builder) {
+		return builder.createSegment(segments.size > 0 ? segments.peek() : null, index, segments.size + 1);
 	}
 
 	/** Creates a {@link Joint joint} using the {@link #builder} passing the correct parameters to {@link Builder#createJoint(Body, int, Body, int)} specified by the given {@code index}. Does NOT add it to this Rope.
@@ -273,10 +292,16 @@ public class Rope {
 		return builder.createJoint(seg1, segmentIndex1, seg2, segmentIndex2);
 	}
 
-	/** {@link #createSegment(int) creates} and {@link #add(Body) adds} a new segment to this Rope
-	 *  @return the {@link #createSegment(int) created} and {@link #add(Body) added} segment */
+	/** {@link #extend(Builder) extends} this Rope using the {@link #builder}
+	 *  @see #extend(Builder) */
 	public Body extend() {
-		Body segment = createSegment(segments.size);
+		return extend(builder);
+	}
+
+	/** {@link #createSegment(int, Builder) creates} and {@link #add(Body) adds} a new segment to this Rope
+	 *  @return the {@link #createSegment(int, Builder) created} and {@link #add(Body) added} segment */
+	public Body extend(Builder builder) {
+		Body segment = createSegment(segments.size, builder);
 		add(segment);
 		return segment;
 	}
@@ -287,6 +312,13 @@ public class Rope {
 		segments.add(segment);
 		if(segments.size > 1)
 			joints.add(createJoint(segments.size - 2 < 0 ? 0 : segments.size - 2, segments.size - 1));
+	}
+
+	/** {@link #add(Body) adds} the given segments to the end of this Rope
+	 *  @see #add(Body) */
+	public void addAll(Body... segments) {
+		for(Body segment : segments)
+			add(segment);
 	}
 
 	/** {@link #createSegment(int) creates} a new {@link Body segment} and {@link #insert(int, Body) inserts} it into this Rope
