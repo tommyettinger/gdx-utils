@@ -594,6 +594,7 @@ public class Box2DMapObjectParser {
 		return desiredName;
 	}
 
+	/** resets all fields to default values */
 	public void reset() {
 		aliases = new Aliases();
 		unitScale = 1;

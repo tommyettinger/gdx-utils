@@ -162,6 +162,16 @@ public class Autopilot {
 		move(body, interpolate, wake);
 	}
 
+	/** @see #navigate(Body, float, boolean, boolean) */
+	public void navigate(Body body, float delta, boolean wake) {
+		navigate(body, delta, false, wake);
+	}
+
+	/** @see #navigate(Body, float, boolean) */
+	public void navigate(Body body, float delta) {
+		navigate(body, delta, true);
+	}
+
 	/** @return the {@link #movementForce} */
 	public float getMovementForce() {
 		return movementForce;
