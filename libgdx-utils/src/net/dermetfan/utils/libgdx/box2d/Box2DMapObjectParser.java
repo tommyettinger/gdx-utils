@@ -246,10 +246,6 @@ public class Box2DMapObjectParser {
 	public Body createBody(World world, MapObject mapObject) {
 		MapProperties properties = mapObject.getProperties(), layerProperties = heritageLayer.getProperties();
 
-		String type = getProperty(properties, aliases.type, "");
-		if(!type.equals(aliases.body) && !type.equals(aliases.object))
-			throw new IllegalArgumentException(aliases.type + " of " + mapObject + " is  \"" + type + "\" instead of \"" + aliases.body + "\" or \"" + aliases.object + "\"");
-
 		BodyDef bodyDef = new BodyDef();
 		assignProperties(bodyDef, layerProperties);
 		assignProperties(bodyDef, properties);
@@ -263,39 +259,17 @@ public class Box2DMapObjectParser {
 		return body;
 	}
 
-	/** assigns the given {@link MapProperties properties} to the values of the given BodyDef
-	 *  @param bodyDef the {@link BodyDef} which values to set according to the given {@link MapProperties}
-	 *  @param properties the {@link MapProperties} to assign to the given {@link BodyDef} */
-	private void assignProperties(BodyDef bodyDef, MapProperties properties) {
-		bodyDef.type = getProperty(properties, aliases.bodyType, "").equals(aliases.staticBody) ? BodyType.StaticBody : getProperty(properties, aliases.bodyType, "").equals(aliases.dynamicBody) ? BodyType.DynamicBody : getProperty(properties, aliases.bodyType, "").equals(aliases.kinematicBody) ? BodyType.KinematicBody : bodyDef.type;
-		bodyDef.active = getProperty(properties, aliases.active, bodyDef.active);
-		bodyDef.allowSleep = getProperty(properties, aliases.allowSleep, bodyDef.allowSleep);
-		bodyDef.angle = getProperty(properties, aliases.angle, bodyDef.angle) * MathUtils.degRad;
-		bodyDef.angularDamping = getProperty(properties, aliases.angularDamping, bodyDef.angularDamping);
-		bodyDef.angularVelocity = getProperty(properties, aliases.angularVelocity, bodyDef.angularVelocity);
-		bodyDef.awake = getProperty(properties, aliases.awake, bodyDef.awake);
-		bodyDef.bullet = getProperty(properties, aliases.bullet, bodyDef.bullet);
-		bodyDef.fixedRotation = getProperty(properties, aliases.fixedRotation, bodyDef.fixedRotation);
-		bodyDef.gravityScale = getProperty(properties, aliases.gravityunitScale, bodyDef.gravityScale);
-		bodyDef.linearDamping = getProperty(properties, aliases.linearDamping, bodyDef.linearDamping);
-		bodyDef.linearVelocity.set(getProperty(properties, aliases.linearVelocityX, bodyDef.linearVelocity.x), getProperty(properties, aliases.linearVelocityY, bodyDef.linearVelocity.y));
-		bodyDef.position.set(getProperty(properties, aliases.x, bodyDef.position.x) * unitScale, getProperty(properties, aliases.y, bodyDef.position.y) * unitScale);
-	}
-
 	/** creates a {@link Fixture} from a {@link MapObject}
 	 *  @param mapObject the {@link MapObject} to parse
 	 *  @return the parsed {@link Fixture} */
 	public Fixture createFixture(MapObject mapObject) {
 		MapProperties properties = mapObject.getProperties(), layerProperties = heritageLayer.getProperties();
 
-		String type = getProperty(properties, aliases.type, "");
-
-		Body body = bodies.get(type.equals(aliases.object) ? mapObject.getName() : getProperty(properties, aliases.body, ""));
+		Body body = bodies.get(mapObject.getName());
+		if(body == null)
+			body = bodies.get(getProperty(properties, aliases.body, ""));
 		if(body == null)
 			throw new IllegalStateException("the body for the fixture " + mapObject.getName() + " does not exist");
-
-		if(!type.equals(aliases.fixture) && !type.equals(aliases.object))
-			throw new IllegalArgumentException(aliases.type + " of " + mapObject + " is  \"" + type + "\" instead of \"" + aliases.fixture + "\" or \"" + aliases.object + "\"");
 
 		FixtureDef fixtureDef = new FixtureDef();
 		Shape shape = null;
@@ -323,8 +297,9 @@ public class Box2DMapObjectParser {
 			Circle circle = new Circle(mapObjectCircle.x, mapObjectCircle.y, mapObjectCircle.radius);
 			circle.setPosition(circle.x * unitScale - body.getPosition().x, circle.y * unitScale - body.getPosition().y);
 			circle.radius *= unitScale;
-			((CircleShape) shape).setPosition(vec2_0.set(circle.x, circle.y));
-			((CircleShape) shape).setRadius(circle.radius);
+			CircleShape circleShape = (CircleShape) shape;
+			circleShape.setPosition(vec2_0.set(circle.x, circle.y));
+			circleShape.setRadius(circle.radius);
 		} else if(mapObject instanceof EllipseMapObject) {
 			Ellipse ellipse = ((EllipseMapObject) mapObject).getEllipse();
 
@@ -357,17 +332,6 @@ public class Box2DMapObjectParser {
 		fixtures.put(findAvailableName(mapObject.getName(), fixtures), fixture);
 
 		return fixture;
-	}
-
-	/** @see #assignProperties(BodyDef, MapProperties) */
-	private void assignProperties(FixtureDef fixtureDef, MapProperties properties) {
-		fixtureDef.density = getProperty(properties, aliases.density, fixtureDef.density);
-		fixtureDef.filter.categoryBits = getProperty(properties, aliases.categoryBits, fixtureDef.filter.categoryBits);
-		fixtureDef.filter.groupIndex = getProperty(properties, aliases.groupIndex, fixtureDef.filter.groupIndex);
-		fixtureDef.filter.maskBits = getProperty(properties, aliases.maskBits, fixtureDef.filter.maskBits);
-		fixtureDef.friction = getProperty(properties, aliases.friciton, fixtureDef.friction);
-		fixtureDef.isSensor = getProperty(properties, aliases.isSensor, fixtureDef.isSensor);
-		fixtureDef.restitution = getProperty(properties, aliases.restitution, fixtureDef.restitution);
 	}
 
 	/** creates {@link Fixture Fixtures} from a {@link MapObject}
@@ -415,12 +379,7 @@ public class Box2DMapObjectParser {
 
 		JointDef jointDef = null;
 
-		String type = getProperty(properties, aliases.type, "");
-		if(!type.equals(aliases.joint))
-			throw new IllegalArgumentException(aliases.type + " of " + mapObject + " is  \"" + type + "\" instead of \"" + aliases.joint + "\"");
-
 		String jointType = getProperty(properties, aliases.jointType, "");
-
 		if(jointType.equals(aliases.distanceJoint)) {
 			DistanceJointDef distanceJointDef = new DistanceJointDef();
 			assignProperties(distanceJointDef, layerProperties);
@@ -483,6 +442,36 @@ public class Box2DMapObjectParser {
 		joints.put(findAvailableName(mapObject.getName(), joints), joint);
 
 		return joint;
+	}
+
+	/** assigns the given {@link MapProperties properties} to the values of the given BodyDef
+	 *  @param bodyDef the {@link BodyDef} which values to set according to the given {@link MapProperties}
+	 *  @param properties the {@link MapProperties} to assign to the given {@link BodyDef} */
+	private void assignProperties(BodyDef bodyDef, MapProperties properties) {
+		bodyDef.type = getProperty(properties, aliases.bodyType, "").equals(aliases.staticBody) ? BodyType.StaticBody : getProperty(properties, aliases.bodyType, "").equals(aliases.dynamicBody) ? BodyType.DynamicBody : getProperty(properties, aliases.bodyType, "").equals(aliases.kinematicBody) ? BodyType.KinematicBody : bodyDef.type;
+		bodyDef.active = getProperty(properties, aliases.active, bodyDef.active);
+		bodyDef.allowSleep = getProperty(properties, aliases.allowSleep, bodyDef.allowSleep);
+		bodyDef.angle = getProperty(properties, aliases.angle, bodyDef.angle) * MathUtils.degRad;
+		bodyDef.angularDamping = getProperty(properties, aliases.angularDamping, bodyDef.angularDamping);
+		bodyDef.angularVelocity = getProperty(properties, aliases.angularVelocity, bodyDef.angularVelocity);
+		bodyDef.awake = getProperty(properties, aliases.awake, bodyDef.awake);
+		bodyDef.bullet = getProperty(properties, aliases.bullet, bodyDef.bullet);
+		bodyDef.fixedRotation = getProperty(properties, aliases.fixedRotation, bodyDef.fixedRotation);
+		bodyDef.gravityScale = getProperty(properties, aliases.gravityunitScale, bodyDef.gravityScale);
+		bodyDef.linearDamping = getProperty(properties, aliases.linearDamping, bodyDef.linearDamping);
+		bodyDef.linearVelocity.set(getProperty(properties, aliases.linearVelocityX, bodyDef.linearVelocity.x), getProperty(properties, aliases.linearVelocityY, bodyDef.linearVelocity.y));
+		bodyDef.position.set(getProperty(properties, aliases.x, bodyDef.position.x) * unitScale, getProperty(properties, aliases.y, bodyDef.position.y) * unitScale);
+	}
+
+	/** @see #assignProperties(BodyDef, MapProperties) */
+	private void assignProperties(FixtureDef fixtureDef, MapProperties properties) {
+		fixtureDef.density = getProperty(properties, aliases.density, fixtureDef.density);
+		fixtureDef.filter.categoryBits = getProperty(properties, aliases.categoryBits, fixtureDef.filter.categoryBits);
+		fixtureDef.filter.groupIndex = getProperty(properties, aliases.groupIndex, fixtureDef.filter.groupIndex);
+		fixtureDef.filter.maskBits = getProperty(properties, aliases.maskBits, fixtureDef.filter.maskBits);
+		fixtureDef.friction = getProperty(properties, aliases.friciton, fixtureDef.friction);
+		fixtureDef.isSensor = getProperty(properties, aliases.isSensor, fixtureDef.isSensor);
+		fixtureDef.restitution = getProperty(properties, aliases.restitution, fixtureDef.restitution);
 	}
 
 	/** @see #assignProperties(BodyDef, MapProperties) */
@@ -602,7 +591,7 @@ public class Box2DMapObjectParser {
 		bodies.clear();
 		fixtures.clear();
 		joints.clear();
-		heritageLayer = null;
+		heritageLayer = defaultHeritageLayer;
 	}
 
 	/** @return the {@link #unitScale} */
