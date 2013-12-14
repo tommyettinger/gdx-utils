@@ -208,19 +208,19 @@ public class Box2DMapObjectParser {
 			unitScale = getProperty(layer.getProperties(), aliases.unitScale, unitScale);
 
 		for(MapObject object : layer.getObjects())
-			if(getProperty(object.getProperties(), aliases.type, "").equals(aliases.object))
+			if(getProperty(object.getProperties(), aliases.type, "").equals(aliases.object) || getProperty(layer.getProperties(), aliases.type, "").equals(aliases.object))
 				createObject(world, object);
 
 		for(MapObject object : layer.getObjects())
-			if(getProperty(object.getProperties(), aliases.type, "").equals(aliases.body))
+			if(getProperty(object.getProperties(), aliases.type, "").equals(aliases.body) || getProperty(layer.getProperties(), aliases.type, "").equals(aliases.body))
 				createBody(world, object);
 
 		for(MapObject object : layer.getObjects())
-			if(getProperty(object.getProperties(), aliases.type, "").equals(aliases.fixture))
+			if(getProperty(object.getProperties(), aliases.type, "").equals(aliases.fixture) || getProperty(layer.getProperties(), aliases.type, "").equals(aliases.fixture))
 				createFixtures(object);
 
 		for(MapObject object : layer.getObjects())
-			if(getProperty(object.getProperties(), aliases.type, "").equals(aliases.joint))
+			if(getProperty(object.getProperties(), aliases.type, "").equals(aliases.joint) || getProperty(layer.getProperties(), aliases.type, "").equals(aliases.joint))
 				createJoint(object);
 
 		unitScale = oldUnitScale;
