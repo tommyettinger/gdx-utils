@@ -32,16 +32,19 @@ import com.badlogic.gdx.math.Vector3;
  *  @author dermetfan */
 public abstract class MapUtils {
 
-	/** Makes sure the return value is of the desired type. If the value of the property is not of the desired type, it will be parsed. 
+	/** Makes sure the return value is of the desired type (null-safe). If the value of the property is not of the desired type, it will be parsed. 
 	 *  @param properties the {@link MapProperties} to get the value from
 	 *  @param key the key of the property
 	 *  @param defaultValue the value to return in case the value was null or an empty String or couldn't be returned 
 	 *  @return the key's value as the type of defaultValue */
 	@SuppressWarnings("unchecked")
 	public static <T> T getProperty(MapProperties properties, String key, T defaultValue) {
+		if(properties == null || key == null || defaultValue == null)
+			return defaultValue;
+
 		Object value = properties.get(key);
 
-		if(value == null || defaultValue == null || value instanceof String && ((String) value).isEmpty())
+		if(value == null || value instanceof String && ((String) value).isEmpty())
 			return defaultValue;
 
 		if(defaultValue.getClass() == Boolean.class && !(value instanceof Boolean))
@@ -55,6 +58,9 @@ public abstract class MapUtils {
 
 		if(defaultValue.getClass() == Double.class && !(value instanceof Double))
 			return (T) Double.valueOf(value.toString());
+
+		if(defaultValue.getClass() == Long.class && !(value instanceof Long))
+			return (T) Long.valueOf(value.toString());
 
 		if(defaultValue.getClass() == Short.class && !(value instanceof Short))
 			return (T) Short.valueOf(value.toString());
