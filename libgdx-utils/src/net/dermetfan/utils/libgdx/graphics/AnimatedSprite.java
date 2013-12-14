@@ -18,8 +18,8 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Graphics;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Animation;
+import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.Sprite;
-import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 
 /** An {@link AnimatedSprite} holds an {@link Animation} and sets the {@link Texture} of its super type {@link Sprite} to the correct one according to the information in the {@link Animation}.<br/>
@@ -79,9 +79,9 @@ public class AnimatedSprite extends Sprite {
 		}
 	}
 
-	/** {@link Sprite#draw(SpriteBatch) Draws} this {@code AnimatedSprite}. If {@link #autoUpdate} is true, {@link #update()} will be called before drawing. */
+	/** {@link Sprite#draw(Batch) Draws} this {@code AnimatedSprite}. If {@link #autoUpdate} is true, {@link #update()} will be called before drawing. */
 	@Override
-	public void draw(SpriteBatch spriteBatch) {
+	public void draw(Batch spriteBatch) {
 		if(centerFrames && !keepSize) {
 			float x = getX(), y = getY(), width = getWidth(), height = getHeight(), originX = getOriginX(), originY = getOriginY();
 
