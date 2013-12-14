@@ -26,8 +26,8 @@ import java.util.Comparator;
 import net.dermetfan.utils.Accessor;
 
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.Sprite;
-import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.physics.box2d.Body;
@@ -98,7 +98,7 @@ public class Box2DSprite extends Sprite {
 	/** the {@link Accessor} used to get a {@link Box2DSprite} from the user data of a body or fixture */
 	private static Accessor<Box2DSprite, Object> userDataAccessor = defaultUserDataAccessor;
 
-	/** a {@link Comparator} used to sort {@link Box2DSprite Box2DSprites} by their {@link Box2DSprite#z z index} in {@link #draw(SpriteBatch, World)} */
+	/** a {@link Comparator} used to sort {@link Box2DSprite Box2DSprites} by their {@link Box2DSprite#z z index} in {@link #draw(Batch, World)} */
 	private static Comparator<Box2DSprite> zComparator = new Comparator<Box2DSprite>() {
 
 		@Override
@@ -108,22 +108,22 @@ public class Box2DSprite extends Sprite {
 
 	};
 
-	/** a temporary map to store the bodies / fixtures which user data Box2DSprites are in in {@link #draw(SpriteBatch, World, boolean)}*/
+	/** a temporary map to store the bodies / fixtures which user data Box2DSprites are in in {@link #draw(Batch, World, boolean)}*/
 	private static final ObjectMap<Box2DSprite, Object> tmpZMap = new ObjectMap<Box2DSprite, Object>(0);
 
-	/** temporary variable used in {@link #draw(SpriteBatch, World, boolean)} */
+	/** temporary variable used in {@link #draw(Batch, World, boolean)} */
 	private static final Array<Body> tmpBodies = new Array<Body>(0);
 
-	/** temporary variable used in {@link #draw(SpriteBatch, World, boolean)} */
+	/** temporary variable used in {@link #draw(Batch, World, boolean)} */
 	private static Box2DSprite tmpBox2DSprite;
 
-	/** @see #draw(SpriteBatch, World, boolean) */
-	public static void draw(SpriteBatch batch, World world) {
+	/** @see #draw(Batch, World, boolean) */
+	public static void draw(Batch batch, World world) {
 		draw(batch, world, false);
 	}
 
 	/** draws all the {@link Box2DSprite Box2DSprites} on the {@link Body} or {@link Fixture} that hold them in their user data in the given {@link World} */
-	public static void draw(SpriteBatch batch, World world, boolean sortByZ) {
+	public static void draw(Batch batch, World world, boolean sortByZ) {
 		world.getBodies(tmpBodies);
 
 		if(!sortByZ) {
@@ -160,7 +160,7 @@ public class Box2DSprite extends Sprite {
 	}
 
 	/** draws this {@link Box2DSprite} on the given {@link Fixture} */
-	public void draw(SpriteBatch batch, Fixture fixture) {
+	public void draw(Batch batch, Fixture fixture) {
 		batch.setColor(getColor());
 		float width = width(fixture), height = height(fixture);
 		vec2_0.set(position(fixture));
@@ -168,7 +168,7 @@ public class Box2DSprite extends Sprite {
 	}
 
 	/** draws this {@link Box2DSprite} on the given {@link Body} */
-	public void draw(SpriteBatch batch, Body body) {
+	public void draw(Batch batch, Body body) {
 		batch.setColor(getColor());
 		float width = width(body), height = height(body);
 		vec2_0.set(minX(body) + width / 2, minY(body) + height / 2);
@@ -177,7 +177,7 @@ public class Box2DSprite extends Sprite {
 	}
 
 	/** draws this {@code Box2DSprite} on the given area */
-	public void draw(SpriteBatch batch, float x, float y, float width, float height, float rotation) {
+	public void draw(Batch batch, float x, float y, float width, float height, float rotation) {
 		batch.draw(this, x - width / 2 + getX(), y - height / 2 + getY(), isUseOriginX() ? getOriginX() : width / 2, isUseOriginY() ? getOriginY() : height / 2, isAdjustWidth() ? width : getWidth(), isAdjustHeight() ? height : getHeight(), getScaleX(), getScaleY(), rotation * MathUtils.radiansToDegrees + getRotation());
 	}
 

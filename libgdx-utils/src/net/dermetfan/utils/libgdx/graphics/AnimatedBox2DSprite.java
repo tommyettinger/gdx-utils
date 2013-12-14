@@ -17,7 +17,7 @@ package net.dermetfan.utils.libgdx.graphics;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Graphics;
 import com.badlogic.gdx.graphics.g2d.Animation;
-import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.g2d.Batch;
 
 /** A {@link Box2DSprite} using an {@link AnimatedSprite} for animation.
  *  @author dermetfan */
@@ -35,7 +35,7 @@ public class AnimatedBox2DSprite extends Box2DSprite {
 
 	/** {@link #update() updates} before drawing if {@link #isAutoUpdate()} is true */
 	@Override
-	public void draw(SpriteBatch batch, float x, float y, float width, float height, float rotation) {
+	public void draw(Batch batch, float x, float y, float width, float height, float rotation) {
 		if(animatedSprite.isAutoUpdate())
 			update();
 		super.draw(batch, x, y, width, height, rotation);
