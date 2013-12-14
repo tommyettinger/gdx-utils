@@ -235,7 +235,7 @@ public class Box2DMapObjectParser {
 	 *  @see #createFixtures(MapObject) */
 	public Body createObject(World world, MapObject object) {
 		Body body = createBody(world, object);
-		createFixtures(object);
+		createFixtures(object, body);
 		return body;
 	}
 
@@ -261,19 +261,12 @@ public class Box2DMapObjectParser {
 
 	/** creates a {@link Fixture} from a {@link MapObject}
 	 *  @param mapObject the {@link MapObject} to parse
+	 *  @param body the {@link Body} to create the {@link Fixture Fixtures} on
 	 *  @return the parsed {@link Fixture} */
-	public Fixture createFixture(MapObject mapObject) {
+	public Fixture createFixture(MapObject mapObject, Body body) {
 		MapProperties properties = mapObject.getProperties(), layerProperties = heritageLayer.getProperties();
 
-		Body body = bodies.get(mapObject.getName());
-		if(body == null)
-			body = bodies.get(getProperty(properties, aliases.body, ""));
-		if(body == null)
-			throw new IllegalStateException("the body for the fixture " + mapObject.getName() + " does not exist");
-
-		FixtureDef fixtureDef = new FixtureDef();
 		Shape shape = null;
-
 		if(mapObject instanceof RectangleMapObject) {
 			shape = new PolygonShape();
 			Rectangle rectangle = ((RectangleMapObject) mapObject).getRectangle();
@@ -310,7 +303,7 @@ public class Box2DMapObjectParser {
 				circleMapObject.setColor(mapObject.getColor());
 				circleMapObject.setVisible(mapObject.isVisible());
 				circleMapObject.setOpacity(mapObject.getOpacity());
-				return createFixture(circleMapObject);
+				return createFixture(circleMapObject, body);
 			}
 
 			throw new IllegalArgumentException("Cannot parse " + mapObject.getName() + " because " + mapObject.getClass().getSimpleName() + "s that are not circles are not supported");
@@ -319,6 +312,7 @@ public class Box2DMapObjectParser {
 		else
 			assert false : mapObject + " is a not known subclass of " + MapObject.class.getName();
 
+		FixtureDef fixtureDef = new FixtureDef();
 		fixtureDef.shape = shape;
 		assignProperties(fixtureDef, layerProperties);
 		assignProperties(fixtureDef, properties);
@@ -336,12 +330,13 @@ public class Box2DMapObjectParser {
 
 	/** creates {@link Fixture Fixtures} from a {@link MapObject}
 	 *  @param mapObject the {@link MapObject} to parse
+	 *  @param body the {@link Body} to create the {@link Fixture Fixtures} on
 	 *  @return an array of parsed {@link Fixture Fixtures} */
-	public Fixture[] createFixtures(MapObject mapObject) {
+	public Fixture[] createFixtures(MapObject mapObject, Body body) {
 		Polygon polygon;
 
 		if(!(mapObject instanceof PolygonMapObject) || isConvex(polygon = ((PolygonMapObject) mapObject).getPolygon()))
-			return new Fixture[] {createFixture(mapObject)};
+			return new Fixture[] {createFixture(mapObject, body)};
 
 		Polygon[] convexPolygons;
 		if(triangulate) {
@@ -365,10 +360,32 @@ public class Box2DMapObjectParser {
 			convexObject.setOpacity(mapObject.getOpacity());
 			convexObject.setVisible(mapObject.isVisible());
 			convexObject.getProperties().putAll(mapObject.getProperties());
-			fixtures[i] = createFixture(convexObject);
+			fixtures[i] = createFixture(convexObject, body);
 		}
 
 		return fixtures;
+	}
+
+	/** {@link #createFixture(MapObject, Body) creates} the fixture from the given {@link MapObject} on the associated body in {@link #bodies}
+	 *  @see #createFixture(MapObject, Body) */
+	public Fixture createFixture(MapObject mapObject) {
+		return createFixture(mapObject, findBody(mapObject));
+	}
+
+	/** {@link #createFixtures(MapObject, Body) creates} the fixtures from the given {@link MapObject} on the associated body in {@link #bodies}
+	 *  @see #createFixtures(MapObject, Body) */
+	public Fixture[] createFixtures(MapObject mapObject) {
+		return createFixtures(mapObject, findBody(mapObject));
+	}
+
+	/** @return the body associated with the given {@link MapObject} */
+	private Body findBody(MapObject mapObject) {
+		Body body = bodies.get(mapObject.getName());
+		if(body == null)
+			body = bodies.get(getProperty(mapObject.getProperties(), aliases.body, ""));
+		if(body == null)
+			throw new IllegalStateException("the body for the fixture " + mapObject.getName() + " does not exist");
+		return body;
 	}
 
 	/** creates a {@link Joint} from a {@link MapObject}

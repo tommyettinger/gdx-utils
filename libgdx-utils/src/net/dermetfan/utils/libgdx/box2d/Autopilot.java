@@ -49,27 +49,6 @@ public class Autopilot {
 		return calculateForce(position, destination, force).scl(interpolation.apply(destination.dst(position) / distanceScalar));
 	}
 
-	/** applies the force from {@link #calculateForce(Vector2, Vector2, float)}
-	 *  @see #calculateForce(Vector2, Vector2, float, float, Interpolation)
-	 *  @see #move(Body, Vector2, Vector2, float, float, Interpolation, boolean) */
-	public static void move(Body body, Vector2 position, Vector2 destination, float force, boolean wake) {
-		body.applyForce(calculateForce(position, destination, force), position, wake);
-	}
-
-	/** applies the force of {@link #calculateForce(Vector2, Vector2, float, float, Interpolation)}
-	 *  @param body the body to move
-	 *  @param position the position of the body (in world coordinates) at which to apply the force
-	 *  @param destination the destination of the body
-	 *  @param force the force used to move the body
-	 *  @param distanceScalar the distance at which the force should be fully applied
-	 *  @param interpolation the interpolation  used to interpolate the given {@code force} based on the {@code distanceScalar}
-	 *  @param wake if the body should be woken up in case it is sleeping
-	 *  @see #move(Body, Vector2, Vector2, float, boolean)
-	 *  @see #calculateForce(Vector2, Vector2, float, float, Interpolation) */
-	public static void move(Body body, Vector2 position, Vector2 destination, float force, float distanceScalar, Interpolation interpolation, boolean wake) {
-		body.applyForce(calculateForce(position, destination, force, distanceScalar, interpolation), position, wake);
-	}
-
 	/** calculates the torque needed to repeatedly {@link Body#applyTorque(float, boolean) apply} to a body to make it rotate to a given point
 	 *  @param target the point to rotate the body to
 	 *  @param origin the point around which to rotate the body (in world coordinates)
@@ -86,14 +65,11 @@ public class Autopilot {
 		return inertia * (rotate / MathUtils.PI2 * force * delta) / delta;
 	}
 
-	/** @param wake if the body should be woken up if its sleeping
-	 *  @see #calculateTorque(Vector2, Vector2, float, float, float, float, float) */
-	public static void rotate(Body body, Vector2 target, float force, float delta, boolean wake) {
-		body.applyTorque(calculateTorque(body.getPosition(), target, body.getTransform().getRotation(), body.getAngularVelocity(), body.getInertia(), force, delta), wake);
-	}
-
 	/** the point to move and rotate to */
 	public final Vector2 destination = new Vector2();
+
+	/** the desired angle to {@link #destination} */
+	private float angle;
 
 	/** the force used for movement */
 	private float movementForce;
@@ -116,7 +92,7 @@ public class Autopilot {
 
 		@Override
 		public Vector2 access(Body body) {
-			return body.getPosition();
+			return body.getWorldCenter();
 		}
 
 	};
@@ -126,34 +102,68 @@ public class Autopilot {
 
 	/** sets {@link #movementForce} and {@link #rotationForce} to the given {@code force}
 	 *  @see #Autopilot(Vector2, float, float) */
-	public Autopilot(Vector2 destination, float forces) {
-		this(destination, forces, forces);
+	public Autopilot(Vector2 destination, float angle, float forces) {
+		this(destination, angle, forces, forces);
 	}
 
 	/** @see #Autopilot(Vector2, float, float, boolean) */
-	public Autopilot(Vector2 destination, float movementForce, float rotationForce) {
-		this(destination, movementForce, rotationForce, true);
+	public Autopilot(Vector2 destination, float angle, float movementForce, float rotationForce) {
+		this(destination, angle, movementForce, rotationForce, true);
 	}
 
 	/** The given {@code destination} will not be used directly. Instead {@link #destination} will be set to it. */
-	public Autopilot(Vector2 destination, float movementForce, float rotationForce, boolean adaptForceToMass) {
+	public Autopilot(Vector2 destination, float angle, float movementForce, float rotationForce, boolean adaptForceToMass) {
 		this.destination.set(destination);
+		this.angle = angle;
 		this.movementForce = movementForce;
 		this.rotationForce = rotationForce;
 		this.adaptForceToMass = adaptForceToMass;
 	}
 
+	/** applies the force from {@link #calculateForce(Vector2, Vector2, float)}
+	 *  @see #calculateForce(Vector2, Vector2, float, float, Interpolation)
+	 *  @see #move(Body, Vector2, Vector2, float, float, Interpolation, boolean) */
+	public void move(Body body, Vector2 destination, float force, boolean wake) {
+		Vector2 position = positionAccessor.access(body);
+		body.applyForce(calculateForce(position, destination, force).add(body.getWorld().getGravity().scl(-1).scl(body.getGravityScale())), position, wake);
+	}
+
+	/** applies the force of {@link #calculateForce(Vector2, Vector2, float, float, Interpolation)}
+	 *  @param body the body to move
+	 *  @param destination the destination of the body
+	 *  @param force the force used to move the body
+	 *  @param interpolation the interpolation  used to interpolate the given {@code force} based on the {@code distanceScalar}
+	 *  @param distanceScalar the distance at which the force should be fully applied
+	 *  @param wake if the body should be woken up in case it is sleeping
+	 *  @see #move(Body, Vector2, Vector2, float, boolean)
+	 *  @see #calculateForce(Vector2, Vector2, float, float, Interpolation) */
+	public void move(Body body, Vector2 destination, float force, Interpolation interpolation, float distanceScalar, boolean wake) {
+		Vector2 position = positionAccessor.access(body);
+		body.applyForce(calculateForce(position, destination, force, distanceScalar, interpolation).add(body.getWorld().getGravity().scl(-1).scl(body.getGravityScale())), position, wake);
+	}
+
 	/** {@link #move(Body, Vector2, Vector2, float, boolean) moves} the given {@code body} */
 	public void move(Body body, boolean interpolate, boolean wake) {
 		if(interpolate)
-			move(body, positionAccessor.access(body), destination, adaptForceToMass ? body.getMass() * movementForce : movementForce, distanceScalar, interpolation, wake);
+			move(body, destination, adaptForceToMass ? body.getMass() * movementForce : movementForce, interpolation, distanceScalar, wake);
 		else
-			move(body, positionAccessor.access(body), destination, adaptForceToMass ? body.getMass() * movementForce : movementForce, wake);
+			move(body, destination, adaptForceToMass ? body.getMass() * movementForce : movementForce, wake);
+	}
+
+	/** @param wake if the body should be woken up if its sleeping
+	 *  @see #calculateTorque(Vector2, Vector2, float, float, float, float, float) */
+	public void rotate(Body body, Vector2 origin, float angle, float force, float delta, boolean wake) {
+		body.applyTorque(calculateTorque(positionAccessor.access(body), origin, body.getTransform().getRotation() + angle, body.getAngularVelocity(), body.getInertia(), force, delta), wake);
 	}
 
 	/** {@link #rotate(Body, Vector2, float, float, boolean) rotates} the given {@code body} */
 	public void rotate(Body body, float delta, boolean wake) {
-		rotate(body, destination, adaptForceToMass ? body.getMass() * rotationForce : rotationForce, delta, wake);
+		rotate(body, destination, angle, adaptForceToMass ? body.getMass() * rotationForce : rotationForce, delta, wake);
+	}
+
+	/** {@link #rotate(Body, float, boolean) rotates} the body waking it up if it sleeps */
+	public void rotate(Body body, float delta) {
+		rotate(body, delta, true);
 	}
 
 	/** {@link #rotate(Body, float, boolean) rotates} and {@link #move(Body, boolean, boolean) moves} the given {@code body} */
@@ -170,6 +180,22 @@ public class Autopilot {
 	/** @see #navigate(Body, float, boolean) */
 	public void navigate(Body body, float delta) {
 		navigate(body, delta, true);
+	}
+
+	/** @param x the x coordinate to set {@link #destination} to
+	 *  @param y the y coordinate to set {@link #destination} to */
+	public void setDestination(float x, float y) {
+		destination.set(x, y);
+	}
+
+	/** @param destination the destination to set {@link #destination} to */
+	public void setDestination(Vector2 destination) {
+		this.destination.set(destination);
+	}
+
+	/** @return the {@link #destination} */
+	public Vector2 getDestination() {
+		return destination;
 	}
 
 	/** @return the {@link #movementForce} */
