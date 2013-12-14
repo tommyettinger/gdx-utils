@@ -116,8 +116,11 @@ public class Box2DMapObjectParser {
 	/** the parsed {@link Joint Joints} */
 	private ObjectMap<String, Joint> joints = new ObjectMap<String, Joint>();
 
+	/** an empty {@link #heritageLayer}, serving as null object */
+	private static final MapLayer defaultHeritageLayer = new MapLayer();
+
 	/** the {@link MapLayer} which properties {@link MapObject MapObjects} will inherit in {@link #createBody(World, MapObject)}, {@link #createFixture(MapObject)} and {@link #createJoint(MapObject)} */
-	private MapLayer heritageLayer;
+	private MapLayer heritageLayer = defaultHeritageLayer;
 
 	/** creates a new {@link Box2DMapObjectParser} with the default {@link Aliases} */
 	public Box2DMapObjectParser() {
@@ -694,7 +697,7 @@ public class Box2DMapObjectParser {
 
 	/** @param heritageLayer the {@link #heritageLayer} to set */
 	public void setHeritageLayer(MapLayer heritageLayer) {
-		this.heritageLayer = heritageLayer;
+		this.heritageLayer = heritageLayer != null ? heritageLayer : defaultHeritageLayer;
 	}
 
 }
