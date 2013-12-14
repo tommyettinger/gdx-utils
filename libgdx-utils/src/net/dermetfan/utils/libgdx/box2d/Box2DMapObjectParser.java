@@ -116,8 +116,8 @@ public class Box2DMapObjectParser {
 	/** the parsed {@link Joint Joints} */
 	private ObjectMap<String, Joint> joints = new ObjectMap<String, Joint>();
 
-	/** the current {@link MapLayer} used in {@link #load(World, MapLayer)} */
-	private MapLayer tmpLayer;
+	/** the {@link MapLayer} which properties {@link MapObject MapObjects} will inherit in {@link #createBody(World, MapObject)}, {@link #createFixture(MapObject)} and {@link #createJoint(MapObject)} */
+	private MapLayer heritageLayer;
 
 	/** creates a new {@link Box2DMapObjectParser} with the default {@link Aliases} */
 	public Box2DMapObjectParser() {
@@ -197,36 +197,31 @@ public class Box2DMapObjectParser {
 	 *  @param layer the {@link MapLayer} which {@link MapObjects} to create in the given {@link World}
 	 *  @return the given {@link World} with the parsed {@link MapObjects} of the given {@link MapLayer} created in it */
 	public World load(World world, MapLayer layer) {
-		tmpLayer = layer;
+		MapLayer oldHeritageLayer = heritageLayer;
+		heritageLayer = layer;
 
-		for(MapObject object : layer.getObjects()) {
-			if(!ignoreLayerUnitScale)
-				unitScale = getProperty(layer.getProperties(), aliases.unitScale, unitScale);
+		float oldUnitScale = unitScale;
+		if(!ignoreLayerUnitScale)
+			unitScale = getProperty(layer.getProperties(), aliases.unitScale, unitScale);
+
+		for(MapObject object : layer.getObjects())
 			if(getProperty(object.getProperties(), aliases.type, "").equals(aliases.object))
 				createObject(world, object);
-		}
 
-		for(MapObject object : layer.getObjects()) {
-			if(!ignoreLayerUnitScale)
-				unitScale = getProperty(layer.getProperties(), aliases.unitScale, unitScale);
+		for(MapObject object : layer.getObjects())
 			if(getProperty(object.getProperties(), aliases.type, "").equals(aliases.body))
 				createBody(world, object);
-		}
 
-		for(MapObject object : layer.getObjects()) {
-			if(!ignoreLayerUnitScale)
-				unitScale = getProperty(layer.getProperties(), aliases.unitScale, unitScale);
+		for(MapObject object : layer.getObjects())
 			if(getProperty(object.getProperties(), aliases.type, "").equals(aliases.fixture))
 				createFixtures(object);
-		}
 
-		for(MapObject object : layer.getObjects()) {
-			if(!ignoreLayerUnitScale)
-				unitScale = getProperty(layer.getProperties(), aliases.unitScale, unitScale);
+		for(MapObject object : layer.getObjects())
 			if(getProperty(object.getProperties(), aliases.type, "").equals(aliases.joint))
 				createJoint(object);
-		}
 
+		unitScale = oldUnitScale;
+		heritageLayer = oldHeritageLayer;
 		return world;
 	}
 
@@ -246,7 +241,7 @@ public class Box2DMapObjectParser {
 	 *  @param mapObject the {@link MapObject} to parse the {@link Body} from
 	 *  @return the {@link Body} created in the given {@link World} from the given {@link MapObject} */
 	public Body createBody(World world, MapObject mapObject) {
-		MapProperties properties = mapObject.getProperties(), layerProperties = tmpLayer.getProperties();
+		MapProperties properties = mapObject.getProperties(), layerProperties = heritageLayer.getProperties();
 
 		String type = getProperty(properties, aliases.type, "");
 		if(!type.equals(aliases.body) && !type.equals(aliases.object))
@@ -288,7 +283,7 @@ public class Box2DMapObjectParser {
 	 *  @param mapObject the {@link MapObject} to parse
 	 *  @return the parsed {@link Fixture} */
 	public Fixture createFixture(MapObject mapObject) {
-		MapProperties properties = mapObject.getProperties(), layerProperties = tmpLayer.getProperties();
+		MapProperties properties = mapObject.getProperties(), layerProperties = heritageLayer.getProperties();
 
 		String type = getProperty(properties, aliases.type, "");
 
@@ -413,7 +408,7 @@ public class Box2DMapObjectParser {
 	 *  @param mapObject the {@link Joint} to parse
 	 *  @return the parsed {@link Joint} */
 	public Joint createJoint(MapObject mapObject) {
-		MapProperties properties = mapObject.getProperties(), layerProperties = tmpLayer.getProperties();
+		MapProperties properties = mapObject.getProperties(), layerProperties = heritageLayer.getProperties();
 
 		JointDef jointDef = null;
 
@@ -604,7 +599,7 @@ public class Box2DMapObjectParser {
 		bodies.clear();
 		fixtures.clear();
 		joints.clear();
-		tmpLayer = null;
+		heritageLayer = null;
 	}
 
 	/** @return the {@link #unitScale} */
@@ -690,6 +685,16 @@ public class Box2DMapObjectParser {
 	/** @return the parsed {@link #joints} */
 	public ObjectMap<String, Joint> getJoints() {
 		return joints;
+	}
+
+	/** @return the {@link #heritageLayer} */
+	public MapLayer getHeritageLayer() {
+		return heritageLayer;
+	}
+
+	/** @param heritageLayer the {@link #heritageLayer} to set */
+	public void setHeritageLayer(MapLayer heritageLayer) {
+		this.heritageLayer = heritageLayer;
 	}
 
 }
