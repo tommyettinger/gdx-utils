@@ -187,6 +187,7 @@ public class Box2DMapObjectParser {
 	 *  @param map the {@link Map} which {@link MapObjects} to create in the given {@link World}
 	 *  @return the given {@link World} with the parsed {@link MapObjects} of the given {@link Map} created in it */
 	public World load(World world, Map map) {
+		MapProperties oldMapProperties = mapProperties;
 		mapProperties = map.getProperties();
 
 		if(!ignoreMapUnitScale)
@@ -197,6 +198,7 @@ public class Box2DMapObjectParser {
 		for(MapLayer mapLayer : map.getLayers())
 			load(world, mapLayer);
 
+		mapProperties = oldMapProperties;
 		return world;
 	}
 
@@ -205,28 +207,32 @@ public class Box2DMapObjectParser {
 	 *  @param layer the {@link MapLayer} which {@link MapObjects} to create in the given {@link World}
 	 *  @return the given {@link World} with the parsed {@link MapObjects} of the given {@link MapLayer} created in it */
 	public World load(World world, MapLayer layer) {
+		MapProperties oldLayerProperties = layerProperties;
 		layerProperties = layer.getProperties();
 
 		float oldUnitScale = unitScale;
 		if(!ignoreLayerUnitScale)
 			unitScale = getProperty(layer.getProperties(), aliases.unitScale, unitScale);
 
+		String mapType = getProperty(mapProperties, aliases.type, ""), heritageType = getProperty(heritage, aliases.type, "");
+
 		for(MapObject object : layer.getObjects())
-			if(getProperty(object.getProperties(), aliases.type, "").equals(aliases.object) || getProperty(layer.getProperties(), aliases.type, "").equals(aliases.object))
+			if(getProperty(object.getProperties(), aliases.type, "").equals(aliases.object) || getProperty(layer.getProperties(), aliases.type, "").equals(aliases.object) || mapType.equals(aliases.object) || heritageType.equals(aliases.object))
 				createObject(world, object);
 
 		for(MapObject object : layer.getObjects())
-			if(getProperty(object.getProperties(), aliases.type, "").equals(aliases.body) || getProperty(layer.getProperties(), aliases.type, "").equals(aliases.body))
+			if(getProperty(object.getProperties(), aliases.type, "").equals(aliases.body) || getProperty(layer.getProperties(), aliases.type, "").equals(aliases.body) || mapType.equals(aliases.object) || heritageType.equals(aliases.object))
 				createBody(world, object);
 
 		for(MapObject object : layer.getObjects())
-			if(getProperty(object.getProperties(), aliases.type, "").equals(aliases.fixture) || getProperty(layer.getProperties(), aliases.type, "").equals(aliases.fixture))
+			if(getProperty(object.getProperties(), aliases.type, "").equals(aliases.fixture) || getProperty(layer.getProperties(), aliases.type, "").equals(aliases.fixture) || mapType.equals(aliases.object) || heritageType.equals(aliases.object))
 				createFixtures(object);
 
 		for(MapObject object : layer.getObjects())
-			if(getProperty(object.getProperties(), aliases.type, "").equals(aliases.joint) || getProperty(layer.getProperties(), aliases.type, "").equals(aliases.joint))
+			if(getProperty(object.getProperties(), aliases.type, "").equals(aliases.joint) || getProperty(layer.getProperties(), aliases.type, "").equals(aliases.joint) || mapType.equals(aliases.object) || heritageType.equals(aliases.object))
 				createJoint(object);
 
+		layerProperties = oldLayerProperties;
 		unitScale = oldUnitScale;
 		return world;
 	}
