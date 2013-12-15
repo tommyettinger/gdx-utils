@@ -101,7 +101,7 @@ public class Box2DMapObjectParser {
 	/** if the {@link Aliases#unitScale unit scale} found in the layers should be ignored */
 	private boolean ignoreLayerUnitScale;
 
-	/** the dimensions of a tile, used to transform positions (ignore/set to 1 if the used map is not a tile map) */
+	/** the dimensions of a tile, used to transform positions (ignore/set to 1 if the map is not a tile map) */
 	private float tileWidth = 1, tileHeight = 1;
 
 	/** if concave polygons should be triangulated instead of being decomposed into convex polygons */
@@ -116,11 +116,14 @@ public class Box2DMapObjectParser {
 	/** the parsed {@link Joint Joints} */
 	private ObjectMap<String, Joint> joints = new ObjectMap<String, Joint>();
 
-	/** an empty {@link #heritageLayer}, serving as null object */
-	private static final MapLayer defaultHeritageLayer = new MapLayer();
-
 	/** the {@link MapLayer} which properties {@link MapObject MapObjects} will inherit in {@link #createBody(World, MapObject)}, {@link #createFixture(MapObject)} and {@link #createJoint(MapObject)} */
-	private MapLayer heritageLayer = defaultHeritageLayer;
+	private MapProperties heritage;
+
+	/** the {@link MapProperties} of the currently {@link #load(World, Map) loading} map */
+	private MapProperties mapProperties;
+
+	/** the {@link MapProperties} of the currently {@link #load(World, MapLayer) loading} layer */
+	private MapProperties layerProperties;
 
 	/** creates a new {@link Box2DMapObjectParser} with the default {@link Aliases} */
 	public Box2DMapObjectParser() {
@@ -184,10 +187,12 @@ public class Box2DMapObjectParser {
 	 *  @param map the {@link Map} which {@link MapObjects} to create in the given {@link World}
 	 *  @return the given {@link World} with the parsed {@link MapObjects} of the given {@link Map} created in it */
 	public World load(World world, Map map) {
+		mapProperties = map.getProperties();
+
 		if(!ignoreMapUnitScale)
-			unitScale = getProperty(map.getProperties(), aliases.unitScale, unitScale);
-		tileWidth = getProperty(map.getProperties(), aliases.tileWidth, tileWidth);
-		tileHeight = getProperty(map.getProperties(), aliases.tileHeight, tileHeight);
+			unitScale = getProperty(mapProperties, aliases.unitScale, unitScale);
+		tileWidth = getProperty(mapProperties, aliases.tileWidth, tileWidth);
+		tileHeight = getProperty(mapProperties, aliases.tileHeight, tileHeight);
 
 		for(MapLayer mapLayer : map.getLayers())
 			load(world, mapLayer);
@@ -200,8 +205,7 @@ public class Box2DMapObjectParser {
 	 *  @param layer the {@link MapLayer} which {@link MapObjects} to create in the given {@link World}
 	 *  @return the given {@link World} with the parsed {@link MapObjects} of the given {@link MapLayer} created in it */
 	public World load(World world, MapLayer layer) {
-		MapLayer oldHeritageLayer = heritageLayer;
-		heritageLayer = layer;
+		layerProperties = layer.getProperties();
 
 		float oldUnitScale = unitScale;
 		if(!ignoreLayerUnitScale)
@@ -224,7 +228,6 @@ public class Box2DMapObjectParser {
 				createJoint(object);
 
 		unitScale = oldUnitScale;
-		heritageLayer = oldHeritageLayer;
 		return world;
 	}
 
@@ -244,13 +247,17 @@ public class Box2DMapObjectParser {
 	 *  @param mapObject the {@link MapObject} to parse the {@link Body} from
 	 *  @return the {@link Body} created in the given {@link World} from the given {@link MapObject} */
 	public Body createBody(World world, MapObject mapObject) {
-		MapProperties properties = mapObject.getProperties(), layerProperties = heritageLayer.getProperties();
+		MapProperties properties = mapObject.getProperties();
 
 		BodyDef bodyDef = new BodyDef();
+		assignProperties(bodyDef, heritage);
+		assignProperties(bodyDef, mapProperties);
 		assignProperties(bodyDef, layerProperties);
 		assignProperties(bodyDef, properties);
 
 		Body body = world.createBody(bodyDef);
+		body.setUserData(getProperty(heritage, aliases.userData, body.getUserData()));
+		body.setUserData(getProperty(mapProperties, aliases.userData, body.getUserData()));
 		body.setUserData(getProperty(layerProperties, aliases.userData, body.getUserData()));
 		body.setUserData(getProperty(properties, aliases.userData, body.getUserData()));
 
@@ -264,7 +271,7 @@ public class Box2DMapObjectParser {
 	 *  @param body the {@link Body} to create the {@link Fixture Fixtures} on
 	 *  @return the parsed {@link Fixture} */
 	public Fixture createFixture(MapObject mapObject, Body body) {
-		MapProperties properties = mapObject.getProperties(), layerProperties = heritageLayer.getProperties();
+		MapProperties properties = mapObject.getProperties();
 
 		Shape shape = null;
 		if(mapObject instanceof RectangleMapObject) {
@@ -314,6 +321,8 @@ public class Box2DMapObjectParser {
 
 		FixtureDef fixtureDef = new FixtureDef();
 		fixtureDef.shape = shape;
+		assignProperties(fixtureDef, heritage);
+		assignProperties(fixtureDef, mapProperties);
 		assignProperties(fixtureDef, layerProperties);
 		assignProperties(fixtureDef, properties);
 
@@ -392,58 +401,78 @@ public class Box2DMapObjectParser {
 	 *  @param mapObject the {@link Joint} to parse
 	 *  @return the parsed {@link Joint} */
 	public Joint createJoint(MapObject mapObject) {
-		MapProperties properties = mapObject.getProperties(), layerProperties = heritageLayer.getProperties();
+		MapProperties properties = mapObject.getProperties();
 
 		JointDef jointDef = null;
 
 		String jointType = getProperty(properties, aliases.jointType, "");
 		if(jointType.equals(aliases.distanceJoint)) {
 			DistanceJointDef distanceJointDef = new DistanceJointDef();
+			assignProperties(distanceJointDef, heritage);
+			assignProperties(distanceJointDef, mapProperties);
 			assignProperties(distanceJointDef, layerProperties);
 			assignProperties(distanceJointDef, properties);
 			jointDef = distanceJointDef;
 		} else if(jointType.equals(aliases.frictionJoint)) {
 			FrictionJointDef frictionJointDef = new FrictionJointDef();
+			assignProperties(frictionJointDef, heritage);
+			assignProperties(frictionJointDef, mapProperties);
 			assignProperties(frictionJointDef, layerProperties);
 			assignProperties(frictionJointDef, properties);
 			jointDef = frictionJointDef;
 		} else if(jointType.equals(aliases.gearJoint)) {
 			GearJointDef gearJointDef = new GearJointDef();
+			assignProperties(gearJointDef, heritage);
+			assignProperties(gearJointDef, mapProperties);
 			assignProperties(gearJointDef, layerProperties);
 			assignProperties(gearJointDef, properties);
 			jointDef = gearJointDef;
 		} else if(jointType.equals(aliases.mouseJoint)) {
 			MouseJointDef mouseJointDef = new MouseJointDef();
+			assignProperties(mouseJointDef, heritage);
+			assignProperties(mouseJointDef, mapProperties);
 			assignProperties(mouseJointDef, layerProperties);
 			assignProperties(mouseJointDef, properties);
 			jointDef = mouseJointDef;
 		} else if(jointType.equals(aliases.prismaticJoint)) {
 			PrismaticJointDef prismaticJointDef = new PrismaticJointDef();
+			assignProperties(prismaticJointDef, heritage);
+			assignProperties(prismaticJointDef, mapProperties);
 			assignProperties(prismaticJointDef, layerProperties);
 			assignProperties(prismaticJointDef, properties);
 			jointDef = prismaticJointDef;
 		} else if(jointType.equals(aliases.pulleyJoint)) {
 			PulleyJointDef pulleyJointDef = new PulleyJointDef();
+			assignProperties(pulleyJointDef, heritage);
+			assignProperties(pulleyJointDef, mapProperties);
 			assignProperties(pulleyJointDef, layerProperties);
 			assignProperties(pulleyJointDef, properties);
 			jointDef = pulleyJointDef;
 		} else if(jointType.equals(aliases.revoluteJoint)) {
 			RevoluteJointDef revoluteJointDef = new RevoluteJointDef();
+			assignProperties(revoluteJointDef, heritage);
+			assignProperties(revoluteJointDef, mapProperties);
 			assignProperties(revoluteJointDef, layerProperties);
 			assignProperties(revoluteJointDef, properties);
 			jointDef = revoluteJointDef;
 		} else if(jointType.equals(aliases.ropeJoint)) {
 			RopeJointDef ropeJointDef = new RopeJointDef();
+			assignProperties(ropeJointDef, heritage);
+			assignProperties(ropeJointDef, mapProperties);
 			assignProperties(ropeJointDef, layerProperties);
 			assignProperties(ropeJointDef, properties);
 			jointDef = ropeJointDef;
 		} else if(jointType.equals(aliases.weldJoint)) {
 			WeldJointDef weldJointDef = new WeldJointDef();
+			assignProperties(weldJointDef, heritage);
+			assignProperties(weldJointDef, mapProperties);
 			assignProperties(weldJointDef, layerProperties);
 			assignProperties(weldJointDef, properties);
 			jointDef = weldJointDef;
 		} else if(jointType.equals(aliases.wheelJoint)) {
 			WheelJointDef wheelJointDef = new WheelJointDef();
+			assignProperties(wheelJointDef, heritage);
+			assignProperties(wheelJointDef, mapProperties);
 			assignProperties(wheelJointDef, layerProperties);
 			assignProperties(wheelJointDef, properties);
 			jointDef = wheelJointDef;
@@ -465,6 +494,8 @@ public class Box2DMapObjectParser {
 	 *  @param bodyDef the {@link BodyDef} which values to set according to the given {@link MapProperties}
 	 *  @param properties the {@link MapProperties} to assign to the given {@link BodyDef} */
 	private void assignProperties(BodyDef bodyDef, MapProperties properties) {
+		if(properties == null)
+			return;
 		bodyDef.type = getProperty(properties, aliases.bodyType, "").equals(aliases.staticBody) ? BodyType.StaticBody : getProperty(properties, aliases.bodyType, "").equals(aliases.dynamicBody) ? BodyType.DynamicBody : getProperty(properties, aliases.bodyType, "").equals(aliases.kinematicBody) ? BodyType.KinematicBody : bodyDef.type;
 		bodyDef.active = getProperty(properties, aliases.active, bodyDef.active);
 		bodyDef.allowSleep = getProperty(properties, aliases.allowSleep, bodyDef.allowSleep);
@@ -482,6 +513,8 @@ public class Box2DMapObjectParser {
 
 	/** @see #assignProperties(BodyDef, MapProperties) */
 	private void assignProperties(FixtureDef fixtureDef, MapProperties properties) {
+		if(properties == null)
+			return;
 		fixtureDef.density = getProperty(properties, aliases.density, fixtureDef.density);
 		fixtureDef.filter.categoryBits = getProperty(properties, aliases.categoryBits, fixtureDef.filter.categoryBits);
 		fixtureDef.filter.groupIndex = getProperty(properties, aliases.groupIndex, fixtureDef.filter.groupIndex);
@@ -493,6 +526,8 @@ public class Box2DMapObjectParser {
 
 	/** @see #assignProperties(BodyDef, MapProperties) */
 	private void assignProperties(DistanceJointDef distanceJointDef, MapProperties properties) {
+		if(properties == null)
+			return;
 		distanceJointDef.dampingRatio = getProperty(properties, aliases.dampingRatio, distanceJointDef.dampingRatio);
 		distanceJointDef.frequencyHz = getProperty(properties, aliases.frequencyHz, distanceJointDef.frequencyHz);
 		distanceJointDef.length = getProperty(properties, aliases.length, distanceJointDef.length) * (tileWidth + tileHeight) / 2 * unitScale;
@@ -502,6 +537,8 @@ public class Box2DMapObjectParser {
 
 	/** @see #assignProperties(BodyDef, MapProperties) */
 	private void assignProperties(FrictionJointDef frictionJointDef, MapProperties properties) {
+		if(properties == null)
+			return;
 		frictionJointDef.localAnchorA.set(getProperty(properties, aliases.localAnchorAX, frictionJointDef.localAnchorA.x) * tileWidth * unitScale, getProperty(properties, aliases.localAnchorAY, frictionJointDef.localAnchorA.y) * tileHeight * unitScale);
 		frictionJointDef.localAnchorB.set(getProperty(properties, aliases.localAnchorBX, frictionJointDef.localAnchorB.x) * tileWidth * unitScale, getProperty(properties, aliases.localAnchorBY, frictionJointDef.localAnchorB.y) * tileHeight * unitScale);
 		frictionJointDef.maxForce = getProperty(properties, aliases.maxForce, frictionJointDef.maxForce);
@@ -510,6 +547,8 @@ public class Box2DMapObjectParser {
 
 	/** @see #assignProperties(BodyDef, MapProperties) */
 	private void assignProperties(GearJointDef gearJointDef, MapProperties properties) {
+		if(properties == null)
+			return;
 		gearJointDef.joint1 = joints.get(getProperty(properties, aliases.joint1, ""));
 		gearJointDef.joint2 = joints.get(getProperty(properties, aliases.joint2, ""));
 		gearJointDef.ratio = getProperty(properties, aliases.ratio, gearJointDef.ratio);
@@ -517,6 +556,8 @@ public class Box2DMapObjectParser {
 
 	/** @see #assignProperties(BodyDef, MapProperties) */
 	private void assignProperties(MouseJointDef mouseJointDef, MapProperties properties) {
+		if(properties == null)
+			return;
 		mouseJointDef.dampingRatio = getProperty(properties, aliases.dampingRatio, mouseJointDef.dampingRatio);
 		mouseJointDef.frequencyHz = getProperty(properties, aliases.frequencyHz, mouseJointDef.frequencyHz);
 		mouseJointDef.maxForce = getProperty(properties, aliases.maxForce, mouseJointDef.maxForce);
@@ -525,6 +566,8 @@ public class Box2DMapObjectParser {
 
 	/** @see #assignProperties(BodyDef, MapProperties) */
 	private void assignProperties(PrismaticJointDef prismaticJointDef, MapProperties properties) {
+		if(properties == null)
+			return;
 		prismaticJointDef.enableLimit = getProperty(properties, aliases.enableLimit, prismaticJointDef.enableLimit);
 		prismaticJointDef.enableMotor = getProperty(properties, aliases.enableMotor, prismaticJointDef.enableMotor);
 		prismaticJointDef.localAnchorA.set(getProperty(properties, aliases.localAnchorAX, prismaticJointDef.localAnchorA.x) * tileWidth * unitScale, getProperty(properties, aliases.localAnchorAY, prismaticJointDef.localAnchorA.y) * tileHeight * unitScale);
@@ -539,6 +582,8 @@ public class Box2DMapObjectParser {
 
 	/** @see #assignProperties(BodyDef, MapProperties) */
 	private void assignProperties(PulleyJointDef pulleyJointDef, MapProperties properties) {
+		if(properties == null)
+			return;
 		pulleyJointDef.groundAnchorA.set(getProperty(properties, aliases.groundAnchorAX, pulleyJointDef.groundAnchorA.x) * tileWidth * unitScale, getProperty(properties, aliases.groundAnchorAY, pulleyJointDef.groundAnchorA.y) * tileHeight * unitScale);
 		pulleyJointDef.groundAnchorB.set(getProperty(properties, aliases.groundAnchorBX, pulleyJointDef.groundAnchorB.x) * tileWidth * unitScale, getProperty(properties, aliases.groundAnchorBY, pulleyJointDef.groundAnchorB.y) * tileHeight * unitScale);
 		pulleyJointDef.lengthA = getProperty(properties, aliases.lengthA, pulleyJointDef.lengthA) * (tileWidth + tileHeight) / 2 * unitScale;
@@ -550,6 +595,8 @@ public class Box2DMapObjectParser {
 
 	/** @see #assignProperties(BodyDef, MapProperties) */
 	private void assignProperties(RevoluteJointDef revoluteJointDef, MapProperties properties) {
+		if(properties == null)
+			return;
 		revoluteJointDef.enableLimit = getProperty(properties, aliases.enableLimit, revoluteJointDef.enableLimit);
 		revoluteJointDef.enableMotor = getProperty(properties, aliases.enableMotor, revoluteJointDef.enableMotor);
 		revoluteJointDef.localAnchorA.set(getProperty(properties, aliases.localAnchorAX, revoluteJointDef.localAnchorA.x) * tileWidth * unitScale, getProperty(properties, aliases.localAnchorAY, revoluteJointDef.localAnchorA.y) * tileHeight * unitScale);
@@ -563,6 +610,8 @@ public class Box2DMapObjectParser {
 
 	/** @see #assignProperties(BodyDef, MapProperties) */
 	private void assignProperties(RopeJointDef ropeJointDef, MapProperties properties) {
+		if(properties == null)
+			return;
 		ropeJointDef.localAnchorA.set(getProperty(properties, aliases.localAnchorAX, ropeJointDef.localAnchorA.x) * tileWidth * unitScale, getProperty(properties, aliases.localAnchorAY, ropeJointDef.localAnchorA.y) * tileHeight * unitScale);
 		ropeJointDef.localAnchorB.set(getProperty(properties, aliases.localAnchorBX, ropeJointDef.localAnchorB.x) * tileWidth * unitScale, getProperty(properties, aliases.localAnchorBY, ropeJointDef.localAnchorB.y) * tileHeight * unitScale);
 		ropeJointDef.maxLength = getProperty(properties, aliases.maxLength, ropeJointDef.maxLength) * (tileWidth + tileHeight) / 2 * unitScale;
@@ -570,6 +619,8 @@ public class Box2DMapObjectParser {
 
 	/** @see #assignProperties(BodyDef, MapProperties) */
 	private void assignProperties(WeldJointDef weldJointDef, MapProperties properties) {
+		if(properties == null)
+			return;
 		weldJointDef.localAnchorA.set(getProperty(properties, aliases.localAnchorAX, weldJointDef.localAnchorA.x) * tileWidth * unitScale, getProperty(properties, aliases.localAnchorAY, weldJointDef.localAnchorA.y) * tileHeight * unitScale);
 		weldJointDef.localAnchorB.set(getProperty(properties, aliases.localAnchorBX, weldJointDef.localAnchorB.x) * tileWidth * unitScale, getProperty(properties, aliases.localAnchorBY, weldJointDef.localAnchorB.y) * tileHeight * unitScale);
 		weldJointDef.referenceAngle = getProperty(properties, aliases.referenceAngle, weldJointDef.referenceAngle) * MathUtils.degRad;
@@ -577,6 +628,8 @@ public class Box2DMapObjectParser {
 
 	/** @see #assignProperties(BodyDef, MapProperties) */
 	private void assignProperties(WheelJointDef wheelJointDef, MapProperties properties) {
+		if(properties == null)
+			return;
 		wheelJointDef.dampingRatio = getProperty(properties, aliases.dampingRatio, wheelJointDef.dampingRatio);
 		wheelJointDef.enableMotor = getProperty(properties, aliases.enableMotor, wheelJointDef.enableMotor);
 		wheelJointDef.frequencyHz = getProperty(properties, aliases.frequencyHz, wheelJointDef.frequencyHz);
@@ -598,7 +651,7 @@ public class Box2DMapObjectParser {
 		return desiredName;
 	}
 
-	/** resets all fields to default values */
+	/** resets all fields to their default values */
 	public void reset() {
 		aliases = new Aliases();
 		unitScale = 1;
@@ -608,7 +661,9 @@ public class Box2DMapObjectParser {
 		bodies.clear();
 		fixtures.clear();
 		joints.clear();
-		heritageLayer = defaultHeritageLayer;
+		heritage = null;
+		mapProperties = null;
+		layerProperties = null;
 	}
 
 	/** @return the {@link #unitScale} */
@@ -696,14 +751,14 @@ public class Box2DMapObjectParser {
 		return joints;
 	}
 
-	/** @return the {@link #heritageLayer} */
-	public MapLayer getHeritageLayer() {
-		return heritageLayer;
+	/** @return the {@link #heritage} */
+	public MapProperties getHeritage() {
+		return heritage;
 	}
 
-	/** @param heritageLayer the {@link #heritageLayer} to set */
-	public void setHeritageLayer(MapLayer heritageLayer) {
-		this.heritageLayer = heritageLayer != null ? heritageLayer : defaultHeritageLayer;
+	/** @param heritage the {@link #heritage} to set */
+	public void setHeritage(MapProperties heritage) {
+		this.heritage = heritage;
 	}
 
 }
