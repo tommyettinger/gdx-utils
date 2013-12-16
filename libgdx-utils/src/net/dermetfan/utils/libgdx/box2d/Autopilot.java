@@ -129,7 +129,7 @@ public class Autopilot {
 	 *  @see #move(Body, Vector2, Vector2, float, float, Interpolation, boolean) */
 	public void move(Body body, Vector2 destination, Vector2 force, boolean wake) {
 		Vector2 position = positionAccessor.access(body);
-		body.applyForce(calculateForce(moveRelative ? destination : vec2_0.set(destination).sub(position), force), position, wake);
+		body.applyForce(calculateForce(moveRelative ? destination : vec2_0.set(destination).sub(position), adaptForceToMass ? vec2_1.set(force).scl(body.getMass()) : force), position, wake);
 	}
 
 	/** applies the force of {@link #calculateForce(Vector2, Vector2, float, float, Interpolation)}
@@ -143,26 +143,26 @@ public class Autopilot {
 	 *  @see #calculateForce(Vector2, Vector2, float, Interpolation) */
 	public void move(Body body, Vector2 destination, Vector2 force, Interpolation interpolation, float distanceScalar, boolean wake) {
 		Vector2 position = positionAccessor.access(body);
-		body.applyForce(calculateForce(moveRelative ? destination : vec2_0.set(destination).sub(position), force, distanceScalar, interpolation), position, wake);
+		body.applyForce(calculateForce(moveRelative ? destination : vec2_0.set(destination).sub(position), adaptForceToMass ? vec2_1.set(force).scl(body.getMass()) : force, distanceScalar, interpolation), position, wake);
 	}
 
 	/** {@link #move(Body, Vector2, Vector2, float, boolean) moves} the given {@code body} */
 	public void move(Body body, boolean interpolate, boolean wake) {
 		if(interpolate)
-			move(body, destination, adaptForceToMass ? vec2_1.set(movementForce).scl(body.getMass()) : movementForce, interpolation, distanceScalar, wake);
+			move(body, destination, movementForce, interpolation, distanceScalar, wake);
 		else
-			move(body, destination, adaptForceToMass ? vec2_1.set(movementForce).scl(body.getMass()) : movementForce, wake);
+			move(body, destination, movementForce, wake);
 	}
 
 	/** @param wake if the body should be woken up if its sleeping
 	 *  @see #calculateTorque(Vector2, float, float, float, float, float) */
 	public void rotate(Body body, Vector2 target, float angle, float force, float delta, boolean wake) {
-		body.applyTorque(calculateTorque(rotateRelative ? target : vec2_0.set(positionAccessor.access(body)).sub(target), body.getTransform().getRotation() + angle, body.getAngularVelocity(), body.getInertia(), force, delta), wake);
+		body.applyTorque(calculateTorque(rotateRelative ? target : vec2_0.set(positionAccessor.access(body)).sub(target), body.getTransform().getRotation() + angle, body.getAngularVelocity(), body.getInertia(), adaptForceToMass ? force * body.getMass() : force, delta), wake);
 	}
 
 	/** {@link #rotate(Body, Vector2, float, float, boolean) rotates} the given {@code body} */
 	public void rotate(Body body, float delta, boolean wake) {
-		rotate(body, destination, angle, adaptForceToMass ? body.getMass() * rotationForce : rotationForce, delta, wake);
+		rotate(body, destination, angle, rotationForce, delta, wake);
 	}
 
 	/** {@link #rotate(Body, float, boolean) rotates} the body waking it up if it sleeps */
