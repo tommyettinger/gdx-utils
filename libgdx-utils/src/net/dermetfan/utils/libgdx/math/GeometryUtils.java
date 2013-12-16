@@ -34,7 +34,7 @@ import com.badlogic.gdx.utils.ShortArray;
 public abstract class GeometryUtils {
 
 	/** a {@link Vector2} for temporary usage */
-	public static final Vector2 vec2_0 = new Vector2(), vec2_1 = new Vector2();
+	private static final Vector2 vec2_0 = new Vector2(), vec2_1 = new Vector2();
 
 	/** a temporary array */
 	private static Vector2[] tmpVecArr;

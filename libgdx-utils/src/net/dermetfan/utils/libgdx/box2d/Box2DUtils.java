@@ -17,8 +17,6 @@ package net.dermetfan.utils.libgdx.box2d;
 import static net.dermetfan.utils.libgdx.math.GeometryUtils.filterX;
 import static net.dermetfan.utils.libgdx.math.GeometryUtils.filterY;
 import static net.dermetfan.utils.libgdx.math.GeometryUtils.rotate;
-import static net.dermetfan.utils.libgdx.math.GeometryUtils.vec2_0;
-import static net.dermetfan.utils.libgdx.math.GeometryUtils.vec2_1;
 import static net.dermetfan.utils.math.MathUtils.amplitude;
 import static net.dermetfan.utils.math.MathUtils.max;
 import static net.dermetfan.utils.math.MathUtils.min;
@@ -71,7 +69,10 @@ public abstract class Box2DUtils {
 
 	/** temporary {@link Vector2} array used by some methods
 	 *  warning: not safe to use as it may change unexpectedly */
-	public static Vector2[] tmpVecArr;
+	private static Vector2[] tmpVecArr;
+
+	/** for internal, temporary usage */
+	private static final Vector2 vec2_0 = new Vector2(), vec2_1 = new Vector2();
 
 	/** @return the vertices of all fixtures of the given body
 	 *  @see #vertices(Shape) */
