@@ -19,7 +19,6 @@ import static net.dermetfan.utils.libgdx.box2d.Box2DUtils.minX;
 import static net.dermetfan.utils.libgdx.box2d.Box2DUtils.minY;
 import static net.dermetfan.utils.libgdx.box2d.Box2DUtils.position;
 import static net.dermetfan.utils.libgdx.box2d.Box2DUtils.width;
-import static net.dermetfan.utils.libgdx.math.GeometryUtils.vec2_0;
 
 import java.util.Comparator;
 
@@ -30,6 +29,7 @@ import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.MathUtils;
+import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.Fixture;
 import com.badlogic.gdx.physics.box2d.World;
@@ -49,6 +49,9 @@ public class Box2DSprite extends Sprite {
 
 	/** if the origin of this {@link Box2DSprite} should be used when it's drawn (false by default) */
 	private boolean useOriginX, useOriginY;
+
+	/** for internal, temporary usage */
+	private static final Vector2 vec2 = new Vector2();
 
 	/** @see Sprite#Sprite() */
 	public Box2DSprite() {
@@ -163,17 +166,17 @@ public class Box2DSprite extends Sprite {
 	public void draw(Batch batch, Fixture fixture) {
 		batch.setColor(getColor());
 		float width = width(fixture), height = height(fixture);
-		vec2_0.set(position(fixture));
-		draw(batch, vec2_0.x, vec2_0.y, width, height, fixture.getBody().getAngle());
+		vec2.set(position(fixture));
+		draw(batch, vec2.x, vec2.y, width, height, fixture.getBody().getAngle());
 	}
 
 	/** draws this {@link Box2DSprite} on the given {@link Body} */
 	public void draw(Batch batch, Body body) {
 		batch.setColor(getColor());
 		float width = width(body), height = height(body);
-		vec2_0.set(minX(body) + width / 2, minY(body) + height / 2);
-		vec2_0.set(body.getWorldPoint(vec2_0));
-		draw(batch, vec2_0.x, vec2_0.y, width, height, body.getAngle());
+		vec2.set(minX(body) + width / 2, minY(body) + height / 2);
+		vec2.set(body.getWorldPoint(vec2));
+		draw(batch, vec2.x, vec2.y, width, height, body.getAngle());
 	}
 
 	/** draws this {@code Box2DSprite} on the given area */

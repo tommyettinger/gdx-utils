@@ -20,6 +20,7 @@ public class MathUtils {
 	/** normalizes a value in a given range using the range as step
 	 *  @see #normalize(float, float, float) */
 	public static float normalize(float value, float range) {
+		// if((value = Math.abs(Math.min(value, max) - Math.max(value, max))) > max) value = normalize(value, max);
 		return normalize(value, range, range);
 	}
 

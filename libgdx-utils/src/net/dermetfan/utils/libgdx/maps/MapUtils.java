@@ -14,8 +14,6 @@
 
 package net.dermetfan.utils.libgdx.maps;
 
-import static net.dermetfan.utils.libgdx.math.GeometryUtils.vec2_0;
-
 import java.util.Iterator;
 
 import com.badlogic.gdx.maps.Map;
@@ -32,6 +30,9 @@ import com.badlogic.gdx.math.Vector3;
  *  @author dermetfan */
 public abstract class MapUtils {
 
+	/** for internal, temporary usage */
+	private static final Vector2 vec2 = new Vector2();
+
 	/** Makes sure the return value is of the desired type (null-safe). If the value of the property is not of the desired type, it will be parsed. 
 	 *  @param properties the {@link MapProperties} to get the value from
 	 *  @param key the key of the property
@@ -39,7 +40,7 @@ public abstract class MapUtils {
 	 *  @return the key's value as the type of defaultValue */
 	@SuppressWarnings("unchecked")
 	public static <T> T getProperty(MapProperties properties, String key, T defaultValue) {
-		if(properties == null || key == null || defaultValue == null)
+		if(properties == null || key == null)
 			return defaultValue;
 
 		Object value = properties.get(key);
@@ -47,26 +48,28 @@ public abstract class MapUtils {
 		if(value == null || value instanceof String && ((String) value).isEmpty())
 			return defaultValue;
 
-		if(defaultValue.getClass() == Boolean.class && !(value instanceof Boolean))
-			return (T) Boolean.valueOf(value.toString());
+		if(defaultValue != null) {
+			if(defaultValue.getClass() == Boolean.class && !(value instanceof Boolean))
+				return (T) Boolean.valueOf(value.toString());
 
-		if(defaultValue.getClass() == Integer.class && !(value instanceof Integer))
-			return (T) Integer.valueOf(value.toString());
+			if(defaultValue.getClass() == Integer.class && !(value instanceof Integer))
+				return (T) Integer.valueOf(value.toString());
 
-		if(defaultValue.getClass() == Float.class && !(value instanceof Float))
-			return (T) Float.valueOf(value.toString());
+			if(defaultValue.getClass() == Float.class && !(value instanceof Float))
+				return (T) Float.valueOf(value.toString());
 
-		if(defaultValue.getClass() == Double.class && !(value instanceof Double))
-			return (T) Double.valueOf(value.toString());
+			if(defaultValue.getClass() == Double.class && !(value instanceof Double))
+				return (T) Double.valueOf(value.toString());
 
-		if(defaultValue.getClass() == Long.class && !(value instanceof Long))
-			return (T) Long.valueOf(value.toString());
+			if(defaultValue.getClass() == Long.class && !(value instanceof Long))
+				return (T) Long.valueOf(value.toString());
 
-		if(defaultValue.getClass() == Short.class && !(value instanceof Short))
-			return (T) Short.valueOf(value.toString());
+			if(defaultValue.getClass() == Short.class && !(value instanceof Short))
+				return (T) Short.valueOf(value.toString());
 
-		if(defaultValue.getClass() == Byte.class && !(value instanceof Byte))
-			return (T) Byte.valueOf(value.toString());
+			if(defaultValue.getClass() == Byte.class && !(value instanceof Byte))
+				return (T) Byte.valueOf(value.toString());
+		}
 
 		return (T) value;
 	}
@@ -84,7 +87,8 @@ public abstract class MapUtils {
 			hierarchy += "\t" + layer.getName() + " (" + layer.getClass().getSimpleName() + "):\n";
 			layerHierarchy = readableHierarchy(layer).replace("\n", "\n\t\t");
 			layerHierarchy = layerHierarchy.endsWith("\n\t\t") ? layerHierarchy.substring(0, layerHierarchy.lastIndexOf("\n\t\t")) : layerHierarchy;
-			hierarchy += !layerHierarchy.equals("") ? "\t\t" + layerHierarchy : layerHierarchy;
+			layerHierarchy += "\n";
+			hierarchy += !layerHierarchy.isEmpty() ? "\t\t" + layerHierarchy : layerHierarchy;
 		}
 
 		return hierarchy;
@@ -129,7 +133,7 @@ public abstract class MapUtils {
 
 	/** @see #toIsometricGridPoint(Vector2, float, float) */
 	public static Vector2 toIsometricGridPoint(float x, float y, float cellWidth, float cellHeight) {
-		return toIsometricGridPoint(vec2_0.set(x, y), cellWidth, cellHeight);
+		return toIsometricGridPoint(vec2.set(x, y), cellWidth, cellHeight);
 	}
 
 	/** @see #toIsometricGridPoint(Vector2, float, float) */

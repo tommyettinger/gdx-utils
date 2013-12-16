@@ -14,9 +14,6 @@
 
 package net.dermetfan.utils.libgdx.box2d;
 
-import static net.dermetfan.utils.libgdx.math.GeometryUtils.vec2_0;
-import static net.dermetfan.utils.libgdx.math.GeometryUtils.vec2_1;
-
 import com.badlogic.gdx.InputAdapter;
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.math.Vector2;
@@ -173,8 +170,11 @@ public class MouseJointAdapter extends InputAdapter {
 	/** the managed {@link MouseJoint} */
 	private MouseJoint joint;
 
-	/** a temporary variable */
-	private final Vector3 tmp = new Vector3();
+	/** for internal, temporary usage */
+	private final Vector3 vec3 = new Vector3();
+
+	/** for internal, temporary usage */
+	private static final Vector2 vec2_0 = new Vector2(), vec2_1 = new Vector2();
 
 	/** called by {@link #touchDown(int, int, int, int)}, instantiates {@link #joint} if {@link Listener#touched(Fixture, Vector2) touched} of {@link #listener} returns <code>true</code> */
 	private final QueryCallback queryCallback = new QueryCallback() {
@@ -229,8 +229,8 @@ public class MouseJointAdapter extends InputAdapter {
 		if(joint != null || !reactsToPointer(pointer))
 			return false;
 
-		camera.unproject(tmp.set(screenX, screenY, 0));
-		vec2_0.set(tmp.x, tmp.y);
+		camera.unproject(vec3.set(screenX, screenY, 0));
+		vec2_0.set(vec3.x, vec3.y);
 		jointDef.bodyA.getWorld().QueryAABB(queryCallback, vec2_0.x, vec2_0.y, vec2_0.x, vec2_0.y);
 		return true;
 	}
@@ -241,9 +241,9 @@ public class MouseJointAdapter extends InputAdapter {
 		if(joint == null || !reactsToPointer(pointer))
 			return false;
 
-		camera.unproject(tmp.set(screenX, screenY, 0));
-		if(!listener.dragged(joint, vec2_1.set(vec2_0), vec2_0.set(tmp.x, tmp.y)))
-			joint.setTarget(vec2_0.set(tmp.x, tmp.y));
+		camera.unproject(vec3.set(screenX, screenY, 0));
+		if(!listener.dragged(joint, vec2_1.set(vec2_0), vec2_0.set(vec3.x, vec3.y)))
+			joint.setTarget(vec2_0.set(vec3.x, vec3.y));
 
 		return true;
 	}
@@ -262,8 +262,8 @@ public class MouseJointAdapter extends InputAdapter {
 		if(joint == null || !reactsToPointer(pointer))
 			return false;
 
-		camera.unproject(tmp.set(screenX, screenY, 0));
-		if(!listener.released(joint, vec2_0.set(tmp.x, tmp.y))) {
+		camera.unproject(vec3.set(screenX, screenY, 0));
+		if(!listener.released(joint, vec2_0.set(vec3.x, vec3.y))) {
 			jointDef.bodyA.getWorld().destroyJoint(joint);
 			joint = null;
 			return true;

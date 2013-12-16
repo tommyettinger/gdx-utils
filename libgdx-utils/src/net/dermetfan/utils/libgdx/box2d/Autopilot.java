@@ -14,8 +14,6 @@
 
 package net.dermetfan.utils.libgdx.box2d;
 
-import static net.dermetfan.utils.libgdx.math.GeometryUtils.vec2_0;
-import static net.dermetfan.utils.libgdx.math.GeometryUtils.vec2_1;
 import static net.dermetfan.utils.math.MathUtils.normalize;
 import net.dermetfan.utils.Accessor;
 
@@ -28,14 +26,16 @@ import com.badlogic.gdx.physics.box2d.Body;
  *  @author dermetfan */
 public class Autopilot {
 
+	/** for internal, temporary usage */
+	private static final Vector2 vec2_0 = new Vector2(), vec2_1 = new Vector2();
+
 	/** calculates the force to continuously {@link Body#applyForce(Vector2, Vector2, boolean) apply} to reach the given destination
-	 *  @param position the position at which to apply the force
-	 *  @param destination the destination
+	 *  @param destination the relative position of the destination
 	 *  @param force the force to apply
 	 *  @return the force to {@link Body#applyForce(Vector2, Vector2, boolean) apply} to navigate to the given {@code destination}
 	 *  {@link #calculateForce(Vector2, Vector2, float, float, Interpolation)} */
-	public static Vector2 calculateForce(Vector2 position, Vector2 destination, Vector2 force) {
-		return vec2_0.set(destination).sub(position).scl(force);
+	public static Vector2 calculateForce(Vector2 destination, Vector2 force) {
+		return vec2_0.set(destination).nor().scl(force);
 	}
 
 	/** calculates the force to continuously {@link Body#applyForce(Vector2, Vector2, boolean) apply} to reach the given {@code destination} and interpolates it based on distance
@@ -46,8 +46,8 @@ public class Autopilot {
 	 *  @param interpolation the interpolation used to interpolate the given {@code force} based on the {@code distanceScalar}
 	 *  @return the force to {@link Body#applyForce(Vector2, Vector2, boolean) apply} to navigate to the given {@code destination}
 	 *  @see #calculateForce(Vector2, Vector2, float) */
-	public static Vector2 calculateForce(Vector2 position, Vector2 destination, Vector2 force, float distanceScalar, Interpolation interpolation) {
-		return calculateForce(position, destination, force).scl(interpolation.apply(destination.dst(position) / distanceScalar));
+	public static Vector2 calculateForce(Vector2 destination, Vector2 force, float distanceScalar, Interpolation interpolation) {
+		return calculateForce(destination, force).scl(interpolation.apply(destination.len() / distanceScalar));
 	}
 
 	/** calculates the torque needed to repeatedly {@link Body#applyTorque(float, boolean) apply} to a body to make it rotate to a given point
@@ -59,9 +59,9 @@ public class Autopilot {
 	 *  @param force the force to use
 	 *  @param delta the time that passed since the last world update
 	 *  @return the torque needed to apply to a body to make it rotate to the given {@code target} */
-	public static float calculateTorque(Vector2 target, Vector2 origin, float rotation, float angularVelocity, float inertia, float force, float delta) {
+	public static float calculateTorque(Vector2 target, float rotation, float angularVelocity, float inertia, float force, float delta) {
 		// http://www.iforce2d.net/b2dtut/rotate-to-angle
-		float rotate = MathUtils.atan2(vec2_0.set(target).sub(origin).y, vec2_0.x) - (rotation + angularVelocity * delta);
+		float rotate = MathUtils.atan2(target.y, target.x) - (rotation + angularVelocity * delta);
 		rotate = normalize(rotate, MathUtils.PI, MathUtils.PI2);
 		return inertia * (rotate / MathUtils.PI2 * force * delta) / delta;
 	}
@@ -71,6 +71,9 @@ public class Autopilot {
 
 	/** the desired angle to {@link #destination} */
 	private float angle;
+
+	/** if the {@link #destination} is relative to the {@link #positionAccessor body} */
+	private boolean moveRelative, rotateRelative;
 
 	/** the force used for movement */
 	private final Vector2 movementForce = new Vector2();
@@ -126,7 +129,7 @@ public class Autopilot {
 	 *  @see #move(Body, Vector2, Vector2, float, float, Interpolation, boolean) */
 	public void move(Body body, Vector2 destination, Vector2 force, boolean wake) {
 		Vector2 position = positionAccessor.access(body);
-		body.applyForce(calculateForce(position, destination, force), position, wake);
+		body.applyForce(calculateForce(moveRelative ? destination : vec2_0.set(destination).sub(position), force), position, wake);
 	}
 
 	/** applies the force of {@link #calculateForce(Vector2, Vector2, float, float, Interpolation)}
@@ -137,10 +140,10 @@ public class Autopilot {
 	 *  @param distanceScalar the distance at which the force should be fully applied
 	 *  @param wake if the body should be woken up in case it is sleeping
 	 *  @see #move(Body, Vector2, Vector2, float, boolean)
-	 *  @see #calculateForce(Vector2, Vector2, float, float, Interpolation) */
+	 *  @see #calculateForce(Vector2, Vector2, float, Interpolation) */
 	public void move(Body body, Vector2 destination, Vector2 force, Interpolation interpolation, float distanceScalar, boolean wake) {
 		Vector2 position = positionAccessor.access(body);
-		body.applyForce(calculateForce(position, destination, force, distanceScalar, interpolation), position, wake);
+		body.applyForce(calculateForce(moveRelative ? destination : vec2_0.set(destination).sub(position), force, distanceScalar, interpolation), position, wake);
 	}
 
 	/** {@link #move(Body, Vector2, Vector2, float, boolean) moves} the given {@code body} */
@@ -152,9 +155,9 @@ public class Autopilot {
 	}
 
 	/** @param wake if the body should be woken up if its sleeping
-	 *  @see #calculateTorque(Vector2, Vector2, float, float, float, float, float) */
-	public void rotate(Body body, Vector2 origin, float angle, float force, float delta, boolean wake) {
-		body.applyTorque(calculateTorque(positionAccessor.access(body), origin, body.getTransform().getRotation() + angle, body.getAngularVelocity(), body.getInertia(), force, delta), wake);
+	 *  @see #calculateTorque(Vector2, float, float, float, float, float) */
+	public void rotate(Body body, Vector2 target, float angle, float force, float delta, boolean wake) {
+		body.applyTorque(calculateTorque(rotateRelative ? target : vec2_0.set(positionAccessor.access(body)).sub(target), body.getTransform().getRotation() + angle, body.getAngularVelocity(), body.getInertia(), force, delta), wake);
 	}
 
 	/** {@link #rotate(Body, Vector2, float, float, boolean) rotates} the given {@code body} */
@@ -197,6 +200,63 @@ public class Autopilot {
 	/** @return the {@link #destination} */
 	public Vector2 getDestination() {
 		return destination;
+	}
+
+	/** @return the {@link #angle} */
+	public float getAngle() {
+		return angle;
+	}
+
+	/** @param angle the {@link #angle} to set */
+	public void setAngle(float angle) {
+		this.angle = angle;
+	}
+
+	/** @param relative the {@link #moveRelative} and {@link #rotateRelative} */
+	public void setRelative(boolean relative) {
+		moveRelative = rotateRelative = relative;
+	}
+
+	/** @param moveRelative the {@link #moveRelative}
+	 *  @param rotateRelative the {@link #rotateRelative} */
+	public void setRelative(boolean moveRelative, boolean rotateRelative) {
+		this.moveRelative = moveRelative;
+		this.rotateRelative = rotateRelative;
+	}
+
+	/** @return the {@link #moveRelative} */
+	public boolean isMoveRelative() {
+		return moveRelative;
+	}
+
+	/** @param moveRelative the {@link #moveRelative} to set */
+	public void setMoveRelative(boolean moveRelative) {
+		this.moveRelative = moveRelative;
+	}
+
+	/** @return the {@link #rotateRelative} */
+	public boolean isRotateRelative() {
+		return rotateRelative;
+	}
+
+	/** @param rotateRelative the {@link #rotateRelative} to set */
+	public void setRotateRelative(boolean rotateRelative) {
+		this.rotateRelative = rotateRelative;
+	}
+
+	/** @param movementForceX the x value of {@link #movementForce}
+	 *  @param movementForceY the y value of {@link #movementForce}
+	 *  @param rotationForce the {@link #rotationForce} */
+	public void setForces(float movementForceX, float movementForceY, float rotationForce) {
+		movementForce.set(movementForceX, movementForceY);
+		this.rotationForce = rotationForce;
+	}
+
+	/** @param movementForce the {@link #movementForce}
+	 *  @param rotationForce the {@link #rotationForce} */
+	public void setForces(Vector2 movementForce, float rotationForce) {
+		this.movementForce.set(movementForce);
+		this.rotationForce = rotationForce;
 	}
 
 	/** @return the {@link #movementForce} */

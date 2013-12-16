@@ -21,7 +21,6 @@ import static net.dermetfan.utils.libgdx.math.GeometryUtils.isConvex;
 import static net.dermetfan.utils.libgdx.math.GeometryUtils.toFloatArray;
 import static net.dermetfan.utils.libgdx.math.GeometryUtils.toVector2Array;
 import static net.dermetfan.utils.libgdx.math.GeometryUtils.triangulate;
-import static net.dermetfan.utils.libgdx.math.GeometryUtils.vec2_0;
 
 import com.badlogic.gdx.maps.Map;
 import com.badlogic.gdx.maps.MapLayer;
@@ -85,7 +84,7 @@ public class Box2DMapObjectParser {
 	public static class Aliases {
 
 		/** the aliases */
-		public String x = "x", y = "y", type = "type", bodyType = "bodyType", dynamicBody = "DynamicBody", kinematicBody = "KinematicBody", staticBody = "StaticBody", active = "active", allowSleep = "allowSleep", angle = "angle", angularDamping = "angularDamping", angularVelocity = "angularVelocity", awake = "awake", bullet = "bullet", fixedRotation = "fixedRotation", gravityunitScale = "gravityunitScale", linearDamping = "linearDamping", linearVelocityX = "linearVelocityX", linearVelocityY = "linearVelocityY", density = "density", categoryBits = "categoryBits", groupIndex = "groupIndex", maskBits = "maskBits", friciton = "friction", isSensor = "isSensor", restitution = "restitution", body = "body", fixture = "fixture", joint = "joint", jointType = "jointType", distanceJoint = "DistanceJoint", frictionJoint = "FrictionJoint", gearJoint = "GearJoint", mouseJoint = "MouseJoint", prismaticJoint = "PrismaticJoint", pulleyJoint = "PulleyJoint", revoluteJoint = "RevoluteJoint", ropeJoint = "RopeJoint", weldJoint = "WeldJoint", wheelJoint = "WheelJoint", bodyA = "bodyA", bodyB = "bodyB", collideConnected = "collideConnected", dampingRatio = "dampingRatio", frequencyHz = "frequencyHz", length = "length", localAnchorAX = "localAnchorAX", localAnchorAY = "localAnchorAY", localAnchorBX = "localAnchorBX", localAnchorBY = "localAnchorBY", maxForce = "maxForce", maxTorque = "maxTorque", joint1 = "joint1", joint2 = "joint2", ratio = "ratio", targetX = "targetX", targetY = "targetY", enableLimit = "enableLimit", enableMotor = "enableMotor", localAxisAX = "localAxisAX", localAxisAY = "localAxisAY", lowerTranslation = "lowerTranslation", maxMotorForce = "maxMotorForce", motorSpeed = "motorSpeed", referenceAngle = "referenceAngle", upperTranslation = "upperTranslation", groundAnchorAX = "groundAnchorAX", groundAnchorAY = "groundAnchorAY", groundAnchorBX = "groundAnchorBX", groundAnchorBY = "groundAnchorBY", lengthA = "lengthA", lengthB = "lengthB", lowerAngle = "lowerAngle", maxMotorTorque = "maxMotorTorque", upperAngle = "upperAngle", maxLength = "maxLength", object = "object", unitScale = "unitScale", userData = "userData", tileWidth = "tilewidth", tileHeight = "tileheight";
+		public String x = "x", y = "y", type = "type", bodyType = "bodyType", dynamicBody = "DynamicBody", kinematicBody = "KinematicBody", staticBody = "StaticBody", active = "active", allowSleep = "allowSleep", angle = "angle", angularDamping = "angularDamping", angularVelocity = "angularVelocity", awake = "awake", bullet = "bullet", fixedRotation = "fixedRotation", gravityScale = "gravityScale", linearDamping = "linearDamping", linearVelocityX = "linearVelocityX", linearVelocityY = "linearVelocityY", density = "density", categoryBits = "categoryBits", groupIndex = "groupIndex", maskBits = "maskBits", friciton = "friction", isSensor = "isSensor", restitution = "restitution", body = "body", fixture = "fixture", joint = "joint", jointType = "jointType", distanceJoint = "DistanceJoint", frictionJoint = "FrictionJoint", gearJoint = "GearJoint", mouseJoint = "MouseJoint", prismaticJoint = "PrismaticJoint", pulleyJoint = "PulleyJoint", revoluteJoint = "RevoluteJoint", ropeJoint = "RopeJoint", weldJoint = "WeldJoint", wheelJoint = "WheelJoint", bodyA = "bodyA", bodyB = "bodyB", collideConnected = "collideConnected", dampingRatio = "dampingRatio", frequencyHz = "frequencyHz", length = "length", localAnchorAX = "localAnchorAX", localAnchorAY = "localAnchorAY", localAnchorBX = "localAnchorBX", localAnchorBY = "localAnchorBY", maxForce = "maxForce", maxTorque = "maxTorque", joint1 = "joint1", joint2 = "joint2", ratio = "ratio", targetX = "targetX", targetY = "targetY", enableLimit = "enableLimit", enableMotor = "enableMotor", localAxisAX = "localAxisAX", localAxisAY = "localAxisAY", lowerTranslation = "lowerTranslation", maxMotorForce = "maxMotorForce", motorSpeed = "motorSpeed", referenceAngle = "referenceAngle", upperTranslation = "upperTranslation", groundAnchorAX = "groundAnchorAX", groundAnchorAY = "groundAnchorAY", groundAnchorBX = "groundAnchorBX", groundAnchorBY = "groundAnchorBY", lengthA = "lengthA", lengthB = "lengthB", lowerAngle = "lowerAngle", maxMotorTorque = "maxMotorTorque", upperAngle = "upperAngle", maxLength = "maxLength", object = "object", unitScale = "unitScale", userData = "userData", tileWidth = "tilewidth", tileHeight = "tileheight", gravityX = "gravityX", gravityY = "gravityY", autoClearForces = "autoClearForces";
 
 	}
 
@@ -124,6 +123,9 @@ public class Box2DMapObjectParser {
 
 	/** the {@link MapProperties} of the currently {@link #load(World, MapLayer) loading} layer */
 	private MapProperties layerProperties;
+
+	/** for internal, temporary usage */
+	private final Vector2 vec2 = new Vector2();
 
 	/** creates a new {@link Box2DMapObjectParser} with the default {@link Aliases} */
 	public Box2DMapObjectParser() {
@@ -189,6 +191,9 @@ public class Box2DMapObjectParser {
 	public World load(World world, Map map) {
 		MapProperties oldMapProperties = mapProperties;
 		mapProperties = map.getProperties();
+
+		world.setGravity(vec2.set(getProperty(mapProperties, aliases.gravityX, world.getGravity().x), getProperty(mapProperties, aliases.gravityY, world.getGravity().y)));
+		world.setAutoClearForces(getProperty(mapProperties, aliases.autoClearForces, world.getAutoClearForces()));
 
 		if(!ignoreMapUnitScale)
 			unitScale = getProperty(mapProperties, aliases.unitScale, unitScale);
@@ -284,7 +289,7 @@ public class Box2DMapObjectParser {
 			shape = new PolygonShape();
 			Rectangle rectangle = ((RectangleMapObject) mapObject).getRectangle();
 			float x = rectangle.x * unitScale, y = rectangle.y * unitScale, width = rectangle.width * unitScale, height = rectangle.height * unitScale;
-			((PolygonShape) shape).setAsBox(width / 2, height / 2, vec2_0.set(x - body.getPosition().x, y - body.getPosition().y), body.getAngle());
+			((PolygonShape) shape).setAsBox(width / 2, height / 2, vec2.set(x - body.getPosition().x, y - body.getPosition().y), body.getAngle());
 		} else if(mapObject instanceof PolygonMapObject) {
 			shape = new PolygonShape();
 			Polygon polygon = new Polygon(((PolygonMapObject) mapObject).getPolygon().getTransformedVertices());
@@ -304,7 +309,7 @@ public class Box2DMapObjectParser {
 			circle.setPosition(circle.x * unitScale - body.getPosition().x, circle.y * unitScale - body.getPosition().y);
 			circle.radius *= unitScale;
 			CircleShape circleShape = (CircleShape) shape;
-			circleShape.setPosition(vec2_0.set(circle.x, circle.y));
+			circleShape.setPosition(vec2.set(circle.x, circle.y));
 			circleShape.setRadius(circle.radius);
 		} else if(mapObject instanceof EllipseMapObject) {
 			Ellipse ellipse = ((EllipseMapObject) mapObject).getEllipse();
@@ -499,7 +504,7 @@ public class Box2DMapObjectParser {
 	/** assigns the given {@link MapProperties properties} to the values of the given BodyDef
 	 *  @param bodyDef the {@link BodyDef} which values to set according to the given {@link MapProperties}
 	 *  @param properties the {@link MapProperties} to assign to the given {@link BodyDef} */
-	private void assignProperties(BodyDef bodyDef, MapProperties properties) {
+	public void assignProperties(BodyDef bodyDef, MapProperties properties) {
 		if(properties == null)
 			return;
 		bodyDef.type = getProperty(properties, aliases.bodyType, "").equals(aliases.staticBody) ? BodyType.StaticBody : getProperty(properties, aliases.bodyType, "").equals(aliases.dynamicBody) ? BodyType.DynamicBody : getProperty(properties, aliases.bodyType, "").equals(aliases.kinematicBody) ? BodyType.KinematicBody : bodyDef.type;
@@ -511,14 +516,14 @@ public class Box2DMapObjectParser {
 		bodyDef.awake = getProperty(properties, aliases.awake, bodyDef.awake);
 		bodyDef.bullet = getProperty(properties, aliases.bullet, bodyDef.bullet);
 		bodyDef.fixedRotation = getProperty(properties, aliases.fixedRotation, bodyDef.fixedRotation);
-		bodyDef.gravityScale = getProperty(properties, aliases.gravityunitScale, bodyDef.gravityScale);
+		bodyDef.gravityScale = getProperty(properties, aliases.gravityScale, bodyDef.gravityScale);
 		bodyDef.linearDamping = getProperty(properties, aliases.linearDamping, bodyDef.linearDamping);
 		bodyDef.linearVelocity.set(getProperty(properties, aliases.linearVelocityX, bodyDef.linearVelocity.x), getProperty(properties, aliases.linearVelocityY, bodyDef.linearVelocity.y));
 		bodyDef.position.set(getProperty(properties, aliases.x, bodyDef.position.x) * unitScale, getProperty(properties, aliases.y, bodyDef.position.y) * unitScale);
 	}
 
 	/** @see #assignProperties(BodyDef, MapProperties) */
-	private void assignProperties(FixtureDef fixtureDef, MapProperties properties) {
+	public void assignProperties(FixtureDef fixtureDef, MapProperties properties) {
 		if(properties == null)
 			return;
 		fixtureDef.density = getProperty(properties, aliases.density, fixtureDef.density);
@@ -531,7 +536,7 @@ public class Box2DMapObjectParser {
 	}
 
 	/** @see #assignProperties(BodyDef, MapProperties) */
-	private void assignProperties(DistanceJointDef distanceJointDef, MapProperties properties) {
+	public void assignProperties(DistanceJointDef distanceJointDef, MapProperties properties) {
 		if(properties == null)
 			return;
 		distanceJointDef.dampingRatio = getProperty(properties, aliases.dampingRatio, distanceJointDef.dampingRatio);
@@ -542,7 +547,7 @@ public class Box2DMapObjectParser {
 	}
 
 	/** @see #assignProperties(BodyDef, MapProperties) */
-	private void assignProperties(FrictionJointDef frictionJointDef, MapProperties properties) {
+	public void assignProperties(FrictionJointDef frictionJointDef, MapProperties properties) {
 		if(properties == null)
 			return;
 		frictionJointDef.localAnchorA.set(getProperty(properties, aliases.localAnchorAX, frictionJointDef.localAnchorA.x) * tileWidth * unitScale, getProperty(properties, aliases.localAnchorAY, frictionJointDef.localAnchorA.y) * tileHeight * unitScale);
@@ -552,7 +557,7 @@ public class Box2DMapObjectParser {
 	}
 
 	/** @see #assignProperties(BodyDef, MapProperties) */
-	private void assignProperties(GearJointDef gearJointDef, MapProperties properties) {
+	public void assignProperties(GearJointDef gearJointDef, MapProperties properties) {
 		if(properties == null)
 			return;
 		gearJointDef.joint1 = joints.get(getProperty(properties, aliases.joint1, ""));
@@ -561,7 +566,7 @@ public class Box2DMapObjectParser {
 	}
 
 	/** @see #assignProperties(BodyDef, MapProperties) */
-	private void assignProperties(MouseJointDef mouseJointDef, MapProperties properties) {
+	public void assignProperties(MouseJointDef mouseJointDef, MapProperties properties) {
 		if(properties == null)
 			return;
 		mouseJointDef.dampingRatio = getProperty(properties, aliases.dampingRatio, mouseJointDef.dampingRatio);
@@ -571,7 +576,7 @@ public class Box2DMapObjectParser {
 	}
 
 	/** @see #assignProperties(BodyDef, MapProperties) */
-	private void assignProperties(PrismaticJointDef prismaticJointDef, MapProperties properties) {
+	public void assignProperties(PrismaticJointDef prismaticJointDef, MapProperties properties) {
 		if(properties == null)
 			return;
 		prismaticJointDef.enableLimit = getProperty(properties, aliases.enableLimit, prismaticJointDef.enableLimit);
@@ -587,7 +592,7 @@ public class Box2DMapObjectParser {
 	}
 
 	/** @see #assignProperties(BodyDef, MapProperties) */
-	private void assignProperties(PulleyJointDef pulleyJointDef, MapProperties properties) {
+	public void assignProperties(PulleyJointDef pulleyJointDef, MapProperties properties) {
 		if(properties == null)
 			return;
 		pulleyJointDef.groundAnchorA.set(getProperty(properties, aliases.groundAnchorAX, pulleyJointDef.groundAnchorA.x) * tileWidth * unitScale, getProperty(properties, aliases.groundAnchorAY, pulleyJointDef.groundAnchorA.y) * tileHeight * unitScale);
@@ -600,7 +605,7 @@ public class Box2DMapObjectParser {
 	}
 
 	/** @see #assignProperties(BodyDef, MapProperties) */
-	private void assignProperties(RevoluteJointDef revoluteJointDef, MapProperties properties) {
+	public void assignProperties(RevoluteJointDef revoluteJointDef, MapProperties properties) {
 		if(properties == null)
 			return;
 		revoluteJointDef.enableLimit = getProperty(properties, aliases.enableLimit, revoluteJointDef.enableLimit);
@@ -615,7 +620,7 @@ public class Box2DMapObjectParser {
 	}
 
 	/** @see #assignProperties(BodyDef, MapProperties) */
-	private void assignProperties(RopeJointDef ropeJointDef, MapProperties properties) {
+	public void assignProperties(RopeJointDef ropeJointDef, MapProperties properties) {
 		if(properties == null)
 			return;
 		ropeJointDef.localAnchorA.set(getProperty(properties, aliases.localAnchorAX, ropeJointDef.localAnchorA.x) * tileWidth * unitScale, getProperty(properties, aliases.localAnchorAY, ropeJointDef.localAnchorA.y) * tileHeight * unitScale);
@@ -624,7 +629,7 @@ public class Box2DMapObjectParser {
 	}
 
 	/** @see #assignProperties(BodyDef, MapProperties) */
-	private void assignProperties(WeldJointDef weldJointDef, MapProperties properties) {
+	public void assignProperties(WeldJointDef weldJointDef, MapProperties properties) {
 		if(properties == null)
 			return;
 		weldJointDef.localAnchorA.set(getProperty(properties, aliases.localAnchorAX, weldJointDef.localAnchorA.x) * tileWidth * unitScale, getProperty(properties, aliases.localAnchorAY, weldJointDef.localAnchorA.y) * tileHeight * unitScale);
@@ -633,7 +638,7 @@ public class Box2DMapObjectParser {
 	}
 
 	/** @see #assignProperties(BodyDef, MapProperties) */
-	private void assignProperties(WheelJointDef wheelJointDef, MapProperties properties) {
+	public void assignProperties(WheelJointDef wheelJointDef, MapProperties properties) {
 		if(properties == null)
 			return;
 		wheelJointDef.dampingRatio = getProperty(properties, aliases.dampingRatio, wheelJointDef.dampingRatio);
