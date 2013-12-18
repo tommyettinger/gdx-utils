@@ -448,8 +448,7 @@ public class Chain {
 
 	/** {@link #destroy(int) destorys} the last segment */
 	public void shorten() {
-		if(segments.size > 0)
-			destroy(segments.size - 1);
+		destroy(segments.size - 1);
 	}
 
 	/** {@link #destroy(int, int) destroys} the given amount of segments from the end of the Chain */
