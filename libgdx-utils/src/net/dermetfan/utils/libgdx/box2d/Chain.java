@@ -14,7 +14,6 @@
 
 package net.dermetfan.utils.libgdx.box2d;
 
-import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.BodyDef;
 import com.badlogic.gdx.physics.box2d.FixtureDef;
@@ -26,20 +25,21 @@ import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Disposable;
 import com.badlogic.gdx.utils.SnapshotArray;
 
-/** Holds {@link #segments} and {@link #connections} to simulate a rope. Also provides modification methods that use a {@link Builder}.
+/** Holds {@link #segments} and {@link #connections} to simulate a chain. Also provides modification methods that use a {@link Builder}.
  *  @author dermetfan */
-public class Rope {
+public class Chain {
 
-	/** used by a {@link Rope} to modify it
+	/** used by a {@link Chain} to modify it
 	 *  @author dermetfan */
 	public static interface Builder {
 
-		/** creates a segment that is going to be added to {@link Rope#segments}
+		/** creates a segment that is going to be added to {@link Chain#segments}
 		 *  @param previous the previously created segment
 		 *  @param index the index of the segment to create
-		 *  @param length the desired length of the {@link Rope} that is being build
+		 *  @param length the desired length of the {@link Chain} that is being build
+		 *  @param chain the {@link Chain} this segment will be added to
 		 *  @return the created segment */
-		public Body createSegment(Body previous, int index, int length);
+		public Body createSegment(int index, int length, Chain chain);
 
 		/** connects two segments with each other using a {@link Connection}
 		 *  @param seg1 the first segment
@@ -51,17 +51,17 @@ public class Rope {
 
 	}
 
-	/** a {@link Builder} that creates a new {@link Rope} using this {@link Builder}
+	/** a {@link Builder} that creates a new {@link Chain} using this {@link Builder}
 	 *  @author dermetfan */
-	public static abstract class RopeBuilder implements Builder {
+	public static abstract class ChainBuilder implements Builder {
 
-		/** the {@link Rope} this {@link RopeBuilder} builds */
-		public final Rope rope;
+		/** the {@link Chain} this {@link ChainBuilder} builds */
+		public Chain chain;
 
-		/** Creates a new {@link RopeBuilder} and sets {@link #rope} to a new {@link Rope} of the given {@code length}. The {@link #rope} will not be {@link Rope#extend(int) build} immediantly.
-		 *  @param length the desired length of the {@link #rope} */
-		public RopeBuilder(int length) {
-			rope = new Rope(length, this, false);
+		/** Creates a new {@link ChainBuilder} and sets {@link #chain} to a new {@link Chain} of the given {@code length}. The {@link #chain} will not be {@link Chain#extend(int) build} immediantly.
+		 *  @param length the desired length of the {@link #chain} */
+		public ChainBuilder(int length) {
+			chain = new Chain(length, this, false);
 		}
 
 	}
@@ -95,7 +95,7 @@ public class Rope {
 
 		/** @return a new {@link Body segment} created with{@link #bodyDef} and {@link #fixtureDef} */
 		@Override
-		public Body createSegment(Body previous, int index, int length) {
+		public Body createSegment(int index, int length, Chain chain) {
 			return world.createBody(bodyDef).createFixture(fixtureDef).getBody();
 		}
 
@@ -184,7 +184,7 @@ public class Rope {
 		/** creates a {@link Body segment} using {@link #bodyDef}, {@link #shape} and {@link #density}
 		 *  @see Body#createFixture(Shape, float) */
 		@Override
-		public Body createSegment(Body previous, int index, int length) {
+		public Body createSegment(int index, int length, Chain chain) {
 			return world.createBody(bodyDef).createFixture(shape, density).getBody();
 		}
 
@@ -263,7 +263,7 @@ public class Rope {
 
 		/** @return a {@link Box2DUtils#copy(Body) copy} of {@link #template} */
 		@Override
-		public Body createSegment(Body previous, int index, int length) {
+		public Body createSegment(int index, int length, Chain chain) {
 			return Box2DUtils.copy(template);
 		}
 
@@ -367,41 +367,41 @@ public class Rope {
 
 	}
 
-	/** the {@link Builder} used for modifications of this Rope */
+	/** the {@link Builder} used for modifications of this Chain */
 	private Builder builder;
 
-	/** the {@link Body segments} of this Rope */
-	private final SnapshotArray<Body> segments = new SnapshotArray<Body>();
+	/** the {@link Body segments} of this Chain */
+	private final Array<Body> segments = new Array<Body>();
 
-	/** the {@link Joint Joints} of this Rope */
-	private final SnapshotArray<Connection> connections = new SnapshotArray<Connection>();
+	/** the {@link Joint Joints} of this Chain */
+	private final Array<Connection> connections = new Array<Connection>();
 
-	/** creates a shallow copy of the given {@link Rope} instance
-	 *  @param other the {@link Rope} to copy */
-	public Rope(Rope other) {
+	/** creates a shallow copy of the given {@link Chain} instance
+	 *  @param other the {@link Chain} to copy */
+	public Chain(Chain other) {
 		builder = other.builder;
 		segments.addAll(other.segments);
 		connections.addAll(other.connections);
 	}
 
 	/** @param builder the {@link #builder} */
-	public Rope(Builder builder) {
+	public Chain(Builder builder) {
 		this.builder = builder;
 	}
 
-	/** creates a new Rope and {@link #extend(int) builds} it to the given {@code length}
-	 *  @param length the desired length of this Rope
+	/** creates a new Chain and {@link #extend(int) builds} it to the given {@code length}
+	 *  @param length the desired length of this Chain
 	 *  @param builder the {@link #builder}
-	 *  @see #Rope(int, Builder, boolean) */
-	public Rope(int length, Builder builder) {
+	 *  @see #Chain(int, Builder, boolean) */
+	public Chain(int length, Builder builder) {
 		this(length, builder, true);
 	}
 
-	/** creates a new Rope and {@link #extend(int) builds} it to the given {@code length} if {@code build} is true
-	 *  @param length The desired length of this Rope. Will be ignored if {@code build} is false.
+	/** creates a new Chain and {@link #extend(int) builds} it to the given {@code length} if {@code build} is true
+	 *  @param length The desired length of this Chain. Will be ignored if {@code build} is false.
 	 *  @param builder the {@link #builder}
-	 *  @param build if this Rope should be {@link #extend(int) build} to the given {@code length} */
-	public Rope(int length, Builder builder, boolean build) {
+	 *  @param build if this Chain should be {@link #extend(int) build} to the given {@code length} */
+	public Chain(int length, Builder builder, boolean build) {
 		segments.ensureCapacity(length - segments.size);
 		connections.ensureCapacity(length - segments.size);
 		this.builder = builder;
@@ -409,43 +409,52 @@ public class Rope {
 			extend(length);
 	}
 
-	/** creates a new Rope with the given {@code segments}
+	/** creates a new Chain with the given {@code segments}
 	 *  @param builder the {@link #builder}
 	 *  @param segments the {@link #segments} */
-	public Rope(Builder builder, Body... segments) {
+	public Chain(Builder builder, Body... segments) {
 		this.builder = builder;
 		for(Body segment : segments)
 			add(segment);
 	}
 
-	/** {@link #extend(int, Builder) extends} this rope to the given {@code length} using the {@link #builder}
+	/** {@link #extend(int, Builder) extends} this chain by the given {@code length} using the {@link #builder}
 	 *  @see #extend(int, Builder) */
-	public Rope extend(int length) {
+	public Chain extend(int length) {
 		return extend(length, builder);
 	}
 
-	/** {@link #extend(Builder) extends} this rope by the given {@code length} using the given {@link Builder}
+	/** {@link #extend(Builder) extends} this chain by the given {@code length} using the given {@link Builder}
 	 *  @see #extend(Builder) */
-	public Rope extend(int length, Builder builder) {
-		while(length > 0) {
+	public Chain extend(int length, Builder builder) {
+		for(; length > 0; length--)
 			extend(builder);
-			length--;
-		}
 		return this;
 	}
 
-	/** {@link #extend(Builder) extends} this Rope using the {@link #builder}
+	/** {@link #extend(Builder) extends} this Chain using the {@link #builder}
 	 *  @see #extend(Builder) */
 	public Body extend() {
 		return extend(builder);
 	}
 
-	/** {@link #createSegment(int, Builder) creates} and {@link #add(Body) adds} a new segment to this Rope
+	/** {@link #createSegment(int, Builder) creates} and {@link #add(Body) adds} a new segment to this Chain
 	 *  @return the {@link #createSegment(int, Builder) created} and {@link #add(Body) added} segment */
 	public Body extend(Builder builder) {
 		Body segment = createSegment(segments.size, builder);
 		add(segment);
 		return segment;
+	}
+
+	/** {@link #destroy(int) destorys} the last segment */
+	public void shorten() {
+		if(segments.size > 0)
+			destroy(segments.size - 1);
+	}
+
+	/** {@link #destroy(int, int) destroys} the given amount of segments from the end of the Chain */
+	public void shorten(int length) {
+		destroy(segments.size - length - 1, segments.size - 1);
 	}
 
 	/** {@link #createSegment(int, Builder) creates} a segment for the given index using the {@link #builder}
@@ -454,10 +463,10 @@ public class Rope {
 		return createSegment(index, builder);
 	}
 
-	/** Creates a {@link Body segment} using the given {@link Builder} passing the correct parameters to {@link Builder#createSegment(int, Body, int)} specified by the given {@code index}. Does NOT add it to this Rope.
+	/** Creates a {@link Body segment} using the given {@link Builder} passing the correct parameters to {@link Builder#createSegment(int, Body, int)} specified by the given {@code index}. Does NOT add it to this Chain.
 	 *  @see Builder#createSegment(int, Body, int) */
 	public Body createSegment(int index, Builder builder) {
-		return builder.createSegment(segments.size > 0 ? segments.peek() : null, index, segments.size + 1);
+		return builder.createSegment(index, segments.size + 1, this);
 	}
 
 	/** {@link #createConnection(int, int, Builder) creates} a new {@link Connection}
@@ -466,7 +475,7 @@ public class Rope {
 		return createConnection(segmentIndex1, segmentIndex2, builder);
 	}
 
-	/** Creates a {@link Connection} using the {@link Builder} passing the correct parameters to {@link Builder#createConnection(Body, int, Body, int)} specified by the given indices. Does NOT add it to this Rope.
+	/** Creates a {@link Connection} using the {@link Builder} passing the correct parameters to {@link Builder#createConnection(Body, int, Body, int)} specified by the given indices. Does NOT add it to this Chain.
 	 *  @see Builder#createConnection(Body, int, Body, int) */
 	public Connection createConnection(int segmentIndex1, int segmentIndex2, Builder builder) {
 		Body seg1 = segments.get(segmentIndex1), seg2 = segments.get(segmentIndex2);
@@ -474,7 +483,7 @@ public class Rope {
 
 	}
 
-	/** {@link SnapshotArray#add(Object) adds} the given {@code segment} to the end of this Rope
+	/** {@link SnapshotArray#add(Object) adds} the given {@code segment} to the end of this Chain
 	 *  @param segment the {@link Body segment} to add */
 	public void add(Body segment) {
 		segments.add(segment);
@@ -482,14 +491,14 @@ public class Rope {
 			connections.add(createConnection(segments.size - 2 < 0 ? 0 : segments.size - 2, segments.size - 1));
 	}
 
-	/** {@link #add(Body) adds} the given segments to the end of this Rope
+	/** {@link #add(Body) adds} the given segments to the end of this Chain
 	 *  @see #add(Body) */
 	public void addAll(Body... segments) {
 		for(Body segment : segments)
 			add(segment);
 	}
 
-	/** {@link #createSegment(int) creates} a new {@link Body segment} and {@link #insert(int, Body) inserts} it into this Rope
+	/** {@link #createSegment(int) creates} a new {@link Body segment} and {@link #insert(int, Body) inserts} it into this Chain
 	 *  @see #insert(int, Body) */
 	public Body insert(int index) {
 		Body segment = createSegment(index);
@@ -497,7 +506,7 @@ public class Rope {
 		return segment;
 	}
 
-	/** inserts a {@link Body segment} into this Rope
+	/** inserts a {@link Body segment} into this Chain
 	 *  @param index the {@link #segments index} at which to insert the given {@code segment}
 	 *  @param segment the {@link Body segment} to insert */
 	public void insert(int index, Body segment) {
@@ -519,39 +528,47 @@ public class Rope {
 		return old;
 	}
 
-	/** @param segment The {@link Body} to remove. Must be a {@link #segments segment} of this {@link Rope}.
+	/** @param segment The {@link Body} to remove. Must be a {@link #segments segment} of this {@link Chain}.
 	 *  @return the given {@code body}
 	 *  @see #remove(int) */
 	public Body remove(Body segment) {
 		if(!segments.contains(segment, true))
-			throw new IllegalArgumentException("the given body is not a segment of this Rope");
+			throw new IllegalArgumentException("the given body is not a segment of this Chain");
 		return remove(segments.indexOf(segment, true));
 	}
 
-	/** removes a {@link #segments segment} from this Rope
+	/** removes a {@link #segments segment} from this Chain
 	 *  @param index the index of the {@link #segments segment} to remove
-	 *  @return the removed {@link #segments segment} */
+	 *  @return the removed {@link #segments segment}
+	 *  @see Array#removeIndex(int) */
 	public Body remove(int index) {
-		Body segment = segments.removeIndex(index);
-		if(--index >= 0)
-			connections.removeIndex(index).destroy();
-		else
-			index++;
+		Body segment = segments.removeIndex(index), previous = index - 1 >= 0 ? segments.get(index - 1) : null, next = index + 1 < segments.size ? segments.get(index + 1) : null;
+		if(index - 1 >= 0)
+			connections.removeIndex(--index).destroy();
 		if(index < connections.size)
 			connections.removeIndex(index).destroy();
-
-		Body prevSegment = segments.get(index), nextSegment = segments.get(MathUtils.clamp(index + 1, 0, segments.size - 1));
-		if(prevSegment != nextSegment)
-			connections.insert(index, builder.createConnection(prevSegment, index, nextSegment, index + 1));
-
+		if(previous != null && next != null)
+			connections.insert(index, builder.createConnection(previous, index, next, index + 1));
 		return segment;
+	}
+
+	/** {@link #remove(int) removes} all segmetns from beginIndex to endIndex
+	 *  @param beginIndex the first index to remove
+	 *  @param endIndex the last index to remove
+	 *  @return an Array holding the removed segments
+	 *  @see #tmpSegments */
+	public Array<Body> remove(int beginIndex, int endIndex) {
+		tmpSegments.clear();
+		for(; beginIndex <= endIndex; beginIndex++)
+			tmpSegments.add(remove(beginIndex));
+		return tmpSegments;
 	}
 
 	/** @param segment the {@link Body segment} to destroy
 	 *  @see #destroy(int) */
 	public void destroy(Body segment) {
 		if(!segments.contains(segment, true))
-			throw new IllegalArgumentException("the given body must be a segment of this Rope");
+			throw new IllegalArgumentException("the given body must be a segment of this Chain");
 		destroy(segments.indexOf(segment, true));
 	}
 
@@ -562,28 +579,39 @@ public class Rope {
 		segment.getWorld().destroyBody(segment);
 	}
 
-	/** @param joint the {@link #connections Joint} at which to split this {@link Rope}
-	 *  @return the new {@link Rope}
+	/** {@link #destroy(int) destroys} all segments from beginIndex to endIndex
+	 *  @param beginIndex the first index to destroy
+	 *  @param endIndex the last index to destroy */
+	public void destroy(int beginIndex, int endIndex) {
+		Array<Body> removed = remove(beginIndex, endIndex);
+		for(Body body : removed)
+			body.getWorld().destroyBody(body);
+		removed.clear();
+	}
+
+	/** @param joint the {@link #connections Joint} at which to split this {@link Chain}
+	 *  @return the new {@link Chain}
 	 *  @see #split(int) */
-	public Rope split(Connection connection) {
+	public Chain split(Connection connection) {
 		if(!connections.contains(connection, true))
-			throw new IllegalArgumentException("the joint must be part of this Rope");
+			throw new IllegalArgumentException("the joint must be part of this Chain");
 		return split(connections.indexOf(connection, true));
 	}
 
-	/** splits this Rope at the given index and returns a new Rope consisting of the {@link #segments} up to the given {@code index}
+	/** splits this Chain at the given index and returns a new Chain consisting of the {@link #segments} up to the given {@code index}
 	 *  @param connectionIndex the index of the {@link #connections connection} to destroy
-	 *  @return a Rope consisting of the segments before the given index */
-	public Rope split(int connectionIndex) {
+	 *  @return a Chain consisting of the segments before the given index */
+	public Chain split(int connectionIndex) {
 		Body[] segs = new Body[connectionIndex + 1];
 		for(int i = 0; i <= connectionIndex; i++) {
 			connections.removeIndex(0).destroy();
 			segs[i] = segments.removeIndex(0);
 		}
-		return new Rope(builder, segs);
+		return new Chain(builder, segs);
 	}
 
-	/** @return the amount of segments in this Rope */
+	/** @return the amount of {@link #segments} in this Chain
+	 *  @see Array#size */
 	public int length() {
 		return segments.size;
 	}
@@ -600,6 +628,30 @@ public class Rope {
 		return connections.get(index);
 	}
 
+	/** <strong>Warning: This is used by multiple methods and may be modified unexpectedly. It's highly recommended to {@link Array#addAll(Array) add} its items to your own collection.</strong> */
+	private final Array<Body> tmpSegments = new Array<Body>();
+
+	/** <strong>Warning: The returned Array is used by other methods and may be modified unexpectedly. It's highly recommended to {@link Array#addAll(Array) add} its items to your own collection.</strong>
+	 *  @return the {@link #segments}
+	 *  @see #tmpSegments */
+	public Array<Body> getSegments() {
+		tmpSegments.clear();
+		tmpSegments.addAll(segments);
+		return tmpSegments;
+	}
+
+	/** <strong>Warning: This is used by multiple methods and may be modified unexpectedly. It's highly recommended to {@link Array#addAll(Array) add} its items to your own collection.</strong> */
+	private final Array<Connection> getConnections = new Array<Connection>();
+
+	/** <strong>Warning: The returned Array is used by other methods and may be modified unexpectedly. It's highly recommended to {@link Array#addAll(Array) add} its items to your own collection.</strong> 
+	 *  @return an Array representing the current state of {@link #connections}
+	 *  @see #getConnections */
+	public Array<Connection> getConnections() {
+		getConnections.clear();
+		getConnections.addAll(connections);
+		return getConnections;
+	}
+
 	/** @return the {@link #builder} */
 	public Builder getBuilder() {
 		return builder;
@@ -610,18 +662,6 @@ public class Rope {
 		if(builder == null)
 			throw new IllegalArgumentException("builder must not be null");
 		this.builder = builder;
-	}
-
-	/** @return the {@link #segments} */
-	public Body[] getSegments() {
-		segments.end();
-		return segments.begin();
-	}
-
-	/** @return the {@link #connections} */
-	public Connection[] getConnections() {
-		connections.end();
-		return connections.begin();
 	}
 
 }
