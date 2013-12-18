@@ -453,7 +453,7 @@ public class Chain {
 
 	/** {@link #destroy(int, int) destroys} the given amount of segments from the end of the Chain */
 	public void shorten(int length) {
-		destroy(segments.size - length - 1, segments.size - 1);
+		destroy(segments.size - length, segments.size - 1);
 	}
 
 	/** {@link #createSegment(int, Builder) creates} a segment for the given index using the {@link #builder}
@@ -541,7 +541,7 @@ public class Chain {
 	 *  @return the removed {@link #segments segment}
 	 *  @see Array#removeIndex(int) */
 	public Body remove(int index) {
-		Body segment = segments.removeIndex(index), previous = index - 1 >= 0 ? segments.get(index - 1) : null, next = index + 1 < segments.size ? segments.get(index + 1) : null;
+		Body previous = index - 1 >= 0 ? segments.get(index - 1) : null, next = index + 1 < segments.size ? segments.get(index + 1) : null, segment = segments.removeIndex(index);
 		if(index - 1 >= 0)
 			connections.removeIndex(--index).destroy();
 		if(index < connections.size)
@@ -558,8 +558,8 @@ public class Chain {
 	 *  @see #tmpSegments */
 	public Array<Body> remove(int beginIndex, int endIndex) {
 		tmpSegments.clear();
-		for(; beginIndex <= endIndex; beginIndex++)
-			tmpSegments.add(remove(beginIndex));
+		for(; endIndex >= beginIndex; endIndex--)
+			tmpSegments.add(remove(endIndex));
 		return tmpSegments;
 	}
 
