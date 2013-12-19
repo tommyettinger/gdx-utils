@@ -14,8 +14,23 @@
 
 package net.dermetfan.utils.math;
 
-/** math utility methods */
+/** math utility methods
+ *  @author dermetfan */
 public class MathUtils {
+
+	/** @return if the given value is in between min and max (inclusive) */
+	public static boolean between(float value, float min, float max) {
+		return between(value, min, max, true);
+	}
+
+	/** min and max will be swapped if they are given in the wrong order
+	 *  @param inclusive if the given value is allowed to be equal to min or max
+	 *  @return if the given value is in between min and max */
+	public static boolean between(float value, float min, float max, boolean inclusive) {
+		min = Math.min(min, max);
+		max = Math.max(min, max);
+		return inclusive ? value >= min && value <= max : value > min && value < max;
+	}
 
 	/** normalizes a value in a given range using the range as step
 	 *  @see #normalize(float, float, float) */
@@ -43,11 +58,7 @@ public class MathUtils {
 
 	/** @return value, min or max */
 	public static float clamp(float value, float min, float max) {
-		if(value < min)
-			return min;
-		if(value > max)
-			return max;
-		return value;
+		return value < min ? min : value > max ? max : value;
 	}
 
 	/** @return {@code replacement} if {@code value} is NaN */
