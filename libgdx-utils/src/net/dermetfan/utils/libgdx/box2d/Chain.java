@@ -51,21 +51,6 @@ public class Chain {
 
 	}
 
-	/** a {@link Builder} that creates a new {@link Chain} using this {@link Builder}
-	 *  @author dermetfan */
-	public static abstract class ChainBuilder implements Builder {
-
-		/** the {@link Chain} this {@link ChainBuilder} builds */
-		public Chain chain;
-
-		/** Creates a new {@link ChainBuilder} and sets {@link #chain} to a new {@link Chain} of the given {@code length}. The {@link #chain} will not be {@link Chain#extend(int) build} immediantly.
-		 *  @param length the desired length of the {@link #chain} */
-		public ChainBuilder(int length) {
-			chain = new Chain(length, this, false);
-		}
-
-	}
-
 	/** a {@link Builder} that builds using a {@link BodyDef}, {@link FixtureDef} and {@link Joint}
 	 *  @author dermetfan */
 	public static class DefBuilder implements Builder {
