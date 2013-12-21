@@ -289,7 +289,7 @@ public class Box2DMapObjectParser {
 			shape = new PolygonShape();
 			Rectangle rectangle = ((RectangleMapObject) mapObject).getRectangle();
 			float x = rectangle.x * unitScale, y = rectangle.y * unitScale, width = rectangle.width * unitScale, height = rectangle.height * unitScale;
-			((PolygonShape) shape).setAsBox(width / 2, height / 2, vec2.set(x - body.getPosition().x, y - body.getPosition().y), body.getAngle());
+			((PolygonShape) shape).setAsBox(width / 2, height / 2, vec2.set(x - body.getPosition().x + width / 2, y - body.getPosition().y + height / 2), body.getAngle());
 		} else if(mapObject instanceof PolygonMapObject) {
 			shape = new PolygonShape();
 			Polygon polygon = new Polygon(((PolygonMapObject) mapObject).getPolygon().getTransformedVertices());
