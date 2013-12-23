@@ -432,6 +432,16 @@ public class Breakable {
 		this.reactionForceResistance.set(reactionForceResistance);
 	}
 
+	/** @return the {@link #reactionForceLength2Resistance} */
+	public float getReactionForceLength2Resistance() {
+		return reactionForceLength2Resistance;
+	}
+
+	/** @param reactionForceLength2Resistance the {@link #reactionForceLength2Resistance} to set */
+	public void setReactionForceLength2Resistance(float reactionForceLength2Resistance) {
+		this.reactionForceLength2Resistance = reactionForceLength2Resistance;
+	}
+
 	/** @return the {@link #reactionTorqueResistance} */
 	public float getReactionTorqueResistance() {
 		return reactionTorqueResistance;
