@@ -15,7 +15,6 @@
 package net.dermetfan.utils.libgdx.box2d;
 
 import net.dermetfan.utils.Accessor;
-import net.dermetfan.utils.libgdx.math.GeometryUtils;
 import net.dermetfan.utils.math.MathUtils;
 
 import com.badlogic.gdx.math.Vector2;
@@ -121,7 +120,9 @@ public class Breakable {
 		/** {@link #destroy(Joint) destroy} */
 		public void strain(Joint joint, float delta) {
 			Breakable breakable = userDataAccessor.access(joint.getUserData());
-			Vector2 reactionForce = GeometryUtils.abs(joint.getReactionForce(1 / delta));
+			if(breakable == null)
+				return;
+			Vector2 reactionForce = joint.getReactionForce(1 / delta);
 			float reactionTorque = Math.abs(joint.getReactionTorque(1 / delta));
 			if(shouldBreak(breakable, reactionForce, reactionTorque, joint))
 				destroy(joint);
@@ -140,7 +141,7 @@ public class Breakable {
 		 *  @param joint for {@link Callback#strained(Joint, Breakable, float, float)}
 		 *  @return if the joint strained with the given values should break */
 		public static boolean shouldBreak(Breakable breakable, Vector2 reactionForce, float reactionTorque, Joint joint) {
-			return breakable != null && (reactionForce.x > breakable.reactionForceResistance.x || reactionForce.y > breakable.reactionForceResistance.y || reactionTorque > breakable.reactionTorqueResistance) && (breakable.callback == null || breakable.callback != null && !breakable.callback.strained(joint, breakable, reactionForce, reactionTorque));
+			return breakable != null && (Math.abs(reactionForce.x) > breakable.reactionForceResistance.x || Math.abs(reactionForce.y) > breakable.reactionForceResistance.y || reactionForce.len2() > breakable.reactionForceLength2Resistance || reactionTorque > breakable.reactionTorqueResistance) && (breakable.callback == null || breakable.callback != null && !breakable.callback.strained(joint, breakable, reactionForce, reactionTorque));
 		}
 
 		/** destroys the given fixture (and its body depending on {@link #breakBodyWithoutFixtures} and {@link #breakBody})
@@ -311,6 +312,9 @@ public class Breakable {
 	/** how much {@link Joint#getReactionForce(float) reaction force} the Breakable can bear */
 	private final Vector2 reactionForceResistance = new Vector2();
 
+	/** the max {@link Vector2#len2() squared length} of the {@link Joint#getReactionForce(float) reaction force} */
+	private float reactionForceLength2Resistance;
+
 	/** how much {@link Joint#getReactionTorque(float) reaction torque} the Breakable can bear */
 	private float reactionTorqueResistance;
 
@@ -335,7 +339,7 @@ public class Breakable {
 
 	/** @see #Breakable(float, float, Vector2, float, boolean, boolean, Callback) */
 	public Breakable(float normalResistance, float tangentResistance, boolean breakBody, boolean breakBodyWithoutFixtures) {
-		this(normalResistance, tangentResistance, Vector2.Zero, 0, breakBody, breakBodyWithoutFixtures, null);
+		this(normalResistance, tangentResistance, Vector2.Zero, 0, 0, breakBody, breakBodyWithoutFixtures, null);
 	}
 
 	/** @see #Breakable(float, float, boolean, Callback) */
@@ -345,45 +349,47 @@ public class Breakable {
 
 	/** @see #Breakable(float, float, Vector2, float, boolean, boolean, Callback) */
 	public Breakable(float normalResistance, float tangentResistance, boolean breakBody, Callback callback) {
-		this(normalResistance, tangentResistance, Vector2.Zero, 0, breakBody, true, callback);
+		this(normalResistance, tangentResistance, Vector2.Zero, 0, 0, breakBody, true, callback);
 	}
 
-	/** @see #Breakable(Vector2, float, boolean) */
-	public Breakable(Vector2 reactionForceResistance, float reactionTorqueResistance) {
-		this(reactionForceResistance, reactionTorqueResistance, false);
+	/** @see #Breakable(Vector2, float, float, boolean) */
+	public Breakable(Vector2 reactionForceResistance, float reactionForceLength2Resistance, float reactionTorqueResistance) {
+		this(reactionForceResistance, reactionForceLength2Resistance, reactionTorqueResistance, false);
 	}
 
-	/** @see #Breakable(Vector2, float, boolean, boolean) */
-	public Breakable(Vector2 reactionForceResistance, float reactionTorqueResistance, boolean breakBody) {
-		this(reactionForceResistance, reactionTorqueResistance, breakBody, true);
+	/** @see #Breakable(Vector2, float, float, boolean, boolean) */
+	public Breakable(Vector2 reactionForceResistance, float reactionForceLength2Resistance, float reactionTorqueResistance, boolean breakBody) {
+		this(reactionForceResistance, reactionForceLength2Resistance, reactionTorqueResistance, breakBody, true);
 	}
 
-	/** @see #Breakable(float, float, Vector2, float, boolean, boolean, Callback) */
-	public Breakable(Vector2 reactionForceResistance, float reactionTorqueResistance, boolean breakBody, boolean breakBodyWithoutFixtures) {
-		this(0, 0, reactionForceResistance, reactionTorqueResistance, breakBody, breakBodyWithoutFixtures, null);
+	/** @see #Breakable(float, float, Vector2, float, float, boolean, boolean, Callback) */
+	public Breakable(Vector2 reactionForceResistance, float reactionForceLength2Resistance, float reactionTorqueResistance, boolean breakBody, boolean breakBodyWithoutFixtures) {
+		this(0, 0, reactionForceResistance, reactionForceLength2Resistance, reactionTorqueResistance, breakBody, breakBodyWithoutFixtures, null);
 	}
 
-	/** @see #Breakable(Vector2, float, boolean, Callback) */
-	public Breakable(Vector2 reactionForceResistance, float reactionTorqueResistance, Callback callback) {
-		this(reactionForceResistance, reactionTorqueResistance, false, callback);
+	/** @see #Breakable(Vector2, float, float, boolean, Callback) */
+	public Breakable(Vector2 reactionForceResistance, float reactionForceLength2Resistance, float reactionTorqueResistance, Callback callback) {
+		this(reactionForceResistance, reactionForceLength2Resistance, reactionTorqueResistance, false, callback);
 	}
 
-	/** @see #Breakable(float, float, Vector2, float, boolean, boolean, Callback) */
-	public Breakable(Vector2 reactionForceResistance, float reactionTorqueResistance, boolean breakBody, Callback callback) {
-		this(0, 0, reactionForceResistance, reactionTorqueResistance, breakBody, true, callback);
+	/** @see #Breakable(float, float, Vector2, float, float, boolean, boolean, Callback) */
+	public Breakable(Vector2 reactionForceResistance, float reactionForceLength2Resistance, float reactionTorqueResistance, boolean breakBody, Callback callback) {
+		this(0, 0, reactionForceResistance, reactionForceLength2Resistance, reactionTorqueResistance, breakBody, true, callback);
 	}
 
 	/** @param normalResistance the {@link #normalResistance}
 	 * 	@param tangentResistance the {@link #tangentResistance}
 	 *  @param reactionForceResistance the {@link #reactionForceResistance}
+	 *  @param reactionForceLength2Resistance the {@link #reactionForceLength2Resistance}
 	 *  @param reactionTorqueResistance the {@link #reactionTorqueResistance}
 	 *  @param breakBody the {@link #breakBody}
 	 *  @param breakBodyWithoutFixtures the {@link #breakBodyWithoutFixtures}
 	 *  @param callback The {@link #callback}. If null, {@link #defaultListener} will be used. */
-	public Breakable(float normalResistance, float tangentResistance, Vector2 reactionForceResistance, float reactionTorqueResistance, boolean breakBody, boolean breakBodyWithoutFixtures, Callback callback) {
+	public Breakable(float normalResistance, float tangentResistance, Vector2 reactionForceResistance, float reactionForceLength2Resistance, float reactionTorqueResistance, boolean breakBody, boolean breakBodyWithoutFixtures, Callback callback) {
 		this.normalResistance = normalResistance;
 		this.tangentResistance = tangentResistance;
 		this.reactionForceResistance.set(reactionForceResistance);
+		this.reactionForceLength2Resistance = reactionForceLength2Resistance;
 		this.reactionTorqueResistance = reactionTorqueResistance;
 		this.breakBody = breakBody;
 		this.breakBodyWithoutFixtures = breakBodyWithoutFixtures;
@@ -392,7 +398,7 @@ public class Breakable {
 
 	/** constructs a new Breakable exactly like the given other one */
 	public Breakable(Breakable other) {
-		this(other.normalResistance, other.tangentResistance, other.reactionForceResistance, other.reactionTorqueResistance, other.breakBody, other.breakBodyWithoutFixtures, other.callback);
+		this(other.normalResistance, other.tangentResistance, other.reactionForceResistance, other.reactionForceLength2Resistance, other.reactionTorqueResistance, other.breakBody, other.breakBodyWithoutFixtures, other.callback);
 	}
 
 	/** @return the {@link #normalResistance} */
