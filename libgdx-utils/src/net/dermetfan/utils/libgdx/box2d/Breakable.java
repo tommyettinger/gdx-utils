@@ -38,8 +38,6 @@ public class Breakable {
 	 *  @author dermetfan */
 	public static class Manager implements ContactListener {
 
-		private final Array<Joint> tmpJoints = new Array<Joint>(0);
-
 		/** the fixtures that broke in {@link #strain(Contact, ContactImpulse)} */
 		public final Array<Fixture> brokenFixtures = new Array<Fixture>(1);
 
@@ -61,6 +59,9 @@ public class Breakable {
 
 		/** the {@link Accessor} used to access a Breakable in user data ({@link Accessor#access(Object) access} must return a Breakable) */
 		private Accessor<Breakable, Object> userDataAccessor = defaultUserDataAccessor;
+
+		/** used for {@link World#getJoints(Array)} in {@link #strain(World, float)} */
+		private final Array<Joint> tmpJoints = new Array<Joint>(0);
 
 		/** instantiates a new {@link Manager} */
 		public Manager() {
