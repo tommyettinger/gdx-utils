@@ -26,6 +26,7 @@ import com.badlogic.gdx.math.EarClippingTriangulator;
 import com.badlogic.gdx.math.Polygon;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.ShortArray;
 
@@ -41,6 +42,23 @@ public abstract class GeometryUtils {
 
 	/** a temporary array */
 	private static float[] tmpFloatArr;
+
+	/** @param vector the {@link Vector2} which components to set to their absolute value
+	 *  @return the given vector with all components set to its absolute value
+	 *  @see Math#abs(float) */
+	public static Vector2 abs(Vector2 vector) {
+		vector.x = Math.abs(vector.x);
+		vector.y = Math.abs(vector.y);
+		return vector;
+	}
+
+	/** @see #abs(Vector2) */
+	public static Vector3 abs(Vector3 vector) {
+		vector.x = Math.abs(vector.x);
+		vector.y = Math.abs(vector.y);
+		vector.z = Math.abs(vector.z);
+		return vector;
+	}
 
 	/** @return a Vector2 representing the size of a rectangle containing all given vertices */
 	public static Vector2 size(Vector2[] vertices, Vector2 output) {
