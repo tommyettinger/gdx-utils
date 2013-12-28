@@ -188,20 +188,21 @@ public class FileChooser extends Window {
 	};
 
 	/** @see Window#Window(String, Skin, String) */
-	public FileChooser(String title, Skin skin, String styleName) {
-		this(title, skin.get(styleName, FileChooserStyle.class));
+	public FileChooser(FileChooserListener fileChooserListener, String title, Skin skin, String styleName) {
+		this(fileChooserListener, title, skin.get(styleName, FileChooserStyle.class));
 		setSkin(skin);
 	}
 
 	/** @see Window#Window(String, Skin) */
-	public FileChooser(String title, Skin skin) {
-		this(title, skin.get(FileChooserStyle.class));
+	public FileChooser(FileChooserListener fileChooserListener, String title, Skin skin) {
+		this(fileChooserListener, title, skin.get(FileChooserStyle.class));
 		setSkin(skin);
 	}
 
 	/** @see Window#Window(String, WindowStyle) */
-	public FileChooser(String title, FileChooserStyle style) {
+	public FileChooser(FileChooserListener fileChooserListener, String title, FileChooserStyle style) {
 		super(title, style);
+		this.fileChooserListener = fileChooserListener;
 
 		pathField = new TextField(directory.path(), style.pathFieldStyle);
 		pathField.setTextFieldListener(pathFieldListener);
@@ -436,6 +437,8 @@ public class FileChooser extends Window {
 
 	/** @param fileChooserListener the {@link #fileChooserListener} to set */
 	public void setFileChooserListener(FileChooserListener fileChooserListener) {
+		if(fileChooserListener == null)
+			throw new IllegalArgumentException("fileChooserListener must not be null");
 		this.fileChooserListener = fileChooserListener;
 	}
 
