@@ -36,6 +36,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.List.ListStyle;
 import com.badlogic.gdx.scenes.scene2d.ui.ScrollPane;
 import com.badlogic.gdx.scenes.scene2d.ui.ScrollPane.ScrollPaneStyle;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
+import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton.TextButtonStyle;
 import com.badlogic.gdx.scenes.scene2d.ui.TextField;
@@ -229,8 +230,8 @@ public class FileChooser extends Window {
 		show();
 	}
 
-	/** clears this {@link FileChooser} and adds {@link #backButton}, {@link #pathField}, {@link #parentButton}, {@link #contentsPane}, {@link #chooseButton}, {@link #cancelButton} and {@link #openButton} if {@link #canChooseDirectories} is true */
-	private void build() {
+	/** Override this if you want to adjust the {@link Table layout}. Clears this {@link FileChooser} and adds {@link #backButton}, {@link #pathField}, {@link #parentButton}, {@link #contentsPane}, {@link #chooseButton}, {@link #cancelButton} and {@link #openButton} if {@link #canChooseDirectories} is true. */
+	protected void build() {
 		clearChildren();
 		FileChooserStyle style = (FileChooserStyle) getStyle();
 		add(backButton).fill().space(style.space);
@@ -244,7 +245,7 @@ public class FileChooser extends Window {
 	}
 
 	/** creates a {@link Button} according to the given {@link ButtonStyle} instance that may be a subclass */
-	private Button createButton(String textIfAny, ButtonStyle style) {
+	protected Button createButton(String textIfAny, ButtonStyle style) {
 		Button button;
 		if(style instanceof TextButtonStyle)
 			button = new TextButton(textIfAny, (TextButtonStyle) style);
@@ -273,7 +274,7 @@ public class FileChooser extends Window {
 	}
 
 	/** populates {@link #contents} with the children of {@link #directory} */
-	private void scan(FileHandle dir) {
+	protected void scan(FileHandle dir) {
 		File[] files = dir.file().listFiles(fileFilter);
 		String[] names = new String[files.length];
 		for(int i = 0; i < names.length; i++)
