@@ -149,7 +149,9 @@ public class FileChooser extends Window {
 
 		@Override
 		public void clicked(InputEvent event, float x, float y) {
-			setDirectory(directory.child(contents.getSelection()));
+			FileHandle child = directory.child(contents.getSelection());
+			if(child.isDirectory())
+				setDirectory(child);
 		}
 
 	};
@@ -172,7 +174,7 @@ public class FileChooser extends Window {
 		public void clicked(InputEvent event, float x, float y) {
 			if(fileHistory.size > 1) {
 				fileHistory.removeIndex(fileHistory.size - 1);
-				scan(directory = fileHistory.peek());
+				setDirectory(directory = fileHistory.peek(), false);
 			}
 		}
 
@@ -282,14 +284,21 @@ public class FileChooser extends Window {
 		contents.setItems(names);
 	}
 
-	/** sets {@link #directory} and updates all things that need to be udpated */
+	/** set {@link #directory} and adds it to {@link #fileHistory}
+	 *  @see #setDirectory(FileHandle, boolean) */
 	public void setDirectory(FileHandle dir) {
+		setDirectory(dir, true);
+	}
+
+	/** sets {@link #directory} and updates all things that need to be udpated */
+	public void setDirectory(FileHandle dir, boolean addToHistory) {
 		if(dir.file().canRead()) {
 			FileHandle loc = dir.isDirectory() ? dir : dir.parent();
+			if(addToHistory)
+				fileHistory.add(Gdx.files.absolute(dir.path()));
 			scan(directory = loc);
 			pathField.setText(loc.path());
 			pathField.setCursorPosition(pathField.getText().length());
-			fileHistory.add(Gdx.files.absolute(dir.path()));
 		} else
 			Gdx.app.log(FileChooser.class.getSimpleName(), "cannot read " + dir);
 	}
