@@ -309,26 +309,12 @@ public abstract class Box2DUtils {
 
 	/** @return the width of the given Body */
 	public static float width(Body body) {
-		float min = Float.POSITIVE_INFINITY, max = Float.NEGATIVE_INFINITY, tmp;
-		for(Fixture fixture : body.getFixtureList()) {
-			if((tmp = minX(fixture)) < min)
-				min = tmp;
-			if((tmp = maxX(fixture)) > max)
-				max = tmp;
-		}
-		return Math.abs(max - min);
+		return Math.abs(maxX(body) - minX(body));
 	}
 
 	/** @return the height of the given Body */
 	public static float height(Body body) {
-		float min = Float.POSITIVE_INFINITY, max = Float.NEGATIVE_INFINITY, tmp;
-		for(Fixture fixture : body.getFixtureList()) {
-			if((tmp = minY(fixture)) < min)
-				min = tmp;
-			if((tmp = maxY(fixture)) > max)
-				max = tmp;
-		}
-		return Math.abs(max - min);
+		return Math.abs(maxY(body) - minY(body));
 	}
 
 	/** @return the width of the given Fixture */
