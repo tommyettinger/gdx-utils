@@ -14,9 +14,9 @@
 
 package net.dermetfan.utils.libgdx.box2d;
 
+import static com.badlogic.gdx.math.MathUtils.radDeg;
 import static net.dermetfan.utils.libgdx.math.GeometryUtils.filterX;
 import static net.dermetfan.utils.libgdx.math.GeometryUtils.filterY;
-import static net.dermetfan.utils.libgdx.math.GeometryUtils.rotate;
 import static net.dermetfan.utils.math.MathUtils.amplitude;
 import static net.dermetfan.utils.math.MathUtils.max;
 import static net.dermetfan.utils.math.MathUtils.min;
@@ -376,13 +376,13 @@ public abstract class Box2DUtils {
 	}
 
 	/** @return the relative position of the given Shape to its Body
-	 *  @param rotation the rotation of the body in radians */
+	 *  @param rotation the rotation of the body in degrees */
 	public static Vector2 positionRelative(Shape shape, float rotation, Vector2 output) {
 		if(cache.containsKey(shape)) {
 			ShapeCache sc = cache.get(shape);
-			return rotate(output.set(sc.maxX - sc.width / 2, sc.maxY - sc.height / 2), rotation); // faster
+			return output.set(sc.maxX - sc.width / 2, sc.maxY - sc.height / 2).rotate(rotation); // faster
 		}
-		return rotate(output.set(maxX(shape) - width(shape) / 2, maxY(shape) - height(shape) / 2), rotation);
+		return output.set(maxX(shape) - width(shape) / 2, maxY(shape) - height(shape) / 2).rotate(rotation);
 	}
 
 	/** @see #positionRelative(Shape, float, Vector2) */
@@ -409,7 +409,7 @@ public abstract class Box2DUtils {
 	 *  @param shape the Shape which position to get
 	 *  @param body the Body the given Shape is attached to */
 	public static Vector2 position(Shape shape, Body body) {
-		return body.getPosition().add(positionRelative(shape, body.getAngle()));
+		return body.getPosition().add(positionRelative(shape, body.getAngle() * radDeg));
 	}
 
 	/** creates a depe copy of a {@link Body} (without deep copying the {@link Shape Shapes} of its {@link Fixture Fixtures})<br/>
@@ -523,129 +523,129 @@ public abstract class Box2DUtils {
 		return copy;
 	}
 
-	// This method is not implemented since the Box2D API does not offer all the necessary information.
-	//	public static Joint copy(Joint joint) {
-	//		JointDef jointDef;
-	//		Joint copy;
-	//		switch(joint.getType()) {
-	//		case Unknown:
-	//			jointDef = new JointDef();
-	//			break;
-	//		case RevoluteJoint:
-	//			RevoluteJoint revoluteJoint = (RevoluteJoint) joint;
-	//			RevoluteJointDef revoluteJointDef = (RevoluteJointDef) (jointDef = new RevoluteJointDef());
-	//			revoluteJointDef.collideConnected = revoluteJointDef.collideConnected; // TODO
-	//			revoluteJointDef.enableLimit = revoluteJoint.isLimitEnabled();
-	//			revoluteJointDef.enableMotor = revoluteJoint.isMotorEnabled();
-	//			revoluteJointDef.localAnchorA.set(revoluteJoint.getAnchorA());
-	//			revoluteJointDef.localAnchorB.set(revoluteJoint.getAnchorB());
-	//			revoluteJointDef.lowerAngle = revoluteJoint.getLowerLimit();
-	//			revoluteJointDef.maxMotorTorque = revoluteJoint.getMaxMotorTorque();
-	//			revoluteJointDef.motorSpeed = revoluteJoint.getMotorSpeed();
-	//			revoluteJointDef.referenceAngle = revoluteJoint.getReferenceAngle();
-	//			revoluteJointDef.upperAngle = revoluteJoint.getUpperLimit();
-	//			break;
-	//		case PrismaticJoint:
-	//			PrismaticJoint prismaticJoint = (PrismaticJoint) joint;
-	//			PrismaticJointDef prismaticJointDef = (PrismaticJointDef) (jointDef = new PrismaticJointDef());
-	//			prismaticJointDef.collideConnected = prismaticJointDef.collideConnected; // TODO
-	//			prismaticJointDef.enableLimit = prismaticJoint.isLimitEnabled();
-	//			prismaticJointDef.enableMotor = prismaticJoint.isMotorEnabled();
-	//			prismaticJointDef.localAnchorA.set(prismaticJoint.getAnchorA());
-	//			prismaticJointDef.localAnchorB.set(prismaticJoint.getAnchorB());
-	//			prismaticJointDef.localAxisA.set(prismaticJointDef.localAxisA); // TODO
-	//			prismaticJointDef.lowerTranslation = prismaticJointDef.lowerTranslation; // TODO
-	//			prismaticJointDef.maxMotorForce = prismaticJointDef.maxMotorForce; // TODO
-	//			prismaticJointDef.motorSpeed = prismaticJoint.getMotorSpeed();
-	//			prismaticJointDef.referenceAngle = prismaticJointDef.referenceAngle; // TODO
-	//			prismaticJointDef.upperTranslation = prismaticJointDef.upperTranslation; // TODO
-	//			break;
-	//		case DistanceJoint:
-	//			DistanceJoint distanceJoint = (DistanceJoint) joint;
-	//			DistanceJointDef distanceJointDef = (DistanceJointDef) (jointDef = new DistanceJointDef());
-	//			distanceJointDef.collideConnected = distanceJointDef.collideConnected; // TODO
-	//			distanceJointDef.dampingRatio = distanceJoint.getDampingRatio();
-	//			distanceJointDef.frequencyHz = distanceJoint.getFrequency();
-	//			distanceJointDef.length = distanceJoint.getLength();
-	//			distanceJointDef.localAnchorA.set(distanceJoint.getAnchorA());
-	//			distanceJointDef.localAnchorB.set(distanceJoint.getAnchorB());
-	//			break;
-	//		case PulleyJoint:
-	//			PulleyJoint pulleyJoint = (PulleyJoint) joint;
-	//			PulleyJointDef pulleyJointDef = (PulleyJointDef) (jointDef = new PulleyJointDef());
-	//			pulleyJointDef.collideConnected = pulleyJointDef.collideConnected; // TODO
-	//			pulleyJointDef.groundAnchorA.set(pulleyJoint.getGroundAnchorA());
-	//			pulleyJointDef.groundAnchorB.set(pulleyJoint.getGroundAnchorB());
-	//			pulleyJointDef.lengthA = pulleyJoint.getLength1();
-	//			pulleyJointDef.lengthB = pulleyJoint.getLength2();
-	//			pulleyJointDef.localAnchorA.set(pulleyJoint.getAnchorA());
-	//			pulleyJointDef.localAnchorB.set(pulleyJoint.getAnchorB());
-	//			pulleyJointDef.ratio = pulleyJoint.getRatio();
-	//			break;
-	//		case MouseJoint:
-	//			MouseJoint mouseJoint = (MouseJoint) joint;
-	//			MouseJointDef mouseJointDef = (MouseJointDef) (jointDef = new MouseJointDef());
-	//			mouseJointDef.collideConnected = mouseJointDef.collideConnected; // TODO
-	//			mouseJointDef.dampingRatio = mouseJoint.getDampingRatio();
-	//			mouseJointDef.frequencyHz = mouseJoint.getFrequency();
-	//			mouseJointDef.maxForce = mouseJoint.getMaxForce();
-	//			mouseJointDef.target.set(mouseJoint.getTarget());
-	//			break;
-	//		case GearJoint:
-	//			GearJoint gearJoint = (GearJoint) joint;
-	//			GearJointDef gearJointDef = (GearJointDef) (jointDef = new GearJointDef());
-	//			gearJointDef.collideConnected = gearJointDef.collideConnected; // TODO
-	//			gearJointDef.joint1 = gearJointDef.joint1; // TODO
-	//			gearJointDef.joint2 = gearJointDef.joint2; // TODO
-	//			gearJointDef.ratio = gearJoint.getRatio();
-	//			break;
-	//		case WheelJoint:
-	//			WheelJoint wheelJoint = (WheelJoint) joint;
-	//			WheelJointDef wheelJointDef = (WheelJointDef) (jointDef = new WheelJointDef());
-	//			wheelJointDef.collideConnected = wheelJointDef.collideConnected; // TODO
-	//			wheelJointDef.dampingRatio = wheelJoint.getSpringDampingRatio();
-	//			wheelJointDef.enableMotor = wheelJointDef.enableMotor; // TODO
-	//			wheelJointDef.frequencyHz = wheelJoint.getSpringFrequencyHz();
-	//			wheelJointDef.localAnchorA.set(wheelJoint.getAnchorA());
-	//			wheelJointDef.localAnchorB.set(wheelJoint.getAnchorB());
-	//			wheelJointDef.localAxisA.set(wheelJointDef.localAxisA); // TODO
-	//			wheelJointDef.maxMotorTorque = wheelJoint.getMaxMotorTorque();
-	//			wheelJointDef.motorSpeed = wheelJoint.getMotorSpeed();
-	//			break;
-	//		case WeldJoint:
-	//			WeldJoint weldJoint = (WeldJoint) joint;
-	//			WeldJointDef weldJointDef = (WeldJointDef) (jointDef = new WeldJointDef());
-	//			weldJointDef.collideConnected = weldJointDef.collideConnected; // TODO
-	//			weldJointDef.localAnchorA.set(weldJoint.getAnchorA());
-	//			weldJointDef.localAnchorB.set(weldJoint.getAnchorB());
-	//			weldJointDef.referenceAngle = weldJoint.getReferenceAngle();
-	//			break;
-	//		case FrictionJoint:
-	//			FrictionJoint frictionJoint = (FrictionJoint) joint;
-	//			FrictionJointDef frictionJointDef = (FrictionJointDef) (jointDef = new FrictionJointDef());
-	//			frictionJointDef.collideConnected = frictionJointDef.collideConnected; // TODO
-	//			frictionJointDef.localAnchorA.set(frictionJoint.getAnchorA());
-	//			frictionJointDef.localAnchorB.set(frictionJoint.getAnchorB());
-	//			frictionJointDef.maxForce = frictionJoint.getMaxForce();
-	//			frictionJointDef.maxTorque = frictionJoint.getMaxTorque();
-	//			break;
-	//		case RopeJoint:
-	//			RopeJoint ropeJoint = (RopeJoint) joint;
-	//			RopeJointDef ropeJointDef = (RopeJointDef) (jointDef = new RopeJointDef());
-	//			ropeJointDef.localAnchorA.set(ropeJoint.getAnchorA());
-	//			ropeJointDef.localAnchorB.set(ropeJoint.getAnchorB());
-	//			ropeJointDef.maxLength = ropeJoint.getMaxLength();
-	//			break;
-	//		default:
-	//			return joint;
-	//		}
-	//		jointDef.type = joint.getType();
-	//		jointDef.bodyA = joint.getBodyA();
-	//		jointDef.bodyB = joint.getBodyB();
-	//		copy = joint.getBodyA().getWorld().createJoint(jointDef);
-	//		copy.setUserData(joint.getUserData());
-	//		return copy;
+	// This method is not implemented because the Box2D API does not offer all the necessary information.
+	//public static Joint copy(Joint joint, Body bodyA, Body bodyB) {
+	//	JointDef jointDef;
+	//	Joint copy;
+	//	switch(joint.getType()) {
+	//	case Unknown:
+	//		jointDef = new JointDef();
+	//		break;
+	//	case RevoluteJoint:
+	//		RevoluteJoint revoluteJoint = (RevoluteJoint) joint;
+	//		RevoluteJointDef revoluteJointDef = (RevoluteJointDef) (jointDef = new RevoluteJointDef());
+	//		revoluteJointDef.collideConnected = revoluteJointDef.collideConnected; // TODO
+	//		revoluteJointDef.enableLimit = revoluteJoint.isLimitEnabled();
+	//		revoluteJointDef.enableMotor = revoluteJoint.isMotorEnabled();
+	//		revoluteJointDef.localAnchorA.set(revoluteJoint.getAnchorA());
+	//		revoluteJointDef.localAnchorB.set(revoluteJoint.getAnchorB());
+	//		revoluteJointDef.lowerAngle = revoluteJoint.getLowerLimit();
+	//		revoluteJointDef.maxMotorTorque = revoluteJoint.getMaxMotorTorque();
+	//		revoluteJointDef.motorSpeed = revoluteJoint.getMotorSpeed();
+	//		revoluteJointDef.referenceAngle = revoluteJoint.getReferenceAngle();
+	//		revoluteJointDef.upperAngle = revoluteJoint.getUpperLimit();
+	//		break;
+	//	case PrismaticJoint:
+	//		PrismaticJoint prismaticJoint = (PrismaticJoint) joint;
+	//		PrismaticJointDef prismaticJointDef = (PrismaticJointDef) (jointDef = new PrismaticJointDef());
+	//		prismaticJointDef.collideConnected = prismaticJointDef.collideConnected; // TODO
+	//		prismaticJointDef.enableLimit = prismaticJoint.isLimitEnabled();
+	//		prismaticJointDef.enableMotor = prismaticJoint.isMotorEnabled();
+	//		prismaticJointDef.localAnchorA.set(prismaticJoint.getAnchorA());
+	//		prismaticJointDef.localAnchorB.set(prismaticJoint.getAnchorB());
+	//		prismaticJointDef.localAxisA.set(prismaticJointDef.localAxisA); // TODO
+	//		prismaticJointDef.lowerTranslation = prismaticJointDef.lowerTranslation; // TODO
+	//		prismaticJointDef.maxMotorForce = prismaticJointDef.maxMotorForce; // TODO
+	//		prismaticJointDef.motorSpeed = prismaticJoint.getMotorSpeed();
+	//		prismaticJointDef.referenceAngle = prismaticJointDef.referenceAngle; // TODO
+	//		prismaticJointDef.upperTranslation = prismaticJointDef.upperTranslation; // TODO
+	//		break;
+	//	case DistanceJoint:
+	//		DistanceJoint distanceJoint = (DistanceJoint) joint;
+	//		DistanceJointDef distanceJointDef = (DistanceJointDef) (jointDef = new DistanceJointDef());
+	//		distanceJointDef.collideConnected = distanceJointDef.collideConnected; // TODO
+	//		distanceJointDef.dampingRatio = distanceJoint.getDampingRatio();
+	//		distanceJointDef.frequencyHz = distanceJoint.getFrequency();
+	//		distanceJointDef.length = distanceJoint.getLength();
+	//		distanceJointDef.localAnchorA.set(distanceJoint.getAnchorA());
+	//		distanceJointDef.localAnchorB.set(distanceJoint.getAnchorB());
+	//		break;
+	//	case PulleyJoint:
+	//		PulleyJoint pulleyJoint = (PulleyJoint) joint;
+	//		PulleyJointDef pulleyJointDef = (PulleyJointDef) (jointDef = new PulleyJointDef());
+	//		pulleyJointDef.collideConnected = pulleyJointDef.collideConnected; // TODO
+	//		pulleyJointDef.groundAnchorA.set(pulleyJoint.getGroundAnchorA());
+	//		pulleyJointDef.groundAnchorB.set(pulleyJoint.getGroundAnchorB());
+	//		pulleyJointDef.lengthA = pulleyJoint.getLength1();
+	//		pulleyJointDef.lengthB = pulleyJoint.getLength2();
+	//		pulleyJointDef.localAnchorA.set(pulleyJoint.getAnchorA());
+	//		pulleyJointDef.localAnchorB.set(pulleyJoint.getAnchorB());
+	//		pulleyJointDef.ratio = pulleyJoint.getRatio();
+	//		break;
+	//	case MouseJoint:
+	//		MouseJoint mouseJoint = (MouseJoint) joint;
+	//		MouseJointDef mouseJointDef = (MouseJointDef) (jointDef = new MouseJointDef());
+	//		mouseJointDef.collideConnected = mouseJointDef.collideConnected; // TODO
+	//		mouseJointDef.dampingRatio = mouseJoint.getDampingRatio();
+	//		mouseJointDef.frequencyHz = mouseJoint.getFrequency();
+	//		mouseJointDef.maxForce = mouseJoint.getMaxForce();
+	//		mouseJointDef.target.set(mouseJoint.getTarget());
+	//		break;
+	//	case GearJoint:
+	//		GearJoint gearJoint = (GearJoint) joint;
+	//		GearJointDef gearJointDef = (GearJointDef) (jointDef = new GearJointDef());
+	//		gearJointDef.collideConnected = gearJointDef.collideConnected; // TODO
+	//		gearJointDef.joint1 = gearJointDef.joint1; // TODO
+	//		gearJointDef.joint2 = gearJointDef.joint2; // TODO
+	//		gearJointDef.ratio = gearJoint.getRatio();
+	//		break;
+	//	case WheelJoint:
+	//		WheelJoint wheelJoint = (WheelJoint) joint;
+	//		WheelJointDef wheelJointDef = (WheelJointDef) (jointDef = new WheelJointDef());
+	//		wheelJointDef.collideConnected = wheelJointDef.collideConnected; // TODO
+	//		wheelJointDef.dampingRatio = wheelJoint.getSpringDampingRatio();
+	//		wheelJointDef.enableMotor = wheelJointDef.enableMotor; // TODO
+	//		wheelJointDef.frequencyHz = wheelJoint.getSpringFrequencyHz();
+	//		wheelJointDef.localAnchorA.set(wheelJoint.getAnchorA());
+	//		wheelJointDef.localAnchorB.set(wheelJoint.getAnchorB());
+	//		wheelJointDef.localAxisA.set(wheelJointDef.localAxisA); // TODO
+	//		wheelJointDef.maxMotorTorque = wheelJoint.getMaxMotorTorque();
+	//		wheelJointDef.motorSpeed = wheelJoint.getMotorSpeed();
+	//		break;
+	//	case WeldJoint:
+	//		WeldJoint weldJoint = (WeldJoint) joint;
+	//		WeldJointDef weldJointDef = (WeldJointDef) (jointDef = new WeldJointDef());
+	//		weldJointDef.collideConnected = weldJointDef.collideConnected; // TODO
+	//		weldJointDef.localAnchorA.set(weldJoint.getAnchorA());
+	//		weldJointDef.localAnchorB.set(weldJoint.getAnchorB());
+	//		weldJointDef.referenceAngle = weldJoint.getReferenceAngle();
+	//		break;
+	//	case FrictionJoint:
+	//		FrictionJoint frictionJoint = (FrictionJoint) joint;
+	//		FrictionJointDef frictionJointDef = (FrictionJointDef) (jointDef = new FrictionJointDef());
+	//		frictionJointDef.collideConnected = frictionJointDef.collideConnected; // TODO
+	//		frictionJointDef.localAnchorA.set(frictionJoint.getAnchorA());
+	//		frictionJointDef.localAnchorB.set(frictionJoint.getAnchorB());
+	//		frictionJointDef.maxForce = frictionJoint.getMaxForce();
+	//		frictionJointDef.maxTorque = frictionJoint.getMaxTorque();
+	//		break;
+	//	case RopeJoint:
+	//		RopeJoint ropeJoint = (RopeJoint) joint;
+	//		RopeJointDef ropeJointDef = (RopeJointDef) (jointDef = new RopeJointDef());
+	//		ropeJointDef.localAnchorA.set(ropeJoint.getAnchorA());
+	//		ropeJointDef.localAnchorB.set(ropeJoint.getAnchorB());
+	//		ropeJointDef.maxLength = ropeJoint.getMaxLength();
+	//		break;
+	//	default:
+	//		return joint;
 	//	}
+	//	jointDef.type = joint.getType();
+	//	jointDef.bodyA = bodyA;
+	//	jointDef.bodyB = bodyB;
+	//	copy = bodyA.getWorld().createJoint(jointDef);
+	//	copy.setUserData(joint.getUserData());
+	//	return copy;
+	//}
 
 	/** @return the {@link #autoCache} */
 	public static boolean isAutoCache() {

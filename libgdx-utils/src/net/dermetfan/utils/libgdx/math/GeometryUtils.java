@@ -14,8 +14,6 @@
 
 package net.dermetfan.utils.libgdx.math;
 
-import static com.badlogic.gdx.math.MathUtils.cos;
-import static com.badlogic.gdx.math.MathUtils.sin;
 import static net.dermetfan.utils.math.MathUtils.amplitude;
 import static net.dermetfan.utils.math.MathUtils.max;
 import static net.dermetfan.utils.math.MathUtils.min;
@@ -23,6 +21,7 @@ import net.dermetfan.utils.ArrayUtils;
 
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.math.EarClippingTriangulator;
+import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Polygon;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
@@ -228,25 +227,60 @@ public abstract class GeometryUtils {
 		return max(filterY(vertices));
 	}
 
-	/** rotates {@code point} by {@code radians} around [0:0] (local rotation)
-	 *  @param point the point to rotate
-	 *  @param radians the rotation
-	 *  @return the given {@code point} rotated by {@code radians} */
-	public static Vector2 rotate(Vector2 point, float radians) {
-		float xx = point.x, xy = point.y, yx = point.x, yy = point.y;
-		xx = xx * cos(radians) - xy * sin(radians);
-		yy = yx * sin(radians) + yy * cos(radians);
-		return point.set(xx, yy);
-	}
-
 	/** rotates a {@code point} around {@code center}
 	 *  @param point the point to rotate
-	 *  @param center the point around which to rotate {@code point}
-	 *  @param radians the rotation
-	 *  @return the given {@code point} rotated around {@code center} by {@code radians}
-	 *  @see #rotate(Vector2, float) */
-	public static Vector2 rotate(Vector2 point, Vector2 center, float radians) {
-		return rotate(point, radians).add(center);
+	 *  @param origin the point around which to rotate {@code point}
+	 *  @param degrees the rotation
+	 *  @return the given {@code point} rotated around {@code center} by {@code degrees} */
+	public static Vector2 rotate(Vector2 point, Vector2 origin, float degrees) {
+		if(point.equals(origin))
+			return point;
+		return point.add(origin).rotate(degrees).sub(origin);
+	}
+
+	/** returns the vertices of a rotated rectangle
+	 *  @param x the x of the rectangle
+	 *  @param y the y of the rectangle
+	 *  @param width the widht of the rectangle
+	 *  @param height the height of the rectangle
+	 *  @param radians the angle to rotate the rectangle by
+	 *  @param output The array to store the results in. Will be recreated if it is null or its length is not 8.
+	 *  @return the rotated vertices */
+	public static float[] rotate(float x, float y, float width, float height, float radians, float[] output) {
+		// http://www.monkeycoder.co.nz/Community/posts.php?topic=3935
+		float rad = (float) (Math.sqrt(height * height + width * width) / 2.);
+		float theta = MathUtils.atan2(height, width);
+		float x0 = (float) (rad * Math.cos(theta + radians));
+		float y0 = (float) (rad * Math.sin(theta + radians));
+		float x1 = (float) (rad * Math.cos(-theta + radians));
+		float y1 = (float) (rad * Math.sin(-theta + radians));
+		float offsetX = x + width / 2, offsetY = y + height / 2;
+		if(output == null || output.length != 8)
+			output = new float[8];
+		output[0] = offsetX + x0;
+		output[1] = offsetY + y0;
+		output[2] = offsetX + x1;
+		output[3] = offsetY + y1;
+		output[4] = offsetX - x0;
+		output[5] = offsetY - y0;
+		output[6] = offsetX - x1;
+		output[7] = offsetY - y1;
+		return output;
+	}
+
+	/** @see #rotate(float, float, float, float, float, float[]) */
+	public static float[] rotate(float x, float y, float width, float height, float radians) {
+		return rotate(x, y, width, height, radians, tmpFloatArr);
+	}
+
+	/** @see #rotate(float, float, float, float, float, float[]) */
+	public static float[] rotate(Rectangle rectangle, float radians, float[] output) {
+		return rotate(rectangle.x, rectangle.y, rectangle.width, rectangle.height, radians, output);
+	}
+
+	/** @see #rotate(Rectangle, float, float[]) */
+	public static float[] rotate(Rectangle rectangle, float radians) {
+		return rotate(rectangle, radians, tmpFloatArr);
 	}
 
 	/** @param vector2s the Vector2[] to convert to a float[]
