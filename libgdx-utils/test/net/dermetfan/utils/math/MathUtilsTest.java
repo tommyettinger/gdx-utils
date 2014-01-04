@@ -1,7 +1,9 @@
 package net.dermetfan.utils.math;
 
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import net.dermetfan.utils.ArrayUtils;
 
 import org.junit.Test;
 
@@ -34,6 +36,31 @@ public class MathUtilsTest {
 	public void scale() {
 		float[] values = {-50, -25, 0, 25, 50};
 		assertEquals(1, MathUtils.amplitude(MathUtils.scale(values, 0, 1, false)), 0);
+	}
+
+	@Test
+	public void abs() {
+		assertArrayEquals(new Float[] {1f, 1f, 0f}, ArrayUtils.box(MathUtils.abs(new float[] {1, -1, 0})));
+	}
+
+	@Test
+	public void add() {
+		assertArrayEquals(new Float[] {0f, 1f, 2f}, ArrayUtils.box(MathUtils.add(new float[] {-1, 0, 1}, 1)));
+	}
+
+	@Test
+	public void sub() {
+		assertArrayEquals(new Float[] {0f, 1f, 2f}, ArrayUtils.box(MathUtils.sub(new float[] {1, 2, 3}, 1)));
+	}
+
+	@Test
+	public void mul() {
+		assertArrayEquals(new Float[] {0f, 1f, 2f}, ArrayUtils.box(MathUtils.mul(new float[] {0, .5f, 1}, 2)));
+	}
+
+	@Test
+	public void div() {
+		assertArrayEquals(new Float[] {0f, 1f, 2f}, ArrayUtils.box(MathUtils.div(new float[] {0, 2, 4}, 2)));
 	}
 
 }
