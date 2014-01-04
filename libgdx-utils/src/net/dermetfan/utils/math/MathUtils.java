@@ -66,6 +66,37 @@ public class MathUtils {
 		return Float.isNaN(value) ? replacement : value;
 	}
 
+	/** @return the given values with each element being the {@link Math#abs(float) absolute} of its value */
+	public static float[] abs(float[] values) {
+		for(int i = 0; i < values.length; i++)
+			values[i] = Math.abs(values[i]);
+		return values;
+	}
+
+	/** @return the given values with each element multiplied with the given factor */
+	public static float[] mul(float[] values, float factor) {
+		for(int i = 0; i < values.length; i++)
+			values[i] *= factor;
+		return values;
+	}
+
+	/** @return the given values with each element divided by the given divisor */
+	public static float[] div(float[] values, float divisor) {
+		return mul(values, 1 / divisor);
+	}
+
+	/** @return the given values with the given value added to each element */
+	public static float[] add(float[] values, float value) {
+		for(int i = 0; i < values.length; i++)
+			values[i] += value;
+		return values;
+	}
+
+	/** @return the given values with the given value subtracted from each element */
+	public static float[] sub(float[] values, float value) {
+		return add(values, -value);
+	}
+
 	/** @return the sum of all values in the given array */
 	public static float sum(float[] values) {
 		float sum = 0;

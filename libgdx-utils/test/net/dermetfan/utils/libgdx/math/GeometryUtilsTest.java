@@ -2,11 +2,11 @@ package net.dermetfan.utils.libgdx.math;
 
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import net.dermetfan.utils.ArrayUtils;
 
 import org.junit.Test;
 
-import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Polygon;
 import com.badlogic.gdx.math.Vector2;
 
@@ -60,7 +60,7 @@ public class GeometryUtilsTest {
 
 	@Test
 	public void rotate() {
-		assertEquals(new Vector2(1, 1), GeometryUtils.rotate(new Vector2(1, 1), Vector2.Zero, 360 * MathUtils.degRad));
+		assertTrue(new Vector2(-1, -1).epsilonEquals(GeometryUtils.rotate(new Vector2(1, 1), new Vector2(0, 0), 180), .00001f));
 	}
 
 	@Test
