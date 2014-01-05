@@ -56,7 +56,7 @@ public class TmxMapWriter extends XmlWriter {
 		XML, CSV, Base64, Base64Zlib, Base64Gzip
 	}
 
-	/** keys that {@link #tmx(MapProperties)} will exclude */
+	/** a temporary HashSet for use with {@link #tmx(MapProperties, Set)} */
 	private final HashSet<String> excludedKeys = new HashSet<String>();
 
 	/** creates a new {@link TmxMapWriter} using the given {@link Writer} */
@@ -232,17 +232,15 @@ public class TmxMapWriter extends XmlWriter {
 			break;
 		case Base64:
 			attribute("encoding", "base64");
-			// TODO implement
-			break;
+			throw new UnsupportedOperationException("Base64 encoding is not implemented yet"); // TODO implement
 		case Base64Gzip:
 			attribute("encoding", "base64");
 			attribute("compression", "gzip");
-			// TODO implement
-			break;
+			throw new UnsupportedOperationException("Base64 encoding with gzip compression is not implemented yet"); // TODO implement
 		case Base64Zlib:
 			attribute("encoding", "base64");
 			attribute("compression", "zlib");
-			// TODO implement
+			throw new UnsupportedOperationException("Base64 encoding with zlip compression is not implemented yet"); // TODO implement
 		}
 		pop();
 
