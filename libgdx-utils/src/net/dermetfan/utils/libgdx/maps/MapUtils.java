@@ -53,7 +53,7 @@ public abstract class MapUtils {
 				return (T) Boolean.valueOf(value.toString());
 
 			if(defaultValue.getClass() == Integer.class && !(value instanceof Integer))
-				return (T) Integer.valueOf(value.toString());
+				return (T) Integer.valueOf(Float.valueOf(value.toString()).intValue());
 
 			if(defaultValue.getClass() == Float.class && !(value instanceof Float))
 				return (T) Float.valueOf(value.toString());
