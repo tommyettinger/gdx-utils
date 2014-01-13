@@ -150,10 +150,8 @@ public class Box2DSprite extends Sprite {
 
 		Array<Box2DSprite> keys = tmpZMap.keys().toArray();
 		keys.sort(zComparator);
-
-		Object value;
 		for(Box2DSprite key : keys) {
-			value = tmpZMap.get(key);
+			Object value = tmpZMap.get(key);
 			if(value instanceof Body)
 				key.draw(batch, (Body) value);
 			else
