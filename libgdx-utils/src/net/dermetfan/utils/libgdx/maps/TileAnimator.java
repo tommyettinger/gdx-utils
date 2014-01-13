@@ -84,20 +84,20 @@ public abstract class TileAnimator {
 	 *  @param animations the animations to use
 	 *  @param layer the {@link TiledMapTileLayer} which tiles to animate
 	 *  @param animationKey the key used to tell if a tile is a frame
-	 *  @param intervalKey The key used to get the animation interval (duration each frame is displayed). If not found, 1 / 3f will be used as duration.
+	 *  @param intervalKey the key used to get the animation interval (duration each frame is displayed)
 	 *  @param defaultInterval the interval used if no value is found for the intervalKey */
 	public static void animateLayer(ObjectMap<String, Array<StaticTiledMapTile>> animations, TiledMapTileLayer layer, String animationKey, String intervalKey, float defaultInterval) {
-		TiledMapTile tile;
-		MapProperties tileProperties;
-
-		Cell cell;
 		for(int x = 0; x < layer.getWidth(); x++)
-			for(int y = 0; y < layer.getHeight(); y++)
+			for(int y = 0; y < layer.getHeight(); y++) {
+				Cell cell;
+				TiledMapTile tile;
+				MapProperties tileProperties;
 				if((cell = layer.getCell(x, y)) != null && (tile = cell.getTile()) != null && (tileProperties = tile.getProperties()).containsKey(animationKey)) {
 					AnimatedTiledMapTile animatedTile = new AnimatedTiledMapTile(getProperty(tileProperties, intervalKey, defaultInterval), animations.get(tileProperties.get(animationKey, String.class)));
 					animatedTile.getProperties().putAll(tile.getProperties());
 					cell.setTile(animatedTile);
 				}
+			}
 	}
 
 	/** filters the tiles that are frames
