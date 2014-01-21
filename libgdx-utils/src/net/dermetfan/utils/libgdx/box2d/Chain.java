@@ -625,15 +625,15 @@ public class Chain {
 	}
 
 	/** <strong>Warning: This is used by multiple methods and may be modified unexpectedly. It's highly recommended to {@link Array#addAll(Array) add} its items to your own collection.</strong> */
-	private final Array<Connection> getConnections = new Array<Connection>();
+	private final Array<Connection> tmpConnections = new Array<Connection>();
 
 	/** <strong>Warning: The returned Array is used by other methods and may be modified unexpectedly. It's highly recommended to {@link Array#addAll(Array) add} its items to your own collection.</strong> 
 	 *  @return an Array representing the current state of {@link #connections}
-	 *  @see #getConnections */
+	 *  @see #tmpConnections */
 	public Array<Connection> getConnections() {
-		getConnections.clear();
-		getConnections.addAll(connections);
-		return getConnections;
+		tmpConnections.clear();
+		tmpConnections.addAll(connections);
+		return tmpConnections;
 	}
 
 	/** @return the {@link #builder} */
