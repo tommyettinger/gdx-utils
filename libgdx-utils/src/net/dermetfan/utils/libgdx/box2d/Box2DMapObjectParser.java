@@ -652,7 +652,9 @@ public class Box2DMapObjectParser {
 	}
 
 	/** @return the desiredName if it was available, otherwise desiredName with a number appended */
-	public String findAvailableName(String desiredName, ObjectMap<String, ?> map) {
+	public static String findAvailableName(String desiredName, ObjectMap<String, ?> map) {
+		if(desiredName == null)
+			desiredName = String.valueOf(map.size);
 		if(map.containsKey(desiredName)) {
 			int duplicate = 1;
 			while(map.containsKey(desiredName + duplicate))
