@@ -42,10 +42,14 @@ import com.badlogic.gdx.scenes.scene2d.ui.TextButton.TextButtonStyle;
 import com.badlogic.gdx.scenes.scene2d.ui.TextField;
 import com.badlogic.gdx.scenes.scene2d.ui.TextField.TextFieldListener;
 import com.badlogic.gdx.scenes.scene2d.ui.TextField.TextFieldStyle;
+import com.badlogic.gdx.scenes.scene2d.ui.Widget;
 import com.badlogic.gdx.scenes.scene2d.ui.Window;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.scenes.scene2d.utils.Drawable;
 import com.badlogic.gdx.utils.Array;
+import com.badlogic.gdx.utils.Json;
+import com.badlogic.gdx.utils.Json.Serializable;
+import com.badlogic.gdx.utils.JsonValue;
 
 /** A {@link TextField} showing the {@link #pathField} of the currently browsed folder with {@link #backButton} and {@link #parentButton} buttons.
  *  There's a {@link #contentsPane scrollable} {@link List} under those showing the contents of the currently browsed folder and {@link #chooseButton} and {@link #cancelButton} buttons.
@@ -207,28 +211,19 @@ public class FileChooser extends Window {
 		super(title, style);
 		this.fileChooserListener = fileChooserListener;
 
-		pathField = new TextField(directory.path(), style.pathFieldStyle);
-		pathField.setTextFieldListener(pathFieldListener);
-
+		(pathField = new TextField(directory.path(), style.pathFieldStyle)).setTextFieldListener(pathFieldListener);
 		contents = new List(new String[] {directory.name()}, style.contentsStyle);
 		refresh();
 
-		chooseButton = createButton("select", style.chooseButtonStyle);
-		openButton = createButton("open", style.openButtonStyle);
-		cancelButton = createButton("cancel", style.cancelButtonStyle);
-		backButton = createButton("back", style.backButtonStyle);
-		parentButton = createButton("up", style.parentButtonStyle);
-
-		chooseButton.addListener(chooseButtonListener);
-		openButton.addListener(openButtonListener);
-		cancelButton.addListener(cancelButtonListener);
-		backButton.addListener(backButtonListener);
-		parentButton.addListener(parentButtonListener);
+		(chooseButton = createButton("select", style.chooseButtonStyle)).addListener(chooseButtonListener);
+		(openButton = createButton("open", style.openButtonStyle)).addListener(openButtonListener);
+		(cancelButton = createButton("cancel", style.cancelButtonStyle)).addListener(cancelButtonListener);
+		(backButton = createButton("back", style.backButtonStyle)).addListener(backButtonListener);
+		(parentButton = createButton("up", style.parentButtonStyle)).addListener(parentButtonListener);
 
 		contentsPane = style.scrollPaneStyle == null ? new ScrollPane(contents) : new ScrollPane(contents, style.scrollPaneStyle);
 
 		build();
-
 		show();
 	}
 
@@ -477,9 +472,9 @@ public class FileChooser extends Window {
 
 	}
 
-	/** Defines styles for the Widgets
+	/** Defines styles for the {@link Widget Widgets}
 	 *  @author dermetfan */
-	public static class FileChooserStyle extends WindowStyle {
+	public static class FileChooserStyle extends WindowStyle implements Serializable {
 
 		/** the style of {@link #pathField} */
 		public TextFieldStyle pathFieldStyle;
@@ -497,7 +492,6 @@ public class FileChooser extends Window {
 		public ScrollPaneStyle scrollPaneStyle;
 
 		public FileChooserStyle() {
-			super();
 		}
 
 		public FileChooserStyle(BitmapFont titleFont, Color titleFontColor, Drawable background) {
@@ -510,7 +504,7 @@ public class FileChooser extends Window {
 
 		public FileChooserStyle(WindowStyle style, ButtonStyle buttonStyles) {
 			super(style);
-			chooseButtonStyle = openButtonStyle = cancelButtonStyle = backButtonStyle = parentButtonStyle = buttonStyles;
+			setButtonStyles(buttonStyles);
 		}
 
 		public FileChooserStyle(FileChooserStyle style) {
@@ -541,6 +535,100 @@ public class FileChooser extends Window {
 			this.cancelButtonStyle = cancelButtonStyle;
 			this.backButtonStyle = backButtonStyle;
 			this.parentButtonStyle = parentButtonStyle;
+		}
+
+		/** @param other the {@link FileChooserStyle} to set this instance to (giving all fields the same value) */
+		public void set(FileChooserStyle other) {
+			background = other.background;
+			stageBackground = other.stageBackground;
+			titleFont = other.titleFont;
+			titleFontColor = other.titleFontColor;
+			backButtonStyle = other.backButtonStyle;
+			cancelButtonStyle = other.cancelButtonStyle;
+			chooseButtonStyle = other.chooseButtonStyle;
+			contentsStyle = other.contentsStyle;
+			openButtonStyle = other.openButtonStyle;
+			parentButtonStyle = other.parentButtonStyle;
+			pathFieldStyle = other.pathFieldStyle;
+			scrollPaneStyle = other.scrollPaneStyle;
+			space = other.space;
+		}
+
+		/** @param style the {@link #backButtonStyle}, {@link #cancelButtonStyle}, {@link #chooseButtonStyle}, {@link #openButtonStyle} and {@link #parentButtonStyle} to set */
+		public void setButtonStyles(ButtonStyle style) {
+			chooseButtonStyle = openButtonStyle = cancelButtonStyle = backButtonStyle = parentButtonStyle = style;
+		}
+
+		@Override
+		public void write(Json json) {
+			json.writeObjectStart("");
+			json.writeFields(this);
+			json.writeObjectEnd();
+		}
+
+		@Override
+		public void read(Json json, JsonValue jsonData) {
+			WindowStyle windowStyle = json.readValue("windowStyle", WindowStyle.class, jsonData);
+			if(windowStyle != null) {
+				background = windowStyle.background;
+				stageBackground = windowStyle.stageBackground;
+				titleFont = windowStyle.titleFont;
+				titleFontColor = windowStyle.titleFontColor;
+			}
+
+			ButtonStyle tmpBS = readButtonStyle("buttonStyles", json, jsonData);
+			setButtonStyles(tmpBS);
+			tmpBS = null;
+
+			tmpBS = readButtonStyle("backButtonStyle", json, jsonData);
+			if(tmpBS != null)
+				backButtonStyle = tmpBS;
+			tmpBS = null;
+
+			tmpBS = readButtonStyle("cancelButtonStyle", json, jsonData);
+			if(tmpBS != null)
+				cancelButtonStyle = tmpBS;
+			tmpBS = null;
+
+			tmpBS = readButtonStyle("chooseButtonStyle", json, jsonData);
+			if(tmpBS != null)
+				chooseButtonStyle = tmpBS;
+			tmpBS = null;
+
+			tmpBS = readButtonStyle("openButtonStyle", json, jsonData);
+			if(tmpBS != null)
+				openButtonStyle = tmpBS;
+			tmpBS = null;
+
+			tmpBS = readButtonStyle("parentButtonStyle", json, jsonData);
+			if(tmpBS != null)
+				parentButtonStyle = tmpBS;
+
+			contentsStyle = json.readValue("contentsStyle", ListStyle.class, jsonData);
+			pathFieldStyle = json.readValue("pathFieldStyle", TextFieldStyle.class, jsonData);
+			scrollPaneStyle = json.readValue("scrollPaneStyle", ScrollPaneStyle.class, jsonData);
+			space = json.readValue("space", float.class, jsonData);
+		}
+
+		/** Tried to load a {@link TextButtonStyle}, then {@link ImageButtonStyle}, then {@link ImageTextButtonStyle} and then {@link ButtonStyle} using {@link Json#readValue(String, Class, JsonValue)} brutally by catching NPEs. Nasty... */
+		protected ButtonStyle readButtonStyle(String name, Json json, JsonValue jsonValue) {
+			try {
+				return json.readValue(name, TextButtonStyle.class, jsonValue);
+			} catch(NullPointerException e) {
+				try {
+					return json.readValue(name, ImageButtonStyle.class, jsonValue);
+				} catch(NullPointerException e1) {
+					try {
+						return json.readValue(name, ImageTextButtonStyle.class, jsonValue);
+					} catch(NullPointerException e2) {
+						try {
+							return json.readValue(name, ButtonStyle.class, jsonValue);
+						} catch(NullPointerException e3) {
+							return null;
+						}
+					}
+				}
+			}
 		}
 
 	}
