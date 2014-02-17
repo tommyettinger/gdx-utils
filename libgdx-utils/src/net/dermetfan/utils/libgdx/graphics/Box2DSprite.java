@@ -163,9 +163,8 @@ public class Box2DSprite extends Sprite {
 	/** draws this {@link Box2DSprite} on the given {@link Fixture} */
 	public void draw(Batch batch, Fixture fixture) {
 		batch.setColor(getColor());
-		float width = width(fixture), height = height(fixture);
 		vec2.set(position(fixture));
-		draw(batch, vec2.x, vec2.y, width, height, fixture.getBody().getAngle());
+		draw(batch, vec2.x, vec2.y, width(fixture), height(fixture), fixture.getBody().getAngle());
 	}
 
 	/** draws this {@link Box2DSprite} on the given {@link Body} */
