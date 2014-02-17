@@ -114,7 +114,8 @@ public class MathUtils {
 	public static float max(float[] floats) {
 		float max = Float.NEGATIVE_INFINITY;
 		for(float f : floats)
-			max = f > max ? f : max;
+			if(f > max)
+				max = f;
 		return max;
 	}
 
@@ -122,7 +123,8 @@ public class MathUtils {
 	public static float min(float[] floats) {
 		float min = Float.POSITIVE_INFINITY;
 		for(float f : floats)
-			min = f < min ? f : min;
+			if(f < min)
+				min = f;
 		return min;
 	}
 
