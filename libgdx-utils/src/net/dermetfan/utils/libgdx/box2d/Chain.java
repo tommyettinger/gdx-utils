@@ -234,11 +234,11 @@ public class Chain {
 
 	}
 
-	/** a {@link Builder} that {@link Box2DUtils#copy(Body) copies} a {@link Body} as template in {@link #createSegment(int, Body, int)}
+	/** a {@link Builder} that {@link Box2DUtils#clone(Body) copies} a {@link Body} as template in {@link #createSegment(int, Body, int)}
 	 *  @author dermetfan */
 	public static abstract class CopyBuilder implements Builder {
 
-		/** the {@link Body} to {@link Box2DUtils#copy(Body) copy} in {@link #createSegment(int, Body, int)} */
+		/** the {@link Body} to {@link Box2DUtils#clone(Body) copy} in {@link #createSegment(int, Body, int)} */
 		protected Body template;
 
 		/** @param template the {@link #template} */
@@ -246,10 +246,10 @@ public class Chain {
 			this.template = template;
 		}
 
-		/** @return a {@link Box2DUtils#copy(Body) copy} of {@link #template} */
+		/** @return a {@link Box2DUtils#clone(Body) copy} of {@link #template} */
 		@Override
 		public Body createSegment(int index, int length, Chain chain) {
-			return Box2DUtils.copy(template);
+			return Box2DUtils.clone(template);
 		}
 
 		/** @return the {@link #template} */
