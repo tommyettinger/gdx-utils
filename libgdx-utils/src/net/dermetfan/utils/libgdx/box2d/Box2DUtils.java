@@ -19,7 +19,6 @@ import static net.dermetfan.utils.libgdx.math.GeometryUtils.filterY;
 import static net.dermetfan.utils.math.MathUtils.amplitude;
 import static net.dermetfan.utils.math.MathUtils.max;
 import static net.dermetfan.utils.math.MathUtils.min;
-import net.dermetfan.utils.libgdx.box2d.Box2DUtils.ShapeCache.ShapeResults;
 import net.dermetfan.utils.libgdx.math.GeometryUtils;
 
 import com.badlogic.gdx.math.Vector2;
@@ -41,99 +40,69 @@ import com.badlogic.gdx.utils.ObjectMap;
  *  @author dermetfan */
 public abstract class Box2DUtils {
 
-	/** used by {@link Box2DUtils} to cache {@link Shape Shapes}
+	/** cached method results
 	 *  @author dermetfan */
 	public static class ShapeCache {
 
-		/** cached method results
-		 *  @author dermetfan */
-		public static class ShapeResults {
+		/** @see Box2DUtils#vertices0(Shape) */
+		public final Vector2[] vertices;
 
-			/** @see Box2DUtils#vertices0(Shape) */
-			public final Vector2[] vertices;
+		/** @see Box2DUtils#width0(Shape) */
+		public final float width;
 
-			/** @see Box2DUtils#width0(Shape) */
-			public final float width;
+		/** @see Box2DUtils#height0(Shape) */
+		public final float height;
 
-			/** @see Box2DUtils#height0(Shape) */
-			public final float height;
+		/** @see Box2DUtils#minX0(Shape) */
+		public final float minX;
 
-			/** @see Box2DUtils#minX0(Shape) */
-			public final float minX;
+		/** @see Box2DUtils#maxX0(Shape) */
+		public final float maxX;
 
-			/** @see Box2DUtils#maxX0(Shape) */
-			public final float maxX;
+		/** @see Box2DUtils#minY0(Shape) */
+		public final float minY;
 
-			/** @see Box2DUtils#minY0(Shape) */
-			public final float minY;
+		/** @see Box2DUtils#minY0(Shape) */
+		public final float maxY;
 
-			/** @see Box2DUtils#minY0(Shape) */
-			public final float maxY;
-
-			/** @param vertices the {@link #vertices}
-			 *  @param width the {@link #width}
-			 *  @param height the {@link #height}
-			 *  @param minX the {@link #minX}
-			 *  @param maxX the {@link #maxX}
-			 *  @param minY the {@link #minY}
-			 *  @param maxY the {@link #maxX} */
-			public ShapeResults(Vector2[] vertices, float width, float height, float minX, float maxX, float minY, float maxY) {
-				this.vertices = vertices;
-				this.width = width;
-				this.height = height;
-				this.minX = minX;
-				this.maxX = maxX;
-				this.minY = minY;
-				this.maxY = maxY;
-			}
-
-		}
-
-		/** Cached {@link Shape Shapes} and their {@link ShapeResults}. You should {@link ObjectMap#clear() clear} this when you don't use the shapes anymore. */
-		private final ObjectMap<Shape, ShapeResults> cache = new ObjectMap<Shape, ShapeResults>();
-
-		/** this Shapes should automatically be cached by {@link Box2DUtils} using this {@link ShapeCache} */
-		private boolean auto = true;
-
-		/** @return if the given Shape is already cached */
-		public boolean contains(Shape shape) {
-			return cache.containsKey(shape);
-		}
-
-		/** @param shape the Shape to create a new {@link ShapeResults} for that will be added to {@link #cache} */
-		public ShapeResults cache(Shape shape) {
-			if(contains(shape))
-				return getResults(shape);
-			Vector2[] vertices = vertices0(shape), cachedVertices = new Vector2[vertices.length];
-			System.arraycopy(vertices, 0, cachedVertices, 0, vertices.length);
-			ShapeResults results = new ShapeResults(cachedVertices, width0(shape), height0(shape), minX0(shape), maxX0(shape), minY0(shape), maxY0(shape));
-			cache.put(shape, results);
-			return results;
-		}
-
-		/** @param shape the Shape to {@link ObjectMap#remove(Object) remove} from {@link #cache}
-		 *  @return the {@link ShapeResults} of the given Shape */
-		public ShapeResults uncache(Shape shape) {
-			return cache.remove(shape);
-		}
-
-		/** @return the {@link ShapeResults} of the given Shape */
-		public ShapeResults getResults(Shape shape) {
-			return cache.get(shape);
-		}
-
-		/** {@link ObjectMap#clear() clears} the {@link #cache} */
-		public void clear() {
-			cache.clear();
+		/** @param vertices the {@link #vertices}
+		 *  @param width the {@link #width}
+		 *  @param height the {@link #height}
+		 *  @param minX the {@link #minX}
+		 *  @param maxX the {@link #maxX}
+		 *  @param minY the {@link #minY}
+		 *  @param maxY the {@link #maxX} */
+		public ShapeCache(Vector2[] vertices, float width, float height, float minX, float maxX, float minY, float maxY) {
+			this.vertices = vertices;
+			this.width = width;
+			this.height = height;
+			this.minX = minX;
+			this.maxX = maxX;
+			this.minY = minY;
+			this.maxY = maxY;
 		}
 
 	}
 
-	/** used to cache {@link ShapeResults} */
-	private static ShapeCache cache = new ShapeCache();
+	/** Cached {@link Shape Shapes} and their {@link ShapeCache}. You should {@link ObjectMap#clear() clear} this when you don't use the shapes anymore. */
+	public static final ObjectMap<Shape, ShapeCache> cache = new ObjectMap<Shape, ShapeCache>();
+
+	/** this Shapes should automatically be cached by {@link Box2DUtils} using this {@link ShapeCache} */
+	public static boolean autoCache = true;
 
 	/** for internal, temporary usage */
 	private static final Vector2 vec2_0 = new Vector2(), vec2_1 = new Vector2();
+
+	/** @param shape the Shape to create a new {@link ShapeCache} for that will be added to {@link #cache} */
+	public static ShapeCache cache(Shape shape) {
+		if(cache.containsKey(shape))
+			return cache.get(shape);
+		Vector2[] vertices = vertices0(shape), cachedVertices = new Vector2[vertices.length];
+		System.arraycopy(vertices, 0, cachedVertices, 0, vertices.length);
+		ShapeCache results = new ShapeCache(cachedVertices, width0(shape), height0(shape), minX0(shape), maxX0(shape), minY0(shape), maxY0(shape));
+		cache.put(shape, results);
+		return results;
+	}
 
 	// shape
 
@@ -212,7 +181,7 @@ public abstract class Box2DUtils {
 		return amplitude(filterY(vertices0(shape)));
 	}
 
-	/** @return the size of the given Shape */
+	/** @return a Vector2 representing the size of the given Shape */
 	private static Vector2 size0(Shape shape) {
 		if(shape.getType() == Type.Circle) // skip #width0(Shape) and #height0(Shape) for performance
 			return vec2_0.set(shape.getRadius() * 2, shape.getRadius() * 2);
@@ -221,126 +190,120 @@ public abstract class Box2DUtils {
 
 	// cache
 
+	/** @return the vertices of the given Shape */
 	public static Vector2[] vertices(Shape shape) {
-		if(cache != null) {
-			if(cache.contains(shape))
-				return cache.getResults(shape).vertices;
-			if(cache.auto)
-				return cache.cache(shape).vertices;
-		}
+		if(cache.containsKey(shape))
+			return cache.get(shape).vertices;
+		if(autoCache)
+			return cache(shape).vertices;
 		return vertices0(shape);
 	}
 
+	/** @return the minimal x value of the vertices of the given Shape */
 	public static float minX(Shape shape) {
-		if(cache != null) {
-			if(cache.contains(shape))
-				return cache.getResults(shape).minX;
-			if(cache.auto)
-				return cache.cache(shape).minX;
-		}
+		if(cache.containsKey(shape))
+			return cache.get(shape).minX;
+		if(autoCache)
+			return cache(shape).minX;
 		return minX0(shape);
 	}
 
+	/** @return the minimal y value of the vertices of the given Shape */
 	public static float minY(Shape shape) {
-		if(cache != null) {
-			if(cache.contains(shape))
-				return cache.getResults(shape).minY;
-			if(cache.auto)
-				return cache.cache(shape).minY;
-		}
+		if(cache.containsKey(shape))
+			return cache.get(shape).minY;
+		if(autoCache)
+			return cache(shape).minY;
 		return minY0(shape);
 	}
 
+	/** @return the maximal x value of the vertices of the given Shape */
 	public static float maxX(Shape shape) {
-		if(cache != null) {
-			if(cache.contains(shape))
-				return cache.getResults(shape).maxX;
-			if(cache.auto)
-				return cache.cache(shape).maxX;
-		}
+		if(cache.containsKey(shape))
+			return cache.get(shape).maxX;
+		if(autoCache)
+			return cache(shape).maxX;
 		return maxX0(shape);
 	}
 
+	/** @return the maximal y value of the vertices of the given Shape */
 	public static float maxY(Shape shape) {
-		if(cache != null) {
-			if(cache.contains(shape))
-				return cache.getResults(shape).maxY;
-			if(cache.auto)
-				return cache.cache(shape).maxY;
-		}
+		if(cache.containsKey(shape))
+			return cache.get(shape).maxY;
+		if(autoCache)
+			return cache(shape).maxY;
 		return maxY0(shape);
 	}
 
+	/** @return the width of the given Shape */
 	public static float width(Shape shape) {
-		if(cache != null) {
-			if(cache.contains(shape))
-				return cache.getResults(shape).width;
-			if(cache.auto)
-				return cache.cache(shape).width;
-		}
+		if(cache.containsKey(shape))
+			return cache.get(shape).width;
+		if(autoCache)
+			return cache(shape).width;
 		return width0(shape);
 	}
 
+	/** @return the height of the given Shape */
 	public static float height(Shape shape) {
-		if(cache != null) {
-			if(cache.contains(shape))
-				return cache.getResults(shape).height;
-			if(cache.auto)
-				return cache.cache(shape).height;
-		}
+		if(cache.containsKey(shape))
+			return cache.get(shape).height;
+		if(autoCache)
+			return cache(shape).height;
 		return height0(shape);
 	}
 
+	/** @return a {@link Vector2} representing the size of the given Shape */
 	public static Vector2 size(Shape shape) {
-		if(cache != null) {
-			if(cache.contains(shape)) {
-				ShapeResults results = cache.getResults(shape);
-				return vec2_0.set(results.width, results.height);
-			}
-			if(cache.auto) {
-				ShapeResults results = cache.cache(shape);
-				return vec2_0.set(results.width, results.height);
-			}
-		}
-		return size0(shape);
+		ShapeCache results = cache.containsKey(shape) ? cache.get(shape) : autoCache ? cache(shape) : null;
+		return results != null ? vec2_0.set(results.width, results.height) : size0(shape);
 	}
 
 	// fixture
 
+	/** @see #vertices(Shape) */
 	public static Vector2[] vertices(Fixture fixture) {
 		return vertices(fixture.getShape());
 	}
 
+	/** @see #minX(Shape) */
 	public static float minX(Fixture fixture) {
 		return minX(fixture.getShape());
 	}
 
+	/** @see #minY(Shape) */
 	public static float minY(Fixture fixture) {
 		return minY(fixture.getShape());
 	}
 
+	/** @see #maxX(Shape) */
 	public static float maxX(Fixture fixture) {
 		return maxX(fixture.getShape());
 	}
 
+	/** @see #maxY(Shape) */
 	public static float maxY(Fixture fixture) {
 		return maxY(fixture.getShape());
 	}
 
+	/** @see #width(Shape) */
 	public static float width(Fixture fixture) {
 		return width(fixture.getShape());
 	}
 
+	/** @see #height(Shape) */
 	public static float height(Fixture fixture) {
 		return height(fixture.getShape());
 	}
 
+	/** @see #size(Shape) */
 	public static Vector2 size(Fixture fixture) {
 		return size(fixture.getShape());
 	}
 
 	// body
 
+	/** @return the vertices of all fixtures of a body */
 	public static Vector2[][] fixtureVertices(Body body) {
 		Array<Fixture> fixtures = body.getFixtureList();
 		Vector2[][] vertices = new Vector2[fixtures.size][];
@@ -349,6 +312,7 @@ public abstract class Box2DUtils {
 		return vertices;
 	}
 
+	/** @return the vertices of a body's fixtures */
 	public static Vector2[] vertices(Body body) {
 		Vector2[][] fixtureVertices = fixtureVertices(body);
 
@@ -417,11 +381,16 @@ public abstract class Box2DUtils {
 
 	// position
 
+	/** @see #positionRelative(Shape, float)
+	 *  @see CircleShape#getPosition() */
 	public static Vector2 positionRelative(CircleShape shape) {
 		return shape.getPosition();
 	}
 
+	/** @return the position of the given shape relativley to its Body */
 	public static Vector2 positionRelative(Shape shape, float rotation) {
+		if(shape instanceof CircleShape)
+			return positionRelative((CircleShape) shape); // faster
 		return vec2_0.set(minX(shape) + width(shape) / 2, minY(shape) + height(shape) / 2).rotate(rotation);
 	}
 
@@ -432,28 +401,30 @@ public abstract class Box2DUtils {
 		return body.getPosition().add(positionRelative(shape, body.getAngle() * com.badlogic.gdx.math.MathUtils.radDeg));
 	}
 
+	/** @see #positionRelative(Shape, float) */
 	public static Vector2 positionRelative(Fixture fixture) {
 		return positionRelative(fixture.getShape(), fixture.getBody().getAngle() * com.badlogic.gdx.math.MathUtils.radDeg);
 	}
 
+	/** @see #position(Shape, Body) */
 	public static Vector2 position(Fixture fixture) {
 		return position(fixture.getShape(), fixture.getBody());
 	}
 
-	// copy
+	// clone
 
-	/** creates a deep copy of a {@link Body} (without deep copying the {@link Shape Shapes} of its {@link Fixture Fixtures})<br/>
-	 *  @return {@link #copy(Body, boolean) copy(body, false)}
-	 *  @see #copy(Body, boolean) */
-	public static Body copy(Body body) {
-		return copy(body, false);
+	/** clones a {@link Body} (without deep copying the {@link Shape Shapes} of its {@link Fixture Fixtures})<br/>
+	 *  @return {@link #clone(Body, boolean) copy(body, false)}
+	 *  @see #clone(Body, boolean) */
+	public static Body clone(Body body) {
+		return clone(body, false);
 	}
 
-	/** creates a deep copy of a {@link Body}
+	/** clones a {@link Body}
 	 *  @param body the {@link Body} to copy
-	 *  @param shapes if the {@link Shape Shapes} of the {@link Fixture Fixures} of the given {@code body} should be {@link #copy(Shape) copied} as well
+	 *  @param shapes if the {@link Shape Shapes} of the {@link Fixture Fixures} of the given {@code body} should be {@link #clone(Shape) copied} as well
 	 *  @return a deep copy of the given {@code body} */
-	public static Body copy(Body body, boolean shapes) {
+	public static Body clone(Body body, boolean shapes) {
 		BodyDef bodyDef = new BodyDef();
 		bodyDef.active = body.isActive();
 		bodyDef.allowSleep = body.isSleepingAllowed();
@@ -471,23 +442,23 @@ public abstract class Box2DUtils {
 		Body copy = body.getWorld().createBody(bodyDef);
 		copy.setUserData(body.getUserData());
 		for(Fixture fixture : body.getFixtureList())
-			copy(fixture, copy, shapes);
+			clone(fixture, copy, shapes);
 		return copy;
 	}
 
-	/** creates a deep copy of a {@link Fixture} (without deep copying its {@link Shape})
-	 *  @return {@link #copy(Fixture, Body, boolean) copy(fixture, body, false)}
-	 *  @see #copy(Fixture, Body, boolean) */
-	public static Fixture copy(Fixture fixture, Body body) {
-		return copy(fixture, body, false);
+	/** clones a {@link Fixture} (without deep copying its {@link Shape})
+	 *  @return {@link #clone(Fixture, Body, boolean) copy(fixture, body, false)}
+	 *  @see #clone(Fixture, Body, boolean) */
+	public static Fixture clone(Fixture fixture, Body body) {
+		return clone(fixture, body, false);
 	}
 
-	/** creates a deep copy of a {@link Fixture}
+	/** clones a {@link Fixture}
 	 *  @param fixture the {@link Fixture} to copy
 	 *  @param body the {@link Body} to create a copy of the given {@code fixture} on
-	 *  @param shape if the {@link Fixture#getShape() shape} of the given {@code fixture} should be deep {@link #copy(Shape) copied} as well
+	 *  @param shape if the {@link Fixture#getShape() shape} of the given {@code fixture} should be deep {@link #clone(Shape) copied} as well
 	 *  @return the copied {@link Fixture} */
-	public static Fixture copy(Fixture fixture, Body body, boolean shape) {
+	public static Fixture clone(Fixture fixture, Body body, boolean shape) {
 		FixtureDef fixtureDef = new FixtureDef();
 		fixtureDef.density = fixture.getDensity();
 		Filter filter = fixture.getFilterData();
@@ -497,7 +468,7 @@ public abstract class Box2DUtils {
 		fixtureDef.friction = fixture.getFriction();
 		fixtureDef.isSensor = fixture.isSensor();
 		fixtureDef.restitution = fixture.getRestitution();
-		fixtureDef.shape = shape ? copy(fixture.getShape()) : fixture.getShape();
+		fixtureDef.shape = shape ? clone(fixture.getShape()) : fixture.getShape();
 		Fixture copy = body.createFixture(fixtureDef);
 		copy.setUserData(copy.getUserData());
 		return copy;
@@ -507,7 +478,7 @@ public abstract class Box2DUtils {
 	 *  <strong>Note: The {@link ChainShape#setPrevVertex(float, float) previous} and {@link ChainShape#setNextVertex(float, float) next} vertex of a {@link ChainShape} will not be copied since this is not possible due to the API.</strong>
 	 *  @param shape the {@link Shape} to copy
 	 *  @return a {@link Shape} exactly like the one passed in */
-	public static Shape copy(Shape shape) {
+	public static Shape clone(Shape shape) {
 		Shape copy;
 		switch(shape.getType()) {
 		case Circle:
@@ -554,7 +525,7 @@ public abstract class Box2DUtils {
 	}
 
 	/* This method is not implemented because the Box2D API does not offer all the necessary information.
-	public static Joint copy(Joint joint, Body bodyA, Body bodyB) {
+	public static Joint clone(Joint joint, Body bodyA, Body bodyB) {
 		JointDef jointDef;
 		Joint copy;
 		switch(joint.getType()) {
@@ -676,15 +647,5 @@ public abstract class Box2DUtils {
 		copy.setUserData(joint.getUserData());
 		return copy;
 	} */
-
-	/** @return the {@link #cache} */
-	public static ShapeCache getCache() {
-		return cache;
-	}
-
-	/** @param cache the {@link #cache} to set */
-	public static void setCache(ShapeCache cache) {
-		Box2DUtils.cache = cache;
-	}
 
 }
