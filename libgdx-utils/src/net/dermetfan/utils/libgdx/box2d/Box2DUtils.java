@@ -429,7 +429,7 @@ public abstract class Box2DUtils {
 	 *  @param shape the Shape which position to get
 	 *  @param body the Body the given Shape is attached to */
 	public static Vector2 position(Shape shape, Body body) {
-		return vec2_0.set(body.getPosition()).add(positionRelative(shape, body.getAngle() * com.badlogic.gdx.math.MathUtils.radDeg));
+		return body.getPosition().add(positionRelative(shape, body.getAngle() * com.badlogic.gdx.math.MathUtils.radDeg));
 	}
 
 	public static Vector2 positionRelative(Fixture fixture) {
