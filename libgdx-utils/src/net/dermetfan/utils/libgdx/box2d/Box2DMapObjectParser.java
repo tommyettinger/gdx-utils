@@ -45,6 +45,7 @@ import com.badlogic.gdx.physics.box2d.BodyDef;
 import com.badlogic.gdx.physics.box2d.BodyDef.BodyType;
 import com.badlogic.gdx.physics.box2d.ChainShape;
 import com.badlogic.gdx.physics.box2d.CircleShape;
+import com.badlogic.gdx.physics.box2d.EdgeShape;
 import com.badlogic.gdx.physics.box2d.Fixture;
 import com.badlogic.gdx.physics.box2d.FixtureDef;
 import com.badlogic.gdx.physics.box2d.Joint;
@@ -297,11 +298,16 @@ public class Box2DMapObjectParser {
 			polygon.setPosition(-body.getPosition().x, -body.getPosition().y);
 			((PolygonShape) shape).set(polygon.getTransformedVertices());
 		} else if(mapObject instanceof PolylineMapObject) {
-			shape = new ChainShape();
 			Polyline polyline = new Polyline(((PolylineMapObject) mapObject).getPolyline().getTransformedVertices());
 			polyline.setPosition(polyline.getX() * unitScale - body.getPosition().x, polyline.getY() * unitScale - body.getPosition().y);
 			polyline.setScale(unitScale, unitScale);
-			((ChainShape) shape).createChain(polyline.getTransformedVertices());
+			float[] vertices = polyline.getTransformedVertices();
+			if(vertices.length == 4)
+				((EdgeShape) (shape = new EdgeShape())).set(vertices[0], vertices[1], vertices[2], vertices[3]);
+			else
+				((ChainShape) (shape = new ChainShape())).createChain(vertices);
+			if(mapObject.getName().equals("edgeShape"))
+				System.out.println(shape.getClass().getSimpleName());
 		} else if(mapObject instanceof CircleMapObject) {
 			shape = new CircleShape();
 			Circle mapObjectCircle = ((CircleMapObject) mapObject).getCircle();
