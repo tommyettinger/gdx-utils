@@ -21,10 +21,13 @@ import com.badlogic.gdx.maps.MapLayer;
 import com.badlogic.gdx.maps.MapObject;
 import com.badlogic.gdx.maps.MapObjects;
 import com.badlogic.gdx.maps.MapProperties;
+import com.badlogic.gdx.maps.tiled.TiledMap;
 import com.badlogic.gdx.maps.tiled.TiledMapTile;
+import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
 import com.badlogic.gdx.maps.tiled.TiledMapTileSet;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
+import com.badlogic.gdx.utils.Array;
 
 /** provides useful methods when dealing with maps
  *  @author dermetfan */
@@ -142,6 +145,28 @@ public abstract class MapUtils {
 		point.x = vec2.x;
 		point.y = vec2.y;
 		return point;
+	}
+
+	/** sets the given Vector2 to the max width and height of all {@link TiledMapTileLayer tile layers} of the given map
+	 *  @param map the map to measure
+	 *  @param output the Vector2 to set to the map size
+	 *  @return the given Vector2 representing the map size */
+	public static Vector2 size(TiledMap map, Vector2 output) {
+		Array<TiledMapTileLayer> layers = map.getLayers().getByType(TiledMapTileLayer.class);
+		float maxWidth = 0, maxTileWidth = 0, maxHeight = 0, maxTileHeight = 0;
+		for(TiledMapTileLayer layer : layers) {
+			int layerWidth = layer.getWidth(), layerHeight = layer.getHeight();
+			float layerTileWidth = layer.getTileWidth(), layerTileHeight = layer.getTileHeight();
+			if(layerWidth > maxWidth)
+				maxWidth = layerWidth;
+			if(layerTileWidth > maxTileWidth)
+				maxTileWidth = layerTileWidth;
+			if(layerHeight > maxHeight)
+				maxHeight = layerHeight;
+			if(layerTileHeight > maxTileHeight)
+				maxTileHeight = layerTileHeight;
+		}
+		return output.set(maxWidth * maxTileWidth, maxHeight * maxTileHeight);
 	}
 
 }
