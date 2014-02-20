@@ -306,8 +306,6 @@ public class Box2DMapObjectParser {
 				((EdgeShape) (shape = new EdgeShape())).set(vertices[0], vertices[1], vertices[2], vertices[3]);
 			else
 				((ChainShape) (shape = new ChainShape())).createChain(vertices);
-			if(mapObject.getName().equals("edgeShape"))
-				System.out.println(shape.getClass().getSimpleName());
 		} else if(mapObject instanceof CircleMapObject) {
 			shape = new CircleShape();
 			Circle mapObjectCircle = ((CircleMapObject) mapObject).getCircle();
@@ -395,22 +393,30 @@ public class Box2DMapObjectParser {
 	/** {@link #createFixture(MapObject, Body) creates} the fixture from the given {@link MapObject} on the associated body in {@link #bodies}
 	 *  @see #createFixture(MapObject, Body) */
 	public Fixture createFixture(MapObject mapObject) {
-		return createFixture(mapObject, findBody(mapObject));
+		return createFixture(mapObject, findBody(mapObject, heritage, mapProperties, layerProperties));
 	}
 
 	/** {@link #createFixtures(MapObject, Body) creates} the fixtures from the given {@link MapObject} on the associated body in {@link #bodies}
 	 *  @see #createFixtures(MapObject, Body) */
 	public Fixture[] createFixtures(MapObject mapObject) {
-		return createFixtures(mapObject, findBody(mapObject));
+		return createFixtures(mapObject, findBody(mapObject, heritage, mapProperties, layerProperties));
 	}
 
-	/** @return the body associated with the given {@link MapObject} */
-	private Body findBody(MapObject mapObject) {
-		Body body = bodies.get(mapObject.getName());
+	/** @param heritage the MapProperties in which to search for an {@link Aliases#body} property
+	 *  @return the body associated with the given {@link MapObject} */
+	private Body findBody(MapObject mapObject, MapProperties... heritage) {
+		String name = mapObject.getName();
+		Body body = null;
+		if(name != null)
+			body = bodies.get(name);
 		if(body == null)
 			body = bodies.get(getProperty(mapObject.getProperties(), aliases.body, ""));
 		if(body == null)
-			throw new IllegalStateException("the body for the fixture " + mapObject.getName() + " does not exist");
+			for(MapProperties properties : heritage)
+				if((body = bodies.get(getProperty(properties, aliases.body, ""))) != null)
+					break;
+		if(body == null)
+			throw new IllegalStateException("the body of " + (name == null ? "an unnamed " : "the ") + "fixture " + (name != null ? name : "") + "does not exist");
 		return body;
 	}
 
