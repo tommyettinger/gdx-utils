@@ -129,7 +129,8 @@ public class Autopilot {
 	 *  @see #move(Body, Vector2, Vector2, float, float, Interpolation, boolean) */
 	public void move(Body body, Vector2 destination, Vector2 force, boolean wake) {
 		Vector2 position = positionAccessor.access(body);
-		body.applyForce(calculateForce(moveRelative ? destination : vec2_0.set(destination).sub(position), adaptForceToMass ? vec2_1.set(force).scl(body.getMass()) : force), position, wake);
+		Vector2 apply = calculateForce(moveRelative ? destination : vec2_0.set(destination).sub(position), adaptForceToMass ? vec2_1.set(force).scl(body.getMass()) : force);
+		body.applyForce(apply, position, wake);
 	}
 
 	/** applies the force of {@link #calculateForce(Vector2, Vector2, float, float, Interpolation)}
