@@ -648,4 +648,13 @@ public abstract class Box2DUtils {
 		return copy;
 	} */
 
+	/** sets the {@link Fixture#isSensor() sensor flag} of all of the given Body's Fixtures
+	 *  @param body the {@link Body} which {@link Fixture Fixtures'} sensor flag to set
+	 *  @param sensor the parameter to pass to {@link Fixture#setSensor(boolean)}
+	 *  @see Fixture#setSensor(boolean) */
+	public static void setSensor(Body body, boolean sensor) {
+		for(Fixture fixture : body.getFixtureList())
+			fixture.setSensor(sensor);
+	}
+
 }

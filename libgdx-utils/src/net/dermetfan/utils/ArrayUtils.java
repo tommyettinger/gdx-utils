@@ -14,9 +14,22 @@
 
 package net.dermetfan.utils;
 
+import net.dermetfan.utils.math.Noise;
+
 /** array utility methods 
  *  @author dermetfan */
 public abstract class ArrayUtils {
+
+	/** shuffles the given array using {@link Noise#random(float, float)}, so the {@link Noise#setSeed(long) seed} influences the result
+	 *  @param array the array to shuffle */
+	public static void shuffle(Object[] array) {
+		for(int i = 0; i < array.length; i++) {
+			int ii = (int) Noise.random(0, i + 1);
+			Object temp = array[i];
+			array[i] = array[ii];
+			array[ii] = temp;
+		}
+	}
 
 	/** @return an array of the unboxed values from the given values
 	 *  @see #box(float[]) */
