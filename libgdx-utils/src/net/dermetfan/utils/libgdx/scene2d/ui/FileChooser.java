@@ -97,7 +97,7 @@ public class FileChooser extends Window {
 	private TextField pathField;
 
 	/** shows the {@link File#listFiles() children} of current {@link #directory} */
-	private List contents;
+	private List<String> contents;
 
 	/** makes the {@link #contents} scrollable */
 	private ScrollPane contentsPane;
@@ -139,7 +139,7 @@ public class FileChooser extends Window {
 
 		@Override
 		public void clicked(InputEvent event, float x, float y) {
-			FileHandle selection = directory.child(contents.getSelection());
+			FileHandle selection = directory.child(contents.getSelected());
 			if(!canChooseDirectories && selection.isDirectory())
 				setDirectory(selection);
 			else if(!fileChooserListener.chosen(selection))
@@ -153,7 +153,7 @@ public class FileChooser extends Window {
 
 		@Override
 		public void clicked(InputEvent event, float x, float y) {
-			FileHandle child = directory.child(contents.getSelection());
+			FileHandle child = directory.child(contents.getSelected());
 			if(child.isDirectory())
 				setDirectory(child);
 		}
@@ -212,7 +212,8 @@ public class FileChooser extends Window {
 		this.fileChooserListener = fileChooserListener;
 
 		(pathField = new TextField(directory.path(), style.pathFieldStyle)).setTextFieldListener(pathFieldListener);
-		contents = new List(new String[] {directory.name()}, style.contentsStyle);
+		contents = new List<String>(style.contentsStyle);
+		contents.setItems(new String[] {directory.name()});
 		refresh();
 
 		(chooseButton = createButton("select", style.chooseButtonStyle)).addListener(chooseButtonListener);
@@ -335,13 +336,13 @@ public class FileChooser extends Window {
 	}
 
 	/** @return the {@link #contents} */
-	public List getContents() {
+	public List<String> getContents() {
 		return contents;
 	}
 
 	/** @param contents the {@link #contents} to set */
 	@SuppressWarnings("unchecked")
-	public void setContents(List contents) {
+	public void setContents(List<String> contents) {
 		getCell(this.contents).setWidget(this.contents = contents);
 	}
 
@@ -472,7 +473,7 @@ public class FileChooser extends Window {
 
 	}
 
-	/** Defines styles for the {@link Widget Widgets}
+	/** defines styles for the {@link Widget Widgets}
 	 *  @author dermetfan */
 	public static class FileChooserStyle extends WindowStyle implements Serializable {
 

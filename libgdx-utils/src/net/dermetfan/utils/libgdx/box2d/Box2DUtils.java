@@ -87,7 +87,7 @@ public abstract class Box2DUtils {
 	/** Cached {@link Shape Shapes} and their {@link ShapeCache}. You should {@link ObjectMap#clear() clear} this when you don't use the shapes anymore. */
 	public static final ObjectMap<Shape, ShapeCache> cache = new ObjectMap<Shape, ShapeCache>();
 
-	/** this Shapes should automatically be cached by {@link Box2DUtils} using this {@link ShapeCache} */
+	/** if shapes should automatically be cached when they are inspected for the first time */
 	public static boolean autoCache = true;
 
 	/** for internal, temporary usage */
@@ -425,25 +425,11 @@ public abstract class Box2DUtils {
 	 *  @param shapes if the {@link Shape Shapes} of the {@link Fixture Fixures} of the given {@code body} should be {@link #clone(Shape) copied} as well
 	 *  @return a deep copy of the given {@code body} */
 	public static Body clone(Body body, boolean shapes) {
-		BodyDef bodyDef = new BodyDef();
-		bodyDef.active = body.isActive();
-		bodyDef.allowSleep = body.isSleepingAllowed();
-		bodyDef.angle = body.getAngle();
-		bodyDef.angularDamping = body.getAngularDamping();
-		bodyDef.angularVelocity = body.getAngularVelocity();
-		bodyDef.awake = body.isAwake();
-		bodyDef.bullet = body.isBullet();
-		bodyDef.fixedRotation = body.isFixedRotation();
-		bodyDef.gravityScale = body.getGravityScale();
-		bodyDef.linearDamping = body.getLinearDamping();
-		bodyDef.linearVelocity.set(body.getLinearVelocity());
-		bodyDef.position.set(body.getPosition());
-		bodyDef.type = body.getType();
-		Body copy = body.getWorld().createBody(bodyDef);
-		copy.setUserData(body.getUserData());
+		Body clone = body.getWorld().createBody(createDef(body));
+		clone.setUserData(body.getUserData());
 		for(Fixture fixture : body.getFixtureList())
-			clone(fixture, copy, shapes);
-		return copy;
+			clone(fixture, clone, shapes);
+		return clone;
 	}
 
 	/** clones a {@link Fixture} (without deep copying its {@link Shape})
@@ -459,19 +445,12 @@ public abstract class Box2DUtils {
 	 *  @param shape if the {@link Fixture#getShape() shape} of the given {@code fixture} should be deep {@link #clone(Shape) copied} as well
 	 *  @return the copied {@link Fixture} */
 	public static Fixture clone(Fixture fixture, Body body, boolean shape) {
-		FixtureDef fixtureDef = new FixtureDef();
-		fixtureDef.density = fixture.getDensity();
-		Filter filter = fixture.getFilterData();
-		fixtureDef.filter.categoryBits = filter.categoryBits;
-		fixtureDef.filter.groupIndex = filter.groupIndex;
-		fixtureDef.filter.maskBits = filter.maskBits;
-		fixtureDef.friction = fixture.getFriction();
-		fixtureDef.isSensor = fixture.isSensor();
-		fixtureDef.restitution = fixture.getRestitution();
-		fixtureDef.shape = shape ? clone(fixture.getShape()) : fixture.getShape();
-		Fixture copy = body.createFixture(fixtureDef);
-		copy.setUserData(copy.getUserData());
-		return copy;
+		FixtureDef fixtureDef = createDef(fixture);
+		if(shape)
+			fixtureDef.shape = clone(fixture.getShape());
+		Fixture clone = body.createFixture(fixtureDef);
+		clone.setUserData(clone.getUserData());
+		return clone;
 	}
 
 	/** creates a deep copy of a {@link Shape}<br/>
@@ -524,7 +503,7 @@ public abstract class Box2DUtils {
 		return copy;
 	}
 
-	/* This method is not implemented because the Box2D API does not offer all the necessary information.
+	/* This method is not implemented because the Box2D API does not offer all necessary information.
 	public static Joint clone(Joint joint, Body bodyA, Body bodyB) {
 		JointDef jointDef;
 		Joint copy;
@@ -647,6 +626,222 @@ public abstract class Box2DUtils {
 		copy.setUserData(joint.getUserData());
 		return copy;
 	} */
+
+	// createDef
+
+	/** @param body the body for which to setup a new {@link BodyDef}
+	 *  @return a new {@link BodyDef} instance that can be used to clone the given body */
+	public static BodyDef createDef(Body body) {
+		BodyDef bodyDef = new BodyDef();
+		bodyDef.active = body.isActive();
+		bodyDef.allowSleep = body.isSleepingAllowed();
+		bodyDef.angle = body.getAngle();
+		bodyDef.angularDamping = body.getAngularDamping();
+		bodyDef.angularVelocity = body.getAngularVelocity();
+		bodyDef.awake = body.isAwake();
+		bodyDef.bullet = body.isBullet();
+		bodyDef.fixedRotation = body.isFixedRotation();
+		bodyDef.gravityScale = body.getGravityScale();
+		bodyDef.linearDamping = body.getLinearDamping();
+		bodyDef.linearVelocity.set(body.getLinearVelocity());
+		bodyDef.position.set(body.getPosition());
+		bodyDef.type = body.getType();
+		return bodyDef;
+	}
+
+	/** @param fixture the fixture for which to setup a new {@link FixtureDef}
+	 *  @return a new {@link FixtureDef} instance that can be used to clone the given fixture */
+	public static FixtureDef createDef(Fixture fixture) {
+		FixtureDef fixtureDef = new FixtureDef();
+		fixtureDef.density = fixture.getDensity();
+		Filter filter = fixture.getFilterData();
+		fixtureDef.filter.categoryBits = filter.categoryBits;
+		fixtureDef.filter.groupIndex = filter.groupIndex;
+		fixtureDef.filter.maskBits = filter.maskBits;
+		fixtureDef.friction = fixture.getFriction();
+		fixtureDef.isSensor = fixture.isSensor();
+		fixtureDef.restitution = fixture.getRestitution();
+		fixtureDef.shape = fixture.getShape();
+		return fixtureDef;
+	}
+
+	/* Not implemented due to the Box2D API not providing all necessary information.
+	 * public static JointDef createDef(Joint joint); */
+
+	// split (WIP)
+
+	//	public static boolean split(World world, Vector2 a, Vector2 b, Array<Pair<Body, Body>> fill) {
+	//		// TODO query world and stuff
+	//		return false;
+	//	}
+	//
+	//	public static boolean split(Body body, float x1, float y1, float x2, float y2, boolean onlyIfallFixtures, Pair<Body, Body> fill) {
+	//		return split(body, vec2_0.set(x1, y1), vec2_1.set(x2, y2), fill);
+	//	}
+	//
+	//	public static boolean split(Body body, Vector2 a, Vector2 b, Pair<Body, Body> fill) {
+	//		boolean all = true; // TODO fill bodies and this method isn't complete at all
+	//		for(Fixture fixture : body.getFixtureList())
+	//			if(!split(fixture, a, b, null))
+	//				all = false;
+	//		return all;
+	//	}
+	//
+	//	private static abstract class SplitCallback implements RayCastCallback {
+	//
+	//		protected Fixture target;
+	//
+	//		boolean split;
+	//
+	//		final Vector2 collision = new Vector2();
+	//
+	//		static final SplitCallback instance = new SplitCallback() {
+	//
+	//			@Override
+	//			public float reportRayFixture(Fixture fixture, Vector2 point, Vector2 normal, float fraction) {
+	//				split = fixture == target;
+	//				if(split)
+	//					collision.set(point);
+	//				return split ? 0 : -1;
+	//			}
+	//
+	//		};
+	//
+	//		void init(Fixture target) {
+	//			this.target = target;
+	//			split = false;
+	//		}
+	//
+	//		private SplitCallback() {
+	//		}
+	//
+	//	}
+	//
+	//	public static boolean split(Fixture fixture, float x1, float y1, float x2, float y2, Pair<Fixture, Fixture> fill) {
+	//		return split(fixture, vec2_0.set(x1, y1), vec2_1.set(x2, y2), fill);
+	//	}
+	//
+	//	public static boolean split(Fixture fixture, Vector2 a, Vector2 b, Pair<Fixture, Fixture> fill) {
+	//		Body body = fixture.getBody();
+	//		World world = body.getWorld();
+	//		SplitCallback.instance.init(fixture);
+	//		world.rayCast(SplitCallback.instance, a, b);
+	//		if(!SplitCallback.instance.split)
+	//			return false;
+	//		Vector2 collisionA = Pools.obtain(Vector2.class).set(SplitCallback.instance.collision);
+	//		SplitCallback.instance.init(fixture);
+	//		world.rayCast(SplitCallback.instance, b, a);
+	//		if(!SplitCallback.instance.split) {
+	//			Pools.free(collisionA);
+	//			return false;
+	//		}
+	//		Vector2 collisionB = Pools.obtain(Vector2.class).set(SplitCallback.instance.collision);
+	//		collisionA.set(body.getLocalPoint(collisionA));
+	//		collisionB.set(body.getLocalPoint(collisionB));
+	//		@SuppressWarnings("unchecked")
+	//		Pair<Shape, Shape> shapes = Pools.obtain(Pair.class);
+	//		boolean split = split(fixture.getShape(), collisionA, collisionB, shapes);
+	//		Pools.free(collisionA);
+	//		Pools.free(collisionB);
+	//		if(split) {
+	//			System.out.println("split: " + shapes);
+	//			FixtureDef fixtureDef = createDef(fixture);
+	//			body.destroyFixture(fixture);
+	//			fixtureDef.shape = shapes.key();
+	//			Fixture fixtureA = body.createFixture(fixtureDef);
+	//			shapes.key().dispose();
+	//			fixtureDef.shape = shapes.value();
+	//			Fixture fixtureB = body.createFixture(fixtureDef);
+	//			shapes.value().dispose();
+	//			if(fill != null) {
+	//				fill.key(fixtureA);
+	//				fill.value(fixtureB);
+	//			}
+	//		}
+	//		Pools.free(shapes);
+	//		return split;
+	//	}
+	//
+	//	public static boolean split(Shape shape, Vector2 a, Vector2 b, Pair<Shape, Shape> fill) {
+	//		return split(shape, a.x, a.y, b.x, b.y, fill);
+	//	}
+	//
+	//	public static boolean split(Shape shape, float x1, float y1, float x2, float y2, Pair<Shape, Shape> fill) {
+	//		Type type = shape.getType();
+	//		if(type == Type.Circle)
+	//			throw new IllegalArgumentException("shapes of the type " + type + " cannot be split");
+	//		if(type == Type.Edge) {
+	//			EdgeShape edgeShape = (EdgeShape) shape;
+	//			edgeShape.getVertex1(vec2_0);
+	//			edgeShape.getVertex2(vec2_1);
+	//			Vector2 intersection = Pools.obtain(Vector2.class), a = Pools.obtain(Vector2.class), b = Pools.obtain(Vector2.class);
+	//			boolean done = false;
+	//			if(Intersector.intersectSegments(vec2_0, vec2_1, a.set(x1, y1), b.set(x2, y2), intersection)) {
+	//				EdgeShape partA = new EdgeShape(), partB = new EdgeShape();
+	//				partA.set(vec2_0, intersection);
+	//				partB.set(intersection, vec2_1);
+	//				if(fill != null) {
+	//					fill.key(partA);
+	//					fill.value(partB);
+	//				}
+	//				done = true;
+	//			}
+	//			Pools.free(intersection);
+	//			Pools.free(a);
+	//			Pools.free(b);
+	//			return done;
+	//		}
+	//		Vector2[] vertices = vertices(shape);
+	//		@SuppressWarnings("unchecked")
+	//		Array<Vector2> aVertices = Pools.obtain(Array.class), bVertices = Pools.obtain(Array.class);
+	//		// TODO allocation
+	//		Vector2 xy1 = new Vector2(x1, y1), xy2 = new Vector2(x2, y2);
+	//		aVertices.add(xy1);
+	//		aVertices.add(xy2);
+	//		bVertices.add(xy1);
+	//		bVertices.add(xy2);
+	//		boolean done = false;
+	//		for(int i = 0; i < vertices.length; i++) {
+	//			float det = det(x1, y1, vertices[i].x, vertices[i].y, x2, y2);
+	//			if(det < 0)
+	//				aVertices.add(vertices[i]);
+	//			else if(det > 0)
+	//				bVertices.add(vertices[i]);
+	//			else {
+	//				aVertices.add(vertices[i]);
+	//				bVertices.add(vertices[i]);
+	//			}
+	//		}
+	//		GeometryUtils.arrangeClockwise(aVertices);
+	//		GeometryUtils.arrangeClockwise(bVertices);
+	//		if(type == Type.Chain) {
+	//			ChainShape partA = new ChainShape(), partB = new ChainShape();
+	//			if(((ChainShape) shape).isLooped()) {
+	//				partA.createLoop(aVertices.toArray());
+	//				partB.createLoop(bVertices.toArray());
+	//			} else {
+	//				partA.createChain(aVertices.toArray());
+	//				partB.createChain(bVertices.toArray());
+	//			}
+	//			if(fill != null) {
+	//				fill.key(partA);
+	//				fill.value(partB);
+	//			}
+	//			done = true;
+	//		} else if(type == Type.Polygon) {
+	//			PolygonShape partA = new PolygonShape(), partB = new PolygonShape();
+	//			partA.set((Vector2[]) aVertices.toArray(Vector2.class));
+	//			partB.set((Vector2[]) bVertices.toArray(Vector2.class));
+	//			if(fill != null) {
+	//				fill.key(partA);
+	//				fill.value(partB);
+	//			}
+	//			done = true;
+	//		}
+	//		Pools.free(aVertices);
+	//		Pools.free(bVertices);
+	//		return done;
+	//	}
 
 	/** sets the {@link Fixture#isSensor() sensor flag} of all of the given Body's Fixtures
 	 *  @param body the {@link Body} which {@link Fixture Fixtures'} sensor flag to set

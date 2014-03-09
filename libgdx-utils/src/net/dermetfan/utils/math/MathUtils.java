@@ -32,6 +32,11 @@ public class MathUtils {
 		return inclusive ? value >= min && value <= max : value > min && value < max;
 	}
 
+	/** @return the determinant of the given 3x3 matrix */
+	public static float det(float x1, float y1, float x2, float y2, float x3, float y3) {
+		return x1 * y2 + x2 * y3 + x3 * y1 - y1 * x2 - y2 * x3 - y3 * x1;
+	}
+
 	/** normalizes a value in a given range using the range as step
 	 *  @see #normalize(float, float, float) */
 	public static float normalize(float value, float range) {
