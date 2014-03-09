@@ -17,6 +17,11 @@ package net.dermetfan.utils.libgdx.math;
 import static net.dermetfan.utils.math.MathUtils.amplitude;
 import static net.dermetfan.utils.math.MathUtils.max;
 import static net.dermetfan.utils.math.MathUtils.min;
+import static net.dermetfan.utils.math.MathUtils.det;
+
+import java.util.Arrays;
+import java.util.Comparator;
+
 import net.dermetfan.utils.ArrayUtils;
 
 import com.badlogic.gdx.graphics.OrthographicCamera;
@@ -362,6 +367,50 @@ public abstract class GeometryUtils {
 		if(vertices.length <= 4)
 			return true;
 		return area(vertices) < 0;
+	}
+
+	/** used in {@link #arrangeClockwise(Array)} */
+	private static final Comparator<Vector2> arrangeClockwiseComparator = new Comparator<Vector2>() {
+
+		/** compares the x coordinates */
+		@Override
+		public int compare(Vector2 a, Vector2 b) {
+			if(a.x > b.x)
+				return 1;
+			else if(a.x < b.x)
+				return -1;
+			return 0;
+		}
+
+	};
+
+	/** @param vertices the vertices to arrange in clockwise order */
+	public static void arrangeClockwise(Array<Vector2> vertices) {
+		// http://www.emanueleferonato.com/2011/08/05/slicing-splitting-and-cutting-objects-with-box2d-part-4-using-real-graphics
+		int i1 = 1, i2 = vertices.size - 1;
+
+		if(tmpVecArr == null || tmpVecArr.length < vertices.size)
+			tmpVecArr = new Vector2[vertices.size];
+		System.arraycopy(vertices.items, 0, tmpVecArr, 0, vertices.size);
+		Arrays.sort(tmpVecArr, arrangeClockwiseComparator);
+
+		tmpVecArr[0] = vertices.get(0);
+		Vector2 C = vertices.get(0);
+		Vector2 D = vertices.get(vertices.size - 1);
+
+		float det;
+		for(int i = 1; i < vertices.size - 1; i++) {
+			det = det(C.x, C.y, D.x, D.y, vertices.get(i).x, vertices.get(i).y);
+			if(det < 0)
+				tmpVecArr[i1++] = vertices.get(i);
+			else
+				tmpVecArr[i2--] = vertices.get(i);
+		}
+
+		tmpVecArr[i1] = vertices.get(vertices.size - 1);
+
+		vertices.clear();
+		vertices.addAll(tmpVecArr, 0, vertices.size);
 	}
 
 	/** @see #isConvex(Vector2[]) */
