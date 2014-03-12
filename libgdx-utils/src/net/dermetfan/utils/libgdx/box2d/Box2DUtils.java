@@ -457,15 +457,17 @@ public abstract class Box2DUtils {
 	 *  <strong>Note: The {@link ChainShape#setPrevVertex(float, float) previous} and {@link ChainShape#setNextVertex(float, float) next} vertex of a {@link ChainShape} will not be copied since this is not possible due to the API.</strong>
 	 *  @param shape the {@link Shape} to copy
 	 *  @return a {@link Shape} exactly like the one passed in */
-	public static Shape clone(Shape shape) {
-		Shape copy;
+	public static <T extends Shape> T clone(T shape) {
+		T clone;
 		switch(shape.getType()) {
 		case Circle:
-			CircleShape circleCopy = (CircleShape) (copy = new CircleShape());
-			circleCopy.setPosition(((CircleShape) shape).getPosition());
+			@SuppressWarnings("unchecked")
+			CircleShape circleClone = (CircleShape) (clone = (T) new CircleShape());
+			circleClone.setPosition(((CircleShape) shape).getPosition());
 			break;
 		case Polygon:
-			PolygonShape polyCopy = (PolygonShape) (copy = new PolygonShape()),
+			@SuppressWarnings("unchecked")
+			PolygonShape polyClone = (PolygonShape) (clone = (T) new PolygonShape()),
 			poly = (PolygonShape) shape;
 			float[] vertices = new float[poly.getVertexCount()];
 			for(int i = 0; i < vertices.length; i++) {
@@ -473,17 +475,19 @@ public abstract class Box2DUtils {
 				vertices[i++] = vec2_0.x;
 				vertices[i] = vec2_0.y;
 			}
-			polyCopy.set(vertices);
+			polyClone.set(vertices);
 			break;
 		case Edge:
-			EdgeShape edgeCopy = (EdgeShape) (copy = new EdgeShape()),
+			@SuppressWarnings("unchecked")
+			EdgeShape edgeClone = (EdgeShape) (clone = (T) new EdgeShape()),
 			edge = (EdgeShape) shape;
 			edge.getVertex1(vec2_0);
 			edge.getVertex2(vec2_1);
-			edgeCopy.set(vec2_0, vec2_1);
+			edgeClone.set(vec2_0, vec2_1);
 			break;
 		case Chain:
-			ChainShape chainCopy = (ChainShape) (copy = new ChainShape()),
+			@SuppressWarnings("unchecked")
+			ChainShape chainClone = (ChainShape) (clone = (T) new ChainShape()),
 			chain = (ChainShape) shape;
 			vertices = new float[chain.getVertexCount()];
 			for(int i = 0; i < vertices.length; i++) {
@@ -492,15 +496,15 @@ public abstract class Box2DUtils {
 				vertices[i] = vec2_0.y;
 			}
 			if(chain.isLooped())
-				chainCopy.createLoop(GeometryUtils.toVector2Array(vertices));
+				chainClone.createLoop(GeometryUtils.toVector2Array(vertices));
 			else
-				chainCopy.createChain(vertices);
+				chainClone.createChain(vertices);
 			break;
 		default:
 			return shape;
 		}
-		copy.setRadius(shape.getRadius());
-		return copy;
+		clone.setRadius(shape.getRadius());
+		return clone;
 	}
 
 	/* This method is not implemented because the Box2D API does not offer all necessary information.
@@ -668,7 +672,59 @@ public abstract class Box2DUtils {
 	/* Not implemented due to the Box2D API not providing all necessary information.
 	 * public static JointDef createDef(Joint joint); */
 
-	// split (WIP)
+	// split
+
+	//	public static <T extends Shape> void split(T shape, Vector2 a, Vector2 b, Pair<T, T> fill) {
+	//		// find intersection points
+	//		Vector2 isA = Pools.obtain(Vector2.class), isB = Pools.obtain(Vector2.class);
+	//		Polygon p;
+	//
+	//		// create new vertice arrays
+	//
+	//		// create shapes
+	//
+	//		// free objects
+	//		Pools.free(isA);
+	//		Pools.free(isB);
+	//	}
+
+	//	private class SplitRayCastCallback implements RayCastCallback {
+	//
+	//		public final SplitRayCastCallback instance = new SplitRayCastCallback();
+	//
+	//		private Vector2 a, b;
+	//		private Vector2 aTmp = new Vector2(), bTmp = new Vector2();
+	//		private Array<Body> hitBodies = new Array<Body>();
+	//
+	//		private SplitRayCastCallback() {
+	//		}
+	//
+	//		public SplitRayCastCallback init(Vector2 a, Vector2 b) {
+	//			aTmp.set(this.a = a);
+	//			bTmp.set(this.b = b);
+	//			hitBodies.clear();
+	//			return this;
+	//		}
+	//
+	//		@Override
+	//		public float reportRayFixture(Fixture fixture, Vector2 point, Vector2 normal, float fraction) {
+	//			boolean outOfBounds = !between(point.x, a.x, b.x, true) && !between(point.y, a.y, b.y, true);
+	//			if(outOfBounds)
+	//				return 0;
+	//
+	//			if(hitBodies.contains(fixture.getBody(), true))
+	//				;
+	//
+	//			return 1;
+	//		}
+	//
+	//	};
+	//
+	//	public static boolean split(World world, Vector2 a, Vector2 b, Array<Body> fill) {
+	//		world.rayCast(splitRayCastCallback, a, b);
+	//		world.rayCast(splitRayCastCallback, b, a);
+	//		return true;
+	//	}
 
 	//	public static boolean split(World world, Vector2 a, Vector2 b, Array<Pair<Body, Body>> fill) {
 	//		// TODO query world and stuff
@@ -744,7 +800,6 @@ public abstract class Box2DUtils {
 	//		Pools.free(collisionA);
 	//		Pools.free(collisionB);
 	//		if(split) {
-	//			System.out.println("split: " + shapes);
 	//			FixtureDef fixtureDef = createDef(fixture);
 	//			body.destroyFixture(fixture);
 	//			fixtureDef.shape = shapes.key();
@@ -794,8 +849,7 @@ public abstract class Box2DUtils {
 	//		Vector2[] vertices = vertices(shape);
 	//		@SuppressWarnings("unchecked")
 	//		Array<Vector2> aVertices = Pools.obtain(Array.class), bVertices = Pools.obtain(Array.class);
-	//		// TODO allocation
-	//		Vector2 xy1 = new Vector2(x1, y1), xy2 = new Vector2(x2, y2);
+	//		Vector2 xy1 = Pools.obtain(Vector2.class).set(x1, y1), xy2 = Pools.obtain(Vector2.class).set(x2, y2);
 	//		aVertices.add(xy1);
 	//		aVertices.add(xy2);
 	//		bVertices.add(xy1);
@@ -829,6 +883,7 @@ public abstract class Box2DUtils {
 	//			}
 	//			done = true;
 	//		} else if(type == Type.Polygon) {
+	//			System.out.println(aVertices.size + ", " + bVertices.size);
 	//			PolygonShape partA = new PolygonShape(), partB = new PolygonShape();
 	//			partA.set((Vector2[]) aVertices.toArray(Vector2.class));
 	//			partB.set((Vector2[]) bVertices.toArray(Vector2.class));
@@ -838,6 +893,8 @@ public abstract class Box2DUtils {
 	//			}
 	//			done = true;
 	//		}
+	//		Pools.free(xy1);
+	//		Pools.free(xy2);
 	//		Pools.free(aVertices);
 	//		Pools.free(bVertices);
 	//		return done;

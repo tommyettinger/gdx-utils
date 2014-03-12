@@ -18,9 +18,9 @@ package net.dermetfan.utils.math;
  *  @author dermetfan */
 public class MathUtils {
 
-	/** @return if the given value is in between min and max (inclusive) */
+	/** @return if the given value is in between min and max (exclusive) */
 	public static boolean between(float value, float min, float max) {
-		return between(value, min, max, true);
+		return between(value, min, max, false);
 	}
 
 	/** min and max will be swapped if they are given in the wrong order
