@@ -25,7 +25,9 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.assets.AssetDescriptor;
 import com.badlogic.gdx.assets.AssetLoaderParameters;
 import com.badlogic.gdx.assets.AssetManager;
+import com.badlogic.gdx.assets.loaders.FileHandleResolver;
 import com.badlogic.gdx.files.FileHandle;
+import com.badlogic.gdx.graphics.g2d.PolygonRegion;
 
 /** An {@link AssetManager} that {@link AssetManager#load(AssetDescriptor) loads} assets from a container class using reflection.
  *  @author dermetfan */
@@ -44,6 +46,19 @@ public class AnnotationAssetManager extends AssetManager {
 		/** @return the {@link AssetDescriptor#type} to use */
 		Class<?> type() default void.class;
 
+	}
+
+	/** @see AssetManager#AssetManager() */
+	public AnnotationAssetManager() {
+		super();
+	}
+
+	/** additionally sets {@link PolygonRegionLoader}
+	 *  @see AssetManager#AssetManager(FileHandleResolver)
+	 *  @see AssetManager#setLoader(Class, com.badlogic.gdx.assets.loaders.AssetLoader) */
+	public AnnotationAssetManager(FileHandleResolver resolver) {
+		super(resolver);
+		setLoader(PolygonRegion.class, new PolygonRegionLoader(resolver));
 	}
 
 	/** {@link #load(Field) Loads} all fields in the given {@code container} class if they are annotated with {@link Asset} and {@link Asset#load()} is true.
