@@ -93,7 +93,7 @@ public class PolygonRegionLoader extends AsynchronousAssetLoader<PolygonRegion, 
 			}
 
 		if(image != null) {
-			Array<AssetDescriptor> deps = new Array<AssetDescriptor>();
+			Array<AssetDescriptor> deps = new Array<AssetDescriptor>(1);
 			deps.add(new AssetDescriptor<Texture>(file.sibling(image), Texture.class));
 			return deps;
 		}
