@@ -26,6 +26,7 @@ import com.badlogic.gdx.assets.AssetDescriptor;
 import com.badlogic.gdx.assets.AssetLoaderParameters;
 import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.assets.loaders.FileHandleResolver;
+import com.badlogic.gdx.assets.loaders.resolvers.InternalFileHandleResolver;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.g2d.PolygonRegion;
 
@@ -48,9 +49,9 @@ public class AnnotationAssetManager extends AssetManager {
 
 	}
 
-	/** @see AssetManager#AssetManager() */
+	/** @see AnnotationAssetManager#AnnotationAssetManager(FileHandleResolver) */
 	public AnnotationAssetManager() {
-		super();
+		this(new InternalFileHandleResolver());
 	}
 
 	/** additionally sets {@link PolygonRegionLoader}
