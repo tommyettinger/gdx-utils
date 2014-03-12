@@ -387,19 +387,19 @@ public abstract class GeometryUtils {
 	/** @param vertices the vertices to arrange in clockwise order */
 	public static void arrangeClockwise(Array<Vector2> vertices) {
 		// http://www.emanueleferonato.com/2011/08/05/slicing-splitting-and-cutting-objects-with-box2d-part-4-using-real-graphics
-		int i1 = 1, i2 = vertices.size - 1;
+		int n = vertices.size, i1 = 1, i2 = vertices.size - 1;
 
-		if(tmpVecArr == null || tmpVecArr.length < vertices.size)
+		if(tmpVecArr == null || tmpVecArr.length < n)
 			tmpVecArr = new Vector2[vertices.size];
-		System.arraycopy(vertices.items, 0, tmpVecArr, 0, vertices.size);
+		System.arraycopy(vertices.items, 0, tmpVecArr, 0, n);
 		Arrays.sort(tmpVecArr, arrangeClockwiseComparator);
 
 		tmpVecArr[0] = vertices.get(0);
 		Vector2 C = vertices.get(0);
-		Vector2 D = vertices.get(vertices.size - 1);
+		Vector2 D = vertices.get(n - 1);
 
 		float det;
-		for(int i = 1; i < vertices.size - 1; i++) {
+		for(int i = 1; i < n - 1; i++) {
 			det = det(C.x, C.y, D.x, D.y, vertices.get(i).x, vertices.get(i).y);
 			if(det < 0)
 				tmpVecArr[i1++] = vertices.get(i);
@@ -407,10 +407,10 @@ public abstract class GeometryUtils {
 				tmpVecArr[i2--] = vertices.get(i);
 		}
 
-		tmpVecArr[i1] = vertices.get(vertices.size - 1);
+		tmpVecArr[i1] = vertices.get(n - 1);
 
 		vertices.clear();
-		vertices.addAll(tmpVecArr, 0, vertices.size);
+		vertices.addAll(tmpVecArr, 0, n);
 	}
 
 	/** @see #isConvex(Vector2[]) */
