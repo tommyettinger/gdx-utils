@@ -74,13 +74,13 @@ public class PolygonRegionLoader extends AsynchronousAssetLoader<PolygonRegion, 
 	@Override
 	public Array<AssetDescriptor> getDependencies(String fileName, FileHandle file, AssetLoaderParameters<PolygonRegion> parameter) {
 		String image = null;
-		try {
-			BufferedReader reader = file.reader(info.readerBuffer);
+		try(BufferedReader reader = file.reader(info.readerBuffer)) {
 			for(String line = reader.readLine(); line != null; line = reader.readLine())
 				if(line.startsWith(info.texturePrefix)) {
 					image = line.substring(info.texturePrefix.length());
 					break;
 				}
+			reader.close();
 		} catch(IOException e) {
 			Gdx.app.error(PolygonRegionLoader.class.getSimpleName(), "could not read " + fileName, e);
 		}
