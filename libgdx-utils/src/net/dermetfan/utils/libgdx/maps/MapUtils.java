@@ -87,11 +87,16 @@ public abstract class MapUtils {
 			hierarchy += (key = keys.next()) + ": " + map.getProperties().get(key) + "\n";
 
 		for(MapLayer layer : map.getLayers()) {
-			hierarchy += "\t" + layer.getName() + " (" + layer.getClass().getSimpleName() + "):\n";
+			hierarchy += "\t" + layer.getName() + " (" + layer.getClass().getSimpleName() + ")";
+			if(layer instanceof TiledMapTileLayer) {
+				TiledMapTileLayer tileLayer = (TiledMapTileLayer) layer;
+				hierarchy += " (size: " + tileLayer.getWidth() + "x" + tileLayer.getHeight() + ", tile size: " + tileLayer.getTileWidth() + "x" + tileLayer.getTileHeight() + ")";
+			}
+			hierarchy += ":\n";
 			layerHierarchy = readableHierarchy(layer).replace("\n", "\n\t\t");
 			layerHierarchy = layerHierarchy.endsWith("\n\t\t") ? layerHierarchy.substring(0, layerHierarchy.lastIndexOf("\n\t\t")) : layerHierarchy;
-			layerHierarchy += "\n";
-			hierarchy += !layerHierarchy.isEmpty() ? "\t\t" + layerHierarchy : layerHierarchy;
+			if(!layerHierarchy.isEmpty())
+				hierarchy += "\t\t" + layerHierarchy + "\n";
 		}
 
 		return hierarchy;
