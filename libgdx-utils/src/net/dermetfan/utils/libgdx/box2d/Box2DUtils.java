@@ -123,7 +123,7 @@ public abstract class Box2DUtils {
 			EdgeShape edgeShape = (EdgeShape) shape;
 			edgeShape.getVertex1(vec2_0);
 			edgeShape.getVertex2(vec2_1);
-			vertices = new Vector2[] {vec2_0, vec2_1};
+			vertices = new Vector2[] {new Vector2(vec2_0), new Vector2(vec2_1)};
 			break;
 		case Chain:
 			ChainShape chainShape = (ChainShape) shape;
@@ -518,7 +518,7 @@ public abstract class Box2DUtils {
 		case RevoluteJoint:
 			RevoluteJoint revoluteJoint = (RevoluteJoint) joint;
 			RevoluteJointDef revoluteJointDef = (RevoluteJointDef) (jointDef = new RevoluteJointDef());
-			revoluteJointDef.collideConnected = revoluteJointDef.collideConnected; // TODO
+			revoluteJointDef.collideConnected = revoluteJoint.isCollideConnected(); // missing
 			revoluteJointDef.enableLimit = revoluteJoint.isLimitEnabled();
 			revoluteJointDef.enableMotor = revoluteJoint.isMotorEnabled();
 			revoluteJointDef.localAnchorA.set(revoluteJoint.getAnchorA());
@@ -532,22 +532,22 @@ public abstract class Box2DUtils {
 		case PrismaticJoint:
 			PrismaticJoint prismaticJoint = (PrismaticJoint) joint;
 			PrismaticJointDef prismaticJointDef = (PrismaticJointDef) (jointDef = new PrismaticJointDef());
-			prismaticJointDef.collideConnected = prismaticJointDef.collideConnected; // TODO
+			prismaticJointDef.collideConnected = prismaticJoint.isCollideConnected(); // missing
 			prismaticJointDef.enableLimit = prismaticJoint.isLimitEnabled();
 			prismaticJointDef.enableMotor = prismaticJoint.isMotorEnabled();
 			prismaticJointDef.localAnchorA.set(prismaticJoint.getAnchorA());
 			prismaticJointDef.localAnchorB.set(prismaticJoint.getAnchorB());
-			prismaticJointDef.localAxisA.set(prismaticJointDef.localAxisA); // TODO
-			prismaticJointDef.lowerTranslation = prismaticJointDef.lowerTranslation; // TODO
-			prismaticJointDef.maxMotorForce = prismaticJointDef.maxMotorForce; // TODO
+			prismaticJointDef.localAxisA.set(prismaticJoint.getLocalAxisA()); // missing
+			prismaticJointDef.lowerTranslation = prismaticJoint.getLowerTranslation(); // missing
+			prismaticJointDef.maxMotorForce = prismaticJoint.getMaxMotorForce(); // missing
 			prismaticJointDef.motorSpeed = prismaticJoint.getMotorSpeed();
-			prismaticJointDef.referenceAngle = prismaticJointDef.referenceAngle; // TODO
-			prismaticJointDef.upperTranslation = prismaticJointDef.upperTranslation; // TODO
+			prismaticJointDef.referenceAngle = prismaticJoint.getReferenceAngle(); // missing
+			prismaticJointDef.upperTranslation = prismaticJoint.getUpperTranslation(); // missing
 			break;
 		case DistanceJoint:
 			DistanceJoint distanceJoint = (DistanceJoint) joint;
 			DistanceJointDef distanceJointDef = (DistanceJointDef) (jointDef = new DistanceJointDef());
-			distanceJointDef.collideConnected = distanceJointDef.collideConnected; // TODO
+			distanceJointDef.collideConnected = distanceJoint.isCollideConnected(); // missing
 			distanceJointDef.dampingRatio = distanceJoint.getDampingRatio();
 			distanceJointDef.frequencyHz = distanceJoint.getFrequency();
 			distanceJointDef.length = distanceJoint.getLength();
@@ -557,7 +557,7 @@ public abstract class Box2DUtils {
 		case PulleyJoint:
 			PulleyJoint pulleyJoint = (PulleyJoint) joint;
 			PulleyJointDef pulleyJointDef = (PulleyJointDef) (jointDef = new PulleyJointDef());
-			pulleyJointDef.collideConnected = pulleyJointDef.collideConnected; // TODO
+			pulleyJointDef.collideConnected = pulleyJoint.isCollideConnected(); // missing
 			pulleyJointDef.groundAnchorA.set(pulleyJoint.getGroundAnchorA());
 			pulleyJointDef.groundAnchorB.set(pulleyJoint.getGroundAnchorB());
 			pulleyJointDef.lengthA = pulleyJoint.getLength1();
@@ -569,7 +569,7 @@ public abstract class Box2DUtils {
 		case MouseJoint:
 			MouseJoint mouseJoint = (MouseJoint) joint;
 			MouseJointDef mouseJointDef = (MouseJointDef) (jointDef = new MouseJointDef());
-			mouseJointDef.collideConnected = mouseJointDef.collideConnected; // TODO
+			mouseJointDef.collideConnected = mouseJoint.isCollideConnected(); // missing
 			mouseJointDef.dampingRatio = mouseJoint.getDampingRatio();
 			mouseJointDef.frequencyHz = mouseJoint.getFrequency();
 			mouseJointDef.maxForce = mouseJoint.getMaxForce();
@@ -578,28 +578,28 @@ public abstract class Box2DUtils {
 		case GearJoint:
 			GearJoint gearJoint = (GearJoint) joint;
 			GearJointDef gearJointDef = (GearJointDef) (jointDef = new GearJointDef());
-			gearJointDef.collideConnected = gearJointDef.collideConnected; // TODO
-			gearJointDef.joint1 = gearJointDef.joint1; // TODO
-			gearJointDef.joint2 = gearJointDef.joint2; // TODO
+			gearJointDef.collideConnected = gearJoint.isCollideConnected(); // missing
+			gearJointDef.joint1 = gearJoint.getJoint1(); // missing
+			gearJointDef.joint2 = gearJoint.getJoint2(); // missing
 			gearJointDef.ratio = gearJoint.getRatio();
 			break;
 		case WheelJoint:
 			WheelJoint wheelJoint = (WheelJoint) joint;
 			WheelJointDef wheelJointDef = (WheelJointDef) (jointDef = new WheelJointDef());
-			wheelJointDef.collideConnected = wheelJointDef.collideConnected; // TODO
+			wheelJointDef.collideConnected = wheelJoint.isCollideConnected(); // missing
 			wheelJointDef.dampingRatio = wheelJoint.getSpringDampingRatio();
-			wheelJointDef.enableMotor = wheelJointDef.enableMotor; // TODO
+			wheelJointDef.enableMotor = wheelJoint.isMotorEnabled(); // missing
 			wheelJointDef.frequencyHz = wheelJoint.getSpringFrequencyHz();
 			wheelJointDef.localAnchorA.set(wheelJoint.getAnchorA());
 			wheelJointDef.localAnchorB.set(wheelJoint.getAnchorB());
-			wheelJointDef.localAxisA.set(wheelJointDef.localAxisA); // TODO
+			wheelJointDef.localAxisA.set(wheelJoint.getLocalAxisA()); // missing
 			wheelJointDef.maxMotorTorque = wheelJoint.getMaxMotorTorque();
 			wheelJointDef.motorSpeed = wheelJoint.getMotorSpeed();
 			break;
 		case WeldJoint:
 			WeldJoint weldJoint = (WeldJoint) joint;
 			WeldJointDef weldJointDef = (WeldJointDef) (jointDef = new WeldJointDef());
-			weldJointDef.collideConnected = weldJointDef.collideConnected; // TODO
+			weldJointDef.collideConnected = weldJoint.isCollideConnected(); // missing
 			weldJointDef.localAnchorA.set(weldJoint.getAnchorA());
 			weldJointDef.localAnchorB.set(weldJoint.getAnchorB());
 			weldJointDef.referenceAngle = weldJoint.getReferenceAngle();
@@ -607,7 +607,7 @@ public abstract class Box2DUtils {
 		case FrictionJoint:
 			FrictionJoint frictionJoint = (FrictionJoint) joint;
 			FrictionJointDef frictionJointDef = (FrictionJointDef) (jointDef = new FrictionJointDef());
-			frictionJointDef.collideConnected = frictionJointDef.collideConnected; // TODO
+			frictionJointDef.collideConnected = frictionJointDef.isCollideConnected(); // missing
 			frictionJointDef.localAnchorA.set(frictionJoint.getAnchorA());
 			frictionJointDef.localAnchorB.set(frictionJoint.getAnchorB());
 			frictionJointDef.maxForce = frictionJoint.getMaxForce();
@@ -670,7 +670,9 @@ public abstract class Box2DUtils {
 	}
 
 	/* Not implemented due to the Box2D API not providing all necessary information.
-	 * public static JointDef createDef(Joint joint); */
+	 * public static JointDef createDef(Joint joint) {
+	 * 	return null;
+	 * } */
 
 	// split
 

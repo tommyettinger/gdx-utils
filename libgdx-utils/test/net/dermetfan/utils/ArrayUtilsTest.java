@@ -29,8 +29,8 @@ public class ArrayUtilsTest {
 
 	@Test
 	public void select() {
-		assertArrayEquals(ArrayUtils.box(new float[] {2, 5, 8}), ArrayUtils.box(ArrayUtils.select(new float[] {0, 1, 2, 3, 4, 5, 6, 7, 8, 9}, 3, new float[10])));
-		assertArrayEquals(ArrayUtils.box(new float[] {0, 0, 0}), ArrayUtils.box(ArrayUtils.select(new float[] {0, 1, 2, 0, 1, 3, 0, 1, 2}, -2, 3, new float[10])));
+		assertArrayEquals(new Float[] {2f, 5f, 8f}, ArrayUtils.select(new Float[] {0f, 1f, 2f, 3f, 4f, 5f, 6f, 7f, 8f, 9f}, 3, new Float[10]));
+		assertArrayEquals(new Float[] {0f, 0f, 0f}, ArrayUtils.select(new Float[] {0f, 1f, 2f, 0f, 1f, 3f, 0f, 1f, 2f}, -2, 3, new Float[10]));
 		assertArrayEquals(new String[] {"zero", "three", "two"}, ArrayUtils.select(new String[] {"zero", "one", "two", "three"}, new int[] {0, 3, 2}));
 	}
 
