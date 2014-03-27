@@ -1,4 +1,4 @@
-/** Copyright 2013 Robin Stumm (serverkorken@googlemail.com, http://dermetfan.net/)
+/** Copyright 2014 Robin Stumm (serverkorken@googlemail.com, http://dermetfan.net/)
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -44,6 +44,7 @@ import com.badlogic.gdx.math.Ellipse;
 import com.badlogic.gdx.math.Polygon;
 import com.badlogic.gdx.math.Polyline;
 import com.badlogic.gdx.math.Rectangle;
+import com.badlogic.gdx.utils.StringBuilder;
 import com.badlogic.gdx.utils.XmlWriter;
 
 /** an {@link XmlWriter} with additional {@link #tmx(Map, Format) tmx(..)} methods
@@ -319,12 +320,12 @@ public class TmxMapWriter extends XmlWriter {
 	}
 
 	/** @param vertices the vertices to arrange in TMX format
-	 *  @return a String of the given vertices ready for use TMX maps */
+	 *  @return a String of the given vertices ready for use in TMX maps */
 	private static String points(float[] vertices) {
-		String points = "";
+		StringBuilder points = new StringBuilder();
 		for(int i = 0; i < vertices.length; i++)
-			points += (int) vertices[i] + ((i + 1) % 2 == 0 ? i + 1 < vertices.length ? " " : "" : ",");
-		return points;
+			points.append((int) vertices[i] + ((i + 1) % 2 == 0 ? i + 1 < vertices.length ? " " : "" : ","));
+		return points.toString();
 	}
 
 }

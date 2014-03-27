@@ -322,7 +322,7 @@ public class Breakable {
 	/** if the fixture's body (in case the Breakable is used for a fixture) should be destroyed if the fixture is destroyed (false by default) */
 	private boolean breakBody;
 
-	/** if the fixture's body (in case the Breakable is used for a fixture) should be destroyed if the fixture is destroyed and it was the bodie's last one (true by default) */
+	/** if the fixture's body (in case the Breakable is used for a fixture) should be destroyed if the fixture is destroyed and it was the body's last one (true by default) */
 	private boolean breakBodyWithoutFixtures = true;
 
 	/** the {@link Callback} called when the {@link Breakable}'s container is destroyed */

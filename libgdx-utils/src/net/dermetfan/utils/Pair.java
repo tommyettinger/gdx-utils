@@ -14,7 +14,7 @@
 
 package net.dermetfan.utils;
 
-/** @param <K> the type of the key 
+/** @param <K> the type of the key
  *  @param <V> the type of the value
  *  @author dermetfan */
 public class Pair<K, V> {
@@ -43,11 +43,11 @@ public class Pair<K, V> {
 	}
 
 	/** swaps key and value
-	 *  @throws IllegalStateException if {@link #key} and {@link #value} are not of the same class */
+	 *  @throws IllegalStateException if the classes of {@link #key} and {@link #value} are not {@link Class#isAssignableFrom(Class) assignable} from each other */
 	@SuppressWarnings("unchecked")
 	public void swap() throws IllegalStateException {
-		if(key.getClass().isAssignableFrom(value.getClass()) && value.getClass().isAssignableFrom(key.getClass()))
-			throw new IllegalStateException("the types of key and value are not assignable to each other: " + key.getClass().getName() + " - " + value.getClass().getName());
+		if(!key.getClass().isAssignableFrom(value.getClass()) || !value.getClass().isAssignableFrom(key.getClass()))
+			throw new IllegalStateException("the types of key and value are not assignable from each other: " + key.getClass().getName() + " - " + value.getClass().getName());
 		V oldValue = value;
 		value = (V) key;
 		key = (K) oldValue;

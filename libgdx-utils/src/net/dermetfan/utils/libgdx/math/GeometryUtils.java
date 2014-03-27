@@ -15,9 +15,9 @@
 package net.dermetfan.utils.libgdx.math;
 
 import static net.dermetfan.utils.math.MathUtils.amplitude;
+import static net.dermetfan.utils.math.MathUtils.det;
 import static net.dermetfan.utils.math.MathUtils.max;
 import static net.dermetfan.utils.math.MathUtils.min;
-import static net.dermetfan.utils.math.MathUtils.det;
 
 import java.util.Arrays;
 import java.util.Comparator;
@@ -34,7 +34,7 @@ import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.ShortArray;
 
-/** provides some useful methods for geometric calculations
+/** Provides some useful methods for geometric calculations. Note that many methods return the same array instance so make a copy for subsequent calls.
  *  @author dermetfan */
 public abstract class GeometryUtils {
 
@@ -479,7 +479,7 @@ public abstract class GeometryUtils {
 		return toPolygonArray(vertices, 3);
 	}
 
-	/** @param concave the concave polygon to to decompose 
+	/** @param concave the concave polygon to to decompose
 	 *  @return an array of convex polygons representing the given concave polygon
 	 *  @see BayazitDecomposer#convexPartition(Array) */
 	public static Polygon[] decompose(Polygon concave) {

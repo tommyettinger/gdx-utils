@@ -12,7 +12,7 @@ public class Tests {
 
 	@Test
 	public void testAll() {
-		Result result = JUnitCore.runClasses(ArrayUtilsTest.class, MathUtilsTest.class, GeometryUtilsTest.class, AppenderTest.class);
+		Result result = JUnitCore.runClasses(ArrayUtilsTest.class, MathUtilsTest.class, GeometryUtilsTest.class, AppenderTest.class, PairTest.class);
 		System.out.println(result.getRunCount() - result.getFailureCount() + "/" + result.getRunCount() + " succeeded, " + result.getFailureCount() + " failed, " + result.getIgnoreCount() + " ignored, " + result.getRunTime() + "ms");
 		assertEquals(0, result.getFailureCount());
 	}
