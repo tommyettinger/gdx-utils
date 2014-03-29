@@ -19,6 +19,7 @@ import static net.dermetfan.utils.libgdx.math.GeometryUtils.filterY;
 import static net.dermetfan.utils.math.MathUtils.amplitude;
 import static net.dermetfan.utils.math.MathUtils.max;
 import static net.dermetfan.utils.math.MathUtils.min;
+
 import net.dermetfan.utils.libgdx.math.GeometryUtils;
 
 import com.badlogic.gdx.math.Vector2;

@@ -1,3 +1,6 @@
 syntax: glob
 
-libgdx-utils/bin*
+.gradle
+.settings
+bin
+build
