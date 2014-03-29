@@ -75,12 +75,12 @@ public class GeometryUtilsTest {
 
 	@Test
 	public void toPolygonArray() {
-		Polygon expected = new Polygon(new float[] {0, 0, 1, 1, 1, 0});
-		Polygon[] polygons = GeometryUtils.toPolygonArray(new Vector2[] {Vector2.Zero, new Vector2(1, 1), new Vector2(1, 0), Vector2.Zero, new Vector2(1, 1), new Vector2(1, 0), Vector2.Zero, new Vector2(1, 1), new Vector2(1, 0)}, 3);
-		float[][] actuals = new float[3][3];
+		float[] expected = new float[] {0, 0, 1, 1, 1, 0};
+		Vector2 zero = new Vector2(), oneOne = new Vector2(1, 1), oneZero = new Vector2(1, 0); // apparently testing with Gradle adds one to the Vector2 constants
+		Polygon[] polygons = GeometryUtils.toPolygonArray(new Vector2[] {zero, oneOne, oneZero, zero, oneOne, oneZero, zero, oneOne, oneZero}, 3);
+		assertTrue(polygons.length == 3);
 		for(int i = 0; i < polygons.length; i++)
-			actuals[i] = polygons[i].getVertices();
-		assertArrayEquals(new float[][] {expected.getVertices(), expected.getVertices(), expected.getVertices()}, actuals);
+			assertArrayEquals(expected, polygons[i].getVertices(), 0);
 	}
 
 	@Test
