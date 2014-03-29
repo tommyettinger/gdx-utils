@@ -453,7 +453,7 @@ public class FileChooser extends Window {
 		return canChooseDirectories;
 	}
 
-	/** @param cannotChooseDirectories the {@link #canChooseDirectories} to set */
+	/** @param canChooseDirectories the {@link #canChooseDirectories} to set */
 	public void setCanChooseDirectories(boolean canChooseDirectories) {
 		if(this.canChooseDirectories != canChooseDirectories) {
 			this.canChooseDirectories = canChooseDirectories;

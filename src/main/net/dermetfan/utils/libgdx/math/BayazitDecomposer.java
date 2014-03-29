@@ -8,8 +8,8 @@ import java.security.InvalidParameterException;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Array;
 
-/** Taken from <a href="http://code.google.com/p/box2d-editor/source/browse/editor/src/aurelienribon/bodyeditor/maths/earclipping/bayazit/BayazitDecomposer.java">Aurelien Ribon's Physics Body Editor</a><br/>
- *  <br/>
+/** Taken from <a href="http://code.google.com/p/box2d-editor/source/browse/editor/src/aurelienribon/bodyeditor/maths/earclipping/bayazit/BayazitDecomposer.java">Aurelien Ribon's Physics Body Editor</a><br>
+ *  <br>
  *  Convex decomposition algorithm created by <a href="http://mnbayazit.com/">Mark Bayazit</a>
  *  <a href="http://mnbayazit.com/406/bayazit">more information</a> about this algorithm */
 public abstract class BayazitDecomposer {

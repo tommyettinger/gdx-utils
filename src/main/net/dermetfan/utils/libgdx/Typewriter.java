@@ -18,7 +18,7 @@ import net.dermetfan.utils.Appender;
 
 import com.badlogic.gdx.math.Interpolation;
 
-/** A Typewriter writing a {@code CharSequence}.<br/>
+/** A Typewriter writing a {@code CharSequence}.<br>
  *  Uses a {@link CharSequenceInterpolator} and {@link Appender}, so {@link Interpolation Interpolations} and custom {@link Appender#setAppendices(CharSequence[]) cursors} can be used.
  *  @author dermetfan */
 public class Typewriter {

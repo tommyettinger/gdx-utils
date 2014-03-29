@@ -22,12 +22,12 @@ import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 
-/** An {@link AnimatedSprite} holds an {@link Animation} and sets the {@link Texture} of its super type {@link Sprite} to the correct one according to the information in the {@link Animation}.<br/>
+/** An {@link AnimatedSprite} holds an {@link Animation} and sets the {@link Texture} of its super type {@link Sprite} to the correct one according to the information in the {@link Animation}.<br>
  *  Usage:
- *  <p><code>Animation animation = new Animation(1 / 3f, frame1, frame2, frame3);<br/>
- * 	animation.setPlayMode(Animation.LOOP);<br/>
+ *  <p><code>Animation animation = new Animation(1 / 3f, frame1, frame2, frame3);<br>
+ * 	animation.setPlayMode(Animation.LOOP);<br>
  * 	animatedSprite = new AnimatedSprite(animation);</code></p>
- *  You can draw using any of the {@link Sprite Sprite's} draw methods:<br/>
+ *  You can draw using any of the {@link Sprite Sprite's} draw methods:<br>
  *  <code>animatedSprite.draw(batch);</code> 
  *  @author dermetfan */
 public class AnimatedSprite extends Sprite {

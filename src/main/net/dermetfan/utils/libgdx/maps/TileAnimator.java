@@ -31,30 +31,30 @@ import com.badlogic.gdx.utils.ObjectMap;
 import com.badlogic.gdx.utils.ObjectMap.Entries;
 import com.badlogic.gdx.utils.ObjectMap.Entry;
 
-/** Animates the tiles in a {@link TiledMapTileLayer tile map layer} by replacing them with {@link AnimatedTiledMapTile animated tiles}.<br/>
+/** Animates the tiles in a {@link TiledMapTileLayer tile map layer} by replacing them with {@link AnimatedTiledMapTile animated tiles}.<br>
  * 
- *  To define an animation in the map editor, put an animation property in its properties. The value should be the name of the animation, so the TileAnimator will know which tiles are frames of the same animation.<br/>
- *  You can put a property with the desired interval for each animation in the properties of the frame that defines the position of the animation on the map. Note that you cannot define a different for each frame since this is not supported by the {@link AnimatedTiledMapTile animated tiles}.<br/>
- *  If an animation should have their frames in a specific order, you can set an ordered property to one of the animation's frames. Then, put the number of the order of the frame in each frame's properties.<br/>
- *  <br/>
- *  <u>Example</u><br/>
+ *  To define an animation in the map editor, put an animation property in its properties. The value should be the name of the animation, so the TileAnimator will know which tiles are frames of the same animation.<br>
+ *  You can put a property with the desired interval for each animation in the properties of the frame that defines the position of the animation on the map. Note that you cannot define a different for each frame since this is not supported by the {@link AnimatedTiledMapTile animated tiles}.<br>
+ *  If an animation should have their frames in a specific order, you can set an ordered property to one of the animation's frames. Then, put the number of the order of the frame in each frame's properties.<br>
+ *  <br>
+ *  <u>Example</u><br>
  *  There are the following frames with their properties:
  *  <ol>
  *  	<li>
- *   		one that's actually placed on the map to define the position and properties of its animation<br/>
- *   		"animation": "waterfall"<br/>
- *   		"interval": "0.33"<br/>
- *   		"ordered": ""<br/>
+ *   		one that's actually placed on the map to define the position and properties of its animation<br>
+ *   		"animation": "waterfall"<br>
+ *   		"interval": "0.33"<br>
+ *   		"ordered": ""<br>
  *   		"frame": "1"
  *  	</li>
  *  	<li>
- *  		the second frame (not placed on the map)<br/>
- *  		"animation": "waterfall"<br/>
+ *  		the second frame (not placed on the map)<br>
+ *  		"animation": "waterfall"<br>
  *  		"frame": "2"
  *  	</li>
  *  	<li>
- *  		the third frame (not placed on the map)<br/>
- *  		"animation": "waterfall"<br/>
+ *  		the third frame (not placed on the map)<br>
+ *  		"animation": "waterfall"<br>
  *  		"frame": "3"
  *  	</li>
  *  </ol>
