@@ -525,7 +525,7 @@ public abstract class GeometryUtils {
 		return rect.setPosition(keepWithin(rect.x, rect.y, rect.width, rect.height, other.x, other.y, other.width, other.height));
 	}
 
-	/** Keeps the given {@link OrthographicCamera} in the given rectangle. If the rectangle is smaller than the camera viewport times the camera zoom, the camera will be centered on the rectangle.<br/>
+	/** Keeps the given {@link OrthographicCamera} in the given rectangle. If the rectangle is smaller than the camera viewport times the camera zoom, the camera will be centered on the rectangle.<br>
 	 *  Note that the camera will not be {@link OrthographicCamera#update() updated}.
 	 *  @param camera the camera to keep in the rectangle
 	 *  @see #keepWithin(float, float, float, float, float, float, float, float) */

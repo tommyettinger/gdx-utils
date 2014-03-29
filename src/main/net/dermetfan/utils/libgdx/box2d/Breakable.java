@@ -28,9 +28,9 @@ import com.badlogic.gdx.physics.box2d.Manifold;
 import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.utils.Array;
 
-/** Breaks bodies or fixtures if they get hit too hard. Put in fixture's or body's user data and set {@link Manager} as {@link ContactListener}.<br/>
- *  Don't forget to call {@link Manager#destroy()} after every world time step.<br/>
- *  You can manually destroy fixtures or bodies using the {@link Manager#destroy(Fixture, boolean, boolean)} and {@link Manager#destroy(Body)} methods.
+/** Breaks bodies or fixtures if they get hit too hard. Put in fixture's or body's user data and set {@link Manager} as {@link ContactListener}.<br>
+ *  Don't forget to call {@link Manager#destroy()} after every world time step.<br>
+ *  You can manually destroy fixtures or bodies using the {@link Manager#destroy(Fixture)} and {@link Manager#destroy(Body)} methods.
  *  @author dermetfan */
 public class Breakable {
 
@@ -88,7 +88,7 @@ public class Breakable {
 			}
 		}
 
-		/** {@link #destroy(Fixture, boolean, boolean) destroys}/{@link #destroy(Body) destroys} all fixtures/bodies involved in the given Contact if they could not bear the given impulse */
+		/** {@link #destroy(Body) destroys}/{@link #destroy(Fixture) destroys} all fixtures/bodies involved in the given Contact if they could not bear the given impulse */
 		public void strain(Contact contact, ContactImpulse impulse) {
 			float normalImpulse = MathUtils.sum(impulse.getNormalImpulses()), tangentImpulse = Math.abs(MathUtils.sum(impulse.getTangentImpulses()));
 
@@ -139,7 +139,7 @@ public class Breakable {
 
 		/** @param reactionForce the {@link Joint#getReactionForce(float) reaction force}
 		 *  @param reactionTorque the {@link Joint#getReactionTorque(float) reaction torque}
-		 *  @param joint for {@link Callback#strained(Joint, Breakable, float, float)}
+		 *  @param joint which circumstances to test
 		 *  @return if the joint strained with the given values should break */
 		public static boolean shouldBreak(Breakable breakable, Vector2 reactionForce, float reactionTorque, Joint joint) {
 			return breakable != null && (Math.abs(reactionForce.x) > breakable.reactionForceResistance.x || Math.abs(reactionForce.y) > breakable.reactionForceResistance.y || reactionForce.len2() > breakable.reactionForceLength2Resistance || reactionTorque > breakable.reactionTorqueResistance) && (breakable.callback == null || breakable.callback != null && !breakable.callback.strained(joint, breakable, reactionForce, reactionTorque));
@@ -252,7 +252,7 @@ public class Breakable {
 		 *  @return true to cancel the destruction if one was going to occur */
 		public boolean strained(Fixture fixture, Breakable breakable, Contact contact, ContactImpulse impulse, float normalImpulse, float tangentImpulse);
 
-		/** called by {@link Manager#destroyJoints(World)}
+		/** called by {@link Manager#strain(Joint, float)}
 		 *  @param joint the strained {@link Joint}
 		 *  @param breakable the {@link Breakable} instance causing this callback to be called
 		 *  @param reactionForce the {@link Joint#getReactionForce(float) reaction force}
@@ -263,11 +263,11 @@ public class Breakable {
 		 *  @return true to cancel the destruction */
 		public boolean destroyed(Body body, Breakable breakable);
 
-		/** called by {@link Manager#destroy(Fixture, boolean, boolean)}
+		/** called by {@link Manager#destroy(Fixture)}
 		 *  @return true to cancel the destruction */
 		public boolean destroyed(Fixture fixture, Breakable breakable);
 
-		/** called by {@link Manager#destroyJoints(World)}
+		/** called by {@link Manager#destroy(Joint)}
 		 *  @return true to cancel the destruction */
 		public boolean destroyed(Joint joint, Breakable breakable);
 
@@ -338,7 +338,7 @@ public class Breakable {
 		this(normalResistance, tangentResistance, breakBody, true);
 	}
 
-	/** @see #Breakable(float, float, Vector2, float, boolean, boolean, Callback) */
+	/** @see #Breakable(float, float, Vector2, float, float, boolean, boolean, Callback) */
 	public Breakable(float normalResistance, float tangentResistance, boolean breakBody, boolean breakBodyWithoutFixtures) {
 		this(normalResistance, tangentResistance, Vector2.Zero, 0, 0, breakBody, breakBodyWithoutFixtures, null);
 	}
@@ -348,7 +348,7 @@ public class Breakable {
 		this(normalResistance, tangentResistance, false, callback);
 	}
 
-	/** @see #Breakable(float, float, Vector2, float, boolean, boolean, Callback) */
+	/** @see #Breakable(float, float, Vector2, float, float, boolean, boolean, Callback) */
 	public Breakable(float normalResistance, float tangentResistance, boolean breakBody, Callback callback) {
 		this(normalResistance, tangentResistance, Vector2.Zero, 0, 0, breakBody, true, callback);
 	}
@@ -385,7 +385,7 @@ public class Breakable {
 	 *  @param reactionTorqueResistance the {@link #reactionTorqueResistance}
 	 *  @param breakBody the {@link #breakBody}
 	 *  @param breakBodyWithoutFixtures the {@link #breakBodyWithoutFixtures}
-	 *  @param callback The {@link #callback}. If null, {@link #defaultListener} will be used. */
+	 *  @param callback the {@link #callback} */
 	public Breakable(float normalResistance, float tangentResistance, Vector2 reactionForceResistance, float reactionForceLength2Resistance, float reactionTorqueResistance, boolean breakBody, boolean breakBodyWithoutFixtures, Callback callback) {
 		this.normalResistance = normalResistance;
 		this.tangentResistance = tangentResistance;

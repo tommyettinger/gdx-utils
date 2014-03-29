@@ -34,7 +34,6 @@ public class Chain {
 	public static interface Builder {
 
 		/** creates a segment that is going to be added to {@link Chain#segments}
-		 *  @param previous the previously created segment
 		 *  @param index the index of the segment to create
 		 *  @param length the desired length of the {@link Chain} that is being build
 		 *  @param chain the {@link Chain} this segment will be added to
@@ -58,10 +57,10 @@ public class Chain {
 		/** the {@link World} in which to create segments and joints */
 		protected World world;
 
-		/** the {@link BodyDef} to use in {@link #createSegment(int, Body, int)} */
+		/** the {@link BodyDef} to use in {@link #createSegment(int, int, Chain)} */
 		protected BodyDef bodyDef;
 
-		/** the {@link FixtureDef} to use in {@link #createSegment(int, Body, int)} */
+		/** the {@link FixtureDef} to use in {@link #createSegment(int, int, Chain)} */
 		protected FixtureDef fixtureDef;
 
 		/** the {@link JointDef} to use in {@link #createConnection(Body, int, Body, int)} */
@@ -141,16 +140,16 @@ public class Chain {
 		/** the {@link World} to create things in */
 		protected World world;
 
-		/** the {@link BodyDef} to use in {@link #createSegment(int, Body, int)} */
+		/** the {@link BodyDef} to use in {@link #createSegment(int, int, Chain)} */
 		protected BodyDef bodyDef;
 
-		/** the {@link Shape} to use in {@link #createSegment(int, Body, int)} */
+		/** the {@link Shape} to use in {@link #createSegment(int, int, Chain)} */
 		protected Shape shape;
 
 		/** the density to use in {@link Body#createFixture(Shape, float)} */
 		protected float density;
 
-		/** the {@link JointDef} to use in {@link #createConnection(Body, int, Body, int)} */
+		/** the {@link JointDef} to use in {@link #createSegment(int, int, Chain)} */
 		protected JointDef jointDef;
 
 		/** @param world the {@link #world}
@@ -234,11 +233,11 @@ public class Chain {
 
 	}
 
-	/** a {@link Builder} that {@link Box2DUtils#clone(Body) copies} a {@link Body} as template in {@link #createSegment(int, Body, int)}
+	/** a {@link Builder} that {@link Box2DUtils#clone(Body) clones} a {@link Body} as template in {@link #createSegment(int, int, Chain)}
 	 *  @author dermetfan */
 	public static abstract class CopyBuilder implements Builder {
 
-		/** the {@link Body} to {@link Box2DUtils#clone(Body) copy} in {@link #createSegment(int, Body, int)} */
+		/** the {@link Body} to {@link Box2DUtils#clone(Body) copy} in {@link #createSegment(int, int, Chain)} */
 		protected Body template;
 
 		/** @param template the {@link #template} */
@@ -447,8 +446,8 @@ public class Chain {
 		return createSegment(index, builder);
 	}
 
-	/** Creates a {@link Body segment} using the given {@link Builder} passing the correct parameters to {@link Builder#createSegment(int, Body, int)} specified by the given {@code index}. Does NOT add it to this Chain.
-	 *  @see Builder#createSegment(int, Body, int) */
+	/** Creates a {@link Body segment} using the given {@link Builder} passing the correct parameters to {@link Builder#createSegment(int, int, Chain)} specified by the given {@code index}. Does NOT add it to this Chain.
+	 *  @see Builder#createSegment(int, int, Chain) */
 	public Body createSegment(int index, Builder builder) {
 		return builder.createSegment(index, segments.size + 1, this);
 	}
@@ -573,7 +572,7 @@ public class Chain {
 		removed.clear();
 	}
 
-	/** @param joint the {@link #connections Joint} at which to split this {@link Chain}
+	/** @param connection the {@link Connection} in {@link #connections} to split
 	 *  @return the new {@link Chain}
 	 *  @see #split(int) */
 	public Chain split(Connection connection) {

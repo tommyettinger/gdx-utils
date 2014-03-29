@@ -66,17 +66,17 @@ import com.badlogic.gdx.physics.box2d.joints.WheelJointDef;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.ObjectMap;
 
-/** An utility class that parses {@link MapObjects} from a {@link Map} and generates Box2D {@link Body Bodies}, {@link Fixture Fixtures} and {@link Joint Joints} from it.<br/>
- *  Just create a new {@link Box2DMapObjectParser} in any way you like and call {@link #load(World, MapLayer)} to load all compatible objects (defined by the {@link Aliases}) into your {@link World}.<br/>
- *  <br/>
- *  If you only want specific Fixtures or Bodies, you can use the {@link #createBody(World, MapObject)} and {@link #createFixture(MapObject)} methods.<br/>
- *  <br/>
- *  How you define compatible objects in the TiledMap editor:<br/>
- *  In your object layer, right-click an object and set its properties to those of the Body/Fixture/both (in case you're creating an {@link Aliases#object object}) you'd like, as defined in the used {@link Aliases} object.<br/>
- *  For type, you have to choose {@link Aliases#body}, {@link Aliases#fixture} or {@link Aliases#object}.<br/>
- *  To add Fixtures to a Body, add a {@link Aliases#body} property with the same value to each Fixture of a Body.<br/>
+/** An utility class that parses {@link MapObjects} from a {@link Map} and generates Box2D {@link Body Bodies}, {@link Fixture Fixtures} and {@link Joint Joints} from it.<br>
+ *  Just create a new {@link Box2DMapObjectParser} in any way you like and call {@link #load(World, MapLayer)} to load all compatible objects (defined by the {@link Aliases}) into your {@link World}.<br>
+ *  <br>
+ *  If you only want specific Fixtures or Bodies, you can use the {@link #createBody(World, MapObject)} and {@link #createFixture(MapObject)} methods.<br>
+ *  <br>
+ *  How you define compatible objects in the TiledMap editor:<br>
+ *  In your object layer, right-click an object and set its properties to those of the Body/Fixture/both (in case you're creating an {@link Aliases#object object}) you'd like, as defined in the used {@link Aliases} object.<br>
+ *  For type, you have to choose {@link Aliases#body}, {@link Aliases#fixture} or {@link Aliases#object}.<br>
+ *  To add Fixtures to a Body, add a {@link Aliases#body} property with the same value to each Fixture of a Body.<br>
  *  To create {@link Joint Joints}, add any object to the layer and just put everything needed in its properties. Note that you use the editors unit here which will be converted to Box2D meters automatically using {@link Aliases#unitScale}.
- *  <br/>
+ *  <br>
  *  For more information visit the <a href="https://bitbucket.org/dermetfan/libgdx-utils/wiki/Box2DMapObjectParser">wiki</a>.
  *  @author dermetfan */
 public class Box2DMapObjectParser {

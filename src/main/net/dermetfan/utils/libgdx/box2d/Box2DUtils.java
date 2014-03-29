@@ -414,7 +414,7 @@ public abstract class Box2DUtils {
 
 	// clone
 
-	/** clones a {@link Body} (without deep copying the {@link Shape Shapes} of its {@link Fixture Fixtures})<br/>
+	/** clones a {@link Body} (without deep copying the {@link Shape Shapes} of its {@link Fixture Fixtures})<br>
 	 *  @return {@link #clone(Body, boolean) copy(body, false)}
 	 *  @see #clone(Body, boolean) */
 	public static Body clone(Body body) {
@@ -454,7 +454,7 @@ public abstract class Box2DUtils {
 		return clone;
 	}
 
-	/** creates a deep copy of a {@link Shape}<br/>
+	/** creates a deep copy of a {@link Shape}<br>
 	 *  <strong>Note: The {@link ChainShape#setPrevVertex(float, float) previous} and {@link ChainShape#setNextVertex(float, float) next} vertex of a {@link ChainShape} will not be copied since this is not possible due to the API.</strong>
 	 *  @param shape the {@link Shape} to copy
 	 *  @return a {@link Shape} exactly like the one passed in */

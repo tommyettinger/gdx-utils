@@ -1,9 +1,8 @@
 apply plugin: "java"
 apply plugin: "eclipse"
+apply plugin: "distribution"
 
-ext {
-	javaVersion = 1.6
-}
+ext { javaVersion = 1.6 }
 
 sourceCompatibility = javaVersion
 
@@ -21,6 +20,7 @@ dependencies {
 	compile "junit:junit:4.11"
 }
 
-eclipse.classpath {
-	containers = ["org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-$javaVersion"]
-}
+jar.manifest.attributes += ["web": "http://dermetfan.net/", "repository": "http://bitbucket.org/dermetfan/libgdx-utils", "version": System.currentTimeMillis()]
+javadoc.title = "libgdx-utils"
+
+eclipse.classpath.containers = ["org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-$javaVersion"]

@@ -141,7 +141,7 @@ public abstract class ArrayUtils {
 		return select(elements, indices, null);
 	}
 
-	/** Skips, selects and goes to the next element repeatedly. Stops when {@code elements} has no more values. When {@code skips} has no more values, {@code repeatSkips} will be used repeatedly.<br/>
+	/** Skips, selects and goes to the next element repeatedly. Stops when {@code elements} has no more values. When {@code skips} has no more values, {@code repeatSkips} will be used repeatedly.<br>
 	 *  If the length of the selection is the length of the given {@code elements}, {@code elements} is returned.
 	 *  @param elements the elements from which to select not skipped ones
 	 *  @param skips the number of indices to skip after each selection
@@ -273,7 +273,7 @@ public abstract class ArrayUtils {
 		return select(elements, indices, null);
 	}
 
-	/** Skips, selects and goes to the next element repeatedly. Stops when {@code elements} has no more values. When {@code skips} has no more values, {@code repeatSkips} will be used repeatedly.<br/>
+	/** Skips, selects and goes to the next element repeatedly. Stops when {@code elements} has no more values. When {@code skips} has no more values, {@code repeatSkips} will be used repeatedly.<br>
 	 *  If the length of the selection is the length of the given {@code elements}, {@code elements} is returned.
 	 *  @param elements the elements from which to select not skipped ones
 	 *  @param skips the number of indices to skip after each selection

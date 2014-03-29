@@ -32,27 +32,24 @@ public class Autopilot {
 	/** calculates the force to continuously {@link Body#applyForce(Vector2, Vector2, boolean) apply} to reach the given destination
 	 *  @param destination the relative position of the destination
 	 *  @param force the force to apply
-	 *  @return the force to {@link Body#applyForce(Vector2, Vector2, boolean) apply} to navigate to the given {@code destination}
-	 *  {@link #calculateForce(Vector2, Vector2, float, float, Interpolation)} */
+	 *  @return the force to {@link Body#applyForce(Vector2, Vector2, boolean) apply} to navigate to the given {@code destination} */
 	public static Vector2 calculateForce(Vector2 destination, Vector2 force) {
 		return vec2_0.set(destination).nor().scl(force);
 	}
 
 	/** calculates the force to continuously {@link Body#applyForce(Vector2, Vector2, boolean) apply} to reach the given {@code destination} and interpolates it based on distance
-	 *  @param position the position at which the body currently is
 	 *  @param destination the destination to go to
 	 *  @param force the force to apply
 	 *  @param distanceScalar the distance at which the given force should be fully applied
 	 *  @param interpolation the interpolation used to interpolate the given {@code force} based on the {@code distanceScalar}
 	 *  @return the force to {@link Body#applyForce(Vector2, Vector2, boolean) apply} to navigate to the given {@code destination}
-	 *  @see #calculateForce(Vector2, Vector2, float) */
+	 *  @see #calculateForce(Vector2, Vector2) */
 	public static Vector2 calculateForce(Vector2 destination, Vector2 force, float distanceScalar, Interpolation interpolation) {
 		return calculateForce(destination, force).scl(interpolation.apply(destination.len() / distanceScalar));
 	}
 
 	/** calculates the torque needed to repeatedly {@link Body#applyTorque(float, boolean) apply} to a body to make it rotate to a given point
 	 *  @param target the point to rotate the body to
-	 *  @param origin the point around which to rotate the body (in world coordinates)
 	 *  @param rotation the current rotation of the body
 	 *  @param angularVelocity the current {@link Body#getAngularVelocity() angular velocity} of the body
 	 *  @param inertia the current {@link Body#getInertia() rotational inertia} of the body
@@ -85,7 +82,7 @@ public class Autopilot {
 	private boolean adaptForceToMass;
 
 	/** the distance at which the force should be fully applied
-	 *  @see #calculateForce(Vector2, Vector2, float, float, Interpolation) */
+	 *  @see #calculateForce(Vector2, Vector2, float, Interpolation) */
 	private float distanceScalar = 1;
 
 	/** the interpolation to apply to the force based on the {@link #distanceScalar} */
@@ -110,7 +107,7 @@ public class Autopilot {
 		this(destination, angle, vec2_0.set(forces, forces), forces);
 	}
 
-	/** @see #Autopilot(Vector2, float, float, boolean) */
+	/** @see #Autopilot(Vector2, float, Vector2, float, boolean) */
 	public Autopilot(Vector2 destination, float angle, Vector2 movementForce, float rotationForce) {
 		this(destination, angle, movementForce, rotationForce, true);
 	}
@@ -124,30 +121,30 @@ public class Autopilot {
 		this.adaptForceToMass = adaptForceToMass;
 	}
 
-	/** applies the force from {@link #calculateForce(Vector2, Vector2, float)}
-	 *  @see #calculateForce(Vector2, Vector2, float, float, Interpolation)
-	 *  @see #move(Body, Vector2, Vector2, float, float, Interpolation, boolean) */
+	/** applies the force from {@link #calculateForce(Vector2, Vector2)}
+	 *  @see #calculateForce(Vector2, Vector2)
+	 *  @see #move(Body, Vector2, Vector2, Interpolation, float, boolean) */
 	public void move(Body body, Vector2 destination, Vector2 force, boolean wake) {
 		Vector2 position = positionAccessor.access(body);
 		Vector2 apply = calculateForce(moveRelative ? destination : vec2_0.set(destination).sub(position), adaptForceToMass ? vec2_1.set(force).scl(body.getMass()) : force);
 		body.applyForce(apply, position, wake);
 	}
 
-	/** applies the force of {@link #calculateForce(Vector2, Vector2, float, float, Interpolation)}
+	/** applies the force of {@link #calculateForce(Vector2, Vector2, float, Interpolation)}
 	 *  @param body the body to move
 	 *  @param destination the destination of the body
 	 *  @param force the force used to move the body
 	 *  @param interpolation the interpolation  used to interpolate the given {@code force} based on the {@code distanceScalar}
 	 *  @param distanceScalar the distance at which the force should be fully applied
 	 *  @param wake if the body should be woken up in case it is sleeping
-	 *  @see #move(Body, Vector2, Vector2, float, boolean)
+	 *  @see #move(Body, Vector2, Vector2, boolean)
 	 *  @see #calculateForce(Vector2, Vector2, float, Interpolation) */
 	public void move(Body body, Vector2 destination, Vector2 force, Interpolation interpolation, float distanceScalar, boolean wake) {
 		Vector2 position = positionAccessor.access(body);
 		body.applyForce(calculateForce(moveRelative ? destination : vec2_0.set(destination).sub(position), adaptForceToMass ? vec2_1.set(force).scl(body.getMass()) : force, distanceScalar, interpolation), position, wake);
 	}
 
-	/** {@link #move(Body, Vector2, Vector2, float, boolean) moves} the given {@code body} */
+	/** {@link #move(Body, Vector2, Vector2, boolean) moves}/{@link #move(Body, Vector2, Vector2, Interpolation, float, boolean) moves} the given {@code Body} */
 	public void move(Body body, boolean interpolate, boolean wake) {
 		if(interpolate)
 			move(body, destination, movementForce, interpolation, distanceScalar, wake);
@@ -161,7 +158,7 @@ public class Autopilot {
 		body.applyTorque(calculateTorque(rotateRelative ? target : vec2_0.set(positionAccessor.access(body)).sub(target), body.getTransform().getRotation() + angle, body.getAngularVelocity(), body.getInertia(), adaptForceToMass ? force * body.getMass() : force, delta), wake);
 	}
 
-	/** {@link #rotate(Body, Vector2, float, float, boolean) rotates} the given {@code body} */
+	/** {@link #rotate(Body, Vector2, float, float, float, boolean) rotates} the given {@code body} */
 	public void rotate(Body body, float delta, boolean wake) {
 		rotate(body, destination, angle, rotationForce, delta, wake);
 	}
