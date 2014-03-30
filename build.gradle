@@ -1,8 +1,16 @@
 apply plugin: "java"
 apply plugin: "eclipse"
-apply plugin: "distribution"
 
-ext { javaVersion = 1.6 }
+ext {
+	javaVersion = 1.6
+	libVersion = 183
+	libName = "libgdx-utils"
+	libManifestAttributes = [
+		"web": "http://dermetfan.net/",
+		"repository": "http://bitbucket.org/dermetfan/libgdx-utils",
+		"version": libVersion
+	]
+}
 
 sourceCompatibility = javaVersion
 
@@ -17,10 +25,37 @@ repositories {
 
 dependencies {
 	compile "com.badlogicgames.gdx:gdx:1.0-SNAPSHOT"
-	compile "junit:junit:4.11"
+	testCompile "junit:junit:4.11"
 }
 
-jar.manifest.attributes += ["web": "http://dermetfan.net/", "repository": "http://bitbucket.org/dermetfan/libgdx-utils", "version": System.currentTimeMillis()]
-javadoc.title = "libgdx-utils"
+jar.manifest.attributes += libManifestAttributes
+javadoc.title = libName
 
 eclipse.classpath.containers = ["org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-$javaVersion"]
+
+void distConfig(Zip task) {
+	task.destinationDir = file "build/distributions"
+	task.baseName = libName
+	if(task instanceof Jar)
+		task.manifest.attributes += libManifestAttributes
+}
+
+task distDocs(type: Jar, dependsOn: javadoc) {
+	distConfig tasks.distDocs
+	from "build/docs/javadoc"
+	appendix = "javadoc"
+}
+
+task distSources(type: Jar) {
+	distConfig tasks.distSources
+	from sourceSets.main.java
+	appendix = "sources"
+}
+
+task zipDist(type: Zip, dependsOn: [jar, distDocs, distSources]) {
+	distConfig tasks.zipDist
+	from "build/distributions/$baseName-javadoc.jar"
+	from "build/distributions/$baseName-sources.jar"
+	from "build/libs/${baseName}.jar"
+	from "build/reports/RELEASE NOTES"
+}
