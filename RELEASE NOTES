@@ -1,0 +1,60 @@
++++ 183 +++
+now using Gradle
+
++++ 2014-03-12_17:38:39 +++
+Adapted to following changes:
+- OpenGL 1.x support removed and OpenGL 3.x support added: http://www.badlogicgames.com/wordpress/?p=3311
+- Changes to com.badlogic.gdx.scenes.scene2d.ui.List: http://www.badlogicgames.com/wordpress/?p=3307
+Added PolygonRegionLoader and integrated it with AnnotationAssetManager.
+
++++ 2014-02-18_16:08:26 +++
+Restructured Box2DUtils. Ignore what I said about the cache in the entry of 2014-02-17_22:01:57, it's back to what it was before.
+
++++ 2014-02-18_01:57:31 +++
+Fixed Box2DUtils#position(Shape, Body).
+
++++ 2014-02-17_22:01:57 +++
+I rewrote most of Box2DUtils to fix issue #4. You now clear the cache differently: Box2DUtils.getCache().clear(). You can also set and get your own ShapeCache instances. If you set null, caching will not be used.
+
++++ 2014-01-27_00:09:51 +++
+The Box2DMapObjectParser doesn't require map objects to have a name anymore (issue #2).
+
++++ 2014-01-11_18:55:33 +++
+Compiled with java 1.6 to avoid problems with Android.
+
++++ 2013-12-21_11:38:01 +++
+Rope was renamed to Chain because this is a more general name. Also the Chain$Builder#createSegment method takes different arguments.
+If you used the Rope/Chain, you will have to adapt to this.
+
++++ 2013-12-16_03:34:03 +++
+Many convenience methods and bugfixes.
+
++++ 2013-12-15_10:38:57 +++
+Autopilot#movementForce is now a Vector2 to allow you to specify a different force for each axis.
+If you used the Autopilot, you'll have to adapt to the changes.
+
++++ 2013-12-15_00:00:36 +++
+Box2DMapObjectParser now inherits from MapLayers, allows you to properly use its methods yourself, fixed some bugs or inconveniences.
+Autopilot makes a bit more sense with its methods.
+Everything is update to the latest nightly, so because of the change from SpriteBatch to Batch, you might have to update your libs as well. Read more here: http://badlogicgames.com/forum/viewtopic.php?f=23&t=7019
+
++++ 2013-12-09_02:49:57 +++
+Fixed an important bug in MouseJointAdapter. This fix made its brute iteration mode completely unnecessary, so it was removed.
+
++++ 2013-12-08_04:45:45 +++
+Added net.dermefan.utils.libgdx.box2d.Rope. A Rope consists of Bodies and Joints holding them together.
+The bodies and joints are fully customizable (in fact, the user has to define them). This is done using the Rope$Builder interface and some helping subclasses of Builder that can be extended or used instantly.
+A Rope can be created from nothing to build it using the Builder or it can be created from an array of already existing Bodies (use varargs constructor). In any case a Builder is needed that will be used in the modification methods like #insert(int), #remove(int), #split(int) and some more.
+
++++ 2013-11-20_01:48:51 +++
+I added the Autopilot. It does what its name suggests with Box2D bodies. Let them fly around!
+
++++ 2013-11-11_19:44:39 +++
+The packages net.dermetfan.util.* were renamed to net.dermetfan.utils.*.
+You will have to update your imports!
+
+Once you put the new jars in your project, you should see that some of your classes get errors.
+Don't worry. Just open the class, press ctrl + shift + o and eclipse will update your imports.
+If it asks you which class you mean (in case there are other classes with the same name), make sure to select the correct one.
+
+I'm sorry for this inconvenience, but I just had to rename it. Please forgive me.
