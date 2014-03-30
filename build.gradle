@@ -29,6 +29,8 @@ dependencies {
 }
 
 jar.manifest.attributes += libManifestAttributes
+jar.dependsOn check
+
 javadoc.title = libName
 
 eclipse.classpath.containers = ["org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-$javaVersion"]
@@ -52,10 +54,10 @@ task distSources(type: Jar) {
 	appendix = "sources"
 }
 
-task zipDist(type: Zip, dependsOn: [jar, distDocs, distSources]) {
-	distConfig tasks.zipDist
+task dist(type: Zip, dependsOn: [jar, distDocs, distSources]) {
+	distConfig tasks.dist
 	from "build/distributions/$baseName-javadoc.jar"
 	from "build/distributions/$baseName-sources.jar"
 	from "build/libs/${baseName}.jar"
-	from "build/reports/RELEASE NOTES"
+	from "RELEASE NOTES"
 }
