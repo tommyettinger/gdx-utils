@@ -611,7 +611,7 @@ public class FileChooser extends Window {
 			space = json.readValue("space", float.class, jsonData);
 		}
 
-		/** Tried to load a {@link TextButtonStyle}, then {@link ImageButtonStyle}, then {@link ImageTextButtonStyle} and then {@link ButtonStyle} using {@link Json#readValue(String, Class, JsonValue)} brutally by catching NPEs. Nasty... */
+		/** Tries to load a {@link TextButtonStyle}, then {@link ImageButtonStyle}, then {@link ImageTextButtonStyle} and then {@link ButtonStyle} using {@link Json#readValue(String, Class, JsonValue)} brutally by catching NPEs. Nasty... */
 		protected ButtonStyle readButtonStyle(String name, Json json, JsonValue jsonValue) {
 			try {
 				return json.readValue(name, TextButtonStyle.class, jsonValue);
