@@ -50,6 +50,7 @@ public class PolygonRegionLoader extends SynchronousAssetLoader<PolygonRegion, P
 	}
 
 	private com.badlogic.gdx.graphics.g2d.PolygonRegionLoader loader = new com.badlogic.gdx.graphics.g2d.PolygonRegionLoader();
+	private PolygonRegionParameters defaultParameters = new PolygonRegionParameters();
 
 	public PolygonRegionLoader(FileHandleResolver resolver) {
 		super(resolver);
@@ -68,6 +69,9 @@ public class PolygonRegionLoader extends SynchronousAssetLoader<PolygonRegion, P
 	@SuppressWarnings("rawtypes")
 	@Override
 	public Array<AssetDescriptor> getDependencies(String fileName, FileHandle file, PolygonRegionParameters params) {
+		if(params == null)
+			params = defaultParameters;
+
 		String image = null;
 		try {
 			BufferedReader reader = file.reader(params.readerBuffer);
