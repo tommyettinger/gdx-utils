@@ -26,8 +26,7 @@ public class Pair<K, V> {
 	protected V value;
 
 	/** creates an empty pair ({@link #key} and {@link #value} are {@code null}) */
-	public Pair() {
-	}
+	public Pair() {}
 
 	/** @param key the {@link #key}
 	 *  @param value the {@link #value} */
@@ -38,8 +37,34 @@ public class Pair<K, V> {
 
 	/** @param pair the {@link Pair} to copy */
 	public Pair(Pair<K, V> pair) {
-		this.key = pair.key;
-		this.value = pair.value;
+		key = pair.key;
+		value = pair.value;
+	}
+
+	/** sets {@link #key} and {@link #value} to null */
+	public void clear() {
+		key = null;
+		value = null;
+	}
+
+	/** @return if {@link #key} or {@link #value} is not {@code null} */
+	public boolean isEmpty() {
+		return key != null || value != null;
+	}
+
+	/** @return if {@link #key} and {@link #value} are both not {@code null} */
+	public boolean isFull() {
+		return key != null && value != null;
+	}
+
+	/** @return if {@link #key} is not null */
+	public boolean hasKey() {
+		return key != null;
+	}
+
+	/** @return if {@link #value} is not null */
+	public boolean hasValue() {
+		return value != null;
 	}
 
 	/** swaps key and value
@@ -51,6 +76,23 @@ public class Pair<K, V> {
 		V oldValue = value;
 		value = (V) key;
 		key = (K) oldValue;
+	}
+
+	/** @param pair the Pair which {@link #key} and {@link #value} to use
+	 *  @return this Pair for chaining */
+	public Pair<K, V> set(Pair<K, V> pair) {
+		key = pair.key;
+		value = pair.value;
+		return this;
+	}
+
+	/** @param key the {@link #key} to set
+	 *  @param value the {@link #value} to set
+	 *  @return this Pair for chaining */
+	public Pair<K, V> set(K key, V value) {
+		this.key = key;
+		this.value = value;
+		return this;
 	}
 
 	/** @return the {@link #key} */
@@ -114,7 +156,7 @@ public class Pair<K, V> {
 	/** @return [key, value] */
 	@Override
 	public String toString() {
-		return "[" + key + ", " + value + "]";
+		return "[" + key + " & " + value + "]";
 	}
 
 }

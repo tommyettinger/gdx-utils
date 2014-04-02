@@ -18,8 +18,6 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Group;
-import com.badlogic.gdx.scenes.scene2d.InputEvent;
-import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 
 /** provides useful methods for scene2d
@@ -40,52 +38,18 @@ public class Scene2dUtils {
 		newParent.addActor(actor);
 	}
 
-	public static Vector2 getCursorPosition(Stage stage) {
-		return getCursorPosition(stage, 0);
+	/** @see #getPointerPosition(Stage, int) */
+	public static Vector2 getPointerPosition(Stage stage) {
+		return getPointerPosition(stage, 0);
 	}
 
-	public static Vector2 getCursorPosition(Stage stage, int pointer) {
+	/** @param stage the Stage which coordinate system should be used
+	 *  @param pointer the pointer which position to return
+	 *  @return the position of the given pointer in stage coordinates */
+	public static Vector2 getPointerPosition(Stage stage, int pointer) {
 		tmp.set(Gdx.input.getX(pointer), Gdx.input.getY(pointer));
 		stage.screenToStageCoordinates(tmp);
 		return tmp;
-	}
-
-	public static class TooltipListener extends InputListener {
-
-		private boolean inside;
-
-		private boolean followCursor = true;
-		private Vector2 position = new Vector2();
-		private Actor tooltip;
-
-		public TooltipListener(Actor tooltip) {
-			this.tooltip = tooltip;
-		}
-
-		@Override
-		public boolean mouseMoved(InputEvent event, float x, float y) {
-			if(inside && followCursor) {
-				event.getListenerActor().localToStageCoordinates(tmp.set(x, y));
-				tooltip.setPosition(tmp.x + position.x, tmp.y + position.y);
-			}
-			return false;
-		}
-
-		@Override
-		public void enter(InputEvent event, float x, float y, int pointer, Actor fromActor) {
-			inside = true;
-			tooltip.setVisible(true);
-			tmp.set(x, y);
-			event.getListenerActor().localToStageCoordinates(tmp);
-			tooltip.setPosition(tmp.x + position.x, tmp.y + position.y);
-		}
-
-		@Override
-		public void exit(InputEvent event, float x, float y, int pointer, Actor toActor) {
-			inside = false;
-			tooltip.setVisible(false);
-		}
-
 	}
 
 }
