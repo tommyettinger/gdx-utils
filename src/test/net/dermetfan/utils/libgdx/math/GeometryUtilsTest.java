@@ -7,6 +7,7 @@ import net.dermetfan.utils.ArrayUtils;
 
 import org.junit.Test;
 
+import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Polygon;
 import com.badlogic.gdx.math.Vector2;
 
@@ -60,7 +61,15 @@ public class GeometryUtilsTest {
 
 	@Test
 	public void rotate() {
-		assertTrue(new Vector2(-1, -1).epsilonEquals(GeometryUtils.rotate(new Vector2(1, 1), new Vector2(0, 0), 180), .00001f));
+		assertTrue(new Vector2(-1, -1).epsilonEquals(GeometryUtils.rotate(new Vector2(1, 1), new Vector2(0, 0), 180 * MathUtils.degRad), .00001f));
+	}
+
+	@Test
+	public void rotateLine() {
+		Vector2 a = new Vector2(0, -1), b = new Vector2(0, 1);
+		GeometryUtils.rotateLine(a, b, -90 * MathUtils.degRad);
+		assertTrue(new Vector2(-1, 0).epsilonEquals(a, .00001f));
+		assertTrue(new Vector2(1, 0).epsilonEquals(b, .00001f));
 	}
 
 	@Test

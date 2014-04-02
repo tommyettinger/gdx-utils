@@ -19,9 +19,8 @@ import static net.dermetfan.utils.libgdx.math.GeometryUtils.filterY;
 import static net.dermetfan.utils.math.MathUtils.amplitude;
 import static net.dermetfan.utils.math.MathUtils.max;
 import static net.dermetfan.utils.math.MathUtils.min;
-
+import net.dermetfan.utils.ArrayUtils;
 import net.dermetfan.utils.libgdx.math.GeometryUtils;
-
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.BodyDef;
@@ -458,16 +457,15 @@ public abstract class Box2DUtils {
 	 *  <strong>Note: The {@link ChainShape#setPrevVertex(float, float) previous} and {@link ChainShape#setNextVertex(float, float) next} vertex of a {@link ChainShape} will not be copied since this is not possible due to the API.</strong>
 	 *  @param shape the {@link Shape} to copy
 	 *  @return a {@link Shape} exactly like the one passed in */
+	@SuppressWarnings("unchecked")
 	public static <T extends Shape> T clone(T shape) {
 		T clone;
 		switch(shape.getType()) {
 		case Circle:
-			@SuppressWarnings("unchecked")
 			CircleShape circleClone = (CircleShape) (clone = (T) new CircleShape());
 			circleClone.setPosition(((CircleShape) shape).getPosition());
 			break;
 		case Polygon:
-			@SuppressWarnings("unchecked")
 			PolygonShape polyClone = (PolygonShape) (clone = (T) new PolygonShape()),
 			poly = (PolygonShape) shape;
 			float[] vertices = new float[poly.getVertexCount()];
@@ -479,7 +477,6 @@ public abstract class Box2DUtils {
 			polyClone.set(vertices);
 			break;
 		case Edge:
-			@SuppressWarnings("unchecked")
 			EdgeShape edgeClone = (EdgeShape) (clone = (T) new EdgeShape()),
 			edge = (EdgeShape) shape;
 			edge.getVertex1(vec2_0);
@@ -487,7 +484,6 @@ public abstract class Box2DUtils {
 			edgeClone.set(vec2_0, vec2_1);
 			break;
 		case Chain:
-			@SuppressWarnings("unchecked")
 			ChainShape chainClone = (ChainShape) (clone = (T) new ChainShape()),
 			chain = (ChainShape) shape;
 			vertices = new float[chain.getVertexCount()];
@@ -508,7 +504,7 @@ public abstract class Box2DUtils {
 		return clone;
 	}
 
-	/* This method is not implemented because the Box2D API does not offer all necessary information.
+	/* Not implemented because the Box2D API does not provide all necessary information.
 	public static Joint clone(Joint joint, Body bodyA, Body bodyB) {
 		JointDef jointDef;
 		Joint copy;
@@ -670,238 +666,101 @@ public abstract class Box2DUtils {
 		return fixtureDef;
 	}
 
-	/* Not implemented due to the Box2D API not providing all necessary information.
+	/* Not implemented because the Box2D API does not provide all necessary information.
 	 * public static JointDef createDef(Joint joint) {
 	 * 	return null;
 	 * } */
 
 	// split
 
-	//	public static <T extends Shape> void split(T shape, Vector2 a, Vector2 b, Pair<T, T> fill) {
-	//		// find intersection points
-	//		Vector2 isA = Pools.obtain(Vector2.class), isB = Pools.obtain(Vector2.class);
-	//		Polygon p;
-	//
-	//		// create new vertice arrays
-	//
-	//		// create shapes
-	//
-	//		// free objects
-	//		Pools.free(isA);
-	//		Pools.free(isB);
-	//	}
-
-	//	private class SplitRayCastCallback implements RayCastCallback {
-	//
-	//		public final SplitRayCastCallback instance = new SplitRayCastCallback();
-	//
-	//		private Vector2 a, b;
-	//		private Vector2 aTmp = new Vector2(), bTmp = new Vector2();
-	//		private Array<Body> hitBodies = new Array<Body>();
-	//
-	//		private SplitRayCastCallback() {
+	//	@SuppressWarnings("unchecked")
+	//	public static boolean split(Fixture fixture, Vector2 a, Vector2 b, Body aBody, Body bBody, Pair<Fixture, Fixture> store) {
+	//		Pair<FixtureDef, FixtureDef> defs = Pools.obtain(Pair.class);
+	//		if(!split(fixture, a, b, defs)) {
+	//			Pools.free(defs);
+	//			return false;
 	//		}
-	//
-	//		public SplitRayCastCallback init(Vector2 a, Vector2 b) {
-	//			aTmp.set(this.a = a);
-	//			bTmp.set(this.b = b);
-	//			hitBodies.clear();
-	//			return this;
-	//		}
-	//
-	//		@Override
-	//		public float reportRayFixture(Fixture fixture, Vector2 point, Vector2 normal, float fraction) {
-	//			boolean outOfBounds = !between(point.x, a.x, b.x, true) && !between(point.y, a.y, b.y, true);
-	//			if(outOfBounds)
-	//				return 0;
-	//
-	//			if(hitBodies.contains(fixture.getBody(), true))
-	//				;
-	//
-	//			return 1;
-	//		}
-	//
-	//	};
-	//
-	//	public static boolean split(World world, Vector2 a, Vector2 b, Array<Body> fill) {
-	//		world.rayCast(splitRayCastCallback, a, b);
-	//		world.rayCast(splitRayCastCallback, b, a);
+	//		store.set(aBody.createFixture(defs.key()), bBody.createFixture(defs.value()));
 	//		return true;
 	//	}
-
-	//	public static boolean split(World world, Vector2 a, Vector2 b, Array<Pair<Body, Body>> fill) {
-	//		// TODO query world and stuff
+	//
+	//	@SuppressWarnings("unchecked")
+	//	public static boolean split(Fixture fixture, Vector2 a, Vector2 b, Pair<FixtureDef, FixtureDef> store) { // TODO use actual intersections
+	//		Vector2 bodyPos = fixture.getBody().getPosition();
+	//		Vector2 tmpA = Pools.obtain(Vector2.class).set(a).sub(bodyPos), tmpB = Pools.obtain(Vector2.class).set(b).sub(bodyPos);
+	//		Pair<Shape, Shape> shapes = Pools.obtain(Pair.class);
+	//		boolean split = split(fixture.getShape(), tmpA, tmpB, shapes); // TODO rotate line before or something to support rotated splits
+	//		Pools.free(tmpA);
+	//		Pools.free(tmpB);
+	//		if(!split) {
+	//			Pools.free(shapes);
+	//			return false;
+	//		}
+	//		FixtureDef aDef = createDef(fixture), bDef = createDef(fixture);
+	//		aDef.shape = shapes.key();
+	//		bDef.shape = shapes.value();
+	//		Pools.free(shapes);
+	//		store.set(aDef, bDef);
+	//		return true;
+	//	}
+	//
+	//	private static final Polygon tmpPolygon = new Polygon();
+	//
+	//	@SuppressWarnings("unchecked")
+	//	public static <T extends Shape> boolean split(T shape, Vector2 a, Vector2 b, Pair<T, T> store) {
+	//		switch(shape.getType()) {
+	//		case Circle:
+	//			throw new IllegalArgumentException("shapes of the type " + Type.Circle + " cannot be split since Box2D does not support curved shapes other than circles: " + shape);
+	//		case Polygon:
+	//			Vector2[] vertices = vertices(shape);
+	//			tmpPolygon.setVertices(GeometryUtils.toFloatArray(vertices));
+	//			if(!Intersector.intersectLinePolygon(a, b, tmpPolygon))
+	//				return false;
+	//			Array<Vector2> aVertices = Pools.obtain(Array.class),
+	//			bVertices = Pools.obtain(Array.class);
+	//			aVertices.clear();
+	//			bVertices.clear();
+	//			aVertices.add(a);
+	//			aVertices.add(b);
+	//			bVertices.add(a);
+	//			bVertices.add(b);
+	//
+	//			for(int i = 0; i < vertices.length; i++) {
+	//				float det = MathUtils.det(a.x, a.y, vertices[i].x, vertices[i].y, b.x, b.y);
+	//				if(det < 0)
+	//					aVertices.add(vertices[i]);
+	//				else if(det > 0)
+	//					bVertices.add(vertices[i]);
+	//				else {
+	//					aVertices.add(vertices[i]);
+	//					bVertices.add(vertices[i]);
+	//				}
+	//			}
+	//
+	//			GeometryUtils.arrangeClockwise(aVertices);
+	//			GeometryUtils.arrangeClockwise(bVertices);
+	//
+	//			PolygonShape aShape = new PolygonShape(),
+	//			bShape = new PolygonShape();
+	//			aShape.set((Vector2[]) aVertices.toArray(Vector2.class));
+	//			bShape.set((Vector2[]) bVertices.toArray(Vector2.class));
+	//
+	//			Pools.free(aVertices);
+	//			Pools.free(bVertices);
+	//
+	//			store.set((T) aShape, (T) bShape);
+	//			return true;
+	//		case Edge:
+	//			break;
+	//		case Chain:
+	//			break;
+	//		default:
+	//			assert false : Shape.Type.class.getSimpleName() + " is unknown";
+	//		}
 	//		return false;
 	//	}
-	//
-	//	public static boolean split(Body body, float x1, float y1, float x2, float y2, boolean onlyIfallFixtures, Pair<Body, Body> fill) {
-	//		return split(body, vec2_0.set(x1, y1), vec2_1.set(x2, y2), fill);
-	//	}
-	//
-	//	public static boolean split(Body body, Vector2 a, Vector2 b, Pair<Body, Body> fill) {
-	//		boolean all = true; // TODO fill bodies and this method isn't complete at all
-	//		for(Fixture fixture : body.getFixtureList())
-	//			if(!split(fixture, a, b, null))
-	//				all = false;
-	//		return all;
-	//	}
-	//
-	//	private static abstract class SplitCallback implements RayCastCallback {
-	//
-	//		protected Fixture target;
-	//
-	//		boolean split;
-	//
-	//		final Vector2 collision = new Vector2();
-	//
-	//		static final SplitCallback instance = new SplitCallback() {
-	//
-	//			@Override
-	//			public float reportRayFixture(Fixture fixture, Vector2 point, Vector2 normal, float fraction) {
-	//				split = fixture == target;
-	//				if(split)
-	//					collision.set(point);
-	//				return split ? 0 : -1;
-	//			}
-	//
-	//		};
-	//
-	//		void init(Fixture target) {
-	//			this.target = target;
-	//			split = false;
-	//		}
-	//
-	//		private SplitCallback() {
-	//		}
-	//
-	//	}
-	//
-	//	public static boolean split(Fixture fixture, float x1, float y1, float x2, float y2, Pair<Fixture, Fixture> fill) {
-	//		return split(fixture, vec2_0.set(x1, y1), vec2_1.set(x2, y2), fill);
-	//	}
-	//
-	//	public static boolean split(Fixture fixture, Vector2 a, Vector2 b, Pair<Fixture, Fixture> fill) {
-	//		Body body = fixture.getBody();
-	//		World world = body.getWorld();
-	//		SplitCallback.instance.init(fixture);
-	//		world.rayCast(SplitCallback.instance, a, b);
-	//		if(!SplitCallback.instance.split)
-	//			return false;
-	//		Vector2 collisionA = Pools.obtain(Vector2.class).set(SplitCallback.instance.collision);
-	//		SplitCallback.instance.init(fixture);
-	//		world.rayCast(SplitCallback.instance, b, a);
-	//		if(!SplitCallback.instance.split) {
-	//			Pools.free(collisionA);
-	//			return false;
-	//		}
-	//		Vector2 collisionB = Pools.obtain(Vector2.class).set(SplitCallback.instance.collision);
-	//		collisionA.set(body.getLocalPoint(collisionA));
-	//		collisionB.set(body.getLocalPoint(collisionB));
-	//		@SuppressWarnings("unchecked")
-	//		Pair<Shape, Shape> shapes = Pools.obtain(Pair.class);
-	//		boolean split = split(fixture.getShape(), collisionA, collisionB, shapes);
-	//		Pools.free(collisionA);
-	//		Pools.free(collisionB);
-	//		if(split) {
-	//			FixtureDef fixtureDef = createDef(fixture);
-	//			body.destroyFixture(fixture);
-	//			fixtureDef.shape = shapes.key();
-	//			Fixture fixtureA = body.createFixture(fixtureDef);
-	//			shapes.key().dispose();
-	//			fixtureDef.shape = shapes.value();
-	//			Fixture fixtureB = body.createFixture(fixtureDef);
-	//			shapes.value().dispose();
-	//			if(fill != null) {
-	//				fill.key(fixtureA);
-	//				fill.value(fixtureB);
-	//			}
-	//		}
-	//		Pools.free(shapes);
-	//		return split;
-	//	}
-	//
-	//	public static boolean split(Shape shape, Vector2 a, Vector2 b, Pair<Shape, Shape> fill) {
-	//		return split(shape, a.x, a.y, b.x, b.y, fill);
-	//	}
-	//
-	//	public static boolean split(Shape shape, float x1, float y1, float x2, float y2, Pair<Shape, Shape> fill) {
-	//		Type type = shape.getType();
-	//		if(type == Type.Circle)
-	//			throw new IllegalArgumentException("shapes of the type " + type + " cannot be split");
-	//		if(type == Type.Edge) {
-	//			EdgeShape edgeShape = (EdgeShape) shape;
-	//			edgeShape.getVertex1(vec2_0);
-	//			edgeShape.getVertex2(vec2_1);
-	//			Vector2 intersection = Pools.obtain(Vector2.class), a = Pools.obtain(Vector2.class), b = Pools.obtain(Vector2.class);
-	//			boolean done = false;
-	//			if(Intersector.intersectSegments(vec2_0, vec2_1, a.set(x1, y1), b.set(x2, y2), intersection)) {
-	//				EdgeShape partA = new EdgeShape(), partB = new EdgeShape();
-	//				partA.set(vec2_0, intersection);
-	//				partB.set(intersection, vec2_1);
-	//				if(fill != null) {
-	//					fill.key(partA);
-	//					fill.value(partB);
-	//				}
-	//				done = true;
-	//			}
-	//			Pools.free(intersection);
-	//			Pools.free(a);
-	//			Pools.free(b);
-	//			return done;
-	//		}
-	//		Vector2[] vertices = vertices(shape);
-	//		@SuppressWarnings("unchecked")
-	//		Array<Vector2> aVertices = Pools.obtain(Array.class), bVertices = Pools.obtain(Array.class);
-	//		Vector2 xy1 = Pools.obtain(Vector2.class).set(x1, y1), xy2 = Pools.obtain(Vector2.class).set(x2, y2);
-	//		aVertices.add(xy1);
-	//		aVertices.add(xy2);
-	//		bVertices.add(xy1);
-	//		bVertices.add(xy2);
-	//		boolean done = false;
-	//		for(int i = 0; i < vertices.length; i++) {
-	//			float det = det(x1, y1, vertices[i].x, vertices[i].y, x2, y2);
-	//			if(det < 0)
-	//				aVertices.add(vertices[i]);
-	//			else if(det > 0)
-	//				bVertices.add(vertices[i]);
-	//			else {
-	//				aVertices.add(vertices[i]);
-	//				bVertices.add(vertices[i]);
-	//			}
-	//		}
-	//		GeometryUtils.arrangeClockwise(aVertices);
-	//		GeometryUtils.arrangeClockwise(bVertices);
-	//		if(type == Type.Chain) {
-	//			ChainShape partA = new ChainShape(), partB = new ChainShape();
-	//			if(((ChainShape) shape).isLooped()) {
-	//				partA.createLoop(aVertices.toArray());
-	//				partB.createLoop(bVertices.toArray());
-	//			} else {
-	//				partA.createChain(aVertices.toArray());
-	//				partB.createChain(bVertices.toArray());
-	//			}
-	//			if(fill != null) {
-	//				fill.key(partA);
-	//				fill.value(partB);
-	//			}
-	//			done = true;
-	//		} else if(type == Type.Polygon) {
-	//			System.out.println(aVertices.size + ", " + bVertices.size);
-	//			PolygonShape partA = new PolygonShape(), partB = new PolygonShape();
-	//			partA.set((Vector2[]) aVertices.toArray(Vector2.class));
-	//			partB.set((Vector2[]) bVertices.toArray(Vector2.class));
-	//			if(fill != null) {
-	//				fill.key(partA);
-	//				fill.value(partB);
-	//			}
-	//			done = true;
-	//		}
-	//		Pools.free(xy1);
-	//		Pools.free(xy2);
-	//		Pools.free(aVertices);
-	//		Pools.free(bVertices);
-	//		return done;
-	//	}
+
+	// various
 
 	/** sets the {@link Fixture#isSensor() sensor flag} of all of the given Body's Fixtures
 	 *  @param body the {@link Body} which {@link Fixture Fixtures'} sensor flag to set
@@ -910,6 +769,52 @@ public abstract class Box2DUtils {
 	public static void setSensor(Body body, boolean sensor) {
 		for(Fixture fixture : body.getFixtureList())
 			fixture.setSensor(sensor);
+	}
+
+	/** {@link Body#destroyFixture(Fixture) destroys} all fixtures of the given body
+	 *  @param body the body which fixtures to destroy */
+	public static void destroyFixtures(Body body) {
+		Array<Fixture> fixtures = body.getFixtureList();
+		while(fixtures.size > 0)
+			body.destroyFixture(fixtures.peek());
+	}
+
+	/** {@link Body#destroyFixture(Fixture) destroys} all fixtures of the given body except the given ones
+	 *  @param exclude the fixtures not to destroy
+	 *  @param body the body which fixtures to destroy */
+	public static void destroyFixtures(Body body, Array<Fixture> exclude) {
+		Array<Fixture> fixtures = body.getFixtureList();
+		for(int preserved = 0; preserved < fixtures.size;) {
+			Fixture fixture = fixtures.get(fixtures.size - 1 - preserved);
+			if(!exclude.contains(fixture, true))
+				body.destroyFixture(fixture);
+			else
+				preserved++;
+		}
+	}
+
+	/** @see #destroyFixtures(Body, Array) */
+	public static void destroyFixtures(Body body, Fixture... exclude) {
+		Array<Fixture> fixtures = body.getFixtureList();
+		for(int preserved = 0; preserved < fixtures.size;) {
+			Fixture fixture = fixtures.get(fixtures.size - 1 - preserved);
+			if(!ArrayUtils.contains(exclude, fixture, true))
+				body.destroyFixture(fixture);
+			else
+				preserved++;
+		}
+	}
+
+	/** @see #destroyFixtures(Body, Array) */
+	public static void destroyFixtures(Body body, Fixture exclude) {
+		Array<Fixture> fixtures = body.getFixtureList();
+		for(int preserved = 0; preserved < fixtures.size;) {
+			Fixture fixture = fixtures.get(fixtures.size - 1 - preserved);
+			if(fixture != exclude)
+				body.destroyFixture(fixture);
+			else
+				preserved++;
+		}
 	}
 
 }

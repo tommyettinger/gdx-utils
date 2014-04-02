@@ -20,6 +20,23 @@ import net.dermetfan.utils.math.Noise;
  *  @author dermetfan */
 public abstract class ArrayUtils {
 
+	/** @param array the array that may contain the given value
+	 *  @param value the value to search for in the given array
+	 *  @param identity if {@code ==} comparison should be used instead of <code>{@link Object#equals(Object) .equals()}</code>
+	 *  @return if the given value is contained in the given array */
+	public static <T> boolean contains(T[] array, T value, boolean identity) {
+		int i = array.length - 1;
+		if(identity) {
+			while(i >= 0)
+				if(array[i--] == value)
+					return true;
+		} else
+			while(i >= 0)
+				if(array[i--].equals(value))
+					return true;
+		return false;
+	}
+
 	/** shuffles the given array using {@link Noise#random(float, float)}, so the {@link Noise#setSeed(long) seed} influences the result
 	 *  @param array the array to shuffle */
 	public static void shuffle(Object[] array) {

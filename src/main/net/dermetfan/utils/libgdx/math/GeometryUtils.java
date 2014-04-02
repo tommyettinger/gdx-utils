@@ -64,6 +64,19 @@ public abstract class GeometryUtils {
 		return vector;
 	}
 
+	/** @param vertices the vertices to add the given values to
+	 *  @param x the x value to add
+	 *  @param y the y value to add */
+	public static void add(Vector2[] vertices, float x, float y) {
+		for(Vector2 vertice : vertices)
+			vertice.add(x, y);
+	}
+
+	/** @see #add(Vector2[], float, float) */
+	public static void sub(Vector2[] vertices, float x, float y) {
+		add(vertices, -x, -y);
+	}
+
 	/** @return a Vector2 representing the size of a rectangle containing all given vertices */
 	public static Vector2 size(Vector2[] vertices, Vector2 output) {
 		return output.set(width(vertices), height(vertices));
@@ -235,18 +248,26 @@ public abstract class GeometryUtils {
 	/** rotates a {@code point} around {@code center}
 	 *  @param point the point to rotate
 	 *  @param origin the point around which to rotate {@code point}
-	 *  @param degrees the rotation
-	 *  @return the given {@code point} rotated around {@code center} by {@code degrees} */
-	public static Vector2 rotate(Vector2 point, Vector2 origin, float degrees) {
+	 *  @param radians the rotation
+	 *  @return the given {@code point} rotated around {@code center} by {@code radians} */
+	public static Vector2 rotate(Vector2 point, Vector2 origin, float radians) {
 		if(point.equals(origin))
 			return point;
-		return point.add(origin).rotate(degrees).sub(origin);
+		return point.add(origin).rotateRad(radians).sub(origin);
+	}
+
+	/** @param a a point on the line
+	 *  @param b another point on the line
+	 *  @param radians the rotation */
+	public static void rotateLine(Vector2 a, Vector2 b, float radians) {
+		rotate(a, vec2_0.set(a).add(b).scl(.5f), radians);
+		rotate(b, vec2_0, radians);
 	}
 
 	/** returns the vertices of a rotated rectangle
 	 *  @param x the x of the rectangle
 	 *  @param y the y of the rectangle
-	 *  @param width the widht of the rectangle
+	 *  @param width the width of the rectangle
 	 *  @param height the height of the rectangle
 	 *  @param radians the angle to rotate the rectangle by
 	 *  @param output The array to store the results in. Will be recreated if it is null or its length is not 8.
