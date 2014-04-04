@@ -68,8 +68,11 @@ public class GeometryUtilsTest {
 	public void rotateLine() {
 		Vector2 a = new Vector2(0, -1), b = new Vector2(0, 1);
 		GeometryUtils.rotateLine(a, b, -90 * MathUtils.degRad);
-		assertTrue(new Vector2(-1, 0).epsilonEquals(a, .00001f));
-		assertTrue(new Vector2(1, 0).epsilonEquals(b, .00001f));
+		assertTrue(new Vector2(-1, 0).epsilonEquals(a, MathUtils.FLOAT_ROUNDING_ERROR));
+		assertTrue(new Vector2(1, 0).epsilonEquals(b, MathUtils.FLOAT_ROUNDING_ERROR));
+		GeometryUtils.rotateLine(a.set(-2, -8), b.set(-.1f, 23), -90 * MathUtils.degRad);
+		assertTrue(new Vector2(0.5500001f, -4.45f).epsilonEquals(a, MathUtils.FLOAT_ROUNDING_ERROR));
+		assertTrue(new Vector2(31.55f, -6.3500013f).epsilonEquals(b, MathUtils.FLOAT_ROUNDING_ERROR));
 	}
 
 	@Test
