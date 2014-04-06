@@ -20,7 +20,12 @@ import static net.dermetfan.utils.math.MathUtils.amplitude;
 import static net.dermetfan.utils.math.MathUtils.max;
 import static net.dermetfan.utils.math.MathUtils.min;
 import net.dermetfan.utils.ArrayUtils;
+import net.dermetfan.utils.Pair;
 import net.dermetfan.utils.libgdx.math.GeometryUtils;
+import net.dermetfan.utils.math.MathUtils;
+
+import com.badlogic.gdx.math.Intersector;
+import com.badlogic.gdx.math.Polygon;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.BodyDef;
@@ -35,6 +40,7 @@ import com.badlogic.gdx.physics.box2d.Shape;
 import com.badlogic.gdx.physics.box2d.Shape.Type;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.ObjectMap;
+import com.badlogic.gdx.utils.Pools;
 
 /** provides methods for operations with Box2D {@link Body Bodies}, {@link Fixture Fixtures} and {@link Shape Shapes}
  *  @author dermetfan */
@@ -673,92 +679,154 @@ public abstract class Box2DUtils {
 
 	// split
 
-	//	@SuppressWarnings("unchecked")
-	//	public static boolean split(Fixture fixture, Vector2 a, Vector2 b, Body aBody, Body bBody, Pair<Fixture, Fixture> store) {
-	//		Pair<FixtureDef, FixtureDef> defs = Pools.obtain(Pair.class);
-	//		if(!split(fixture, a, b, defs)) {
-	//			Pools.free(defs);
-	//			return false;
-	//		}
-	//		store.set(aBody.createFixture(defs.key()), bBody.createFixture(defs.value()));
-	//		return true;
-	//	}
-	//
-	//	@SuppressWarnings("unchecked")
-	//	public static boolean split(Fixture fixture, Vector2 a, Vector2 b, Pair<FixtureDef, FixtureDef> store) { // TODO use actual intersections
-	//		Vector2 bodyPos = fixture.getBody().getPosition();
-	//		Vector2 tmpA = Pools.obtain(Vector2.class).set(a).sub(bodyPos), tmpB = Pools.obtain(Vector2.class).set(b).sub(bodyPos);
-	//		Pair<Shape, Shape> shapes = Pools.obtain(Pair.class);
-	//		boolean split = split(fixture.getShape(), tmpA, tmpB, shapes); // TODO rotate line before or something to support rotated splits
-	//		Pools.free(tmpA);
-	//		Pools.free(tmpB);
-	//		if(!split) {
-	//			Pools.free(shapes);
-	//			return false;
-	//		}
-	//		FixtureDef aDef = createDef(fixture), bDef = createDef(fixture);
-	//		aDef.shape = shapes.key();
-	//		bDef.shape = shapes.value();
-	//		Pools.free(shapes);
-	//		store.set(aDef, bDef);
-	//		return true;
-	//	}
-	//
-	//	private static final Polygon tmpPolygon = new Polygon();
-	//
-	//	@SuppressWarnings("unchecked")
-	//	public static <T extends Shape> boolean split(T shape, Vector2 a, Vector2 b, Pair<T, T> store) {
-	//		switch(shape.getType()) {
-	//		case Circle:
-	//			throw new IllegalArgumentException("shapes of the type " + Type.Circle + " cannot be split since Box2D does not support curved shapes other than circles: " + shape);
-	//		case Polygon:
-	//			Vector2[] vertices = vertices(shape);
-	//			tmpPolygon.setVertices(GeometryUtils.toFloatArray(vertices));
-	//			if(!Intersector.intersectLinePolygon(a, b, tmpPolygon))
-	//				return false;
-	//			Array<Vector2> aVertices = Pools.obtain(Array.class),
-	//			bVertices = Pools.obtain(Array.class);
-	//			aVertices.clear();
-	//			bVertices.clear();
-	//			aVertices.add(a);
-	//			aVertices.add(b);
-	//			bVertices.add(a);
-	//			bVertices.add(b);
-	//
-	//			for(int i = 0; i < vertices.length; i++) {
-	//				float det = MathUtils.det(a.x, a.y, vertices[i].x, vertices[i].y, b.x, b.y);
-	//				if(det < 0)
-	//					aVertices.add(vertices[i]);
-	//				else if(det > 0)
-	//					bVertices.add(vertices[i]);
-	//				else {
-	//					aVertices.add(vertices[i]);
-	//					bVertices.add(vertices[i]);
-	//				}
-	//			}
-	//
-	//			GeometryUtils.arrangeClockwise(aVertices);
-	//			GeometryUtils.arrangeClockwise(bVertices);
-	//
-	//			PolygonShape aShape = new PolygonShape(),
-	//			bShape = new PolygonShape();
-	//			aShape.set((Vector2[]) aVertices.toArray(Vector2.class));
-	//			bShape.set((Vector2[]) bVertices.toArray(Vector2.class));
-	//
-	//			Pools.free(aVertices);
-	//			Pools.free(bVertices);
-	//
-	//			store.set((T) aShape, (T) bShape);
-	//			return true;
-	//		case Edge:
-	//			break;
-	//		case Chain:
-	//			break;
-	//		default:
-	//			assert false : Shape.Type.class.getSimpleName() + " is unknown";
-	//		}
-	//		return false;
-	//	}
+	@SuppressWarnings("unchecked")
+	public static boolean split(Fixture fixture, Vector2 a, Vector2 b, Body aBody, Body bBody, Pair<Fixture, Fixture> store) {
+		Pair<FixtureDef, FixtureDef> defs = Pools.obtain(Pair.class);
+		if(!split(fixture, a, b, defs)) {
+			Pools.free(defs);
+			return false;
+		}
+		store.set(aBody.createFixture(defs.key()), bBody.createFixture(defs.value()));
+		return true;
+	}
+
+	@SuppressWarnings("unchecked")
+	public static boolean split(Fixture fixture, Vector2 a, Vector2 b, Pair<FixtureDef, FixtureDef> store) { // TODO use actual intersections
+		Body body = fixture.getBody();
+		Vector2 bodyPos = body.getPosition();
+		Vector2 tmpA = Pools.obtain(Vector2.class).set(a).sub(bodyPos), tmpB = Pools.obtain(Vector2.class).set(b).sub(bodyPos);
+		GeometryUtils.rotate(tmpA, Vector2.Zero, -body.getAngle());
+		GeometryUtils.rotate(tmpB, Vector2.Zero, -body.getAngle());
+		Pair<Shape, Shape> shapes = Pools.obtain(Pair.class);
+		boolean split = split(fixture.getShape(), tmpA, tmpB, shapes);
+		Pools.free(tmpA);
+		Pools.free(tmpB);
+		if(!split) {
+			Pools.free(shapes);
+			return false;
+		}
+		FixtureDef aDef = createDef(fixture), bDef = createDef(fixture);
+		aDef.shape = shapes.key();
+		bDef.shape = shapes.value();
+		Pools.free(shapes);
+		store.set(aDef, bDef);
+		return true;
+	}
+
+	@SuppressWarnings("unchecked")
+	public static <T extends Shape> boolean split(T shape, Vector2 a, Vector2 b, Pair<T, T> store) {
+		Type type = shape.getType();
+
+		if(type == Type.Circle)
+			throw new IllegalArgumentException("shapes of the type " + Type.Circle + " cannot be split since Box2D does not support curved shapes other than circles: " + shape);
+
+		if(type == Type.Edge) {
+			Vector2 vertex1 = Pools.obtain(Vector2.class), vertex2 = Pools.obtain(Vector2.class), intersection = Pools.obtain(Vector2.class);
+			EdgeShape es = (EdgeShape) shape;
+			es.getVertex1(vertex1);
+			es.getVertex2(vertex2);
+			if(!Intersector.intersectSegments(a, b, vertex1, vertex2, intersection)) {
+				Pools.free(vertex1);
+				Pools.free(vertex2);
+				Pools.free(intersection);
+				return false;
+			}
+
+			EdgeShape sa = new EdgeShape(), sb = new EdgeShape();
+			sa.set(vertex1, intersection);
+			sb.set(intersection, vertex2);
+			store.set((T) sa, (T) sb);
+
+			Pools.free(vertex1);
+			Pools.free(vertex2);
+			Pools.free(intersection);
+			return true;
+		}
+
+		Vector2 vertices[] = vertices(shape), aa = Pools.obtain(Vector2.class), bb = Pools.obtain(Vector2.class); // TODO bs
+
+		if(type == Type.Polygon) {
+			Polygon tmpPolygon = Pools.obtain(Polygon.class);
+			tmpPolygon.setVertices(GeometryUtils.toFloatArray(vertices));
+			if(!GeometryUtils.intersectSegmentPolygon(a, b, tmpPolygon.getTransformedVertices(), aa, bb)) { // TODO bs
+				//			if(!Intersector.intersectLinePolygon(a, b, tmpPolygon)) {
+				Pools.free(tmpPolygon);
+				return false;
+			}
+			Pools.free(tmpPolygon);
+		}
+
+		Array<Vector2> aVertices = Pools.obtain(Array.class), bVertices = Pools.obtain(Array.class);
+		aVertices.clear();
+		bVertices.clear();
+		aVertices.add(aa);
+		aVertices.add(bb);
+		if(type == Type.Polygon) { // TODO bs
+			bVertices.add(aa);
+			bVertices.add(bb);
+		}
+
+		for(int i = 0; i < vertices.length; i++) {
+			float det = MathUtils.det(aa.x, aa.y, vertices[i].x, vertices[i].y, bb.x, bb.y);
+			if(det < 0)
+				aVertices.add(vertices[i]);
+			else if(det > 0)
+				bVertices.add(vertices[i]);
+			else {
+				aVertices.add(vertices[i]);
+				bVertices.add(vertices[i]);
+			}
+		}
+
+		GeometryUtils.arrangeClockwise(aVertices);
+		GeometryUtils.arrangeClockwise(bVertices);
+
+		if(type == Type.Polygon) {
+			PolygonShape sa = new PolygonShape(), sb = new PolygonShape();
+			sa.set((Vector2[]) aVertices.toArray(Vector2.class));
+			sb.set((Vector2[]) bVertices.toArray(Vector2.class));
+			store.set((T) sa, (T) sb);
+			Pools.free(aa);
+			Pools.free(bb);
+			Pools.free(aVertices);
+			Pools.free(bVertices);
+			return true;
+		}
+
+		if(type == Type.Chain) { // TODO bs
+			ChainShape sa = new ChainShape(), sb = new ChainShape();
+			sa.createChain((Vector2[]) aVertices.toArray(Vector2.class));
+			sb.createChain((Vector2[]) bVertices.toArray(Vector2.class));
+			store.set((T) sa, (T) sb);
+			Pools.free(aa);
+			Pools.free(bb);
+			Pools.free(aVertices);
+			Pools.free(bVertices);
+			return true;
+		}
+
+		//		if(type == Type.Chain) {
+		//			Vector2 intersection = Pools.obtain(Vector2.class);
+		//			for(int i = 0; i < vertices.length - 1; i++)
+		//				if(Intersector.intersectSegments(a, b, vertices[i], vertices[i + 1], intersection)) {
+		//					
+		//					
+		//					
+		//					Pools.free(intersection);
+		//					return true;
+		//				}
+		//			Pools.free(intersection);
+		//			return false;
+		//		}
+
+		Pools.free(aa);
+		Pools.free(bb);
+		Pools.free(aVertices);
+		Pools.free(bVertices);
+
+		assert false : type + " is unknown";
+		return false;
+	}
 
 	// various
 
