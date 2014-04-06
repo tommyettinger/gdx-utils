@@ -26,12 +26,14 @@ import net.dermetfan.utils.ArrayUtils;
 
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.math.EarClippingTriangulator;
+import com.badlogic.gdx.math.Intersector;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Polygon;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Array;
+import com.badlogic.gdx.utils.Pools;
 import com.badlogic.gdx.utils.ShortArray;
 
 /** Provides some useful methods for geometric calculations. Note that many methods return the same array instance so make a copy for subsequent calls.
@@ -46,6 +48,22 @@ public abstract class GeometryUtils {
 
 	/** a temporary array */
 	private static float[] tmpFloatArr;
+
+	/** @return if the given point is between a and b (exclusive)
+	 *  @see #between(Vector2, Vector2, Vector2, boolean) */
+	public static boolean between(Vector2 point, Vector2 a, Vector2 b) {
+		return between(point, a, b, false);
+	}
+
+	/** @param point the point to test
+	 *  @param a the first point of the segment
+	 *  @param b the second point of the segment
+	 *  @param inclusive if the given point is allowed to be equal to min or maxs
+	 *  @return if the given point lies on a line with and between the given points
+	 *  @see net.dermetfan.utils.math.MathUtils#between(float, float, float) */
+	public static boolean between(Vector2 point, Vector2 a, Vector2 b, boolean inclusive) {
+		return det(a.x, a.y, point.x, point.y, b.x, b.y) == 0 && net.dermetfan.utils.math.MathUtils.between(point.x, a.x, b.x, inclusive) && net.dermetfan.utils.math.MathUtils.between(point.y, a.y, b.y, inclusive);
+	}
 
 	/** @param vector the {@link Vector2} which components to set to their absolute value
 	 *  @return the given vector with all components set to its absolute value
@@ -256,7 +274,8 @@ public abstract class GeometryUtils {
 		return point.add(origin).rotateRad(radians).sub(origin);
 	}
 
-	/** @param a a point on the line
+	/** rotates the line around its center (same as {@link #rotate(Vector2, Vector2, float)} using the center between both points as origin)
+	 *  @param a a point on the line
 	 *  @param b another point on the line
 	 *  @param radians the rotation */
 	public static void rotateLine(Vector2 a, Vector2 b, float radians) {
@@ -554,6 +573,29 @@ public abstract class GeometryUtils {
 		vec2_0.set(keepWithin(camera.position.x - camera.viewportWidth / 2 * camera.zoom, camera.position.y - camera.viewportHeight / 2 * camera.zoom, camera.viewportWidth * camera.zoom, camera.viewportHeight * camera.zoom, x, y, width, height));
 		camera.position.x = vec2_0.x + camera.viewportWidth / 2 * camera.zoom;
 		camera.position.y = vec2_0.y + camera.viewportHeight / 2 * camera.zoom;
+	}
+
+	public static boolean intersectSegmentPolygon(Vector2 a, Vector2 b, float[] polygon, Vector2 intersection1, Vector2 intersection2) { // TODO bs
+		if(polygon.length < 3)
+			throw new IllegalArgumentException("a polygon consists of at least 3 points: " + polygon.length);
+		if(polygon.length % 2 != 0)
+			throw new IllegalArgumentException("malformed polygon; the vertices are not dividable by 2");
+		Vector2 p1 = Pools.obtain(Vector2.class), p2 = Pools.obtain(Vector2.class), intersection = intersection1;
+		boolean intersects = false;
+		for(int i = 0; i < polygon.length - 5;) {
+			p1.set(polygon[i++], polygon[i++]);
+			p2.set(polygon[i++], polygon[i++]);
+			if(Intersector.intersectSegments(a, b, p1, p2, intersection)) {
+				intersects = true;
+				if(intersection == intersection1)
+					intersection = intersection2;
+				else
+					break;
+			}
+		}
+		Pools.free(p1);
+		Pools.free(p2);
+		return intersects;
 	}
 
 }

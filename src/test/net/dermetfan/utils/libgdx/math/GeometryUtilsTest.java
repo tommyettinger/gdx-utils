@@ -1,8 +1,6 @@
 package net.dermetfan.utils.libgdx.math;
 
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 import net.dermetfan.utils.ArrayUtils;
 
 import org.junit.Test;
@@ -12,6 +10,13 @@ import com.badlogic.gdx.math.Polygon;
 import com.badlogic.gdx.math.Vector2;
 
 public class GeometryUtilsTest {
+
+	@Test
+	public void between() {
+		Vector2 a = new Vector2(0, 0), b = new Vector2(1, 1);
+		assertTrue(GeometryUtils.between(new Vector2(.5f, .5f), a, b));
+		assertFalse(GeometryUtils.between(new Vector2(-.5f, .5f), a, b));
+	}
 
 	@Test
 	public void size() {
