@@ -74,23 +74,23 @@ public class FileChooser extends Window {
 		fileHistory.add(directory);
 	}
 
-	/** does not {@link FileFilter#accept(File) accept} hidden files if {@link #showHidden} is false */
-	public final FileFilter defaultFileFilter = new FileFilter() {
+	/** does not {@link FileFilter#accept(File) accept} hidden files if {@link #showHidden} is false and if {@link #fileFilter} is not null and does not accept the file */
+	public final FileFilter handlingFileFilter = new FileFilter() {
 
 		@Override
-		public boolean accept(File pathname) {
-			return showHidden || !pathname.isHidden();
+		public boolean accept(File file) {
+			return (showHidden || !file.isHidden()) && (fileFilter == null || fileFilter != null && fileFilter.accept(file));
 		}
 
 	};
 
 	/** used to filter the files for {@link #contents} */
-	private FileFilter fileFilter = defaultFileFilter;
+	private FileFilter fileFilter;
 
 	/** if the {@link #chooseButton choose button} should work on folders or go into them */
 	private boolean canChooseDirectories;
 
-	/** If hidden folders and files should be shown. Regarded by {@link #defaultFileFilter}, but if you {@link #setFileFilter(FileFilter) set} your own {@link FileFilter} you have to take this into account! */
+	/** if hidden folders and files should be shown */
 	private boolean showHidden;
 
 	/** how long it takes to fade in and out */
@@ -286,7 +286,7 @@ public class FileChooser extends Window {
 
 	/** populates {@link #contents} with the children of {@link #directory} */
 	protected void scan(FileHandle dir) {
-		File[] files = dir.file().listFiles(fileFilter);
+		File[] files = dir.file().listFiles(handlingFileFilter);
 		String slash = System.getProperty("os.name").contains("Windows") ? "\\" : "/";
 		String[] names = new String[files.length];
 		for(int i = 0; i < files.length; i++) {
@@ -395,9 +395,9 @@ public class FileChooser extends Window {
 		return fileFilter;
 	}
 
-	/** @param fileFilter The {@link #fileFilter} to set. Make sure to take {@link #showHidden} into account! */
+	/** @param fileFilter the {@link #fileFilter} to set */
 	public void setFileFilter(FileFilter fileFilter) {
-		this.fileFilter = fileFilter != null ? fileFilter : defaultFileFilter;
+		this.fileFilter = fileFilter;
 	}
 
 	/** @return the {@link #fadeDuration} */
