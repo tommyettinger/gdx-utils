@@ -47,7 +47,7 @@ public class AnimatedSprite extends Sprite {
 	/** if the size of the previous frame should be kept by the following frames */
 	private boolean keepSize;
 
-	/** if a frame should be centered in its previous one's center if it's smaller */
+	/** if a frame should be centered in the previous one */
 	private boolean centerFrames;
 
 	/** creates a new {@link AnimatedSprite} with the given {@link Animation}
@@ -72,6 +72,13 @@ public class AnimatedSprite extends Sprite {
 
 	/** updates the {@link AnimatedSprite} with the given delta time */
 	public void update(float delta) {
+		oldX = getX();
+		oldY = getY();
+		oldWidth = getWidth();
+		oldHeight = getHeight();
+		oldOriginX = getOriginX();
+		oldOriginY = getOriginY();
+
 		if(playing) {
 			setRegion(animation.getKeyFrame(time += delta));
 			if(!keepSize)
@@ -79,30 +86,29 @@ public class AnimatedSprite extends Sprite {
 		}
 	}
 
+	/** needed for {@link #centerFrames} */
+	private float oldX, oldY, oldWidth, oldHeight, oldOriginX, oldOriginY;
+
 	/** {@link Sprite#draw(Batch) Draws} this {@code AnimatedSprite}. If {@link #autoUpdate} is true, {@link #update()} will be called before drawing. */
 	@Override
-	public void draw(Batch spriteBatch) {
-		if(centerFrames && !keepSize) {
-			float x = getX(), y = getY(), width = getWidth(), height = getHeight(), originX = getOriginX(), originY = getOriginY();
-
-			if(autoUpdate)
-				update();
-
-			float differenceX = width - getRegionWidth(), differenceY = height - getRegionHeight();
-			setOrigin(originX - differenceX / 2, originY - differenceY / 2);
-			setBounds(x + differenceX / 2, y + differenceY / 2, width - differenceX, height - differenceY);
-
-			super.draw(spriteBatch);
-
-			setOrigin(originX, originY);
-			setBounds(x, y, width, height);
-			return;
-		}
-
+	public void draw(Batch batch) {
 		if(autoUpdate)
 			update();
 
-		super.draw(spriteBatch);
+		boolean centerFramesEnabled = centerFrames && !keepSize; // if keepSize is true centerFrames has no effect 
+
+		if(centerFramesEnabled) {
+			float differenceX = oldWidth - getRegionWidth(), differenceY = oldHeight - getRegionHeight();
+			setOrigin(oldOriginX - differenceX / 2, oldOriginY - differenceY / 2);
+			setBounds(oldX + differenceX / 2, oldY + differenceY / 2, oldWidth - differenceX, oldHeight - differenceY);
+		}
+
+		super.draw(batch);
+
+		if(centerFramesEnabled) {
+			setOrigin(oldOriginX, oldOriginY);
+			setBounds(oldX, oldY, oldWidth, oldHeight);
+		}
 	}
 
 	/** flips all frames

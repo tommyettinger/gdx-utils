@@ -20,6 +20,40 @@ import net.dermetfan.utils.math.Noise;
  *  @author dermetfan */
 public abstract class ArrayUtils {
 
+	/** @param array the array from which to access a value at the wrapped index
+	 *  @return the value at the wrapped index
+	 *  @see #wrapIndex(int, int) */
+	public static <T> T wrapIndex(int index, T[] array) {
+		return array[wrapIndex(index, array.length)];
+	}
+
+	/** @see #wrapIndex(int, Object[]) */
+	public static int wrapIndex(int index, int[] array) {
+		return array[wrapIndex(index, array.length)];
+	}
+
+	/** @see #wrapIndex(int, Object[]) */
+	public static float wrapIndex(int index, float[] array) {
+		return array[wrapIndex(index, array.length)];
+	}
+
+	/** Wraps the given index around the given length (of an array). For example for a length of 10:<br>
+	 * 	<table>
+	 * 	<tr><th>index</th><th>returns</th></tr>
+	 * 	<tr><td>0</td><td>0</td></tr>
+	 * 	<tr><td>5</td><td>5</td></tr>
+	 * 	<tr><td>10</td><td>0</td></tr>
+	 * 	<tr><td>15</td><td>5</td></tr>
+	 * 	<tr><td>20</td><td>0</td></tr>
+	 * 	<tr><td>55</td><td>5</td></tr>
+	 * 	</table>
+	 *  @param index the desired index
+	 *  @param length the length of the array
+	 *  @return the index wrapped around the array length */
+	public static int wrapIndex(int index, int length) {
+		return (index + length) % length;
+	}
+
 	/** @param array the array that may contain the given value
 	 *  @param value the value to search for in the given array
 	 *  @param identity if {@code ==} comparison should be used instead of <code>{@link Object#equals(Object) .equals()}</code>
