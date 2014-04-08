@@ -1,3 +1,6 @@
++++ 197 +++
+added Box2DUtils#split(..) (splits bodies, fixtures and shapes)
+
 +++ 183 +++
 now using Gradle
 
