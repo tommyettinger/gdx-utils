@@ -96,6 +96,15 @@ public abstract class Box2DUtils {
 	/** if shapes should automatically be cached when they are inspected for the first time */
 	public static boolean autoCache = true;
 
+	/** the area a {@link PolygonShape} must at least contain (limitation by Box2D) */
+	public static final float minPolygonArea = 1.19209289550781250000e-7F;
+
+	/** the max amount of vertices of a {@link PolygonShape} (limitation by Box2D) */
+	public static final byte maxPolygonVertices = 8;
+
+	/** if Box2D preconditions should be checked to avoid crashes */
+	public static boolean checkPreconditions = true;
+
 	/** for internal, temporary usage */
 	private static final Vector2 vec2_0 = new Vector2(), vec2_1 = new Vector2();
 
@@ -142,14 +151,10 @@ public abstract class Box2DUtils {
 		case Circle:
 			CircleShape circleShape = (CircleShape) shape;
 			vertices = new Vector2[4];
-			vec2_0.set(circleShape.getPosition().x - circleShape.getRadius(), circleShape.getPosition().y + circleShape.getRadius()); // top left
-			vertices[0] = vertices[0] != null ? vertices[0].set(vec2_0) : new Vector2(vec2_0);
-			vec2_0.set(circleShape.getPosition().x - circleShape.getRadius(), circleShape.getPosition().y - circleShape.getRadius()); // bottom left
-			vertices[1] = vertices[1] != null ? vertices[1].set(vec2_0) : new Vector2(vec2_0);
-			vec2_0.set(circleShape.getPosition().x + circleShape.getRadius(), circleShape.getPosition().y - circleShape.getRadius()); // bottom right
-			vertices[2] = vertices[2] != null ? vertices[2].set(vec2_0) : new Vector2(vec2_0);
-			vec2_0.set(circleShape.getPosition().x + circleShape.getRadius(), circleShape.getPosition().y + circleShape.getRadius()); // top right
-			vertices[3] = vertices[3] != null ? vertices[3].set(vec2_0) : new Vector2(vec2_0);
+			vertices[0] = new Vector2(circleShape.getPosition().x - circleShape.getRadius(), circleShape.getPosition().y + circleShape.getRadius()); // top left
+			vertices[1] = new Vector2(circleShape.getPosition().x - circleShape.getRadius(), circleShape.getPosition().y - circleShape.getRadius()); // bottom left
+			vertices[2] = new Vector2(circleShape.getPosition().x + circleShape.getRadius(), circleShape.getPosition().y - circleShape.getRadius()); // bottom right
+			vertices[3] = new Vector2(circleShape.getPosition().x + circleShape.getRadius(), circleShape.getPosition().y + circleShape.getRadius()); // top right
 			break;
 		default:
 			throw new IllegalArgumentException("shapes of the type '" + shape.getType().name() + "' are not supported");
@@ -159,38 +164,48 @@ public abstract class Box2DUtils {
 
 	/** @return the minimal x of the vertices of the given Shape */
 	private static float minX0(Shape shape) {
+		if(shape instanceof CircleShape)
+			return ((CircleShape) shape).getPosition().x - shape.getRadius();
 		return min(filterX(vertices0(shape)));
 	}
 
 	/** @return the minimal y of the vertices of the given Shape */
 	private static float minY0(Shape shape) {
+		if(shape instanceof CircleShape)
+			return ((CircleShape) shape).getPosition().y - shape.getRadius();
 		return min(filterY(vertices0(shape)));
 	}
 
 	/** @return the maximal x of the vertices of the given Shape */
 	private static float maxX0(Shape shape) {
+		if(shape instanceof CircleShape)
+			return ((CircleShape) shape).getPosition().x + shape.getRadius();
 		return max(filterX(vertices0(shape)));
 	}
 
 	/** @return the maximal y of the vertices of the given Shape */
 	private static float maxY0(Shape shape) {
+		if(shape instanceof CircleShape)
+			return ((CircleShape) shape).getPosition().y + shape.getRadius();
 		return max(filterY(vertices0(shape)));
 	}
 
 	/** @return the width of the given Shape */
 	private static float width0(Shape shape) {
+		if(shape.getType() == Type.Circle)
+			return shape.getRadius() * 2;
 		return amplitude(filterX(vertices0(shape)));
 	}
 
 	/** @return the height of the given Shape */
 	private static float height0(Shape shape) {
+		if(shape.getType() == Type.Circle)
+			return shape.getRadius() * 2;
 		return amplitude(filterY(vertices0(shape)));
 	}
 
 	/** @return a Vector2 representing the size of the given Shape */
 	private static Vector2 size0(Shape shape) {
-		if(shape.getType() == Type.Circle) // skip #width0(Shape) and #height0(Shape) for performance
-			return vec2_0.set(shape.getRadius() * 2, shape.getRadius() * 2);
 		return vec2_0.set(width0(shape), height0(shape));
 	}
 
@@ -393,7 +408,7 @@ public abstract class Box2DUtils {
 		return shape.getPosition();
 	}
 
-	/** @return the position of the given shape relativley to its Body */
+	/** @return the position of the given shape relatively to its Body */
 	public static Vector2 positionRelative(Shape shape, float rotation) {
 		if(shape instanceof CircleShape)
 			return positionRelative((CircleShape) shape); // faster
@@ -817,13 +832,27 @@ public abstract class Box2DUtils {
 				}
 			}
 
-			GeometryUtils.arrangeClockwise(aVertices);
-			GeometryUtils.arrangeClockwise(bVertices);
+			if(!checkPreconditions || checkPreconditions && aVertices.size >= 3 && aVertices.size <= maxPolygonVertices && bVertices.size >= 3 && bVertices.size <= maxPolygonVertices) {
+				GeometryUtils.arrangeClockwise(aVertices);
+				GeometryUtils.arrangeClockwise(bVertices);
 
-			PolygonShape sa = new PolygonShape(), sb = new PolygonShape();
-			sa.set((Vector2[]) aVertices.toArray(Vector2.class));
-			sb.set((Vector2[]) bVertices.toArray(Vector2.class));
-			store.set((T) sa, (T) sb);
+				Vector2[] aVerticesArray = (Vector2[]) aVertices.toArray(Vector2.class), bVerticesArray = (Vector2[]) bVertices.toArray(Vector2.class);
+
+				if(checkPreconditions) {
+					float[] aVerticesFloatArray = GeometryUtils.toFloatArray(aVerticesArray), bVerticesFloatArray = GeometryUtils.toFloatArray(bVerticesArray);
+					if(GeometryUtils.area(aVerticesFloatArray) >= minPolygonArea && GeometryUtils.area(bVerticesFloatArray) >= minPolygonArea) {
+						PolygonShape sa = new PolygonShape(), sb = new PolygonShape();
+						sa.set(aVerticesFloatArray);
+						sb.set(bVerticesFloatArray);
+						store.set((T) sa, (T) sb);
+					}
+				} else {
+					PolygonShape sa = new PolygonShape(), sb = new PolygonShape();
+					sa.set(aVerticesArray);
+					sb.set(bVerticesArray);
+					store.set((T) sa, (T) sb);
+				}
+			}
 		} else if(type == Type.Chain) {
 			Vector2 tmp = Pools.obtain(Vector2.class);
 			boolean intersected = false;
@@ -838,12 +867,13 @@ public abstract class Box2DUtils {
 					bVertices.add(tmp);
 				}
 			}
-			if(intersected) {
-				ChainShape sa = new ChainShape(), sb = new ChainShape();
-				sa.createChain((Vector2[]) aVertices.toArray(Vector2.class));
-				sb.createChain((Vector2[]) bVertices.toArray(Vector2.class));
-				store.set((T) sa, (T) sb);
-			}
+			if(intersected)
+				if(!checkPreconditions || checkPreconditions && aVertices.size >= 3 && bVertices.size >= 3) {
+					ChainShape sa = new ChainShape(), sb = new ChainShape();
+					sa.createChain((Vector2[]) aVertices.toArray(Vector2.class));
+					sb.createChain((Vector2[]) bVertices.toArray(Vector2.class));
+					store.set((T) sa, (T) sb);
+				}
 			Pools.free(tmp);
 		}
 
