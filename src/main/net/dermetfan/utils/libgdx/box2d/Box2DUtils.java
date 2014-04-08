@@ -25,7 +25,6 @@ import net.dermetfan.utils.libgdx.math.GeometryUtils;
 import net.dermetfan.utils.math.MathUtils;
 
 import com.badlogic.gdx.math.Intersector;
-import com.badlogic.gdx.math.Polygon;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.BodyDef;
@@ -504,7 +503,7 @@ public abstract class Box2DUtils {
 				chainClone.createChain(vertices);
 			break;
 		default:
-			return shape;
+			return null;
 		}
 		clone.setRadius(shape.getRadius());
 		return clone;
@@ -691,7 +690,7 @@ public abstract class Box2DUtils {
 	}
 
 	@SuppressWarnings("unchecked")
-	public static boolean split(Fixture fixture, Vector2 a, Vector2 b, Pair<FixtureDef, FixtureDef> store) { // TODO use actual intersections
+	public static boolean split(Fixture fixture, Vector2 a, Vector2 b, Pair<FixtureDef, FixtureDef> store) {
 		Body body = fixture.getBody();
 		Vector2 bodyPos = body.getPosition();
 		Vector2 tmpA = Pools.obtain(Vector2.class).set(a).sub(bodyPos), tmpB = Pools.obtain(Vector2.class).set(b).sub(bodyPos);
@@ -743,89 +742,78 @@ public abstract class Box2DUtils {
 			return true;
 		}
 
-		Vector2 vertices[] = vertices(shape), aa = Pools.obtain(Vector2.class), bb = Pools.obtain(Vector2.class); // TODO bs
+		store.clear();
 
-		if(type == Type.Polygon) {
-			Polygon tmpPolygon = Pools.obtain(Polygon.class);
-			tmpPolygon.setVertices(GeometryUtils.toFloatArray(vertices));
-			if(!GeometryUtils.intersectSegmentPolygon(a, b, tmpPolygon.getTransformedVertices(), aa, bb)) { // TODO bs
-				//			if(!Intersector.intersectLinePolygon(a, b, tmpPolygon)) {
-				Pools.free(tmpPolygon);
-				return false;
-			}
-			Pools.free(tmpPolygon);
-		}
-
+		Vector2 vertices[] = vertices(shape), aa = Pools.obtain(Vector2.class).set(a), bb = Pools.obtain(Vector2.class).set(b);
 		Array<Vector2> aVertices = Pools.obtain(Array.class), bVertices = Pools.obtain(Array.class);
 		aVertices.clear();
 		bVertices.clear();
-		aVertices.add(aa);
-		aVertices.add(bb);
-		if(type == Type.Polygon) { // TODO bs
-			bVertices.add(aa);
-			bVertices.add(bb);
-		}
-
-		for(int i = 0; i < vertices.length; i++) {
-			float det = MathUtils.det(aa.x, aa.y, vertices[i].x, vertices[i].y, bb.x, bb.y);
-			if(det < 0)
-				aVertices.add(vertices[i]);
-			else if(det > 0)
-				bVertices.add(vertices[i]);
-			else {
-				aVertices.add(vertices[i]);
-				bVertices.add(vertices[i]);
-			}
-		}
-
-		GeometryUtils.arrangeClockwise(aVertices);
-		GeometryUtils.arrangeClockwise(bVertices);
 
 		if(type == Type.Polygon) {
+			aVertices.add(aa);
+			aVertices.add(bb);
+			GeometryUtils.arrangeClockwise(aVertices);
+
+			if(GeometryUtils.intersectSegments(a, b, GeometryUtils.toFloatArray(vertices), aVertices.first(), aVertices.peek()) < 2) {
+				Pools.free(aa);
+				Pools.free(bb);
+				Pools.free(aVertices);
+				Pools.free(bVertices);
+				return false;
+			}
+
+			bVertices.add(aa);
+			bVertices.add(bb);
+
+			for(int i = 0; i < vertices.length; i++) {
+				float det = MathUtils.det(aa.x, aa.y, vertices[i].x, vertices[i].y, bb.x, bb.y);
+				if(det < 0)
+					aVertices.add(vertices[i]);
+				else if(det > 0)
+					bVertices.add(vertices[i]);
+				else {
+					aVertices.add(vertices[i]);
+					bVertices.add(vertices[i]);
+				}
+			}
+
+			GeometryUtils.arrangeClockwise(aVertices);
+			GeometryUtils.arrangeClockwise(bVertices);
+
 			PolygonShape sa = new PolygonShape(), sb = new PolygonShape();
 			sa.set((Vector2[]) aVertices.toArray(Vector2.class));
 			sb.set((Vector2[]) bVertices.toArray(Vector2.class));
 			store.set((T) sa, (T) sb);
-			Pools.free(aa);
-			Pools.free(bb);
-			Pools.free(aVertices);
-			Pools.free(bVertices);
-			return true;
+		} else if(type == Type.Chain) {
+			Vector2 tmp = Pools.obtain(Vector2.class);
+			boolean intersected = false;
+			for(int i = 0; i < vertices.length; i++) {
+				if(!intersected)
+					aVertices.add(vertices[i]);
+				else
+					bVertices.add(vertices[i]);
+				if(!intersected && i + 1 < vertices.length && Intersector.intersectSegments(vertices[i], vertices[i + 1], aa, bb, tmp)) {
+					intersected = true;
+					aVertices.add(tmp);
+					bVertices.add(tmp);
+				}
+			}
+			if(intersected) {
+				ChainShape sa = new ChainShape(), sb = new ChainShape();
+				sa.createChain((Vector2[]) aVertices.toArray(Vector2.class));
+				sb.createChain((Vector2[]) bVertices.toArray(Vector2.class));
+				store.set((T) sa, (T) sb);
+			}
+			Pools.free(tmp);
 		}
-
-		if(type == Type.Chain) { // TODO bs
-			ChainShape sa = new ChainShape(), sb = new ChainShape();
-			sa.createChain((Vector2[]) aVertices.toArray(Vector2.class));
-			sb.createChain((Vector2[]) bVertices.toArray(Vector2.class));
-			store.set((T) sa, (T) sb);
-			Pools.free(aa);
-			Pools.free(bb);
-			Pools.free(aVertices);
-			Pools.free(bVertices);
-			return true;
-		}
-
-		//		if(type == Type.Chain) {
-		//			Vector2 intersection = Pools.obtain(Vector2.class);
-		//			for(int i = 0; i < vertices.length - 1; i++)
-		//				if(Intersector.intersectSegments(a, b, vertices[i], vertices[i + 1], intersection)) {
-		//					
-		//					
-		//					
-		//					Pools.free(intersection);
-		//					return true;
-		//				}
-		//			Pools.free(intersection);
-		//			return false;
-		//		}
 
 		Pools.free(aa);
 		Pools.free(bb);
 		Pools.free(aVertices);
 		Pools.free(bVertices);
 
-		assert false : type + " is unknown";
-		return false;
+		// assert false : type + " is unknown";
+		return store.isFull();
 	}
 
 	// various

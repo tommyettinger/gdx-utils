@@ -14,6 +14,7 @@
 
 package net.dermetfan.utils.libgdx.math;
 
+import static net.dermetfan.utils.ArrayUtils.wrapIndex;
 import static net.dermetfan.utils.math.MathUtils.amplitude;
 import static net.dermetfan.utils.math.MathUtils.det;
 import static net.dermetfan.utils.math.MathUtils.max;
@@ -33,6 +34,7 @@ import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Array;
+import com.badlogic.gdx.utils.FloatArray;
 import com.badlogic.gdx.utils.Pools;
 import com.badlogic.gdx.utils.ShortArray;
 
@@ -575,27 +577,66 @@ public abstract class GeometryUtils {
 		camera.position.y = vec2_0.y + camera.viewportHeight / 2 * camera.zoom;
 	}
 
-	public static boolean intersectSegmentPolygon(Vector2 a, Vector2 b, float[] polygon, Vector2 intersection1, Vector2 intersection2) { // TODO bs
-		if(polygon.length < 3)
-			throw new IllegalArgumentException("a polygon consists of at least 3 points: " + polygon.length);
-		if(polygon.length % 2 != 0)
-			throw new IllegalArgumentException("malformed polygon; the vertices are not dividable by 2");
-		Vector2 p1 = Pools.obtain(Vector2.class), p2 = Pools.obtain(Vector2.class), intersection = intersection1;
-		boolean intersects = false;
-		for(int i = 0; i < polygon.length - 5;) {
-			p1.set(polygon[i++], polygon[i++]);
-			p2.set(polygon[i++], polygon[i++]);
-			if(Intersector.intersectSegments(a, b, p1, p2, intersection)) {
-				intersects = true;
-				if(intersection == intersection1)
-					intersection = intersection2;
-				else
-					break;
+	/** @param a the first point of the segment
+	 *  @param b the second point of the segment
+	 *  @param polygon the polygon, assumed to be convex
+	 *  @param intersection1 the first intersection point
+	 *  @param intersection2 the second intersection point
+	 *  @return the number of intersection points
+	 *  @see #intersectSegments(Vector2, Vector2, float[], boolean, Array)*/
+	public static int intersectSegments(Vector2 a, Vector2 b, float[] polygon, Vector2 intersection1, Vector2 intersection2) {
+		FloatArray intersections = Pools.obtain(FloatArray.class);
+		intersectSegments(a.x, a.y, b.x, b.y, polygon, true, intersections);
+		int size = intersections.size;
+		if(size >= 2) {
+			intersection1.set(intersections.get(0), intersections.get(1));
+			if(size == 4)
+				intersection2.set(intersections.get(2), intersections.get(3));
+			else if(size > 4)
+				assert false : "more intersection points with a convex polygon found than possible: " + size;
+		}
+		Pools.free(intersections);
+		return size / 2;
+	}
+
+	/** @see #intersectSegments(float, float, float, float, float[], boolean, FloatArray) */
+	public static void intersectSegments(Vector2 a, Vector2 b, float[] segments, boolean polygon, Array<Vector2> intersections) {
+		FloatArray fa = Pools.obtain(FloatArray.class);
+		intersectSegments(a.x, a.y, b.x, b.y, segments, polygon, fa);
+		if(fa.size < 1) {
+			intersections.clear();
+			Pools.free(fa);
+			return;
+		}
+		intersections.ensureCapacity(fa.size / 2 - intersections.size);
+		for(int i = 1; i < fa.size; i += 2)
+			if(intersections.size > i / 2)
+				intersections.get(i / 2).set(fa.get(i - 1), fa.get(i));
+			else
+				intersections.add(new Vector2(fa.get(i - 1), fa.get(i)));
+		Pools.free(fa);
+	}
+
+	/** @param segments the segments
+	 *  @param polygon if the segments represent a closed polygon
+	 *  @param intersections the array to store the intersections in */
+	public static void intersectSegments(float x1, float y1, float x2, float y2, float[] segments, boolean polygon, FloatArray intersections) {
+		if(polygon && segments.length < 6)
+			throw new IllegalArgumentException("a polygon consists of at least 3 points: " + segments.length);
+		else if(segments.length < 4)
+			throw new IllegalArgumentException("segments does not contain enough vertices to represent at least one segment: " + segments.length);
+		if(segments.length % 2 != 0)
+			throw new IllegalArgumentException("malformed segments; the number of vertices is not dividable by 2: " + segments.length);
+		intersections.clear();
+		Vector2 tmp = Pools.obtain(Vector2.class);
+		for(int i = 0, n = segments.length - (polygon ? 0 : 2); i < n; i += 2) {
+			float x3 = segments[i], y3 = segments[i + 1], x4 = wrapIndex(i + 2, segments), y4 = wrapIndex(i + 3, segments);
+			if(Intersector.intersectSegments(x1, y1, x2, y2, x3, y3, x4, y4, tmp)) {
+				intersections.add(tmp.x);
+				intersections.add(tmp.y);
 			}
 		}
-		Pools.free(p1);
-		Pools.free(p2);
-		return intersects;
+		Pools.free(tmp);
 	}
 
 }

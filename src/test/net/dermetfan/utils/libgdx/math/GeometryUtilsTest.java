@@ -1,6 +1,9 @@
 package net.dermetfan.utils.libgdx.math;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 import net.dermetfan.utils.ArrayUtils;
 
 import org.junit.Test;
@@ -8,6 +11,7 @@ import org.junit.Test;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Polygon;
 import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.utils.FloatArray;
 
 public class GeometryUtilsTest {
 
@@ -120,6 +124,28 @@ public class GeometryUtilsTest {
 	@Test
 	public void keepWithin() {
 		assertEquals(new Vector2(0, 0), GeometryUtils.keepWithin(5, 5, 5, 5, 0, 0, 5, 5));
+	}
+
+	@Test
+	public void intersectSegmentPolygon() {
+		float[] polygon = {0, 0, 1, 0, 1, 1, 0, 1};
+		Vector2 is1 = new Vector2(), is2 = new Vector2();
+		GeometryUtils.intersectSegments(new Vector2(-1, .5f), new Vector2(2, .5f), polygon, is1, is2);
+		assertEquals(new Vector2(1, .5f), is1);
+		assertEquals(new Vector2(0, .5f), is2);
+	}
+
+	@Test
+	public void intersectSegments() {
+		FloatArray intersections = new FloatArray();
+		GeometryUtils.intersectSegments(-1, .5f, 2, .5f, new float[] {0, 0, 1, 0, 1, 1, 0, 1, 0, 0}, false, intersections);
+		assertEquals(4, intersections.size);
+		GeometryUtils.intersectSegments(-1, .5f, 2, .5f, new float[] {0, 0, 1, 0, 1, 1, 0, 1}, true, intersections);
+		assertEquals(4, intersections.size);
+		assertEquals(1, intersections.get(0), 0);
+		assertEquals(.5f, intersections.get(1), 0);
+		assertEquals(0, intersections.get(2), 0);
+		assertEquals(.5f, intersections.get(3), 0);
 	}
 
 }

@@ -153,7 +153,7 @@ public class Pair<K, V> {
 		return super.equals(obj);
 	}
 
-	/** @return [key, value] */
+	/** @return [{@link #key} & {@link #value}] */
 	@Override
 	public String toString() {
 		return "[" + key + " & " + value + "]";
