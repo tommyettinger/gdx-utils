@@ -96,8 +96,8 @@ public abstract class Box2DUtils {
 	/** if shapes should automatically be cached when they are inspected for the first time */
 	public static boolean autoCache = true;
 
-	/** the area a {@link PolygonShape} must at least contain (limitation by Box2D) */
-	public static final float minPolygonArea = 1.19209289550781250000e-7F;
+	/** the area that is too small for a {@link PolygonShape} to contain it (limitation by Box2D) */
+	public static final float minExclusivePolygonArea = 1.19209289550781250000e-7F;
 
 	/** the max amount of vertices of a {@link PolygonShape} (limitation by Box2D) */
 	public static final byte maxPolygonVertices = 8;
@@ -832,26 +832,26 @@ public abstract class Box2DUtils {
 				}
 			}
 
-			if(!checkPreconditions || checkPreconditions && aVertices.size >= 3 && aVertices.size <= maxPolygonVertices && bVertices.size >= 3 && bVertices.size <= maxPolygonVertices) {
-				GeometryUtils.arrangeClockwise(aVertices);
-				GeometryUtils.arrangeClockwise(bVertices);
+			GeometryUtils.arrangeClockwise(aVertices);
+			GeometryUtils.arrangeClockwise(bVertices);
 
-				Vector2[] aVerticesArray = (Vector2[]) aVertices.toArray(Vector2.class), bVerticesArray = (Vector2[]) bVertices.toArray(Vector2.class);
+			Vector2[] aVerticesArray = (Vector2[]) aVertices.toArray(Vector2.class), bVerticesArray = (Vector2[]) bVertices.toArray(Vector2.class);
 
-				if(checkPreconditions) {
+			if(checkPreconditions) {
+				if(aVertices.size >= 3 && aVertices.size <= maxPolygonVertices && bVertices.size >= 3 && bVertices.size <= maxPolygonVertices) {
 					float[] aVerticesFloatArray = GeometryUtils.toFloatArray(aVerticesArray), bVerticesFloatArray = GeometryUtils.toFloatArray(bVerticesArray);
-					if(GeometryUtils.area(aVerticesFloatArray) >= minPolygonArea && GeometryUtils.area(bVerticesFloatArray) >= minPolygonArea) {
+					if(GeometryUtils.area(aVerticesFloatArray) > minExclusivePolygonArea && GeometryUtils.area(bVerticesFloatArray) > minExclusivePolygonArea) {
 						PolygonShape sa = new PolygonShape(), sb = new PolygonShape();
 						sa.set(aVerticesFloatArray);
 						sb.set(bVerticesFloatArray);
 						store.set((T) sa, (T) sb);
 					}
-				} else {
-					PolygonShape sa = new PolygonShape(), sb = new PolygonShape();
-					sa.set(aVerticesArray);
-					sb.set(bVerticesArray);
-					store.set((T) sa, (T) sb);
 				}
+			} else {
+				PolygonShape sa = new PolygonShape(), sb = new PolygonShape();
+				sa.set(aVerticesArray);
+				sb.set(bVerticesArray);
+				store.set((T) sa, (T) sb);
 			}
 		} else if(type == Type.Chain) {
 			Vector2 tmp = Pools.obtain(Vector2.class);
