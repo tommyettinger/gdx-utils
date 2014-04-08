@@ -3,7 +3,7 @@ apply plugin: "eclipse"
 
 ext {
 	javaVersion = 1.6
-	libVersion = 183
+	libVersion = 197
 	libName = "libgdx-utils"
 	libManifestAttributes = [
 		"web": "http://dermetfan.net/",
