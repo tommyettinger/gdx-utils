@@ -181,8 +181,9 @@ public class MouseJointAdapter extends InputAdapter {
 
 		@Override
 		public boolean reportFixture(Fixture fixture) {
-			if(fixture.testPoint(vec2_0) && !listener.touched(fixture, vec2_0)) {
-				jointDef.bodyB = fixture.getBody();
+			Body body = fixture.getBody();
+			if(body != jointDef.bodyA && fixture.testPoint(vec2_0) && !listener.touched(fixture, vec2_0)) {
+				jointDef.bodyB = body;
 				jointDef.target.set(vec2_0);
 				if(adaptMaxForceToBodyMass) {
 					float maxForce = jointDef.maxForce;
