@@ -19,6 +19,14 @@ import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Group;
 import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.scenes.scene2d.ui.Button;
+import com.badlogic.gdx.scenes.scene2d.ui.ImageButton;
+import com.badlogic.gdx.scenes.scene2d.ui.ImageTextButton;
+import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
+import com.badlogic.gdx.scenes.scene2d.ui.Button.ButtonStyle;
+import com.badlogic.gdx.scenes.scene2d.ui.ImageButton.ImageButtonStyle;
+import com.badlogic.gdx.scenes.scene2d.ui.ImageTextButton.ImageTextButtonStyle;
+import com.badlogic.gdx.scenes.scene2d.ui.TextButton.TextButtonStyle;
 
 /** provides useful methods for scene2d
  *  @author dermetfan */
@@ -50,6 +58,22 @@ public class Scene2dUtils {
 		tmp.set(Gdx.input.getX(pointer), Gdx.input.getY(pointer));
 		stage.screenToStageCoordinates(tmp);
 		return tmp;
+	}
+
+	/** @see #newButton(String, ButtonStyle) */
+	public static Button newButton(ButtonStyle style) {
+		return newButton(style, "");
+	}
+
+	/** creates a {@link Button} according to the given {@link ButtonStyle} instance that may be {@link ButtonStyle}, {@link TextButtonStyle}, {@link ImageButtonStyle} or {@link ImageTextButtonStyle} */
+	public static Button newButton(ButtonStyle style, String textIfAny) {
+		if(style instanceof TextButtonStyle)
+			return new TextButton(textIfAny, (TextButtonStyle) style);
+		if(style instanceof ImageButtonStyle)
+			return new ImageButton((ImageButtonStyle) style);
+		if(style instanceof ImageTextButtonStyle)
+			return new ImageTextButton(textIfAny, (ImageTextButtonStyle) style);
+		return new Button(style);
 	}
 
 }
