@@ -19,7 +19,10 @@ public class GeometryUtilsTest {
 	public void between() {
 		Vector2 a = new Vector2(0, 0), b = new Vector2(1, 1);
 		assertTrue(GeometryUtils.between(new Vector2(.5f, .5f), a, b));
+		assertTrue(GeometryUtils.between(new Vector2(1, 1), a, b, true));
+		assertFalse(GeometryUtils.between(new Vector2(1, 1), a, b, false));
 		assertFalse(GeometryUtils.between(new Vector2(-.5f, .5f), a, b));
+		assertFalse(GeometryUtils.between(new Vector2(.4f, .5f), a, b));
 	}
 
 	@Test

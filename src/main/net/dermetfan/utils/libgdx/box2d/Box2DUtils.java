@@ -37,6 +37,7 @@ import com.badlogic.gdx.physics.box2d.FixtureDef;
 import com.badlogic.gdx.physics.box2d.PolygonShape;
 import com.badlogic.gdx.physics.box2d.Shape;
 import com.badlogic.gdx.physics.box2d.Shape.Type;
+import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.ObjectMap;
 import com.badlogic.gdx.utils.Pools;
@@ -678,24 +679,57 @@ public abstract class Box2DUtils {
 
 	// split
 
-	@SuppressWarnings("unchecked")
+	/** @param body the Body to split
+	 *  @param a the first point of the segment
+	 *  @param b the second point of the segment
+	 *  @param store The {@link Pair} to store the resulting bodies in. May be null.
+	 *  @return If the body was successfully split, which means that all fixtures intersecting with the given segment were split. If false, only some fixtures may have been created! */
+	public static boolean split(Body body, Vector2 a, Vector2 b, Pair<Body, Body> store) {
+		World world = body.getWorld();
+		BodyDef bodyDef = createDef(body);
+		Body aBody = world.createBody(bodyDef), bBody = world.createBody(bodyDef);
+		for(Fixture fixture : body.getFixtureList())
+			if(!split(fixture, a, b, aBody, bBody, null))
+				return false;
+		if(store != null)
+			store.set(aBody, bBody);
+		return true;
+	}
+
+	/** @param fixture the fixture to split
+	 *  @param a the first point of the segment
+	 *  @param b the second point of the segment
+	 *  @param aBody the body the first resulting fixture will be created on
+	 *  @param bBody the body the second resulting fixture will be created on
+	 *  @param store The {@link Pair} to store the resulting fixtures in. May be null.
+	 *  @return if the fixture was split
+	 *  @see #split(Shape, Vector2, Vector2, Pair) */
 	public static boolean split(Fixture fixture, Vector2 a, Vector2 b, Body aBody, Body bBody, Pair<Fixture, Fixture> store) {
+		@SuppressWarnings("unchecked")
 		Pair<FixtureDef, FixtureDef> defs = Pools.obtain(Pair.class);
 		if(!split(fixture, a, b, defs)) {
 			Pools.free(defs);
 			return false;
 		}
-		store.set(aBody.createFixture(defs.key()), bBody.createFixture(defs.value()));
+		Fixture aFixture = aBody.createFixture(defs.key()), bFixture = bBody.createFixture(defs.value());
+		if(store != null)
+			store.set(aFixture, bFixture);
 		return true;
 	}
 
-	@SuppressWarnings("unchecked")
+	/** @param fixture the fixture to split
+	 *  @param a the first point of the segment
+	 *  @param b the second point of the segment
+	 *  @param store the {@link Pair} to store the resulting {@link FixtureDef FixtureDefs} in
+	 *  @return if the fixture was split
+	 *  @see #split(Shape, Vector2, Vector2, Pair) */
 	public static boolean split(Fixture fixture, Vector2 a, Vector2 b, Pair<FixtureDef, FixtureDef> store) {
 		Body body = fixture.getBody();
 		Vector2 bodyPos = body.getPosition();
 		Vector2 tmpA = Pools.obtain(Vector2.class).set(a).sub(bodyPos), tmpB = Pools.obtain(Vector2.class).set(b).sub(bodyPos);
 		GeometryUtils.rotate(tmpA, Vector2.Zero, -body.getAngle());
 		GeometryUtils.rotate(tmpB, Vector2.Zero, -body.getAngle());
+		@SuppressWarnings("unchecked")
 		Pair<Shape, Shape> shapes = Pools.obtain(Pair.class);
 		boolean split = split(fixture.getShape(), tmpA, tmpB, shapes);
 		Pools.free(tmpA);
@@ -712,6 +746,12 @@ public abstract class Box2DUtils {
 		return true;
 	}
 
+	/** splits the given Shape using the segment described by the two given Vector2s
+	 *  @param shape the Shape to split
+	 *  @param a the first point of the segment
+	 *  @param b the second point of the segment
+	 *  @param store the {@link Pair} to store the split Shapes in
+	 *  @return if the given shape was split */
 	@SuppressWarnings("unchecked")
 	public static <T extends Shape> boolean split(T shape, Vector2 a, Vector2 b, Pair<T, T> store) {
 		Type type = shape.getType();
@@ -812,7 +852,6 @@ public abstract class Box2DUtils {
 		Pools.free(aVertices);
 		Pools.free(bVertices);
 
-		// assert false : type + " is unknown";
 		return store.isFull();
 	}
 
