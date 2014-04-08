@@ -38,7 +38,7 @@ public abstract class ArrayUtils {
 	}
 
 	/** Wraps the given index around the given length (of an array). For example for a length of 10:<br>
-	 * 	<table>
+	 * 	<table summary="index and return value">
 	 * 	<tr><th>index</th><th>returns</th></tr>
 	 * 	<tr><td>0</td><td>0</td></tr>
 	 * 	<tr><td>5</td><td>5</td></tr>
