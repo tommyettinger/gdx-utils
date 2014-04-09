@@ -20,13 +20,15 @@ import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Group;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Button;
-import com.badlogic.gdx.scenes.scene2d.ui.ImageButton;
-import com.badlogic.gdx.scenes.scene2d.ui.ImageTextButton;
-import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.ui.Button.ButtonStyle;
+import com.badlogic.gdx.scenes.scene2d.ui.ImageButton;
 import com.badlogic.gdx.scenes.scene2d.ui.ImageButton.ImageButtonStyle;
+import com.badlogic.gdx.scenes.scene2d.ui.ImageTextButton;
 import com.badlogic.gdx.scenes.scene2d.ui.ImageTextButton.ImageTextButtonStyle;
+import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton.TextButtonStyle;
+import com.badlogic.gdx.utils.Json;
+import com.badlogic.gdx.utils.JsonValue;
 
 /** provides useful methods for scene2d
  *  @author dermetfan */
@@ -74,6 +76,27 @@ public class Scene2dUtils {
 		if(style instanceof ImageTextButtonStyle)
 			return new ImageTextButton(textIfAny, (ImageTextButtonStyle) style);
 		return new Button(style);
+	}
+
+	/** Tries to load a {@link TextButtonStyle}, then {@link ImageButtonStyle}, then {@link ImageTextButtonStyle} and then {@link ButtonStyle} using {@link Json#readValue(String, Class, JsonValue)} brutally by catching NPEs. Nasty... */
+	public static ButtonStyle readButtonStyle(String name, Json json, JsonValue jsonValue) {
+		try {
+			return json.readValue(name, TextButtonStyle.class, jsonValue);
+		} catch(NullPointerException e) {
+			try {
+				return json.readValue(name, ImageButtonStyle.class, jsonValue);
+			} catch(NullPointerException e1) {
+				try {
+					return json.readValue(name, ImageTextButtonStyle.class, jsonValue);
+				} catch(NullPointerException e2) {
+					try {
+						return json.readValue(name, ButtonStyle.class, jsonValue);
+					} catch(NullPointerException e3) {
+						return null;
+					}
+				}
+			}
+		}
 	}
 
 }

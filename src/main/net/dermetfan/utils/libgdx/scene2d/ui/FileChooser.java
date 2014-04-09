@@ -1,487 +1,18 @@
-/** Copyright 2014 Robin Stumm (serverkorken@googlemail.com, http://dermetfan.net/)
- *
- *  Licensed under the Apache License, Version 2.0 (the "License");
- *  you may not use this file except in compliance with the License.
- *  You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License. */
-
 package net.dermetfan.utils.libgdx.scene2d.ui;
 
 import java.io.File;
 import java.io.FileFilter;
 
-import net.dermetfan.utils.libgdx.scene2d.Scene2dUtils;
-
-import com.badlogic.gdx.Files.FileType;
-import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.files.FileHandle;
-import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.graphics.g2d.BitmapFont;
-import com.badlogic.gdx.scenes.scene2d.Actor;
-import com.badlogic.gdx.scenes.scene2d.InputEvent;
-import com.badlogic.gdx.scenes.scene2d.actions.Actions;
-import com.badlogic.gdx.scenes.scene2d.ui.Button;
-import com.badlogic.gdx.scenes.scene2d.ui.Button.ButtonStyle;
-import com.badlogic.gdx.scenes.scene2d.ui.Dialog;
-import com.badlogic.gdx.scenes.scene2d.ui.ImageButton.ImageButtonStyle;
-import com.badlogic.gdx.scenes.scene2d.ui.ImageTextButton.ImageTextButtonStyle;
-import com.badlogic.gdx.scenes.scene2d.ui.List;
-import com.badlogic.gdx.scenes.scene2d.ui.List.ListStyle;
-import com.badlogic.gdx.scenes.scene2d.ui.ScrollPane;
-import com.badlogic.gdx.scenes.scene2d.ui.ScrollPane.ScrollPaneStyle;
-import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
-import com.badlogic.gdx.scenes.scene2d.ui.TextButton.TextButtonStyle;
-import com.badlogic.gdx.scenes.scene2d.ui.TextField;
-import com.badlogic.gdx.scenes.scene2d.ui.TextField.TextFieldListener;
-import com.badlogic.gdx.scenes.scene2d.ui.TextField.TextFieldStyle;
-import com.badlogic.gdx.scenes.scene2d.ui.Widget;
-import com.badlogic.gdx.scenes.scene2d.ui.Window;
-import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
-import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
-import com.badlogic.gdx.scenes.scene2d.utils.Drawable;
-import com.badlogic.gdx.scenes.scene2d.utils.Selection;
 import com.badlogic.gdx.utils.Array;
-import com.badlogic.gdx.utils.Json;
-import com.badlogic.gdx.utils.Json.Serializable;
-import com.badlogic.gdx.utils.JsonValue;
 import com.badlogic.gdx.utils.Pools;
 
-/** A {@link TextField} showing the {@link #pathField} of the currently browsed folder with {@link #backButton} and {@link #parentButton} buttons.
- *  There's a {@link #contentsPane scrollable} {@link List} under those showing the contents of the currently browsed folder and {@link #chooseButton} and {@link #cancelButton} buttons.
- *  If {@link #canChooseDirectories directories can be chosen}, a {@link #openButton} button is added so that the user is able to go into folders.
- *  Files can be {@link #fileFilter filtered}.
- *  Use the {@link #listener listener} to get user input.
- *  @author dermetfan */
-public class FileChooser extends Window {
+public abstract class FileChooser extends Table {
 
-	/** called when a file is {@link #chooseButton chosen} or the {@link #cancelButton cancel button} was clicked */
-	private FileChooserListener listener;
-
-	/** the directories that have been visited previously, for the {@link #backButton} */
-	private Array<FileHandle> fileHistory = new Array<FileHandle>();
-
-	/** the current directory */
-	private FileHandle directory = Gdx.files.absolute(Gdx.files.getExternalStoragePath());
-	{
-		fileHistory.add(directory);
-	}
-
-	/** does not {@link FileFilter#accept(File) accept} hidden files if {@link #showHidden} is false and if {@link #fileFilter} is not null and does not accept the file */
-	public final FileFilter handlingFileFilter = new FileFilter() {
-
-		@Override
-		public boolean accept(File file) {
-			return (showHidden || !file.isHidden()) && (fileFilter == null || fileFilter != null && fileFilter.accept(file));
-		}
-
-	};
-
-	/** used to filter the files for {@link #contents} */
-	private FileFilter fileFilter;
-
-	/** if the {@link #chooseButton choose button} should work on folders or go into them */
-	private boolean canChooseDirectories;
-
-	/** if hidden folders and files should be shown */
-	private boolean showHidden;
-
-	/** how long it takes to fade in and out */
-	private float fadeDuration = Dialog.fadeDuration;
-
-	/** @see #pathFieldListener */
-	private TextField pathField;
-
-	/** shows the {@link File#listFiles() children} of current {@link #directory} */
-	private List<String> contents;
-
-	/** makes the {@link #contents} scrollable */
-	private ScrollPane contentsPane;
-
-	/** @see #backButtonListener */
-	private Button backButton;
-
-	/** @see #parentButtonListener */
-	private Button parentButton;
-
-	/** @see #chooseButtonListener */
-	private Button chooseButton;
-
-	/** @see #openButtonListener */
-	private Button openButton;
-
-	/** @see #cancelButtonListener */
-	private Button cancelButton;
-
-	/** if it exists, this open the file at the given {@link FileType#Absolute absolute} path if it is not a folder, {@link #setDirectory(FileHandle) goes into} it otherwise, */
-	public final TextFieldListener pathFieldListener = new TextFieldListener() {
-
-		@Override
-		public void keyTyped(TextField textField, char key) {
-			if(key == '\r' || key == '\n') {
-				FileHandle loc = Gdx.files.absolute(textField.getText());
-				if(loc.exists())
-					if(loc.isDirectory())
-						setDirectory(loc);
-					else if(!listener.choose(loc))
-						hide();
-			}
-		}
-
-	};
-
-	/** {@link FileChooserListener#choose(FileHandle) chooses} the {@link List#getSelection() selected} file in from the {@link #contents} */
-	public final ClickListener chooseButtonListener = new ClickListener() {
-
-		@Override
-		public void clicked(InputEvent event, float x, float y) {
-			Selection<String> selection = contents.getSelection();
-			if(!selection.getMultiple()) {
-				FileHandle selected = directory.child(contents.getSelected());
-				if(!canChooseDirectories && selected.isDirectory())
-					setDirectory(selected);
-				else if(!listener.choose(selected))
-					hide();
-			} else {
-				@SuppressWarnings("unchecked")
-				Array<FileHandle> files = Pools.obtain(Array.class);
-				files.clear();
-				for(String fileName : selection)
-					files.add(directory.child(fileName));
-				if(!listener.choose(files))
-					hide();
-				Pools.free(files);
-			}
-		}
-
-	};
-
-	/** goes into the currently marked folder */
-	public final ClickListener openButtonListener = new ClickListener() {
-
-		@Override
-		public void clicked(InputEvent event, float x, float y) {
-			FileHandle child = directory.child(contents.getSelected());
-			if(child.isDirectory())
-				setDirectory(child);
-		}
-
-	};
-
-	/** {@link #hide() hides} this {@link FileChooser} */
-	public final ClickListener cancelButtonListener = new ClickListener() {
-
-		@Override
-		public void clicked(InputEvent event, float x, float y) {
-			if(!listener.cancel())
-				hide();
-		}
-
-	};
-
-	/** goes back to the {@link #fileHistory previous} {@link #directory} */
-	public final ClickListener backButtonListener = new ClickListener() {
-
-		@Override
-		public void clicked(InputEvent event, float x, float y) {
-			if(fileHistory.size > 1) {
-				fileHistory.removeIndex(fileHistory.size - 1);
-				setDirectory(directory = fileHistory.peek(), false);
-			}
-		}
-
-	};
-
-	/** {@link #setDirectory(FileHandle) sets} {@link #directory} to its {@link FileHandle#parent() parent} */
-	public final ClickListener parentButtonListener = new ClickListener() {
-
-		@Override
-		public void clicked(InputEvent event, float x, float y) {
-			setDirectory(directory.parent());
-		}
-
-	};
-
-	/** {@link Button#setDisabled(boolean) enables/disables} {@link #chooseButton} and {@link #openButton} */
-	public final ChangeListener contentsListener = new ChangeListener() {
-
-		@Override
-		public void changed(ChangeEvent event, Actor actor) {
-			openButton.setDisabled(!directory.child(contents.getSelected()).isDirectory());
-			chooseButton.setDisabled(canChooseDirectories);
-		}
-
-	};
-
-	/** @see Window#Window(String, Skin, String) */
-	public FileChooser(FileChooserListener listener, String title, Skin skin, String styleName) {
-		this(listener, title, skin.get(styleName, FileChooserStyle.class));
-		setSkin(skin);
-	}
-
-	/** @see Window#Window(String, Skin) */
-	public FileChooser(FileChooserListener listener, String title, Skin skin) {
-		this(listener, title, skin.get(FileChooserStyle.class));
-		setSkin(skin);
-	}
-
-	/** @see Window#Window(String, WindowStyle) */
-	public FileChooser(FileChooserListener listener, String title, FileChooserStyle style) {
-		super(title, style);
-		this.listener = listener;
-
-		(pathField = new TextField(directory.path(), style.pathFieldStyle)).setTextFieldListener(pathFieldListener);
-		contents = new List<String>(style.contentsStyle);
-		contents.setItems(new String[] {directory.name()});
-		contents.addListener(contentsListener);
-
-		(chooseButton = Scene2dUtils.newButton(style.chooseButtonStyle, "select")).addListener(chooseButtonListener);
-		(openButton = Scene2dUtils.newButton(style.openButtonStyle, "open")).addListener(openButtonListener);
-		(cancelButton = Scene2dUtils.newButton(style.cancelButtonStyle, "cancel")).addListener(cancelButtonListener);
-		(backButton = Scene2dUtils.newButton(style.backButtonStyle, "back")).addListener(backButtonListener);
-		(parentButton = Scene2dUtils.newButton(style.parentButtonStyle, "up")).addListener(parentButtonListener);
-
-		contentsPane = style.scrollPaneStyle == null ? new ScrollPane(contents) : new ScrollPane(contents, style.scrollPaneStyle);
-
-		refresh();
-		build();
-	}
-
-	/** Override this if you want to adjust the {@link Table layout}. Clears this {@link FileChooser} and adds {@link #backButton}, {@link #pathField}, {@link #parentButton}, {@link #contentsPane}, {@link #chooseButton}, {@link #cancelButton} and {@link #openButton} if {@link #canChooseDirectories} is true. */
-	protected void build() {
-		clearChildren();
-		FileChooserStyle style = (FileChooserStyle) getStyle();
-		add(backButton).fill().space(style.space);
-		add(pathField).fill().space(style.space);
-		add(parentButton).fill().space(style.space).row();
-		add(contentsPane).colspan(3).expand().fill().space(style.space).row();
-		if(canChooseDirectories)
-			add(openButton).fill().space(style.space);
-		add(chooseButton).fill().colspan(canChooseDirectories ? 1 : 2).space(style.space);
-		add(cancelButton).fill().space(style.space);
-		pack();
-	}
-
-	/** {@link Actions#fadeIn(float) fades in} */
-	public void show() {
-		addAction(Actions.sequence(Actions.alpha(0), Actions.fadeIn(fadeDuration)));
-	}
-
-	/** {@link Actions#fadeOut(float) fades out} and {@link Actions#removeActor() removes} this {@link FileChooser} */
-	public void hide() {
-		addAction(Actions.sequence(Actions.fadeOut(fadeDuration), Actions.removeActor()));
-	}
-
-	/** refreshes the {@link #contents} */
-	public void refresh() {
-		scan(directory);
-	}
-
-	/** populates {@link #contents} with the children of {@link #directory} */
-	protected void scan(FileHandle dir) {
-		File[] files = dir.file().listFiles(handlingFileFilter);
-		String slash = System.getProperty("os.name").contains("Windows") ? "\\" : "/";
-		String[] names = new String[files.length];
-		for(int i = 0; i < files.length; i++) {
-			String name = files[i].getName();
-			if(files[i].isDirectory())
-				name += slash;
-			names[i] = name;
-		}
-		contents.setItems(names);
-	}
-
-	/** set {@link #directory} and adds it to {@link #fileHistory}
-	 *  @see #setDirectory(FileHandle, boolean) */
-	public void setDirectory(FileHandle dir) {
-		setDirectory(dir, true);
-	}
-
-	/** sets {@link #directory} and updates all things that need to be udpated */
-	public void setDirectory(FileHandle dir, boolean addToHistory) {
-		if(dir.file().canRead()) {
-			FileHandle loc = dir.isDirectory() ? dir : dir.parent();
-			if(addToHistory)
-				fileHistory.add(Gdx.files.absolute(dir.path()));
-			scan(directory = loc);
-			pathField.setText(loc.path());
-			pathField.setCursorPosition(pathField.getText().length());
-		} else
-			Gdx.app.error(FileChooser.class.getSimpleName(), " cannot read " + dir);
-	}
-
-	/** @return the {@link #backButton} */
-	public Button getBackButton() {
-		return backButton;
-	}
-
-	/** @param backButton the {@link #backButton} to set */
-	@SuppressWarnings("unchecked")
-	public void setBackButton(Button backButton) {
-		backButton.addListener(backButtonListener);
-		getCell(this.backButton).setWidget(this.backButton = backButton);
-	}
-
-	/** @return the {@link #cancelButton} */
-	public Button getCancelButton() {
-		return cancelButton;
-	}
-
-	/** @param cancelButton the {@link #cancelButton} to set */
-	@SuppressWarnings("unchecked")
-	public void setCancelButton(Button cancelButton) {
-		cancelButton.addListener(cancelButtonListener);
-		getCell(this.cancelButton).setWidget(this.cancelButton = cancelButton);
-	}
-
-	/** @return the {@link #chooseButton} */
-	public Button getChooseButton() {
-		return chooseButton;
-	}
-
-	/** @param chooseButton the {@link #chooseButton} to set */
-	@SuppressWarnings("unchecked")
-	public void setChooseButton(Button chooseButton) {
-		chooseButton.addListener(chooseButtonListener);
-		getCell(this.chooseButton).setWidget(this.chooseButton = chooseButton);
-	}
-
-	/** @return the {@link #contents} */
-	public List<String> getContents() {
-		return contents;
-	}
-
-	/** @param contents the {@link #contents} to set */
-	@SuppressWarnings("unchecked")
-	public void setContents(List<String> contents) {
-		getCell(this.contents).setWidget(this.contents = contents);
-	}
-
-	/** @return the {@link #contentsPane} */
-	public ScrollPane getContentsPane() {
-		return contentsPane;
-	}
-
-	/** @param contentsPane the {@link #contentsPane} to set */
-	@SuppressWarnings("unchecked")
-	public void setContentsPane(ScrollPane contentsPane) {
-		getCell(this.contentsPane).setWidget(this.contentsPane = contentsPane);
-	}
-
-	/** @return the {@link #directory} */
-	public FileHandle getDirectory() {
-		return directory;
-	}
-
-	/** @return the {@link #fileHistory} */
-	public Array<FileHandle> getFileHistory() {
-		return fileHistory;
-	}
-
-	/** @param fileHistory the {@link #fileHistory} to set */
-	public void setFileHistory(Array<FileHandle> fileHistory) {
-		this.fileHistory = fileHistory;
-	}
-
-	/** @return the {@link #fileFilter} */
-	public FileFilter getFileFilter() {
-		return fileFilter;
-	}
-
-	/** @param fileFilter the {@link #fileFilter} to set */
-	public void setFileFilter(FileFilter fileFilter) {
-		this.fileFilter = fileFilter;
-	}
-
-	/** @return the {@link #fadeDuration} */
-	public float getFadeDuration() {
-		return fadeDuration;
-	}
-
-	/** @param fadeDuration the {@link #fadeDuration} to set */
-	public void setFadeDuration(float fadeDuration) {
-		this.fadeDuration = fadeDuration;
-	}
-
-	/** @return the {@link #openButton} */
-	public Button getOpenButton() {
-		return openButton;
-	}
-
-	/** @param openButton the {@link #openButton} to set */
-	@SuppressWarnings("unchecked")
-	public void setOpenButton(Button openButton) {
-		openButton.addListener(openButtonListener);
-		getCell(this.openButton).setWidget(this.openButton = openButton);
-	}
-
-	/** @return the {@link #parentButton} */
-	public Button getParentButton() {
-		return parentButton;
-	}
-
-	/** @param parentButton the {@link #parentButton} to set */
-	@SuppressWarnings("unchecked")
-	public void setParentButton(Button parentButton) {
-		parentButton.addListener(parentButtonListener);
-		getCell(parentButton).setWidget(this.parentButton = parentButton);
-	}
-
-	/** @return the {@link #showHidden} */
-	public boolean isShowHidden() {
-		return showHidden;
-	}
-
-	/** @param showHidden the {@link #showHidden} to set */
-	public void setShowHidden(boolean showHidden) {
-		this.showHidden = showHidden;
-	}
-
-	/** @return the {@link #pathField} */
-	public TextField getPathField() {
-		return pathField;
-	}
-
-	/** @param pathField the {@link #pathField} to set */
-	public void setPathField(TextField pathField) {
-		pathField.setTextFieldListener(pathFieldListener);
-	}
-
-	/** @return the {@link #listener} */
-	public FileChooserListener getListener() {
-		return listener;
-	}
-
-	/** @param listener the {@link #listener} to set */
-	public void setListener(FileChooserListener listener) {
-		if(listener == null)
-			throw new IllegalArgumentException("listener must not be null");
-		this.listener = listener;
-	}
-
-	/** @return the {@link #canChooseDirectories} */
-	public boolean isCanChooseDirectories() {
-		return canChooseDirectories;
-	}
-
-	/** @param canChooseDirectories the {@link #canChooseDirectories} to set */
-	public void setCanChooseDirectories(boolean canChooseDirectories) {
-		if(this.canChooseDirectories != canChooseDirectories) {
-			this.canChooseDirectories = canChooseDirectories;
-			build();
-		}
-	}
-
-	/** called by a {@link FileChooser}
+	/** called by a {@link ListFileChooser}
 	 *  @author dermetfan */
-	public static interface FileChooserListener {
+	public static interface Listener {
 
 		/** @return if the selection should be rejected */
 		public boolean choose(FileHandle file);
@@ -496,164 +27,57 @@ public class FileChooser extends Window {
 
 	}
 
-	/** defines styles for the {@link Widget Widgets}
-	 *  @author dermetfan */
-	public static class FileChooserStyle extends WindowStyle implements Serializable {
+	private Listener listener;
 
-		/** the style of {@link #pathField} */
-		public TextFieldStyle pathFieldStyle;
-
-		/** the style of {@link #contents} */
-		public ListStyle contentsStyle;
-
-		/** the styles of the buttons */
-		public ButtonStyle chooseButtonStyle, openButtonStyle, cancelButtonStyle, backButtonStyle, parentButtonStyle;
-
-		/** the spacing between the Widgets */
-		public float space;
-
-		/** optional */
-		public ScrollPaneStyle scrollPaneStyle;
-
-		public FileChooserStyle() {}
-
-		public FileChooserStyle(BitmapFont titleFont, Color titleFontColor, Drawable background) {
-			super(titleFont, titleFontColor, background);
-		}
-
-		public FileChooserStyle(WindowStyle style) {
-			super(style);
-		}
-
-		public FileChooserStyle(WindowStyle style, ButtonStyle buttonStyles) {
-			super(style);
-			setButtonStyles(buttonStyles);
-		}
-
-		public FileChooserStyle(FileChooserStyle style) {
-			super(style);
-			pathFieldStyle = style.pathFieldStyle;
-			contentsStyle = style.contentsStyle;
-			chooseButtonStyle = style.chooseButtonStyle;
-			openButtonStyle = style.openButtonStyle;
-			cancelButtonStyle = style.cancelButtonStyle;
-			backButtonStyle = style.backButtonStyle;
-			parentButtonStyle = style.parentButtonStyle;
-		}
-
-		public FileChooserStyle(WindowStyle windowStyle, TextFieldStyle textFieldStyle, ListStyle listStyle, ButtonStyle buttonStyles) {
-			this(textFieldStyle, listStyle, buttonStyles, buttonStyles, buttonStyles, buttonStyles, buttonStyles, windowStyle.titleFont, windowStyle.titleFontColor, windowStyle.background);
-		}
-
-		public FileChooserStyle(TextFieldStyle textFieldStyle, ListStyle listStyle, ButtonStyle buttonStyles, BitmapFont titleFont, Color titleFontColor, Drawable background) {
-			this(textFieldStyle, listStyle, buttonStyles, buttonStyles, buttonStyles, buttonStyles, buttonStyles, titleFont, titleFontColor, background);
-		}
-
-		public FileChooserStyle(TextFieldStyle textFieldStyle, ListStyle listStyle, ButtonStyle chooseButtonStyle, ButtonStyle openButtonStyle, ButtonStyle cancelButtonStyle, ButtonStyle backButtonStyle, ButtonStyle parentButtonStyle, BitmapFont titleFont, Color titleFontColor, Drawable background) {
-			super(titleFont, titleFontColor, background);
-			pathFieldStyle = textFieldStyle;
-			contentsStyle = listStyle;
-			this.chooseButtonStyle = chooseButtonStyle;
-			this.openButtonStyle = openButtonStyle;
-			this.cancelButtonStyle = cancelButtonStyle;
-			this.backButtonStyle = backButtonStyle;
-			this.parentButtonStyle = parentButtonStyle;
-		}
-
-		/** @param other the {@link FileChooserStyle} to set this instance to (giving all fields the same value) */
-		public void set(FileChooserStyle other) {
-			background = other.background;
-			stageBackground = other.stageBackground;
-			titleFont = other.titleFont;
-			titleFontColor = other.titleFontColor;
-			backButtonStyle = other.backButtonStyle;
-			cancelButtonStyle = other.cancelButtonStyle;
-			chooseButtonStyle = other.chooseButtonStyle;
-			contentsStyle = other.contentsStyle;
-			openButtonStyle = other.openButtonStyle;
-			parentButtonStyle = other.parentButtonStyle;
-			pathFieldStyle = other.pathFieldStyle;
-			scrollPaneStyle = other.scrollPaneStyle;
-			space = other.space;
-		}
-
-		/** @param style the {@link #backButtonStyle}, {@link #cancelButtonStyle}, {@link #chooseButtonStyle}, {@link #openButtonStyle} and {@link #parentButtonStyle} to set */
-		public void setButtonStyles(ButtonStyle style) {
-			chooseButtonStyle = openButtonStyle = cancelButtonStyle = backButtonStyle = parentButtonStyle = style;
-		}
+	protected final FileFilter handlingFileFilter = new FileFilter() {
 
 		@Override
-		public void write(Json json) {
-			json.writeObjectStart("");
-			json.writeFields(this);
-			json.writeObjectEnd();
+		public boolean accept(File file) {
+			return (showHidden || !file.isHidden()) && (fileFilter == null || fileFilter != null && fileFilter.accept(file));
 		}
 
-		@Override
-		public void read(Json json, JsonValue jsonData) {
-			WindowStyle windowStyle = json.readValue("windowStyle", WindowStyle.class, jsonData);
-			if(windowStyle != null) {
-				background = windowStyle.background;
-				stageBackground = windowStyle.stageBackground;
-				titleFont = windowStyle.titleFont;
-				titleFontColor = windowStyle.titleFontColor;
-			}
+	};
 
-			ButtonStyle tmpBS = readButtonStyle("buttonStyles", json, jsonData);
-			setButtonStyles(tmpBS);
-			tmpBS = null;
+	private FileFilter fileFilter;
 
-			tmpBS = readButtonStyle("backButtonStyle", json, jsonData);
-			if(tmpBS != null)
-				backButtonStyle = tmpBS;
-			tmpBS = null;
+	private boolean showHidden = false;
 
-			tmpBS = readButtonStyle("cancelButtonStyle", json, jsonData);
-			if(tmpBS != null)
-				cancelButtonStyle = tmpBS;
-			tmpBS = null;
+	public FileChooser() {}
 
-			tmpBS = readButtonStyle("chooseButtonStyle", json, jsonData);
-			if(tmpBS != null)
-				chooseButtonStyle = tmpBS;
-			tmpBS = null;
+	public FileChooser(Listener listener) {
+		this.listener = listener;
+	}
 
-			tmpBS = readButtonStyle("openButtonStyle", json, jsonData);
-			if(tmpBS != null)
-				openButtonStyle = tmpBS;
-			tmpBS = null;
+	protected abstract void build();
 
-			tmpBS = readButtonStyle("parentButtonStyle", json, jsonData);
-			if(tmpBS != null)
-				parentButtonStyle = tmpBS;
+	/** @return the {@link #listener} */
+	public Listener getListener() {
+		return listener;
+	}
 
-			contentsStyle = json.readValue("contentsStyle", ListStyle.class, jsonData);
-			pathFieldStyle = json.readValue("pathFieldStyle", TextFieldStyle.class, jsonData);
-			scrollPaneStyle = json.readValue("scrollPaneStyle", ScrollPaneStyle.class, jsonData);
-			space = json.readValue("space", float.class, jsonData);
-		}
+	/** @param listener the {@link #listener} to set */
+	public void setListener(Listener listener) {
+		this.listener = listener;
+	}
 
-		/** Tries to load a {@link TextButtonStyle}, then {@link ImageButtonStyle}, then {@link ImageTextButtonStyle} and then {@link ButtonStyle} using {@link Json#readValue(String, Class, JsonValue)} brutally by catching NPEs. Nasty... */
-		protected ButtonStyle readButtonStyle(String name, Json json, JsonValue jsonValue) {
-			try {
-				return json.readValue(name, TextButtonStyle.class, jsonValue);
-			} catch(NullPointerException e) {
-				try {
-					return json.readValue(name, ImageButtonStyle.class, jsonValue);
-				} catch(NullPointerException e1) {
-					try {
-						return json.readValue(name, ImageTextButtonStyle.class, jsonValue);
-					} catch(NullPointerException e2) {
-						try {
-							return json.readValue(name, ButtonStyle.class, jsonValue);
-						} catch(NullPointerException e3) {
-							return null;
-						}
-					}
-				}
-			}
-		}
+	/** @return the {@link #fileFilter} */
+	public FileFilter getFileFilter() {
+		return fileFilter;
+	}
 
+	/** @param fileFilter the {@link #fileFilter} to set */
+	public void setFileFilter(FileFilter fileFilter) {
+		this.fileFilter = fileFilter;
+	}
+
+	/** @return the {@link #showHidden} */
+	public boolean isShowHidden() {
+		return showHidden;
+	}
+
+	/** @param showHidden the {@link #showHidden} to set */
+	public void setShowHidden(boolean showHidden) {
+		this.showHidden = showHidden;
 	}
 
 }
