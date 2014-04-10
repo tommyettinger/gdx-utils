@@ -196,13 +196,6 @@ public class ListFileChooser extends FileChooser {
 
 	};
 
-	public ListFileChooser() {}
-
-	public ListFileChooser(Skin skin) {
-		this(skin.get(Style.class));
-		setSkin(skin);
-	}
-
 	public ListFileChooser(Skin skin, Listener listener) {
 		this(skin.get(Style.class), listener);
 		setSkin(skin);
@@ -211,11 +204,6 @@ public class ListFileChooser extends FileChooser {
 	public ListFileChooser(Skin skin, String styleName, Listener listener) {
 		this(skin.get(styleName, Style.class), listener);
 		setSkin(skin);
-	}
-
-	/** Constructs a new instance without a {@link #listener}. As long as no listener is set crashes may occur! */
-	public ListFileChooser(Style style) {
-		this(style, null);
 	}
 
 	public ListFileChooser(Style style, Listener listener) {
