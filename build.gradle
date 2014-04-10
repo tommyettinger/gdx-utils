@@ -2,7 +2,7 @@ apply plugin: "java"
 apply plugin: "eclipse"
 
 ext {
-	javaVersion = 1.6
+	javaVersion = 1.7
 	libVersion = 197
 	libName = "libgdx-utils"
 	libManifestAttributes = [

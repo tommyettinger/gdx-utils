@@ -14,7 +14,11 @@
 
 package net.dermetfan.utils.libgdx.scene2d;
 
+import java.io.File;
+import java.io.FileFilter;
+
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Group;
@@ -25,8 +29,11 @@ import com.badlogic.gdx.scenes.scene2d.ui.ImageButton;
 import com.badlogic.gdx.scenes.scene2d.ui.ImageButton.ImageButtonStyle;
 import com.badlogic.gdx.scenes.scene2d.ui.ImageTextButton;
 import com.badlogic.gdx.scenes.scene2d.ui.ImageTextButton.ImageTextButtonStyle;
+import com.badlogic.gdx.scenes.scene2d.ui.Label;
+import com.badlogic.gdx.scenes.scene2d.ui.Label.LabelStyle;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton.TextButtonStyle;
+import com.badlogic.gdx.scenes.scene2d.ui.Tree.Node;
 import com.badlogic.gdx.utils.Json;
 import com.badlogic.gdx.utils.JsonValue;
 
@@ -97,6 +104,23 @@ public class Scene2dUtils {
 				}
 			}
 		}
+	}
+
+	public static Node addFileNode(Node parent, FileHandle file, FileFilter filter, LabelStyle labelStyle) { // TODO cancel earlier instead of checking all the children
+		String slash = System.getProperty("os.name").contains("Windows") ? "\\" : "/";
+		String name = file.name();
+		if(file.isDirectory())
+			name += slash;
+
+		Label label = new Label(name, labelStyle);
+		Node node = new Node(label);
+		parent.add(node);
+
+		if(file.isDirectory())
+			for(File child : file.file().listFiles(filter))
+				addFileNode(node, file.child(child.getName()), filter, labelStyle);
+
+		return node;
 	}
 
 }
