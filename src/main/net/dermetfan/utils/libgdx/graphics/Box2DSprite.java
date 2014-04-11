@@ -21,6 +21,7 @@ import static net.dermetfan.utils.libgdx.box2d.Box2DUtils.position;
 import static net.dermetfan.utils.libgdx.box2d.Box2DUtils.width;
 
 import java.util.Comparator;
+import java.util.Iterator;
 
 import net.dermetfan.utils.Accessor;
 
@@ -35,6 +36,7 @@ import com.badlogic.gdx.physics.box2d.Fixture;
 import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.ObjectMap;
+import com.badlogic.gdx.utils.Pools;
 
 /** A {@link Box2DSprite} is a {@link Sprite} with additional drawing information and the abililty to draw itself on a given {@link Body} or {@link Fixture}.
  *  It is supposed to be put in the user data of {@link Fixture Fixtures} or {@link Body Bodies}. The Fixture's user data is recommend though to make use of caching which will increase performance!
@@ -111,15 +113,6 @@ public class Box2DSprite extends Sprite {
 
 	};
 
-	/** a temporary map to store the bodies / fixtures which user data Box2DSprites are in in {@link #draw(Batch, World, boolean)}*/
-	private static final ObjectMap<Box2DSprite, Object> tmpZMap = new ObjectMap<Box2DSprite, Object>(0);
-
-	/** temporary variable used in {@link #draw(Batch, World, boolean)} */
-	private static final Array<Body> tmpBodies = new Array<Body>(0);
-
-	/** temporary variable used in {@link #draw(Batch, World, boolean)} */
-	private static Box2DSprite tmpBox2DSprite;
-
 	/** @see #draw(Batch, World, boolean) */
 	public static void draw(Batch batch, World world) {
 		draw(batch, world, false);
@@ -127,9 +120,41 @@ public class Box2DSprite extends Sprite {
 
 	/** draws all the {@link Box2DSprite Box2DSprites} on the {@link Body} or {@link Fixture} that hold them in their user data in the given {@link World} */
 	public static void draw(Batch batch, World world, boolean sortByZ) {
+		@SuppressWarnings("unchecked")
+		Array<Body> tmpBodies = Pools.obtain(Array.class);
+		Box2DSprite tmpBox2DSprite;
+
 		world.getBodies(tmpBodies);
 
-		if(!sortByZ) {
+		if(sortByZ) {
+			@SuppressWarnings("unchecked")
+			ObjectMap<Box2DSprite, Object> tmpZMap = Pools.obtain(ObjectMap.class);
+			tmpZMap.clear();
+			for(Body body : tmpBodies) {
+				if((tmpBox2DSprite = userDataAccessor.access(body.getUserData())) != null)
+					tmpZMap.put(tmpBox2DSprite, body);
+				for(Fixture fixture : body.getFixtureList())
+					if((tmpBox2DSprite = userDataAccessor.access(fixture.getUserData())) != null)
+						tmpZMap.put(tmpBox2DSprite, fixture);
+			}
+
+			@SuppressWarnings("unchecked")
+			Array<Box2DSprite> tmpKeys = Pools.obtain(Array.class);
+			Iterator<Box2DSprite> keys = tmpZMap.keys();
+			while(keys.hasNext())
+				tmpKeys.add(keys.next());
+			tmpKeys.sort(zComparator);
+			for(Box2DSprite key : tmpKeys) {
+				Object value = tmpZMap.get(key);
+				if(value instanceof Body)
+					key.draw(batch, (Body) value);
+				else
+					key.draw(batch, (Fixture) value);
+			}
+
+			Pools.free(tmpKeys);
+			Pools.free(tmpZMap);
+		} else
 			for(Body body : tmpBodies) {
 				if((tmpBox2DSprite = userDataAccessor.access(body.getUserData())) != null)
 					tmpBox2DSprite.draw(batch, body);
@@ -137,27 +162,8 @@ public class Box2DSprite extends Sprite {
 					if((tmpBox2DSprite = userDataAccessor.access(fixture.getUserData())) != null)
 						tmpBox2DSprite.draw(batch, fixture);
 			}
-			return;
-		}
 
-		for(Body body : tmpBodies) {
-			if((tmpBox2DSprite = userDataAccessor.access(body.getUserData())) != null)
-				tmpZMap.put(tmpBox2DSprite, body);
-			for(Fixture fixture : body.getFixtureList())
-				if((tmpBox2DSprite = userDataAccessor.access(fixture.getUserData())) != null)
-					tmpZMap.put(tmpBox2DSprite, fixture);
-		}
-
-		Array<Box2DSprite> keys = tmpZMap.keys().toArray();
-		keys.sort(zComparator);
-		for(Box2DSprite key : keys) {
-			Object value = tmpZMap.get(key);
-			if(value instanceof Body)
-				key.draw(batch, (Body) value);
-			else
-				key.draw(batch, (Fixture) value);
-		}
-		tmpZMap.clear();
+		Pools.free(tmpBodies);
 	}
 
 	/** draws this {@link Box2DSprite} on the given {@link Fixture} */

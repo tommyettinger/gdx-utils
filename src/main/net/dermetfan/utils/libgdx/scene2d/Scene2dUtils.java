@@ -17,6 +17,8 @@ package net.dermetfan.utils.libgdx.scene2d;
 import java.io.File;
 import java.io.FileFilter;
 
+import net.dermetfan.utils.Accessor;
+
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.math.Vector2;
@@ -30,7 +32,6 @@ import com.badlogic.gdx.scenes.scene2d.ui.ImageButton.ImageButtonStyle;
 import com.badlogic.gdx.scenes.scene2d.ui.ImageTextButton;
 import com.badlogic.gdx.scenes.scene2d.ui.ImageTextButton.ImageTextButtonStyle;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
-import com.badlogic.gdx.scenes.scene2d.ui.Label.LabelStyle;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton.TextButtonStyle;
 import com.badlogic.gdx.scenes.scene2d.ui.Tree.Node;
@@ -106,21 +107,43 @@ public class Scene2dUtils {
 		}
 	}
 
-	public static Node addFileNode(Node parent, FileHandle file, FileFilter filter, LabelStyle labelStyle) { // TODO cancel earlier instead of checking all the children
-		String slash = System.getProperty("os.name").contains("Windows") ? "\\" : "/";
-		String name = file.name();
-		if(file.isDirectory())
-			name += slash;
+	public static Node fileNode(final FileHandle file, final FileFilter filter, final Accessor<Label, FileHandle> labelSupplier, final Accessor<Void, Node> nodeConsumer) {
+		// final String name = file.name() + (file.isDirectory() ? File.separator : ""); // TODO move to a default labelSupplier
+		Label label = labelSupplier.access(file);
+		Node node = null;
+		if(file.isDirectory()) {
+			final Node dummy = new Node(labelSupplier.access(file));
 
-		Label label = new Label(name, labelStyle);
-		Node node = new Node(label);
-		parent.add(node);
+			node = new Node(label) {
 
-		if(file.isDirectory())
-			for(File child : file.file().listFiles(filter))
-				addFileNode(node, file.child(child.getName()), filter, labelStyle);
+				private boolean childrenAdded;
+
+				@Override
+				public void setExpanded(boolean expanded) {
+					if(expanded == isExpanded())
+						return;
+
+					if(expanded && !childrenAdded) {
+						for(File child : file.file().listFiles(filter))
+							fileNode(file.child(child.getName()), filter, labelSupplier, nodeConsumer);
+						childrenAdded = true;
+						remove(dummy);
+					}
+
+					super.setExpanded(expanded);
+				}
+
+			};
+			node.add(dummy);
+
+			if(nodeConsumer != null)
+				nodeConsumer.access(dummy);
+		} else
+			node = new Node(label);
+
+		if(nodeConsumer != null)
+			nodeConsumer.access(node);
 
 		return node;
 	}
-
 }

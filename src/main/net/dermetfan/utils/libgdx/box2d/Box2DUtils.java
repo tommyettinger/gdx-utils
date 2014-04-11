@@ -121,8 +121,8 @@ public abstract class Box2DUtils {
 
 	// shape
 
-	/** @param shape the Shape which vertices to get
-	 *  @return the vertices of the bounding box of the given Shape */
+	/** @param shape the Shape which vertices to get (for circles, the bounding box vertices will be returned)
+	 *  @return the vertices of the given Shape*/
 	private static Vector2[] vertices0(Shape shape) {
 		Vector2[] vertices = null;
 		switch(shape.getType()) {
@@ -150,11 +150,13 @@ public abstract class Box2DUtils {
 			break;
 		case Circle:
 			CircleShape circleShape = (CircleShape) shape;
+			Vector2 position = circleShape.getPosition();
+			float radius = circleShape.getRadius();
 			vertices = new Vector2[4];
-			vertices[0] = new Vector2(circleShape.getPosition().x - circleShape.getRadius(), circleShape.getPosition().y + circleShape.getRadius()); // top left
-			vertices[1] = new Vector2(circleShape.getPosition().x - circleShape.getRadius(), circleShape.getPosition().y - circleShape.getRadius()); // bottom left
-			vertices[2] = new Vector2(circleShape.getPosition().x + circleShape.getRadius(), circleShape.getPosition().y - circleShape.getRadius()); // bottom right
-			vertices[3] = new Vector2(circleShape.getPosition().x + circleShape.getRadius(), circleShape.getPosition().y + circleShape.getRadius()); // top right
+			vertices[0] = new Vector2(position.x - radius, position.y + radius); // top left
+			vertices[1] = new Vector2(position.x - radius, position.y - radius); // bottom left
+			vertices[2] = new Vector2(position.x + radius, position.y - radius); // bottom right
+			vertices[3] = new Vector2(position.x + radius, position.y + radius); // top right
 			break;
 		default:
 			throw new IllegalArgumentException("shapes of the type '" + shape.getType().name() + "' are not supported");
