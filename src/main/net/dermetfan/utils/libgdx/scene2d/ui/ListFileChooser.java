@@ -265,12 +265,11 @@ public class ListFileChooser extends FileChooser {
 	/** populates {@link #contents} with the children of {@link #directory} */
 	protected void scan(FileHandle dir) {
 		File[] files = dir.file().listFiles(handlingFileFilter);
-		String slash = System.getProperty("os.name").contains("Windows") ? "\\" : "/";
 		String[] names = new String[files.length];
 		for(int i = 0; i < files.length; i++) {
 			String name = files[i].getName();
 			if(files[i].isDirectory())
-				name += slash;
+				name += File.separator;
 			names[i] = name;
 		}
 		contents.setItems(names);
