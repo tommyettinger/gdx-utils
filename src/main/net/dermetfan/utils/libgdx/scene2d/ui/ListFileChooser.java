@@ -23,10 +23,8 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
-import com.badlogic.gdx.scenes.scene2d.actions.Actions;
 import com.badlogic.gdx.scenes.scene2d.ui.Button;
 import com.badlogic.gdx.scenes.scene2d.ui.Button.ButtonStyle;
-import com.badlogic.gdx.scenes.scene2d.ui.Dialog;
 import com.badlogic.gdx.scenes.scene2d.ui.List;
 import com.badlogic.gdx.scenes.scene2d.ui.List.ListStyle;
 import com.badlogic.gdx.scenes.scene2d.ui.ScrollPane;
@@ -48,7 +46,7 @@ import com.badlogic.gdx.utils.Pools;
 
 /** A {@link TextField} showing the {@link #pathField} of the currently browsed folder with {@link #backButton} and {@link #parentButton} buttons.
  *  There's a {@link #contentsPane scrollable} {@link List} under those showing the contents of the currently browsed folder and {@link #chooseButton} and {@link #cancelButton} buttons.
- *  If {@link #canChooseDirectories directories can be chosen}, a {@link #openButton} button is added so that the user is able to go into folders.
+ *  If {@link FileChooser#isDirectoriesChoosable() directories can be chosen}, a {@link #openButton} button is added so that the user is able to go into folders.
  *  Files can be {@link #fileFilter filtered}.
  *  Use the {@link #listener listener} to get user input.
  *  @author dermetfan */
@@ -65,12 +63,6 @@ public class ListFileChooser extends FileChooser {
 	{
 		fileHistory.add(directory);
 	}
-
-	/** if the {@link #chooseButton choose button} should work on folders or go into them */
-	private boolean canChooseDirectories;
-
-	/** how long it takes to fade in and out */
-	private float fadeDuration = Dialog.fadeDuration;
 
 	/** @see #pathFieldListener */
 	private TextField pathField;
@@ -106,8 +98,8 @@ public class ListFileChooser extends FileChooser {
 				if(loc.exists())
 					if(loc.isDirectory())
 						setDirectory(loc);
-					else if(!getListener().choose(loc))
-						hide();
+					else
+						getListener().choose(loc);
 			}
 		}
 
@@ -121,18 +113,17 @@ public class ListFileChooser extends FileChooser {
 			Selection<String> selection = contents.getSelection();
 			if(!selection.getMultiple()) {
 				FileHandle selected = directory.child(contents.getSelected());
-				if(!canChooseDirectories && selected.isDirectory())
+				if(!isDirectoriesChoosable() && selected.isDirectory())
 					setDirectory(selected);
-				else if(!getListener().choose(selected))
-					hide();
+				else
+					getListener().choose(selected);
 			} else {
 				@SuppressWarnings("unchecked")
 				Array<FileHandle> files = Pools.obtain(Array.class);
 				files.clear();
 				for(String fileName : selection)
 					files.add(directory.child(fileName));
-				if(!getListener().choose(files))
-					hide();
+				getListener().choose(files);
 				Pools.free(files);
 			}
 		}
@@ -151,13 +142,12 @@ public class ListFileChooser extends FileChooser {
 
 	};
 
-	/** {@link #hide() hides} this {@link ListFileChooser} */
+	/** @see Listener#cancel() */
 	public final ClickListener cancelButtonListener = new ClickListener() {
 
 		@Override
 		public void clicked(InputEvent event, float x, float y) {
-			if(!getListener().cancel())
-				hide();
+			getListener().cancel();
 		}
 
 	};
@@ -191,7 +181,7 @@ public class ListFileChooser extends FileChooser {
 		@Override
 		public void changed(ChangeEvent event, Actor actor) {
 			openButton.setDisabled(!directory.child(contents.getSelected()).isDirectory());
-			chooseButton.setDisabled(canChooseDirectories);
+			chooseButton.setDisabled(isDirectoriesChoosable());
 		}
 
 	};
@@ -232,7 +222,7 @@ public class ListFileChooser extends FileChooser {
 		setBackground(style.background);
 	}
 
-	/** Override this if you want to adjust the {@link Table layout}. Clears this {@link ListFileChooser} and adds {@link #backButton}, {@link #pathField}, {@link #parentButton}, {@link #contentsPane}, {@link #chooseButton}, {@link #cancelButton} and {@link #openButton} if {@link #canChooseDirectories} is true. */
+	/** Override this if you want to adjust the {@link Table layout}. Clears this {@link ListFileChooser}'s children and adds {@link #backButton}, {@link #pathField}, {@link #parentButton}, {@link #contentsPane}, {@link #chooseButton}, {@link #cancelButton} and {@link #openButton} if {@link #isDirectoriesChoosable()} is true. */
 	@Override
 	protected void build() {
 		clearChildren();
@@ -241,20 +231,10 @@ public class ListFileChooser extends FileChooser {
 		add(pathField).fill().space(style.space);
 		add(parentButton).fill().space(style.space).row();
 		add(contentsPane).colspan(3).expand().fill().space(style.space).row();
-		if(canChooseDirectories)
+		if(isDirectoriesChoosable())
 			add(openButton).fill().space(style.space);
-		add(chooseButton).fill().colspan(canChooseDirectories ? 1 : 2).space(style.space);
+		add(chooseButton).fill().colspan(isDirectoriesChoosable() ? 1 : 2).space(style.space);
 		add(cancelButton).fill().space(style.space);
-	}
-
-	/** {@link Actions#fadeIn(float) fades in} */
-	public void show() {
-		addAction(Actions.sequence(Actions.alpha(0), Actions.fadeIn(fadeDuration)));
-	}
-
-	/** {@link Actions#fadeOut(float) fades out} and {@link Actions#removeActor() removes} this {@link ListFileChooser} */
-	public void hide() {
-		addAction(Actions.sequence(Actions.fadeOut(fadeDuration), Actions.removeActor()));
 	}
 
 	/** refreshes the {@link #contents} */
@@ -367,16 +347,6 @@ public class ListFileChooser extends FileChooser {
 		this.fileHistory = fileHistory;
 	}
 
-	/** @return the {@link #fadeDuration} */
-	public float getFadeDuration() {
-		return fadeDuration;
-	}
-
-	/** @param fadeDuration the {@link #fadeDuration} to set */
-	public void setFadeDuration(float fadeDuration) {
-		this.fadeDuration = fadeDuration;
-	}
-
 	/** @return the {@link #openButton} */
 	public Button getOpenButton() {
 		return openButton;
@@ -413,15 +383,11 @@ public class ListFileChooser extends FileChooser {
 		getCell(this.pathField).setWidget(this.pathField = pathField);
 	}
 
-	/** @return the {@link #canChooseDirectories} */
-	public boolean isCanChooseDirectories() {
-		return canChooseDirectories;
-	}
-
-	/** @param canChooseDirectories the {@link #canChooseDirectories} to set */
-	public void setCanChooseDirectories(boolean canChooseDirectories) {
-		if(this.canChooseDirectories != canChooseDirectories) {
-			this.canChooseDirectories = canChooseDirectories;
+	/** {@link #build() builds} if necessary */
+	@Override
+	public void setDirectoriesChoosable(boolean directoriesChoosable) {
+		if(isDirectoriesChoosable() != directoriesChoosable) {
+			super.setDirectoriesChoosable(directoriesChoosable);
 			build();
 		}
 	}
