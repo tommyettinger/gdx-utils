@@ -28,7 +28,6 @@ import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.assets.loaders.FileHandleResolver;
 import com.badlogic.gdx.assets.loaders.resolvers.InternalFileHandleResolver;
 import com.badlogic.gdx.files.FileHandle;
-import com.badlogic.gdx.graphics.g2d.PolygonRegion;
 
 /** An {@link AssetManager} that {@link AssetManager#load(AssetDescriptor) loads} assets from a container class using reflection.
  *  @author dermetfan */
@@ -59,7 +58,6 @@ public class AnnotationAssetManager extends AssetManager {
 	 *  @see AssetManager#setLoader(Class, com.badlogic.gdx.assets.loaders.AssetLoader) */
 	public AnnotationAssetManager(FileHandleResolver resolver) {
 		super(resolver);
-		setLoader(PolygonRegion.class, new PolygonRegionLoader(resolver));
 	}
 
 	/** {@link #load(Field) Loads} all fields in the given {@code container} class if they are annotated with {@link Asset} and {@link Asset#load()} is true.
@@ -118,7 +116,7 @@ public class AnnotationAssetManager extends AssetManager {
 				path = (String) content;
 			else if(content instanceof FileHandle)
 				path = ((FileHandle) content).path();
-		} catch(Exception e) { // IllegalArgumentException | IllegalAccessException
+		} catch(IllegalArgumentException | IllegalAccessException e) {
 			Gdx.app.error(AnnotationAssetManager.class.getSimpleName(), "could not access field \"" + field.getName() + "\"", e);
 		}
 		return path;
@@ -129,7 +127,7 @@ public class AnnotationAssetManager extends AssetManager {
 		if(AssetDescriptor.class.isAssignableFrom(field.getType()))
 			try {
 				return ((AssetDescriptor<?>) field.get(instance)).type;
-			} catch(Exception e) { // IllegalArgumentException | IllegalAccessException
+			} catch(IllegalArgumentException | IllegalAccessException e) {
 				Gdx.app.error(AnnotationAssetManager.class.getSimpleName(), "could not access field \"" + field.getName() + "\"", e);
 			}
 		if(field.isAnnotationPresent(Asset.class))
@@ -143,7 +141,7 @@ public class AnnotationAssetManager extends AssetManager {
 		if(AssetDescriptor.class.isAssignableFrom(field.getType()))
 			try {
 				return ((AssetDescriptor<T>) field.get(instance)).params;
-			} catch(Exception e) { // IllegalArgumentException | IllegalAccessException
+			} catch(IllegalArgumentException | IllegalAccessException e) {
 				Gdx.app.error(AnnotationAssetManager.class.getSimpleName(), "could not access field\"" + field.getName() + "\"", e);
 			}
 		return null;
@@ -174,7 +172,7 @@ public class AnnotationAssetManager extends AssetManager {
 					return (AssetDescriptor<T>) alreadyExistingDescriptor;
 				else
 					return new AssetDescriptor<T>(alreadyExistingDescriptor.file, (Class<T>) type);
-			} catch(Exception e) { // IllegalArgumentException | IllegalAccessException
+			} catch(IllegalArgumentException | IllegalAccessException e) {
 				Gdx.app.error(AnnotationAssetManager.class.getSimpleName(), "couldn't access field \"" + field.getName() + "\"", e);
 			}
 		else
@@ -183,7 +181,7 @@ public class AnnotationAssetManager extends AssetManager {
 					return new AssetDescriptor<T>((String) field.get(instance), (Class<T>) type);
 				else
 					return new AssetDescriptor<T>((FileHandle) field.get(instance), (Class<T>) type);
-			} catch(Exception e) { // IllegalArgumentException | IllegalAccessException
+			} catch(IllegalArgumentException | IllegalAccessException e) {
 				Gdx.app.error(AnnotationAssetManager.class.getSimpleName(), "couldn't access field \"" + field.getName() + "\"", e);
 			}
 		return null;
