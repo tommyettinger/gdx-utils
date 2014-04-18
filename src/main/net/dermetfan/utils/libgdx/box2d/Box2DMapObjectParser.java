@@ -129,8 +129,7 @@ public class Box2DMapObjectParser {
 	private final Vector2 vec2 = new Vector2();
 
 	/** creates a new {@link Box2DMapObjectParser} with the default {@link Aliases} */
-	public Box2DMapObjectParser() {
-	}
+	public Box2DMapObjectParser() {}
 
 	/** creates a new {@link Box2DMapObjectParser} using the given {@link Aliases}
 	 *  @param aliases the {@link #aliases} to use */
@@ -359,7 +358,7 @@ public class Box2DMapObjectParser {
 	public Fixture[] createFixtures(MapObject mapObject, Body body) {
 		Polygon polygon;
 
-		if(!(mapObject instanceof PolygonMapObject) || isConvex(polygon = ((PolygonMapObject) mapObject).getPolygon()))
+		if(!(mapObject instanceof PolygonMapObject) || isConvex(polygon = ((PolygonMapObject) mapObject).getPolygon()) && (!Box2DUtils.checkPreconditions || polygon.getVertices().length <= Box2DUtils.maxPolygonVertices))
 			return new Fixture[] {createFixture(mapObject, body)};
 
 		Polygon[] convexPolygons;
