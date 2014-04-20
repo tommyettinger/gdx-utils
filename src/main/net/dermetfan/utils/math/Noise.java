@@ -14,6 +14,9 @@
 
 package net.dermetfan.utils.math;
 
+import net.dermetfan.utils.Accessor;
+import net.dermetfan.utils.Pair;
+
 import java.util.Random;
 
 /** provides noise algorithms
@@ -75,25 +78,59 @@ public abstract class Noise {
 		return map;
 	}
 
+	/** @see #diamondSquare(int, float, float, boolean, boolean, boolean, Accessor, int, int) */
+	public static float[][] diamondSquare(int n, float smoothness, float range, boolean wrapX, boolean wrapY, Accessor<Float, Pair<Float, Float>> init, int scaleX, int scaleY) {
+		return diamondSquare(n, smoothness, range, wrapX, wrapY, false, init, scaleX, scaleY);
+	}
+
+	/** @see #diamondSquare(int, float, float, boolean, boolean, boolean, float, int, int) */
+	public static float[][] diamondSquare(int n, float smoothness, float range, boolean wrapX, boolean wrapY, int scaleX, int scaleY) {
+		return diamondSquare(n, smoothness, range, wrapX, wrapY, true, Float.NaN, scaleX, scaleY);
+	}
+
+	/** @see #diamondSquare(int, float, float, boolean, boolean, boolean, float, int, int) */
+	public static float[][] diamondSquare(int n, float smoothness, float range, boolean wrapX, boolean wrapY, float init, int scaleX, int scaleY) {
+		return diamondSquare(n, smoothness, range, wrapX, wrapY, false, init, scaleX, scaleY);
+	}
+
+	/** @param init the value to initialize every coordinate with
+	 *  @see #diamondSquare(int, float, float, boolean, boolean, boolean, Accessor, int, int) */
+	public static float[][] diamondSquare(int n, float smoothness, float range, boolean wrapX, boolean wrapY, boolean initializeRandomly, final float init, int scaleX, int scaleY) {
+		return diamondSquare(n, smoothness, range, wrapX, wrapY, initializeRandomly, initializeRandomly ? null : new Accessor<Float, Pair<Float, Float>>() {
+
+			@Override
+			public Float access(Pair<Float, Float> object) {
+				return init;
+			}
+
+		}, scaleX, scaleY);
+	}
+
 	/** generates a height map using the diamond-square algorithm
 	 *  @param n level of detail
-	 *  @param scaleX scale of the x axis
-	 *  @param scaleY scale of the y axis
 	 *  @param range the range used for random values
 	 *  @param smoothness the smoothness of the transitions
 	 *  @param wrapX if the map should wrap on the x axis
 	 *  @param wrapY if the map should wrap on the y axis
 	 *  @param initializeRandomly if init should be ignored to use random values instead
-	 *  @param init the value used to initialize the grid
+	 *  @param init an Accessor that takes the coordinate to be initialized (in a Pair) and returns the value to use for initialization
+	 *  @param scaleX scale of the x axis
+	 *  @param scaleY scale of the y axis
 	 *  @return a height map generated using the diamond-square algorithm */
-	public static float[][] diamondSquare(int n, int scaleX, int scaleY, float smoothness, float range, boolean wrapX, boolean wrapY, boolean initializeRandomly, float init) {
+	private static float[][] diamondSquare(int n, float smoothness, float range, boolean wrapX, boolean wrapY, boolean initializeRandomly, Accessor<Float, Pair<Float, Float>> init, int scaleX, int scaleY) {
+		if(n < 0)
+			throw new IllegalArgumentException("n must be >= 0: " + n);
+		range /= 2; // divide range by two to avoid doing it later for random(-range, range) calls
+
 		int power = (int) Math.pow(2, n), width = scaleX * power + 1, height = scaleY * power + 1, x, y;
 		float map[][] = new float[width][height], avg;
+
+		Pair<Float, Float> coord = new Pair<Float, Float>();
 
 		// seed the grid
 		for(x = 0; x < width; x += power)
 			for(y = 0; y < height; y += power)
-				map[x][y] = initializeRandomly ? random(-range, range) : init;
+				map[x][y] = initializeRandomly ? random(-range, range) : init.access(coord.set(Float.valueOf(x), Float.valueOf(y)));
 
 		for(power /= 2; power > 0; power /= 2, range /= smoothness) {
 			// square step

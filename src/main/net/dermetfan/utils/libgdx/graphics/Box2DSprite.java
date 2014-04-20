@@ -152,6 +152,8 @@ public class Box2DSprite extends Sprite {
 					key.draw(batch, (Fixture) value);
 			}
 
+			tmpKeys.clear();
+			tmpZMap.clear();
 			Pools.free(tmpKeys);
 			Pools.free(tmpZMap);
 		} else
@@ -163,6 +165,7 @@ public class Box2DSprite extends Sprite {
 						tmpBox2DSprite.draw(batch, fixture);
 			}
 
+		tmpBodies.clear();
 		Pools.free(tmpBodies);
 	}
 
