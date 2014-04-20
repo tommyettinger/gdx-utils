@@ -14,15 +14,16 @@
 
 package net.dermetfan.utils.libgdx.scene2d.ui;
 
-import java.io.File;
-
 import net.dermetfan.utils.libgdx.scene2d.Scene2dUtils;
 
 import com.badlogic.gdx.Files.FileType;
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.files.FileHandle;
+import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
+import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.ui.Button;
 import com.badlogic.gdx.scenes.scene2d.ui.Button.ButtonStyle;
 import com.badlogic.gdx.scenes.scene2d.ui.List;
@@ -43,6 +44,8 @@ import com.badlogic.gdx.utils.Json;
 import com.badlogic.gdx.utils.Json.Serializable;
 import com.badlogic.gdx.utils.JsonValue;
 import com.badlogic.gdx.utils.Pools;
+
+import java.io.File;
 
 /** A {@link TextField} showing the {@link #pathField} of the currently browsed folder with {@link #backButton} and {@link #parentButton} buttons.
  *  There's a {@link #contentsPane scrollable} {@link List} under those showing the contents of the currently browsed folder and {@link #chooseButton} and {@link #cancelButton} buttons.
@@ -95,11 +98,13 @@ public class ListFileChooser extends FileChooser {
 		public void keyTyped(TextField textField, char key) {
 			if(key == '\r' || key == '\n') {
 				FileHandle loc = Gdx.files.absolute(textField.getText());
-				if(loc.exists())
+				if(loc.exists()) {
 					if(loc.isDirectory())
 						setDirectory(loc);
 					else
 						getListener().choose(loc);
+					getStage().setKeyboardFocus(ListFileChooser.this);
+				}
 			}
 		}
 
@@ -112,7 +117,7 @@ public class ListFileChooser extends FileChooser {
 		public void clicked(InputEvent event, float x, float y) {
 			Selection<String> selection = contents.getSelection();
 			if(!selection.getMultiple()) {
-				FileHandle selected = directory.child(contents.getSelected());
+				FileHandle selected = currentlySelected();
 				if(!isDirectoriesChoosable() && selected.isDirectory())
 					setDirectory(selected);
 				else
@@ -135,7 +140,7 @@ public class ListFileChooser extends FileChooser {
 
 		@Override
 		public void clicked(InputEvent event, float x, float y) {
-			FileHandle child = directory.child(contents.getSelected());
+			FileHandle child = currentlySelected();
 			if(child.isDirectory())
 				setDirectory(child);
 		}
@@ -180,8 +185,50 @@ public class ListFileChooser extends FileChooser {
 
 		@Override
 		public void changed(ChangeEvent event, Actor actor) {
-			openButton.setDisabled(!directory.child(contents.getSelected()).isDirectory());
+			openButton.setDisabled(!currentlySelected().isDirectory());
 			chooseButton.setDisabled(isDirectoriesChoosable());
+		}
+
+	};
+
+	/** key controls of {@link #contents} */
+	public final InputListener keyControlsListener = new InputListener() {
+
+		@Override
+		public boolean keyTyped(InputEvent event, char c) {
+			if(event.isHandled())
+				return true;
+
+			if(getStage().getKeyboardFocus() != pathField && (c == '\r' || c == 'n')) {
+				if(currentlySelected().isDirectory())
+					openButtonListener.clicked(null, 0, 0); // fake event
+				else
+					chooseButtonListener.clicked(null, 0, 0); // fake event
+				return true;
+			}
+
+			int keyCode = event.getKeyCode();
+
+			if(keyCode == Keys.DEL) {
+				backButtonListener.clicked(null, 0, 0); // fake event
+				return true;
+			} else if(keyCode == Keys.LEFT) {
+				parentButtonListener.clicked(null, 0, 0); // fake event
+				return true;
+			}
+
+			int direction;
+			if(keyCode == Keys.UP)
+				direction = -1;
+			else if(keyCode == Keys.DOWN)
+				direction = 1;
+			else
+				return false;
+
+			int newIndex = contents.getSelectedIndex() + direction;
+			newIndex = MathUtils.clamp(newIndex, 0, contents.getItems().size - 1);
+			contents.setSelectedIndex(newIndex);
+			return true;
 		}
 
 	};
@@ -206,6 +253,8 @@ public class ListFileChooser extends FileChooser {
 
 	/** Override this if you want to adjust all the Widgets. Be careful though! */
 	protected void buildWidgets() {
+		addListener(keyControlsListener);
+
 		(pathField = new TextField(directory.path(), style.pathFieldStyle)).setTextFieldListener(pathFieldListener);
 		contents = new List<String>(style.contentsStyle);
 		contents.setItems(new String[] {directory.name()});
@@ -253,6 +302,12 @@ public class ListFileChooser extends FileChooser {
 			names[i] = name;
 		}
 		contents.setItems(names);
+	}
+
+	/** @return the file currently selected in {@link #contents} */
+	public FileHandle currentlySelected() {
+		String selected = contents.getSelected();
+		return selected == null ? directory : directory.child(selected);
 	}
 
 	/** set {@link #directory} and adds it to {@link #fileHistory}
