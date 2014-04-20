@@ -49,14 +49,22 @@ allprojects {
 	}
 	
 	task archiveDocs(type: Jar, dependsOn: javadoc) {
-		from "build/docs/javadoc"
+		from javadoc.destinationDir
 		baseName = libName
 		appendix = "javadoc"
 		destinationDir = jar.destinationDir
 		manifest.attributes += libManifestAttributes
 	}
 	
-	task full(dependsOn: [build, archiveSources, archiveDocs])
+	task archiveAll(type: Zip, dependsOn: [build, archiveSources, archiveDocs]) {
+		from archiveSources.destinationDir
+		from "LICENSE"
+		from "RELEASE NOTES"
+		destinationDir = file "build/tmp/archiveAll"
+		baseName = libName
+		doLast { archivePath.renameTo(jar.destinationDir.path + "/" + archiveName) }
+	}
+	
 }
 
 project(":box2d") {
@@ -67,4 +75,5 @@ project(":box2d") {
 	jar.appendix = name
 	archiveSources.baseName += "-" + name
 	archiveDocs.baseName += "-" + name
+	archiveAll.baseName += "-" + name
 }
