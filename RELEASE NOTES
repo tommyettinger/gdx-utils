@@ -1,3 +1,6 @@
++++ 215 +++
+divided project in a root and subproject because box2d was moved to an extension
+
 +++ 197 +++
 added Box2DUtils#split(..) (splits bodies, fixtures and shapes)
 
