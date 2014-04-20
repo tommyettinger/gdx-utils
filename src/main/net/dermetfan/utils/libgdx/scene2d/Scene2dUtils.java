@@ -71,7 +71,7 @@ public class Scene2dUtils {
 		return tmp;
 	}
 
-	/** @see #newButton(String, ButtonStyle) */
+	/** @see #newButton(ButtonStyle, String) */
 	public static Button newButton(ButtonStyle style) {
 		return newButton(style, "");
 	}
