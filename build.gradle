@@ -21,7 +21,7 @@ allprojects {
 	sourceCompatibility = javaVersion
 	
 	jar {
-		baseName = "libgdx-utils"
+		baseName = libName
 		manifest.attributes += libManifestAttributes
 	}
 
@@ -73,8 +73,8 @@ project(":box2d") {
 		compile "com.badlogicgames.gdx:gdx-box2d:1.0-SNAPSHOT"
 	}
 	jar.appendix = name
-	archiveSources.baseName += "-" + name
-	archiveDocs.baseName += "-" + name
-	archiveAll.baseName += "-" + name
+	archiveSources.baseName += "-$name"
+	archiveDocs.baseName += "-$name"
+	archiveAll.baseName += "-$name"
 	eclipse.project.name = "$libName-$name"
 }
