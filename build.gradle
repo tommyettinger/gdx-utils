@@ -76,4 +76,5 @@ project(":box2d") {
 	archiveSources.baseName += "-" + name
 	archiveDocs.baseName += "-" + name
 	archiveAll.baseName += "-" + name
+	eclipse.project.name = "$libName-$name"
 }
