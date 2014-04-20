@@ -1,64 +1,70 @@
-apply plugin: "java"
-apply plugin: "eclipse"
+allprojects {
+	ext {
+		javaVersion = 1.7
+		libVersion = 215
+		libName = "libgdx-utils"
+		libManifestAttributes = [
+			"web": "http://dermetfan.net/",
+			"repository": "http://bitbucket.org/dermetfan/libgdx-utils",
+			"version": libVersion
+		]
+	}
+	
+	apply plugin: "java"
+	apply plugin: "eclipse"
+	
+	sourceSets {
+		main.java.srcDirs = ["src/main"]
+		test.java.srcDirs = ["src/test"]
+	}
+	
+	sourceCompatibility = javaVersion
+	
+	jar {
+		baseName = "libgdx-utils"
+		manifest.attributes += libManifestAttributes
+	}
 
-ext {
-	javaVersion = 1.7
-	libVersion = 197
-	libName = "libgdx-utils"
-	libManifestAttributes = [
-		"web": "http://dermetfan.net/",
-		"repository": "http://bitbucket.org/dermetfan/libgdx-utils",
-		"version": libVersion
-	]
+	javadoc.title = libName
+
+	eclipse.classpath.containers = ["org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-$javaVersion"]
+	
+	dependencies {
+		compile "com.badlogicgames.gdx:gdx:1.0-SNAPSHOT"
+		testCompile "junit:junit:4.11"
+	}
+	
+	repositories {
+		mavenLocal()
+		mavenCentral()
+		maven { url "https://oss.sonatype.org/content/repositories/snapshots/" }
+	}
+	
+	task archiveSources(type: Jar) {
+		from sourceSets.main.java
+		baseName = libName
+		appendix = "sources"
+		destinationDir = jar.destinationDir
+		manifest.attributes += libManifestAttributes
+	}
+	
+	task archiveDocs(type: Jar, dependsOn: javadoc) {
+		from "build/docs/javadoc"
+		baseName = libName
+		appendix = "javadoc"
+		destinationDir = jar.destinationDir
+		manifest.attributes += libManifestAttributes
+	}
+	
+	task full(dependsOn: [build, archiveSources, archiveDocs])
 }
 
-sourceCompatibility = javaVersion
-
-sourceSets.main.java.srcDirs = ["src/main"]
-sourceSets.test.java.srcDirs = ["src/test"]
-
-repositories {
-	mavenLocal()
-	mavenCentral()
-	maven { url "https://oss.sonatype.org/content/repositories/snapshots/" }
-}
-
-dependencies {
-	compile "com.badlogicgames.gdx:gdx:1.0-SNAPSHOT"
-	compile "com.badlogicgames.gdx:gdx-box2d:1.0-SNAPSHOT"
-	testCompile "junit:junit:4.11"
-}
-
-jar.manifest.attributes += libManifestAttributes
-jar.dependsOn check
-
-javadoc.title = libName
-
-eclipse.classpath.containers = ["org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-$javaVersion"]
-
-void distConfig(Zip task) {
-	task.destinationDir = file "build/distributions"
-	task.baseName = libName
-	if(task instanceof Jar)
-		task.manifest.attributes += libManifestAttributes
-}
-
-task distDocs(type: Jar, dependsOn: javadoc) {
-	distConfig tasks.distDocs
-	from "build/docs/javadoc"
-	appendix = "javadoc"
-}
-
-task distSources(type: Jar) {
-	distConfig tasks.distSources
-	from sourceSets.main.java
-	appendix = "sources"
-}
-
-task dist(type: Zip, dependsOn: [jar, distDocs, distSources]) {
-	distConfig tasks.dist
-	from "build/distributions/$baseName-javadoc.jar"
-	from "build/distributions/$baseName-sources.jar"
-	from "build/libs/${baseName}.jar"
-	from "RELEASE NOTES"
+project(":box2d") {
+	dependencies {
+		compile project(":")
+		compile "com.badlogicgames.gdx:gdx-box2d:1.0-SNAPSHOT"
+	}
+	jar.appendix = name
+	archiveSources.baseName += "-" + name
+	archiveDocs.baseName += "-" + name
 }

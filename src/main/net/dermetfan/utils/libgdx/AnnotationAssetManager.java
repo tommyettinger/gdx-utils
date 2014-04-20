@@ -53,8 +53,7 @@ public class AnnotationAssetManager extends AssetManager {
 		this(new InternalFileHandleResolver());
 	}
 
-	/** additionally sets {@link PolygonRegionLoader}
-	 *  @see AssetManager#AssetManager(FileHandleResolver)
+	/** @see AssetManager#AssetManager(FileHandleResolver)
 	 *  @see AssetManager#setLoader(Class, com.badlogic.gdx.assets.loaders.AssetLoader) */
 	public AnnotationAssetManager(FileHandleResolver resolver) {
 		super(resolver);
