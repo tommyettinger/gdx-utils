@@ -14,12 +14,12 @@
 
 package net.dermetfan.utils.math;
 
+import static net.dermetfan.utils.ArrayUtils.wrapIndex;
+
 import net.dermetfan.utils.Accessor;
 import net.dermetfan.utils.Pair;
 
 import java.util.Random;
-
-import static net.dermetfan.utils.ArrayUtils.wrapIndex;
 
 /** provides noise algorithms
  *  @author dermetfan */
@@ -45,36 +45,68 @@ public abstract class Noise {
 		return values;
 	}
 
+	/** @see #midpointDisplacement(int, float, float, boolean, Accessor, int, int) */
+	public static float[][] midpointDisplacement(int n, float smoothness, float range, int scaleX, int scaleY) {
+		return midpointDisplacement(n, range, smoothness, true, null, scaleX, scaleY);
+	}
+
+	/** @see #midpointDisplacement(int, float, float, boolean, Accessor, int, int) */
+	public static float[][] midpointDisplacement(int n, float smoothness, float range, Accessor<Float, Pair<Float, Float>> init, int scaleX, int scaleY) {
+		return midpointDisplacement(n, range, smoothness, false, init, scaleX, scaleY);
+	}
+
+	/** @see #midpointDisplacement(int, float, float, boolean, float, int, int) */
+	public static float[][] midpointDisplacement(int n, float smoothness, float range, final float init, int scaleX, int scaleY) {
+		return midpointDisplacement(n, range, smoothness, false, init, scaleX, scaleY);
+	}
+
+	/** @see #midpointDisplacement(int, float, float, boolean, Accessor, int, int) */
+	public static float[][] midpointDisplacement(int n, float smoothness, float range, boolean initializeRandomly, final float init, int scaleX, int scaleY) {
+		return midpointDisplacement(n, range, smoothness, initializeRandomly, initializeRandomly ? null : new Accessor<Float, Pair<Float, Float>>() {
+
+			@Override
+			public Float access(Pair<Float, Float> object) {
+				return init;
+			}
+
+		}, scaleX, scaleY);
+	}
+
 	/** generates a height map using the midpoint-displacement algorithm
 	 *  @param n level of detail
-	 *  @param scaleX scale of the x axis
-	 *  @param scaleY scale of the y axis
 	 *  @param range the range used for random values
 	 *  @param smoothness the smoothness of the transitions
 	 *  @param initializeRandomly if init should be ignored to use random values instead
-	 *  @param init the value used to initialize the grid
+	 *  @param init an Accessor that takes the coordinate to be initialized (in a Pair) and returns the value to use for initialization
+	 *  @param scaleX scale of the x axis
+	 *  @param scaleY scale of the y axis
 	 *  @return a height map generated using the midpoint-displacement algorithm */
-	public static float[][] midpointDisplacement(int n, int scaleX, int scaleY, float range, float smoothness, boolean initializeRandomly, float init) {
+	private static float[][] midpointDisplacement(int n, float smoothness, float range, boolean initializeRandomly, Accessor<Float, Pair<Float, Float>> init, int scaleX, int scaleY) {
+		if(n < 0)
+			throw new IllegalArgumentException("n must be >= 0: " + n);
+		range /= 2; // divide range by two to avoid doing it later for random(-range, range) calls
+
 		int x, y, power = (int) Math.pow(2, n), width = scaleX * power + 1, height = scaleY * power + 1, step;
 		float[][] map = new float[width][height];
 		boolean sy, sx;
 
+		Pair<Float, Float> coord = new Pair<Float, Float>();
+
 		for(x = 0; x < width; x += power)
 			for(y = 0; y < height; y += power)
-				map[x][y] = initializeRandomly ? random(-range, range) : init;
+				map[x][y] = initializeRandomly ? random(-range, range) : init.access(coord.set(Float.valueOf(x), Float.valueOf(y)));
 
 		for(step = power / 2; step > 0; step /= 2, range /= smoothness) {
 			sx = false;
 			for(x = 0; x < width; x += step, sx = !sx) {
 				sy = false;
 				for(y = 0; y < height; y += step, sy = !sy)
-					if(sx || sy)
-						if(sx && sy)
-							map[x][y] = (map[x - step][y - step] + map[x + step][y - step] + map[x - step][y + step] + map[x + step][y + step]) / 4 + random(-range, range);
-						else if(sx)
-							map[x][y] = (map[x - step][y] + map[x + step][y]) / 2 + random(-range, range);
-						else
-							map[x][y] = (map[x][y - step] + map[x][y + step]) / 2 + random(-range, range);
+					if(sx && sy)
+						map[x][y] = (map[x - step][y - step] + map[x + step][y - step] + map[x - step][y + step] + map[x + step][y + step]) / 4 + random(-range, range);
+					else if(sx)
+						map[x][y] = (map[x - step][y] + map[x + step][y]) / 2 + random(-range, range);
+					else if(sy)
+						map[x][y] = (map[x][y - step] + map[x][y + step]) / 2 + random(-range, range);
 			}
 		}
 		return map;
