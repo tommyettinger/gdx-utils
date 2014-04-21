@@ -41,20 +41,29 @@ import com.badlogic.gdx.utils.JsonValue;
 
 /** provides useful methods for scene2d
  *  @author dermetfan */
-public class Scene2dUtils {
+public class Scene2DUtils {
 
 	/** Some methods return this, so if you get your hands on it make sure to make a copy! This is used internally so it might change unexpectedly. */
 	private static Vector2 tmp = new Vector2();
+
+	/** @param actor the actor which position in stage coordinates to return
+	 *  @return the position of the given actor in the stage coordinate system */
+	public static Vector2 positionInStageCoordinates(Actor actor) {
+		if(actor.hasParent())
+			actor.localToStageCoordinates(tmp.set(0, 0));
+		else
+			tmp.set(actor.getX(), actor.getY());
+		return tmp;
+	}
 
 	/** Adds the given Actor to the given Group at the coordinates relative to the Stage.
 	 *  @param actor the Actor to add to the given Group
 	 *  @param newParent the Group to add the given Actor to */
 	public static void addAtStageCoordinates(Actor actor, Group newParent) {
-		tmp.set(actor.getX(), actor.getY());
-		actor.localToStageCoordinates(tmp);
+		tmp.set(positionInStageCoordinates(actor));
 		newParent.stageToLocalCoordinates(tmp);
-		actor.setPosition(tmp.x, tmp.y);
 		newParent.addActor(actor);
+		actor.setPosition(tmp.x, tmp.y);
 	}
 
 	/** @see #getPointerPosition(Stage, int) */

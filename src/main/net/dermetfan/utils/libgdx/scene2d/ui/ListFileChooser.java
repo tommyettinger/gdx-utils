@@ -14,7 +14,7 @@
 
 package net.dermetfan.utils.libgdx.scene2d.ui;
 
-import net.dermetfan.utils.libgdx.scene2d.Scene2dUtils;
+import net.dermetfan.utils.libgdx.scene2d.Scene2DUtils;
 
 import com.badlogic.gdx.Files.FileType;
 import com.badlogic.gdx.Gdx;
@@ -260,11 +260,11 @@ public class ListFileChooser extends FileChooser {
 		contents.setItems(new String[] {directory.name()});
 		contents.addListener(contentsListener);
 
-		(chooseButton = Scene2dUtils.newButton(style.chooseButtonStyle, "select")).addListener(chooseButtonListener);
-		(openButton = Scene2dUtils.newButton(style.openButtonStyle, "open")).addListener(openButtonListener);
-		(cancelButton = Scene2dUtils.newButton(style.cancelButtonStyle, "cancel")).addListener(cancelButtonListener);
-		(backButton = Scene2dUtils.newButton(style.backButtonStyle, "back")).addListener(backButtonListener);
-		(parentButton = Scene2dUtils.newButton(style.parentButtonStyle, "up")).addListener(parentButtonListener);
+		(chooseButton = Scene2DUtils.newButton(style.chooseButtonStyle, "select")).addListener(chooseButtonListener);
+		(openButton = Scene2DUtils.newButton(style.openButtonStyle, "open")).addListener(openButtonListener);
+		(cancelButton = Scene2DUtils.newButton(style.cancelButtonStyle, "cancel")).addListener(cancelButtonListener);
+		(backButton = Scene2DUtils.newButton(style.backButtonStyle, "back")).addListener(backButtonListener);
+		(parentButton = Scene2DUtils.newButton(style.parentButtonStyle, "up")).addListener(parentButtonListener);
 
 		contentsPane = style.contentsPaneStyle == null ? new ScrollPane(contents) : new ScrollPane(contents, style.contentsPaneStyle);
 
@@ -536,31 +536,31 @@ public class ListFileChooser extends FileChooser {
 
 		@Override
 		public void read(Json json, JsonValue jsonData) {
-			ButtonStyle tmpBS = Scene2dUtils.readButtonStyle("buttonStyles", json, jsonData);
+			ButtonStyle tmpBS = Scene2DUtils.readButtonStyle("buttonStyles", json, jsonData);
 			setButtonStyles(tmpBS);
 			tmpBS = null;
 
-			tmpBS = Scene2dUtils.readButtonStyle("backButtonStyle", json, jsonData);
+			tmpBS = Scene2DUtils.readButtonStyle("backButtonStyle", json, jsonData);
 			if(tmpBS != null)
 				backButtonStyle = tmpBS;
 			tmpBS = null;
 
-			tmpBS = Scene2dUtils.readButtonStyle("cancelButtonStyle", json, jsonData);
+			tmpBS = Scene2DUtils.readButtonStyle("cancelButtonStyle", json, jsonData);
 			if(tmpBS != null)
 				cancelButtonStyle = tmpBS;
 			tmpBS = null;
 
-			tmpBS = Scene2dUtils.readButtonStyle("chooseButtonStyle", json, jsonData);
+			tmpBS = Scene2DUtils.readButtonStyle("chooseButtonStyle", json, jsonData);
 			if(tmpBS != null)
 				chooseButtonStyle = tmpBS;
 			tmpBS = null;
 
-			tmpBS = Scene2dUtils.readButtonStyle("openButtonStyle", json, jsonData);
+			tmpBS = Scene2DUtils.readButtonStyle("openButtonStyle", json, jsonData);
 			if(tmpBS != null)
 				openButtonStyle = tmpBS;
 			tmpBS = null;
 
-			tmpBS = Scene2dUtils.readButtonStyle("parentButtonStyle", json, jsonData);
+			tmpBS = Scene2DUtils.readButtonStyle("parentButtonStyle", json, jsonData);
 			if(tmpBS != null)
 				parentButtonStyle = tmpBS;
 
