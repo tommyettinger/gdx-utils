@@ -8,26 +8,34 @@ allprojects {
 			"repository": "http://bitbucket.org/dermetfan/libgdx-utils",
 			"version": libVersion
 		]
+		displayName = libName + (project != rootProject ? "-$project.name" : "")
 	}
 	
 	apply plugin: "java"
 	apply plugin: "eclipse"
+	apply plugin: "announce"
 	
 	sourceSets {
-		main.java.srcDirs = ["src/main"]
-		test.java.srcDirs = ["src/test"]
+		main {
+			java.srcDir "src/main"
+			resources.srcDir "src/main"
+		}
+		test.java.srcDir "src/test"
 	}
 	
 	sourceCompatibility = javaVersion
 	
 	jar {
-		baseName = libName
+		baseName = displayName
 		manifest.attributes += libManifestAttributes
 	}
 
-	javadoc.title = libName
+	javadoc.title = displayName
 
-	eclipse.classpath.containers = ["org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-$javaVersion"]
+	eclipse {
+		project.name = displayName
+		classpath.containers = ["org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-$javaVersion"]
+	}
 	
 	dependencies {
 		compile "com.badlogicgames.gdx:gdx:1.0-SNAPSHOT"
@@ -40,31 +48,37 @@ allprojects {
 		maven { url "https://oss.sonatype.org/content/repositories/snapshots/" }
 	}
 	
-	task archiveSources(type: Jar) {
+	task distSources(type: Jar) {
 		from sourceSets.main.java
-		baseName = libName
+		from sourceSets.main.resources
+		baseName = displayName
 		appendix = "sources"
 		destinationDir = jar.destinationDir
 		manifest.attributes += libManifestAttributes
+		doLast { announce.local.send(displayName, "v$libVersion sources distributed") }
 	}
 	
-	task archiveDocs(type: Jar, dependsOn: javadoc) {
+	task distDocs(type: Jar, dependsOn: javadoc) {
 		from javadoc.destinationDir
-		baseName = libName
+		baseName = displayName
 		appendix = "javadoc"
 		destinationDir = jar.destinationDir
 		manifest.attributes += libManifestAttributes
+		doLast { announce.local.send(displayName, "v$libVersion docs distributed") }
 	}
 	
-	task archiveAll(type: Zip, dependsOn: [build, archiveSources, archiveDocs]) {
-		from archiveSources.destinationDir
-		from "LICENSE"
-		from "RELEASE NOTES"
-		destinationDir = file "build/tmp/archiveAll"
+	task dist(type: Zip, dependsOn: [build, distSources, distDocs]) {
+		from distSources.destinationDir
+		from distDocs.destinationDir
+		from "$rootDir/LICENSE"
+		from "$rootDir/RELEASE NOTES"
+		destinationDir = file "build/tmp/$name"
 		baseName = libName
-		doLast { archivePath.renameTo(jar.destinationDir.path + "/" + archiveName) }
+		doLast {
+			archivePath.renameTo("$jar.destinationDir.path/$archiveName")
+			announce.local.send(libName, "v$libVersion distributed")
+		}
 	}
-	
 }
 
 project(":box2d") {
@@ -72,9 +86,4 @@ project(":box2d") {
 		compile project(":")
 		compile "com.badlogicgames.gdx:gdx-box2d:1.0-SNAPSHOT"
 	}
-	jar.appendix = name
-	archiveSources.baseName += "-$name"
-	archiveDocs.baseName += "-$name"
-	archiveAll.baseName += "-$name"
-	eclipse.project.name = "$libName-$name"
 }
