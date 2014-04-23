@@ -1,7 +1,8 @@
 allprojects {
 	ext {
 		javaVersion = 1.7
-		libVersion = 215
+		libgdxVersion = "1.0.1-SNAPSHOT"
+		libVersion = 221
 		libName = "libgdx-utils"
 		libManifestAttributes = [
 			"web": "http://dermetfan.net/",
@@ -38,7 +39,7 @@ allprojects {
 	}
 	
 	dependencies {
-		compile "com.badlogicgames.gdx:gdx:1.0-SNAPSHOT"
+		compile "com.badlogicgames.gdx:gdx:$libgdxVersion"
 		testCompile "junit:junit:4.11"
 	}
 	
@@ -84,6 +85,6 @@ allprojects {
 project(":box2d") {
 	dependencies {
 		compile project(":")
-		compile "com.badlogicgames.gdx:gdx-box2d:1.0-SNAPSHOT"
+		compile "com.badlogicgames.gdx:gdx-box2d:$libgdxVersion"
 	}
 }
