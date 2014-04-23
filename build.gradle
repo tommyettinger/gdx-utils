@@ -77,7 +77,7 @@ allprojects {
 		baseName = displayName
 		doLast {
 			archivePath.renameTo("$jar.destinationDir.path/$archiveName")
-			announce.local.send(libName, "v$libVersion distributed")
+			announce.local.send(displayName, "v$libVersion distributed")
 		}
 	}
 }
