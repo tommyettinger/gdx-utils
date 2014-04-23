@@ -74,7 +74,7 @@ allprojects {
 		from "$rootDir/LICENSE"
 		from "$rootDir/RELEASE NOTES"
 		destinationDir = file "build/tmp/$name"
-		baseName = libName
+		baseName = displayName
 		doLast {
 			archivePath.renameTo("$jar.destinationDir.path/$archiveName")
 			announce.local.send(libName, "v$libVersion distributed")
