@@ -1,3 +1,6 @@
++++ 225 +++
+TileAnimator now decides if the frames of an animated tile should be ordered by checking if the ordered/frame property exists in the first place. You could say the ordered and frame properties were merged. This also means that any method that took a frameKey parameter now doesn't anymore.
+
 +++ 215 +++
 divided project in a root and subproject because box2d was moved to an extension
 
