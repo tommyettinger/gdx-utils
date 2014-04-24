@@ -35,7 +35,7 @@ import com.badlogic.gdx.utils.ObjectMap.Entry;
  * 
  *  To define an animation in the map editor, put an animation property in its properties. The value should be the name of the animation, so the TileAnimator will know which tiles are frames of the same animation.<br>
  *  You can put a property with the desired interval for each animation in the properties of the frame that defines the position of the animation on the map. Note that you cannot define a different for each frame since this is not supported by the {@link AnimatedTiledMapTile animated tiles}.<br>
- *  If an animation should have their frames in a specific order, you can set an ordered property to one of the animation's frames. Then, put the number of the order of the frame in each frame's properties.<br>
+ *  If an animation should have their frames in a specific order, you can set an ordered property with the index as value to the frames.<br>
  *  <br>
  *  <u>Example</u><br>
  *  There are the following frames with their properties:
@@ -44,18 +44,17 @@ import com.badlogic.gdx.utils.ObjectMap.Entry;
  *   		one that's actually placed on the map to define the position and properties of its animation<br>
  *   		"animation": "waterfall"<br>
  *   		"interval": "0.33"<br>
- *   		"ordered": ""<br>
- *   		"frame": "1"
+ *   		"ordered": "1"
  *  	</li>
  *  	<li>
  *  		the second frame (not placed on the map)<br>
  *  		"animation": "waterfall"<br>
- *  		"frame": "2"
+ *  		"ordered": "2"
  *  	</li>
  *  	<li>
  *  		the third frame (not placed on the map)<br>
  *  		"animation": "waterfall"<br>
- *  		"frame": "3"
+ *  		"ordered": "3"
  *  	</li>
  *  </ol>
  * 
@@ -67,17 +66,16 @@ public abstract class TileAnimator {
 	 *  @param layer the target {@link TiledMapTileLayer layer}
 	 *  @param animationKey the key used to tell if a tile is a frame
 	 *  @param intervalKey the key used to get the animation interval (duration each frame is displayed)
-	 *  @param orderedKey the key used to tell if the frames of an animation should be ordered
-	 *  @param frameKey the key used to get the frame number of a frame tile in its animation */
-	public static void animateLayer(TiledMapTile[] tiles, TiledMapTileLayer layer, String animationKey, String orderedKey, String frameKey, String intervalKey, float defaultInterval) {
+	 *  @param orderedKey The key used to get the frame number of a frame tile in its animation. If no value is found, the frames won't be ordered. */
+	public static void animateLayer(TiledMapTile[] tiles, TiledMapTileLayer layer, String animationKey, String orderedKey, String intervalKey, float defaultInterval) {
 		ObjectMap<String, Array<StaticTiledMapTile>> animations = filterFrames(tiles, animationKey);
-		sortFrames(animations, orderedKey, frameKey);
+		sortFrames(animations, orderedKey);
 		animateLayer(animations, layer, animationKey, intervalKey, defaultInterval);
 	}
 
 	/** @see #animateLayer(TiledMapTile[], TiledMapTileLayer, String, String, String, String, float) */
-	public static void animateLayer(TiledMapTileSet tiles, TiledMapTileLayer target, String animationKey, String orderedKey, String frameKey, String intervalKey, float defaultInterval) {
-		animateLayer(toTiledMapTileArray(tiles), target, animationKey, orderedKey, frameKey, intervalKey, defaultInterval);
+	public static void animateLayer(TiledMapTileSet tiles, TiledMapTileLayer target, String animationKey, String orderedKey, String intervalKey, float defaultInterval) {
+		animateLayer(toTiledMapTileArray(tiles), target, animationKey, orderedKey, intervalKey, defaultInterval);
 	}
 
 	/** animates the {@link TiledMapTileLayer target layer} using the given animations
@@ -129,33 +127,32 @@ public abstract class TileAnimator {
 
 	/** sorts the frames of the animation that have the orderedKey by their frameKey value
 	 *  @param animations the animations to sort
-	 *  @param orderedKey the key used to tell if an animation should be sorted
 	 *  @param frameKey the key of the frame property
 	 *  @return the animations with sorted frames
 	 *  @see #sortFrames(Array, String) */
-	public static ObjectMap<String, Array<StaticTiledMapTile>> sortFrames(ObjectMap<String, Array<StaticTiledMapTile>> animations, String orderedKey, String frameKey) {
+	public static ObjectMap<String, Array<StaticTiledMapTile>> sortFrames(ObjectMap<String, Array<StaticTiledMapTile>> animations, String orderedKey) {
 		Entry<String, Array<StaticTiledMapTile>> entry;
 		Entries<String, Array<StaticTiledMapTile>> entries = animations.entries();
 		while(entries.hasNext) {
 			entry = entries.next();
 			for(StaticTiledMapTile entryTile : entry.value)
 				if(entryTile.getProperties().containsKey(orderedKey)) {
-					sortFrames(entry.value, frameKey);
+					sortFrames(entry.value, orderedKey);
 					break;
 				}
 		}
 		return animations;
 	}
 
-	/** sorts the frames by their frameKey value
+	/** sorts the frames by their orderedKey value
 	 *  @param frames the frames to sort
-	 *  @param frameKey the key of the frame property */
-	public static void sortFrames(Array<StaticTiledMapTile> frames, final String frameKey) {
+	 *  @param orderedKey the key of the ordered/frame property */
+	public static void sortFrames(Array<StaticTiledMapTile> frames, final String orderedKey) {
 		frames.sort(new Comparator<StaticTiledMapTile>() {
 
 			@Override
 			public int compare(StaticTiledMapTile tile1, StaticTiledMapTile tile2) {
-				int tile1Frame = getProperty(tile1.getProperties(), frameKey, -1), tile2Frame = getProperty(tile2.getProperties(), frameKey, -1);
+				int tile1Frame = getProperty(tile1.getProperties(), orderedKey, -1), tile2Frame = getProperty(tile2.getProperties(), orderedKey, -1);
 				return tile1Frame < tile2Frame ? -1 : tile1Frame > tile2Frame ? 1 : 0;
 			}
 
