@@ -2,7 +2,7 @@ allprojects {
 	ext {
 		javaVersion = 1.7
 		libgdxVersion = "1.0.1-SNAPSHOT"
-		libVersion = 221
+		libVersion = 227
 		libName = "libgdx-utils"
 		libManifestAttributes = [
 			"web": "http://dermetfan.net/",
@@ -12,9 +12,21 @@ allprojects {
 		displayName = libName + (project != rootProject ? "-$project.name" : "")
 	}
 	
+	repositories {
+		mavenLocal()
+		mavenCentral()
+		maven { url "https://oss.sonatype.org/content/repositories/snapshots/" }
+	}
+	
 	apply plugin: "java"
 	apply plugin: "eclipse"
 	apply plugin: "announce"
+	
+	dependencies {
+		testCompile "junit:junit:+"
+	}
+	
+	// java
 	
 	sourceSets {
 		main {
@@ -31,25 +43,26 @@ allprojects {
 		manifest.attributes += libManifestAttributes
 	}
 
-	javadoc.title = displayName
+	javadoc {
+		title = displayName
+		options {
+			memberLevel = JavadocMemberLevel.PACKAGE
+			author true
+			setUse true
+		}
+	}
+
+	// eclipse
 
 	eclipse {
 		project.name = displayName
 		classpath.containers = ["org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-$javaVersion"]
 	}
 	
-	dependencies {
-		compile "com.badlogicgames.gdx:gdx:$libgdxVersion"
-		testCompile "junit:junit:4.11"
-	}
-	
-	repositories {
-		mavenLocal()
-		mavenCentral()
-		maven { url "https://oss.sonatype.org/content/repositories/snapshots/" }
-	}
+	// distribution
 	
 	task distSources(type: Jar) {
+		description = "Assembles a jar archive containing the main sources and resources."
 		from sourceSets.main.java
 		from sourceSets.main.resources
 		baseName = displayName
@@ -59,27 +72,35 @@ allprojects {
 		doLast { announce.local.send(displayName, "v$libVersion sources distributed") }
 	}
 	
-	task distDocs(type: Jar, dependsOn: javadoc) {
+	task distJavadoc(type: Jar, dependsOn: javadoc) {
+		description = "Assembles a jar archive containing the javadoc."
 		from javadoc.destinationDir
 		baseName = displayName
 		appendix = "javadoc"
 		destinationDir = jar.destinationDir
 		manifest.attributes += libManifestAttributes
-		doLast { announce.local.send(displayName, "v$libVersion docs distributed") }
+		doLast { announce.local.send(displayName, "v$libVersion javadoc distributed") }
 	}
 	
-	task dist(type: Zip, dependsOn: [build, distSources, distDocs]) {
+	task dist(type: Zip, dependsOn: [build, distSources, distJavadoc]) {
+		description = "Assembles a zip archive containing the binary, source and javadoc jar archives as well as the LICENSE and RELEASE NOTES files."
 		from distSources.destinationDir
-		from distDocs.destinationDir
+		from distJavadoc.destinationDir
 		from "$rootDir/LICENSE"
 		from "$rootDir/RELEASE NOTES"
-		destinationDir = file "build/tmp/$name"
+		destinationDir = temporaryDir
 		baseName = displayName
 		doLast {
 			archivePath.renameTo("$jar.destinationDir.path/$archiveName")
 			announce.local.send(displayName, "v$libVersion distributed")
 		}
 	}
+	
+	dist.group = distJavadoc.group = distSources.group = "distribution"
+}
+
+dependencies {
+	compile "com.badlogicgames.gdx:gdx:$libgdxVersion"
 }
 
 project(":box2d") {
