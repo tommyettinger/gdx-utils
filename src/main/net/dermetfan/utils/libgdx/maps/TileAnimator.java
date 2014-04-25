@@ -73,7 +73,7 @@ public abstract class TileAnimator {
 		animateLayer(animations, layer, animationKey, intervalKey, defaultInterval);
 	}
 
-	/** @see #animateLayer(TiledMapTile[], TiledMapTileLayer, String, String, String, String, float) */
+	/** @see #animateLayer(TiledMapTile[], TiledMapTileLayer, String, String, String, float) */
 	public static void animateLayer(TiledMapTileSet tiles, TiledMapTileLayer target, String animationKey, String orderedKey, String intervalKey, float defaultInterval) {
 		animateLayer(toTiledMapTileArray(tiles), target, animationKey, orderedKey, intervalKey, defaultInterval);
 	}
@@ -125,9 +125,9 @@ public abstract class TileAnimator {
 		return animations;
 	}
 
-	/** sorts the frames of the animation that have the orderedKey by their frameKey value
+	/** sorts the frames of the animation by their orderedKey value if it exists
 	 *  @param animations the animations to sort
-	 *  @param frameKey the key of the frame property
+	 *  @param orderedKey the key of the frame property
 	 *  @return the animations with sorted frames
 	 *  @see #sortFrames(Array, String) */
 	public static ObjectMap<String, Array<StaticTiledMapTile>> sortFrames(ObjectMap<String, Array<StaticTiledMapTile>> animations, String orderedKey) {
