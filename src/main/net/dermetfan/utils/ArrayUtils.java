@@ -276,6 +276,12 @@ public abstract class ArrayUtils {
 
 	// primitive copies (probably get some generation tool)
 
+	/** @param elements the elements to select from
+	 *  @param start the array index of elements at which to start (may be negative)
+	 *  @param everyXth select every xth of elements
+	 *  @param output The array to put the values in. May be null.
+	 *  @throws IllegalArgumentException if the given output array is not null and smaller than the required length
+	 *  @return the output array or a new array (if output was null) containing everyXth element of the given elements array */
 	public static float[] select(float[] elements, int start, int everyXth, float[] output) {
 		int outputLength = 0;
 		for(int i = start - 1; i < elements.length; i += everyXth)
