@@ -1,7 +1,7 @@
 allprojects {
 	ext {
 		javaVersion = 1.7
-		libgdxVersion = "1.0.1-SNAPSHOT"
+		libgdxVersion = "1.0.2-SNAPSHOT"
 		libVersion = 227
 		libName = "libgdx-utils"
 		libManifestAttributes = [
