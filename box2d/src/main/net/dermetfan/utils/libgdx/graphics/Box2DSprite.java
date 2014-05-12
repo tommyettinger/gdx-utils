@@ -20,11 +20,6 @@ import static net.dermetfan.utils.libgdx.box2d.Box2DUtils.minY;
 import static net.dermetfan.utils.libgdx.box2d.Box2DUtils.position;
 import static net.dermetfan.utils.libgdx.box2d.Box2DUtils.width;
 
-import java.util.Comparator;
-import java.util.Iterator;
-
-import net.dermetfan.utils.Accessor;
-
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.Sprite;
@@ -37,6 +32,10 @@ import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.ObjectMap;
 import com.badlogic.gdx.utils.Pools;
+
+import java.util.Comparator;
+import java.util.Iterator;
+import java.util.function.Function;
 
 /** A {@link Box2DSprite} is a {@link Sprite} with additional drawing information and the abililty to draw itself on a given {@link Body} or {@link Fixture}.
  *  It is supposed to be put in the user data of {@link Fixture Fixtures} or {@link Body Bodies}. The Fixture's user data is recommend though to make use of caching which will increase performance!
@@ -91,17 +90,10 @@ public class Box2DSprite extends Sprite {
 	}
 
 	/** the {@link #userDataAccessor} used by default */
-	public final static Accessor<Box2DSprite, Object> defaultUserDataAccessor = new Accessor<Box2DSprite, Object>() {
+	public final static Function<Object, Box2DSprite> defaultUserDataAccessor = (userData) -> userData instanceof Box2DSprite ? (Box2DSprite) userData : null;
 
-		@Override
-		public Box2DSprite access(Object userData) {
-			return userData instanceof Box2DSprite ? (Box2DSprite) userData : null;
-		}
-
-	};
-
-	/** the {@link Accessor} used to get a {@link Box2DSprite} from the user data of a body or fixture */
-	private static Accessor<Box2DSprite, Object> userDataAccessor = defaultUserDataAccessor;
+	/** the function used to get a {@link Box2DSprite} from the user data of a body or fixture */
+	private static Function<Object, Box2DSprite> userDataAccessor = defaultUserDataAccessor;
 
 	/** a {@link Comparator} used to sort {@link Box2DSprite Box2DSprites} by their {@link Box2DSprite#z z index} in {@link #draw(Batch, World)} */
 	private static Comparator<Box2DSprite> zComparator = new Comparator<Box2DSprite>() {
@@ -131,10 +123,10 @@ public class Box2DSprite extends Sprite {
 			ObjectMap<Box2DSprite, Object> tmpZMap = Pools.obtain(ObjectMap.class);
 			tmpZMap.clear();
 			for(Body body : tmpBodies) {
-				if((tmpBox2DSprite = userDataAccessor.access(body.getUserData())) != null)
+				if((tmpBox2DSprite = userDataAccessor.apply(body.getUserData())) != null)
 					tmpZMap.put(tmpBox2DSprite, body);
 				for(Fixture fixture : body.getFixtureList())
-					if((tmpBox2DSprite = userDataAccessor.access(fixture.getUserData())) != null)
+					if((tmpBox2DSprite = userDataAccessor.apply(fixture.getUserData())) != null)
 						tmpZMap.put(tmpBox2DSprite, fixture);
 			}
 
@@ -158,10 +150,10 @@ public class Box2DSprite extends Sprite {
 			Pools.free(tmpZMap);
 		} else
 			for(Body body : tmpBodies) {
-				if((tmpBox2DSprite = userDataAccessor.access(body.getUserData())) != null)
+				if((tmpBox2DSprite = userDataAccessor.apply(body.getUserData())) != null)
 					tmpBox2DSprite.draw(batch, body);
 				for(Fixture fixture : body.getFixtureList())
-					if((tmpBox2DSprite = userDataAccessor.access(fixture.getUserData())) != null)
+					if((tmpBox2DSprite = userDataAccessor.apply(fixture.getUserData())) != null)
 						tmpBox2DSprite.draw(batch, fixture);
 			}
 
@@ -273,12 +265,12 @@ public class Box2DSprite extends Sprite {
 	}
 
 	/** @return the {@link #userDataAccessor} */
-	public static Accessor<Box2DSprite, ?> getUserDataAccessor() {
+	public static Function<Object, Box2DSprite> getUserDataAccessor() {
 		return userDataAccessor;
 	}
 
 	/** @param userDataAccessor the {@link #userDataAccessor} to set */
-	public static void setUserDataAccessor(Accessor<Box2DSprite, Object> userDataAccessor) {
+	public static void setUserDataAccessor(Function<Object, Box2DSprite> userDataAccessor) {
 		if(userDataAccessor == null)
 			throw new IllegalArgumentException("userDataAccessor must not be null");
 		Box2DSprite.userDataAccessor = userDataAccessor;
