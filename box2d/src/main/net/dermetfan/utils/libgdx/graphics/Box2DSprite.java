@@ -279,9 +279,7 @@ public class Box2DSprite extends Sprite {
 
 	/** @param userDataAccessor the {@link #userDataAccessor} to set */
 	public static void setUserDataAccessor(Accessor<Box2DSprite, Object> userDataAccessor) {
-		if(userDataAccessor == null)
-			throw new IllegalArgumentException("userDataAccessor must not be null");
-		Box2DSprite.userDataAccessor = userDataAccessor;
+		Box2DSprite.userDataAccessor = userDataAccessor != null ? userDataAccessor : defaultUserDataAccessor;
 	}
 
 }
