@@ -96,14 +96,7 @@ public class Box2DSprite extends Sprite {
 	private static Function<Object, Box2DSprite> userDataAccessor = defaultUserDataAccessor;
 
 	/** a {@link Comparator} used to sort {@link Box2DSprite Box2DSprites} by their {@link Box2DSprite#z z index} in {@link #draw(Batch, World)} */
-	private static Comparator<Box2DSprite> zComparator = new Comparator<Box2DSprite>() {
-
-		@Override
-		public int compare(Box2DSprite s1, Box2DSprite s2) {
-			return s1.z - s2.z > 0 ? 1 : s1.z - s2.z < 0 ? -1 : 0;
-		}
-
-	};
+	private static Comparator<Box2DSprite> zComparator = (s1, s2) -> s1.z - s2.z > 0 ? 1 : s1.z - s2.z < 0 ? -1 : 0;
 
 	/** @see #draw(Batch, World, boolean) */
 	public static void draw(Batch batch, World world) {
