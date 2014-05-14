@@ -16,10 +16,10 @@ package net.dermetfan.utils.math;
 
 import static net.dermetfan.utils.ArrayUtils.wrapIndex;
 
-import net.dermetfan.utils.Accessor;
 import net.dermetfan.utils.Pair;
 
 import java.util.Random;
+import java.util.function.Function;
 
 /** provides noise algorithms
  *  @author dermetfan */
@@ -45,13 +45,13 @@ public abstract class Noise {
 		return values;
 	}
 
-	/** @see #midpointDisplacement(int, float, float, boolean, Accessor, int, int) */
+	/** @see #midpointDisplacement(int, float, float, boolean, Function, int, int) */
 	public static float[][] midpointDisplacement(int n, float smoothness, float range, int scaleX, int scaleY) {
 		return midpointDisplacement(n, range, smoothness, true, null, scaleX, scaleY);
 	}
 
-	/** @see #midpointDisplacement(int, float, float, boolean, Accessor, int, int) */
-	public static float[][] midpointDisplacement(int n, float smoothness, float range, Accessor<Float, Pair<Float, Float>> init, int scaleX, int scaleY) {
+	/** @see #midpointDisplacement(int, float, float, boolean, Function, int, int) */
+	public static float[][] midpointDisplacement(int n, float smoothness, float range, Function<Pair<Float, Float>, Float> init, int scaleX, int scaleY) {
 		return midpointDisplacement(n, range, smoothness, false, init, scaleX, scaleY);
 	}
 
@@ -60,16 +60,9 @@ public abstract class Noise {
 		return midpointDisplacement(n, range, smoothness, false, init, scaleX, scaleY);
 	}
 
-	/** @see #midpointDisplacement(int, float, float, boolean, Accessor, int, int) */
+	/** @see #midpointDisplacement(int, float, float, boolean, Function, int, int) */
 	public static float[][] midpointDisplacement(int n, float smoothness, float range, boolean initializeRandomly, final float init, int scaleX, int scaleY) {
-		return midpointDisplacement(n, range, smoothness, initializeRandomly, initializeRandomly ? null : new Accessor<Float, Pair<Float, Float>>() {
-
-			@Override
-			public Float access(Pair<Float, Float> object) {
-				return init;
-			}
-
-		}, scaleX, scaleY);
+		return midpointDisplacement(n, range, smoothness, initializeRandomly, initializeRandomly ? null : (coord) -> init, scaleX, scaleY);
 	}
 
 	/** generates a height map using the midpoint-displacement algorithm
@@ -77,11 +70,11 @@ public abstract class Noise {
 	 *  @param range the range used for random values
 	 *  @param smoothness the smoothness of the transitions
 	 *  @param initializeRandomly if init should be ignored to use random values instead
-	 *  @param init an Accessor that takes the coordinate to be initialized (in a Pair) and returns the value to use for initialization
+	 *  @param init an Function that takes the coordinate to be initialized (in a Pair) and returns the value to use for initialization
 	 *  @param scaleX scale of the x axis
 	 *  @param scaleY scale of the y axis
 	 *  @return a height map generated using the midpoint-displacement algorithm */
-	private static float[][] midpointDisplacement(int n, float smoothness, float range, boolean initializeRandomly, Accessor<Float, Pair<Float, Float>> init, int scaleX, int scaleY) {
+	private static float[][] midpointDisplacement(int n, float smoothness, float range, boolean initializeRandomly, Function<Pair<Float, Float>, Float> init, int scaleX, int scaleY) {
 		if(n < 0)
 			throw new IllegalArgumentException("n must be >= 0: " + n);
 		range /= 2; // divide range by two to avoid doing it later for random(-range, range) calls
@@ -94,7 +87,7 @@ public abstract class Noise {
 
 		for(x = 0; x < width; x += power)
 			for(y = 0; y < height; y += power)
-				map[x][y] = initializeRandomly ? random(-range, range) : init.access(coord.set(Float.valueOf(x), Float.valueOf(y)));
+				map[x][y] = initializeRandomly ? random(-range, range) : init.apply(coord.set(Float.valueOf(x), Float.valueOf(y)));
 
 		for(step = power / 2; step > 0; step /= 2, range /= smoothness) {
 			sx = false;
@@ -112,8 +105,8 @@ public abstract class Noise {
 		return map;
 	}
 
-	/** @see #diamondSquare(int, float, float, boolean, boolean, boolean, Accessor, int, int) */
-	public static float[][] diamondSquare(int n, float smoothness, float range, boolean wrapX, boolean wrapY, Accessor<Float, Pair<Float, Float>> init, int scaleX, int scaleY) {
+	/** @see #diamondSquare(int, float, float, boolean, boolean, boolean, Function, int, int) */
+	public static float[][] diamondSquare(int n, float smoothness, float range, boolean wrapX, boolean wrapY, Function<Pair<Float, Float>, Float> init, int scaleX, int scaleY) {
 		return diamondSquare(n, smoothness, range, wrapX, wrapY, false, init, scaleX, scaleY);
 	}
 
@@ -128,16 +121,9 @@ public abstract class Noise {
 	}
 
 	/** @param init the value to initialize every coordinate with
-	 *  @see #diamondSquare(int, float, float, boolean, boolean, boolean, Accessor, int, int) */
+	 *  @see #diamondSquare(int, float, float, boolean, boolean, boolean, Function, int, int) */
 	public static float[][] diamondSquare(int n, float smoothness, float range, boolean wrapX, boolean wrapY, boolean initializeRandomly, final float init, int scaleX, int scaleY) {
-		return diamondSquare(n, smoothness, range, wrapX, wrapY, initializeRandomly, initializeRandomly ? null : new Accessor<Float, Pair<Float, Float>>() {
-
-			@Override
-			public Float access(Pair<Float, Float> object) {
-				return init;
-			}
-
-		}, scaleX, scaleY);
+		return diamondSquare(n, smoothness, range, wrapX, wrapY, initializeRandomly, initializeRandomly ? null : (coord) -> init, scaleX, scaleY);
 	}
 
 	/** generates a height map using the diamond-square algorithm
@@ -147,11 +133,11 @@ public abstract class Noise {
 	 *  @param wrapX if the map should wrap on the x axis
 	 *  @param wrapY if the map should wrap on the y axis
 	 *  @param initializeRandomly if init should be ignored to use random values instead
-	 *  @param init an Accessor that takes the coordinate to be initialized (in a Pair) and returns the value to use for initialization
+	 *  @param init a Function that takes the coordinate to be initialized (in a Pair) and returns the value to use for initialization
 	 *  @param scaleX scale of the x axis
 	 *  @param scaleY scale of the y axis
 	 *  @return a height map generated using the diamond-square algorithm */
-	private static float[][] diamondSquare(int n, float smoothness, float range, boolean wrapX, boolean wrapY, boolean initializeRandomly, Accessor<Float, Pair<Float, Float>> init, int scaleX, int scaleY) {
+	private static float[][] diamondSquare(int n, float smoothness, float range, boolean wrapX, boolean wrapY, boolean initializeRandomly, Function<Pair<Float, Float>, Float> init, int scaleX, int scaleY) {
 		if(n < 0)
 			throw new IllegalArgumentException("n must be >= 0: " + n);
 		range /= 2; // divide range by two to avoid doing it later for random(-range, range) calls
@@ -164,7 +150,7 @@ public abstract class Noise {
 		// seed the grid
 		for(x = 0; x < width; x += power)
 			for(y = 0; y < height; y += power)
-				map[x][y] = initializeRandomly ? random(-range, range) : init.access(coord.set(Float.valueOf(x), Float.valueOf(y)));
+				map[x][y] = initializeRandomly ? random(-range, range) : init.apply(coord.set(Float.valueOf(x), Float.valueOf(y)));
 
 		for(power /= 2; power > 0; power /= 2, range /= smoothness) {
 			// square step
