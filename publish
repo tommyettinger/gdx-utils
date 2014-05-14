@@ -4,14 +4,6 @@ BT_API=api.bintray.com
 BT_SUBJECT=dermetfan
 BT_REPO=libgdx-utils
 
-subject ( ) {
-	echo "https://$BT_SUBJECT:$BT_API_KEY@$BT_API/content/$BT_SUBJECT"
-}
-
-repo ( ) {
-	echo "`subject`/$BT_REPO"
-}
-
 upload ( ) {
 	FILE=$1
 	BT_PACKAGE=$2
@@ -19,7 +11,7 @@ upload ( ) {
 	BT_FILEPATH=$4
 	BT_PUBLISH=$5
 	
-	curl -T $FILE "`repo`/$BT_PACKAGE/$BT_VERSION/$BT_FILEPATH?publish=$BT_PUBLISH"
+	curl -T $FILE "https://$BT_SUBJECT:$BT_API_KEY@$BT_API/content/$BT_SUBJECT/$BT_REPO/$BT_PACKAGE/$BT_VERSION/$BT_FILEPATH?publish=$BT_PUBLISH"
 }
 
 uploadDir ( ) {
@@ -34,12 +26,15 @@ uploadDir ( ) {
 	done
 }
 
-publish ( ) {
+ensure_version ( ) {
 	BT_PACKAGE=$1
 	BT_VERSION=$2
-	BT_DISCARD=$3
 	
-	curl -X POST "`repo`/$BT_PACKAGE/$BT_VERSION/publish?discard=$BT_DISCARD"
+	if [ -z `curl "https://$BT_SUBJECT:$BT_API_KEY@$BT_API/packages/$BT_SUBJECT/$BT_REPO/$BT_PACKAGE/versions/$BT_VERSION" | grep -o "\"name\":\"[0-9.]*\"" | grep -o "[0-9.]*"` ]
+		then
+			echo "Creating version $BT_VERSION in package $BT_PACKAGE..."
+			curl -X POST "https://$BT_SUBJECT:$BT_API_KEY@$BT_API/packages/$BT_SUBJECT/$BT_REPO/$BT_PACKAGE/versions" -H "Content-Type: application/json" -d "{\"name\": \"$BT_VERSION\", \"desc\": \"`cat RELEASE\ NOTES`\"}"
+	fi
 }
 
 if [ -n "$1" ]
@@ -47,5 +42,11 @@ if [ -n "$1" ]
 		BT_API_KEY=$1
 fi
 
-uploadDir build/libs libgdx-utils `cat VERSION` 1
-uploadDir box2d/build/libs libgdx-utils-box2d `cat box2d/VERSION` 1
+VERSION=`cat VERSION`
+VERSION_BOX2D=`cat box2d/VERSION`
+
+ensure_version libgdx-utils $VERSION
+ensure_version libgdx-utils-box2d $VERSION_BOX2D
+
+uploadDir build/libs libgdx-utils $VERSION 1
+uploadDir box2d/build/libs libgdx-utils-box2d $VERSION_BOX2D 1
