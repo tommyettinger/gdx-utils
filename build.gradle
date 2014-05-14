@@ -2,32 +2,33 @@ allprojects {
 	ext {
 		javaVersion = 1.8
 		libgdxVersion = "1.0.2-SNAPSHOT"
-		libVersion = 227
+		libVersion = new File("$project.projectDir/VERSION").text
 		libName = "libgdx-utils"
 		libManifestAttributes = [
 			"web": "http://dermetfan.net/",
 			"repository": "http://bitbucket.org/dermetfan/libgdx-utils",
+			"download": "https://bintray.com/dermetfan/libgdx-utils"
 			"version": libVersion
 		]
 		displayName = libName + (project != rootProject ? "-$project.name" : "")
 	}
-	
+
 	repositories {
 		mavenLocal()
 		mavenCentral()
 		maven { url "https://oss.sonatype.org/content/repositories/snapshots/" }
 	}
-	
+
 	apply plugin: "java"
 	apply plugin: "eclipse"
 	apply plugin: "announce"
-	
+
 	dependencies {
 		testCompile "junit:junit:+"
 	}
-	
+
 	// java
-	
+
 	sourceSets {
 		main {
 			java.srcDir "src/main"
@@ -35,9 +36,9 @@ allprojects {
 		}
 		test.java.srcDir "src/test"
 	}
-	
+
 	sourceCompatibility = javaVersion
-	
+
 	jar {
 		baseName = displayName
 		manifest.attributes += libManifestAttributes
@@ -51,16 +52,16 @@ allprojects {
 			setUse true
 		}
 	}
-
-	// eclipse
-
+	
+	// IDE integration
+	
 	eclipse {
 		project.name = displayName
 		classpath.containers = ["org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-$javaVersion"]
 	}
-	
+
 	// distribution
-	
+
 	task distSources(type: Jar) {
 		description = "Assembles a jar archive containing the main sources and resources."
 		from sourceSets.main.java
@@ -69,9 +70,9 @@ allprojects {
 		appendix = "sources"
 		destinationDir = jar.destinationDir
 		manifest.attributes += libManifestAttributes
-		doLast { announce.local.send(displayName, "v$libVersion sources distributed") }
+		doLast { announce.local.send "Distributed $displayName", "Sources $libVersion" }
 	}
-	
+
 	task distJavadoc(type: Jar, dependsOn: javadoc) {
 		description = "Assembles a jar archive containing the javadoc."
 		from javadoc.destinationDir
@@ -79,9 +80,9 @@ allprojects {
 		appendix = "javadoc"
 		destinationDir = jar.destinationDir
 		manifest.attributes += libManifestAttributes
-		doLast { announce.local.send(displayName, "v$libVersion javadoc distributed") }
+		doLast { announce.local.send "Distributed $displayName", "Javadoc $libVersion" }
 	}
-	
+
 	task dist(type: Zip, dependsOn: [build, distSources, distJavadoc]) {
 		description = "Assembles a zip archive containing the binary, source and javadoc jar archives as well as the LICENSE and RELEASE NOTES files."
 		from distSources.destinationDir
@@ -92,10 +93,10 @@ allprojects {
 		baseName = displayName
 		doLast {
 			archivePath.renameTo("$jar.destinationDir.path/$archiveName")
-			announce.local.send(displayName, "v$libVersion distributed")
+			announce.local.send "Distributed $displayName", libVersion
 		}
 	}
-	
+
 	dist.group = distJavadoc.group = distSources.group = "distribution"
 }
 
