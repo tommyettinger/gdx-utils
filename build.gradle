@@ -7,6 +7,7 @@ allprojects {
 		libManifestAttributes = [
 			"web": "http://dermetfan.net/",
 			"repository": "http://bitbucket.org/dermetfan/libgdx-utils",
+			"download": "https://bintray.com/dermetfan/libgdx-utils"
 			"version": libVersion
 		]
 		displayName = libName + (project != rootProject ? "-$project.name" : "")
