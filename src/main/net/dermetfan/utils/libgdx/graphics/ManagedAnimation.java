@@ -59,7 +59,7 @@ public interface ManagedAnimation extends Animated<Animation> {
 	}
 
 	/** @return if the animation has finished playing
-	 * 	@see ManagedAnimation#isAnimationFinished(float) */
+	 * 	@see Animation#isAnimationFinished(float) */
 	default boolean isAnimationFinished() {
 		return getAnimated().isAnimationFinished(getTime());
 	}
