@@ -41,16 +41,23 @@ ensure_version ( ) {
 	fi
 }
 
-if [ -n "$1" ]
+DIR=$1
+BT_PACKAGE=$2
+
+if [ -n "$3" ]
 	then
-		BT_API_KEY=$1
+		BT_API_KEY=$3
+fi
+
+if [ -n "$4" ]
+	then
+		BT_PUBLISH=$4
+	else
+		BT_PUBLISH=1
 fi
 
 VERSION=`cat VERSION`
 VERSION_BOX2D=`cat box2d/VERSION`
 
-ensure_version libgdx-utils $VERSION
-ensure_version libgdx-utils-box2d $VERSION_BOX2D
-
-uploadDir build/libs libgdx-utils $VERSION 1
-uploadDir box2d/build/libs libgdx-utils-box2d $VERSION_BOX2D 1
+ensure_version $BT_PACKAGE $VERSION
+uploadDir $DIR $BT_PACKAGE $VERSION $BT_PUBLISH
