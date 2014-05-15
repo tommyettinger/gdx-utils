@@ -1,34 +1,51 @@
+buildscript {
+	repositories {
+		maven { url = "http://jcenter.bintray.com" }
+	}
+	
+	dependencies {
+		classpath "us.carrclan.david.gradle:gradle-site-plugin:0.1.2"
+	}
+}
+
 allprojects {
 	ext {
 		javaVersion = 1.7
+		
 		libgdxVersion = "1.0.2-SNAPSHOT"
-		libVersion = new File("$project.projectDir/VERSION").text
+		
+		libVersion = file("$project.projectDir/VERSION").text
 		libName = "libgdx-utils"
+		libWeb = "dermetfan.net"
+		libAuthor = "dermetfan"
 		libManifestAttributes = [
-			"web": "http://dermetfan.net/",
+			"web": "http://$libWeb",
 			"repository": "http://bitbucket.org/dermetfan/libgdx-utils",
 			"download": "https://bintray.com/dermetfan/libgdx-utils",
 			"version": libVersion
 		]
-		displayName = libName + (project != rootProject ? "-$project.name" : "")
+		
+		nameAppendix = project != rootProject ? project.name : ""
+		nameFull = libName + (nameAppendix.empty ? "" : "-$nameAppendix")
 	}
-
+	
 	repositories {
 		mavenLocal()
 		mavenCentral()
 		maven { url "https://oss.sonatype.org/content/repositories/snapshots/" }
 	}
-
+	
 	apply plugin: "java"
 	apply plugin: "eclipse"
+	apply plugin: "site"
 	apply plugin: "announce"
-
+	
 	dependencies {
 		testCompile "junit:junit:+"
 	}
-
+	
 	// java
-
+	
 	sourceSets {
 		main {
 			java.srcDir "src/main"
@@ -36,16 +53,16 @@ allprojects {
 		}
 		test.java.srcDir "src/test"
 	}
-
+	
 	sourceCompatibility = javaVersion
-
+	
 	jar {
-		baseName = displayName
+		baseName = nameFull
 		manifest.attributes += libManifestAttributes
 	}
-
+	
 	javadoc {
-		title = displayName
+		title = nameFull
 		options {
 			memberLevel = JavadocMemberLevel.PACKAGE
 			author true
@@ -56,48 +73,81 @@ allprojects {
 	// IDE integration
 	
 	eclipse {
-		project.name = displayName
+		project.name = nameFull
 		classpath.containers = ["org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-$javaVersion"]
 	}
-
+	
 	// distribution
-
-	task distSources(type: Jar) {
+	
+	task distSources(type: Jar, group: "distribution") {
 		description = "Assembles a jar archive containing the main sources and resources."
 		from sourceSets.main.java
 		from sourceSets.main.resources
-		baseName = displayName
+		baseName = nameFull
 		appendix = "sources"
 		destinationDir = jar.destinationDir
 		manifest.attributes += libManifestAttributes
-		doLast { announce.local.send "Distributed $displayName", "Sources $libVersion" }
+		doLast { announce.local.send "Distributed $nameFull", "Sources $libVersion" }
 	}
-
-	task distJavadoc(type: Jar, dependsOn: javadoc) {
+	
+	task distJavadoc(type: Jar, dependsOn: javadoc, group: "distribution") {
 		description = "Assembles a jar archive containing the javadoc."
 		from javadoc.destinationDir
-		baseName = displayName
+		baseName = nameFull
 		appendix = "javadoc"
 		destinationDir = jar.destinationDir
 		manifest.attributes += libManifestAttributes
-		doLast { announce.local.send "Distributed $displayName", "Javadoc $libVersion" }
+		doLast { announce.local.send "Distributed $nameFull", "Javadoc $libVersion" }
 	}
-
-	task dist(type: Zip, dependsOn: [build, distSources, distJavadoc]) {
+	
+	task dist(type: Zip, dependsOn: [build, distSources, distJavadoc], group: "distribution") {
 		description = "Assembles a zip archive containing the binary, source and javadoc jar archives as well as the LICENSE and RELEASE NOTES files."
 		from distSources.destinationDir
 		from distJavadoc.destinationDir
 		from "$rootDir/LICENSE"
 		from "$rootDir/RELEASE NOTES"
 		destinationDir = temporaryDir
-		baseName = displayName
+		baseName = nameFull
 		doLast {
 			archivePath.renameTo("$jar.destinationDir.path/$archiveName")
-			announce.local.send "Distributed $displayName", libVersion
+			announce.local.send "Distributed $nameFull", libVersion
 		}
 	}
-
-	dist.group = distJavadoc.group = distSources.group = "distribution"
+	
+	// publish
+	
+	sourceSets.site.resources {
+		srcDir javadoc.destinationDir.parentFile
+		srcDir testReportDir.parentFile
+	}
+	
+	site {
+		url = "ftp://dermetfan.net/$libName${nameAppendix.empty ? '' : '/' + nameAppendix}"
+		authenticationInfo {
+			userName = site_ftp_username
+			password = site_ftp_password
+		}
+	}
+	
+	publishSite {
+		dependsOn javadoc
+		doFirst {
+			baseDir.mkdirs() // workaround issue #2 https://bitbucket.org/davidmc24/gradle-site-plugin/issue/2/publishsite-basedir-is-not-automatically
+			announce.local.send "Publishing ${nameFull}...", "Publishing Javadoc $libVersion to ${url}..."
+		}
+		doLast { announce.local.send "Published $nameFull", "Published Javadoc $libVersion to $url" }
+		group = "publish"
+	}
+	
+	task publishBintray(type: Exec, dependsOn: dist, group: "publish") {
+		description = "Publishes the artifacts to Bintray."
+		executable "$rootProject.projectDir/bintray"
+		args bintray_api_key
+	}
+	
+	task publish(dependsOn: [publishBintray, publishSite], group: "publish") {
+		description = "Meta task for all publish tasks."
+	}
 }
 
 dependencies {
@@ -106,7 +156,7 @@ dependencies {
 
 project(":box2d") {
 	dependencies {
-		compile project(":")
+		compile rootProject
 		compile "com.badlogicgames.gdx:gdx-box2d:$libgdxVersion"
 	}
 }

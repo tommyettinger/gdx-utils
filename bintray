@@ -4,6 +4,10 @@ BT_API=api.bintray.com
 BT_SUBJECT=dermetfan
 BT_REPO=libgdx-utils
 
+api ( ) {
+	echo https://$BT_SUBJECT:$BT_API_KEY@$BT_API
+}
+
 upload ( ) {
 	FILE=$1
 	BT_PACKAGE=$2
@@ -11,7 +15,7 @@ upload ( ) {
 	BT_FILEPATH=$4
 	BT_PUBLISH=$5
 	
-	curl -T $FILE "https://$BT_SUBJECT:$BT_API_KEY@$BT_API/content/$BT_SUBJECT/$BT_REPO/$BT_PACKAGE/$BT_VERSION/$BT_FILEPATH?publish=$BT_PUBLISH"
+	curl -T $FILE `api`/content/$BT_SUBJECT/$BT_REPO/$BT_PACKAGE/$BT_VERSION/$BT_FILEPATH?publish=$BT_PUBLISH
 }
 
 uploadDir ( ) {
@@ -30,10 +34,10 @@ ensure_version ( ) {
 	BT_PACKAGE=$1
 	BT_VERSION=$2
 	
-	if [ -z `curl "https://$BT_SUBJECT:$BT_API_KEY@$BT_API/packages/$BT_SUBJECT/$BT_REPO/$BT_PACKAGE/versions/$BT_VERSION" | grep -o "\"name\":\"[0-9.]*\"" | grep -o "[0-9.]*"` ]
+	if [ -z curl `api`/packages/$BT_SUBJECT/$BT_REPO/$BT_PACKAGE/versions/$BT_VERSION | grep -o "\"name\":\"[0-9.]*\"" | grep -o "[0-9.]*" ]
 		then
 			echo "Creating version $BT_VERSION in package $BT_PACKAGE..."
-			curl -X POST "https://$BT_SUBJECT:$BT_API_KEY@$BT_API/packages/$BT_SUBJECT/$BT_REPO/$BT_PACKAGE/versions" -H "Content-Type: application/json" -d "{\"name\": \"$BT_VERSION\", \"desc\": \"`cat RELEASE\ NOTES`\"}"
+			curl -X POST "`api`/packages/$BT_SUBJECT/$BT_REPO/$BT_PACKAGE/versions" -H "Content-Type: application/json" -d "{\"name\": \"$BT_VERSION\", \"desc\": \"`cat RELEASE\ NOTES`\"}"
 	fi
 }
 
