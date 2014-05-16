@@ -1,8 +1,9 @@
 syntax: glob
 
-*.project
-*.classpath
-.gradle/
+.project
+.classpath
 .settings/
-*bin
-*build
+bin/
+build/
+.gradle/
+gradle/
