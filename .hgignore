@@ -6,4 +6,3 @@ syntax: glob
 bin/
 build/
 .gradle/
-gradle/
