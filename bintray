@@ -34,7 +34,7 @@ ensure_version ( ) {
 	BT_PACKAGE=$1
 	BT_VERSION=$2
 	
-	if [ -z curl `api`/packages/$BT_SUBJECT/$BT_REPO/$BT_PACKAGE/versions/$BT_VERSION | grep -o "\"name\":\"[0-9.]*\"" | grep -o "[0-9.]*" ]
+	if [ -z 'curl `api`/packages/$BT_SUBJECT/$BT_REPO/$BT_PACKAGE/versions/$BT_VERSION | grep -o "\"name\":\"[0-9.]*\"" | grep -o "[0-9.]*"' ]
 		then
 			echo "Creating version $BT_VERSION in package $BT_PACKAGE..."
 			curl -X POST "`api`/packages/$BT_SUBJECT/$BT_REPO/$BT_PACKAGE/versions" -H "Content-Type: application/json" -d "{\"name\": \"$BT_VERSION\", \"desc\": \"`cat RELEASE\ NOTES`\"}"
