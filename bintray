@@ -43,20 +43,19 @@ ensure_version ( ) {
 
 DIR=$1
 BT_PACKAGE=$2
-
-if [ -n "$3" ]
-	then
-		BT_API_KEY=$3
-fi
+VERSION=$3
 
 if [ -n "$4" ]
 	then
-		BT_PUBLISH=$4
+		BT_API_KEY=$4
+fi
+
+if [ -n "$5" ]
+	then
+		BT_PUBLISH=$5
 	else
 		BT_PUBLISH=1
 fi
-
-VERSION=`cat $DIR/VERSION`
 
 ensure_version $BT_PACKAGE $VERSION
 uploadDir $DIR $BT_PACKAGE $VERSION $BT_PUBLISH
