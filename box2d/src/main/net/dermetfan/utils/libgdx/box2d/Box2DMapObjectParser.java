@@ -193,12 +193,48 @@ public class Box2DMapObjectParser {
 		this.aliases = aliases;
 	}
 
+	/** creates a new {@link Box2DMapObjectParser} using the given {@link Listener}
+	 *  @param listener the {@link #listener} to use */
+	public Box2DMapObjectParser(Listener listener) {
+		this.listener = listener;
+	}
+
+	/** creates a new {@link Box2DMapObjectParser} using the given {@link Aliases} and {@link Listener}
+	 *  @param aliases the {@link #aliases}
+	 *  @param listener the {@link #listener} */
+	public Box2DMapObjectParser(Aliases aliases, Listener listener) {
+		this.aliases = aliases;
+		this.listener = listener;
+	}
+
 	/** creates a new {@link Box2DMapObjectParser} using the given {@link Aliases}, {@link #tileWidth} and {@link #tileHeight}
 	 *  @param aliases the {@link #aliases}
 	 *  @param tileWidth the {@link #tileWidth}
 	 *  @param tileHeight the {@link #tileHeight} */
 	public Box2DMapObjectParser(Aliases aliases, float tileWidth, float tileHeight) {
 		this.aliases = aliases;
+		this.tileWidth = tileWidth;
+		this.tileHeight = tileHeight;
+	}
+
+	/** creates a new {@link Box2DMapObjectParser} using the given {@link Listener}, {@link #tileWidth} and {@link #tileHeight}
+	 *  @param listener the {@link #listener}
+	 *  @param tileWidth the {@link #tileWidth}
+	 *  @param tileHeight the {@link #tileHeight} */
+	public Box2DMapObjectParser(Listener listener, float tileWidth, float tileHeight) {
+		this.listener = listener;
+		this.tileWidth = tileWidth;
+		this.tileHeight = tileHeight;
+	}
+
+	/** creates a new {@link Box2DMapObjectParser} using the given {@link Listener}, {@link Aliases}, {@link #tileWidth} and {@link #tileHeight}
+	 * 	@param aliases the {@link #aliases}
+	 *  @param listener the {@link #listener}
+	 *  @param tileWidth the {@link #tileWidth}
+	 *  @param tileHeight the {@link #tileHeight} */
+	public Box2DMapObjectParser(Aliases aliases, Listener listener, float tileWidth, float tileHeight) {
+		this.aliases = aliases;
+		this.listener = listener;
 		this.tileWidth = tileWidth;
 		this.tileHeight = tileHeight;
 	}
@@ -227,6 +263,24 @@ public class Box2DMapObjectParser {
 		this.unitScale = unitScale;
 	}
 
+	/** creates a new {@link Box2DMapObjectParser} using the given {@link Listener} and {@link #unitScale} and sets {@link #ignoreMapUnitScale} to true
+	 *  @param listener the {@link #listener} to use
+	 *  @param unitScale the {@link #unitScale} to use */
+	public Box2DMapObjectParser(Listener listener, float unitScale) {
+		this.listener = listener;
+		this.unitScale = unitScale;
+	}
+
+	/** creates a new {@link Box2DMapObjectParser} using the given {@link Aliases}, {@link Listener} and {@link #unitScale} and sets {@link #ignoreMapUnitScale} to true
+	 *  @param aliases the {@link #aliases} to use
+	 *  @param listener the {@link #listener} to use
+	 *  @param unitScale the {@link #unitScale} to use */
+	public Box2DMapObjectParser(Aliases aliases, Listener listener, float unitScale) {
+		this.aliases = aliases;
+		this.listener = listener;
+		this.unitScale = unitScale;
+	}
+
 	/** creates a new {@link Box2DMapObjectParser} with the given parameters and sets {@link #ignoreMapUnitScale} to true
 	 *  @param aliases the {@link #aliases} to use
 	 *  @param unitScale the {@link #unitScale unitScale} to use
@@ -234,6 +288,34 @@ public class Box2DMapObjectParser {
 	 *  @param tileHeight the {@link #tileHeight} to use */
 	public Box2DMapObjectParser(Aliases aliases, float unitScale, float tileWidth, float tileHeight) {
 		this.aliases = aliases;
+		this.unitScale = unitScale;
+		ignoreMapUnitScale = true;
+		this.tileWidth = tileWidth;
+		this.tileHeight = tileHeight;
+	}
+
+	/** creates a new {@link Box2DMapObjectParser} with the given parameters and sets {@link #ignoreMapUnitScale} to true
+	 *  @param listener the {@link #listener} to use
+	 *  @param unitScale the {@link #unitScale unitScale} to use
+	 *  @param tileWidth the {@link #tileWidth} to use
+	 *  @param tileHeight the {@link #tileHeight} to use */
+	public Box2DMapObjectParser(Listener listener, float unitScale, float tileWidth, float tileHeight) {
+		this.listener = listener;
+		this.unitScale = unitScale;
+		ignoreMapUnitScale = true;
+		this.tileWidth = tileWidth;
+		this.tileHeight = tileHeight;
+	}
+
+	/** creates a new {@link Box2DMapObjectParser} with the given parameters and sets {@link #ignoreMapUnitScale} to true
+	 *  @param aliases the {@link #aliases} to use
+	 *  @param listener the {@link #listener} to use
+	 *  @param unitScale the {@link #unitScale unitScale} to use
+	 *  @param tileWidth the {@link #tileWidth} to use
+	 *  @param tileHeight the {@link #tileHeight} to use */
+	public Box2DMapObjectParser(Listener listener, Aliases aliases, float unitScale, float tileWidth, float tileHeight) {
+		this.aliases = aliases;
+		this.listener = listener;
 		this.unitScale = unitScale;
 		ignoreMapUnitScale = true;
 		this.tileWidth = tileWidth;
