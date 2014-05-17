@@ -335,7 +335,6 @@ public class ListFileChooser extends FileChooser {
 	}
 
 	/** @param backButton the {@link #backButton} to set */
-	@SuppressWarnings("unchecked")
 	public void setBackButton(Button backButton) {
 		backButton.addListener(backButtonListener);
 		getCell(this.backButton).setWidget(this.backButton = backButton);
@@ -347,7 +346,6 @@ public class ListFileChooser extends FileChooser {
 	}
 
 	/** @param cancelButton the {@link #cancelButton} to set */
-	@SuppressWarnings("unchecked")
 	public void setCancelButton(Button cancelButton) {
 		cancelButton.addListener(cancelButtonListener);
 		getCell(this.cancelButton).setWidget(this.cancelButton = cancelButton);
@@ -359,7 +357,6 @@ public class ListFileChooser extends FileChooser {
 	}
 
 	/** @param chooseButton the {@link #chooseButton} to set */
-	@SuppressWarnings("unchecked")
 	public void setChooseButton(Button chooseButton) {
 		chooseButton.addListener(chooseButtonListener);
 		getCell(this.chooseButton).setWidget(this.chooseButton = chooseButton);
@@ -371,7 +368,6 @@ public class ListFileChooser extends FileChooser {
 	}
 
 	/** @param contents the {@link #contents} to set */
-	@SuppressWarnings("unchecked")
 	public void setContents(List<String> contents) {
 		getCell(this.contents).setWidget(this.contents = contents);
 	}
@@ -382,7 +378,6 @@ public class ListFileChooser extends FileChooser {
 	}
 
 	/** @param contentsPane the {@link #contentsPane} to set */
-	@SuppressWarnings("unchecked")
 	public void setContentsPane(ScrollPane contentsPane) {
 		getCell(this.contentsPane).setWidget(this.contentsPane = contentsPane);
 	}
@@ -408,7 +403,6 @@ public class ListFileChooser extends FileChooser {
 	}
 
 	/** @param openButton the {@link #openButton} to set */
-	@SuppressWarnings("unchecked")
 	public void setOpenButton(Button openButton) {
 		openButton.addListener(openButtonListener);
 		getCell(this.openButton).setWidget(this.openButton = openButton);
@@ -420,7 +414,6 @@ public class ListFileChooser extends FileChooser {
 	}
 
 	/** @param parentButton the {@link #parentButton} to set */
-	@SuppressWarnings("unchecked")
 	public void setParentButton(Button parentButton) {
 		parentButton.addListener(parentButtonListener);
 		getCell(this.parentButton).setWidget(this.parentButton = parentButton);
@@ -432,7 +425,6 @@ public class ListFileChooser extends FileChooser {
 	}
 
 	/** @param pathField the {@link #pathField} to set */
-	@SuppressWarnings("unchecked")
 	public void setPathField(TextField pathField) {
 		pathField.setTextFieldListener(pathFieldListener);
 		getCell(this.pathField).setWidget(this.pathField = pathField);
