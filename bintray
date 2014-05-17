@@ -56,8 +56,7 @@ if [ -n "$4" ]
 		BT_PUBLISH=1
 fi
 
-VERSION=`cat VERSION`
-VERSION_BOX2D=`cat box2d/VERSION`
+VERSION=`cat $DIR/VERSION`
 
 ensure_version $BT_PACKAGE $VERSION
 uploadDir $DIR $BT_PACKAGE $VERSION $BT_PUBLISH
