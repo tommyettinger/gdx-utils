@@ -77,7 +77,7 @@ import com.badlogic.gdx.utils.ObjectMap;
  *  To add Fixtures to a Body, add a {@link Aliases#body} property with the same value to each Fixture of a Body.<br>
  *  To create {@link Joint Joints}, add any object to the layer and just put everything needed in its properties. Note that you use the editors unit here which will be converted to Box2D meters automatically using {@link Aliases#unitScale}.
  *  <br>
- *  For more information visit the <a href="https://bitbucket.org/dermetfan/libgdx-utils/wiki/Box2DMapObjectParser">wiki</a>.
+ *  For more information visit the <a href="http://bitbucket.org/dermetfan/libgdx-utils/wiki/Box2DMapObjectParser">wiki</a>.
  *  @author dermetfan */
 public class Box2DMapObjectParser {
 
@@ -89,8 +89,64 @@ public class Box2DMapObjectParser {
 
 	}
 
+	/**	Allows modification of {@link MapObject MapObjects} before they are used to create Box2D objects.<br>
+	 * 	<strong>Note that the map object given to you is the one directly from the map, so if you modify it, you modify the {@link Map} instance! If you want to avoid that, make a copy.</strong><br>
+	 * 	Also listens to Box2D objects that have been created.
+	 * 	@author dermetfan */
+	public static interface Listener {
+
+		/** @param mapObject the map object to create an object from
+		 *  @return the map object to create an object from, null to cancel the creation, the given map object by default */
+		default public MapObject createObject(MapObject mapObject) {
+			return mapObject;
+		}
+
+		/** @param mapObject the map object to create a body from
+		 *  @return the map object to create a body from, null to cancel the creation, the given map object by default */
+		default public MapObject createBody(MapObject mapObject) {
+			return mapObject;
+		}
+
+		/** @param mapObject the map object to create fixtures from
+		 *  @return the map object to create fixtures from, null to cancel the creation, the given map object by default */
+		default public MapObject createFixtures(MapObject mapObject) {
+			return mapObject;
+		}
+
+		/** @param mapObject the map object to create a fixture from
+		 *  @return the map object to create a fixture from, null to cancel the creation, the given map object by default */
+		default public MapObject createFixture(MapObject mapObject) {
+			return mapObject;
+		}
+
+		/** @param mapObject the map object to create a joint from
+		 *  @return the map object to create a joint from, null to cancel the creation, the given map object by default */
+		default public MapObject createJoint(MapObject mapObject) {
+			return mapObject;
+		}
+
+		/** @param body the created body
+		 *  @param mapObject the map object used to create the body */
+		default public void created(Body body, MapObject mapObject) {}
+
+		/** @param fixture the created fixture
+		 *  @param mapObject the map object used to create the fixture */
+		default public void created(Fixture fixture, MapObject mapObject) {}
+
+		/** @param joint the created joint
+		 *  @param mapObject the map object used to create the joint */
+		default public void created(Joint joint, MapObject mapObject) {}
+
+	}
+
 	/** @see Aliases */
 	private Aliases aliases = new Aliases();
+
+	/** the {@link Listener} used by default (does nothing) */
+	public static final Listener defaultListener = new Listener() {};
+
+	/** the {@link Listener} to use ({@link #defaultListener} by default) */
+	private Listener listener = defaultListener;
 
 	/** the unit scale to convert from editor units to Box2D meters */
 	private float unitScale = 1;
@@ -184,7 +240,7 @@ public class Box2DMapObjectParser {
 		this.tileHeight = tileHeight;
 	}
 
-	/** creates the given {@link Map Map's} {@link MapObjects} in the given {@link World}  
+	/** creates the given {@link Map Map's} {@link MapObjects} in the given {@link World}
 	 *  @param world the {@link World} to create the {@link MapObjects} of the given {@link Map} in
 	 *  @param map the {@link Map} which {@link MapObjects} to create in the given {@link World}
 	 *  @return the given {@link World} with the parsed {@link MapObjects} of the given {@link Map} created in it */
@@ -207,7 +263,7 @@ public class Box2DMapObjectParser {
 		return world;
 	}
 
-	/** creates the given {@link MapLayer MapLayer's} {@link MapObjects} in the given {@link World}  
+	/** creates the given {@link MapLayer MapLayer's} {@link MapObjects} in the given {@link World}
 	 *  @param world the {@link World} to create the {@link MapObjects} of the given {@link MapLayer} in
 	 *  @param layer the {@link MapLayer} which {@link MapObjects} to create in the given {@link World}
 	 *  @return the given {@link World} with the parsed {@link MapObjects} of the given {@link MapLayer} created in it */
@@ -248,6 +304,8 @@ public class Box2DMapObjectParser {
 	 *  @see #createBody(World, MapObject)
 	 *  @see #createFixtures(MapObject) */
 	public Body createObject(World world, MapObject object) {
+		if((object = listener.createObject(object)) == null)
+			return null;
 		Body body = createBody(world, object);
 		createFixtures(object, body);
 		return body;
@@ -258,6 +316,9 @@ public class Box2DMapObjectParser {
 	 *  @param mapObject the {@link MapObject} to parse the {@link Body} from
 	 *  @return the {@link Body} created in the given {@link World} from the given {@link MapObject} */
 	public Body createBody(World world, MapObject mapObject) {
+		if(listener.createBody(mapObject) == null)
+			return null;
+
 		MapProperties properties = mapObject.getProperties();
 
 		BodyDef bodyDef = new BodyDef();
@@ -273,6 +334,7 @@ public class Box2DMapObjectParser {
 		body.setUserData(getProperty(properties, aliases.userData, body.getUserData()));
 
 		bodies.put(findAvailableName(mapObject.getName(), bodies), body);
+		listener.created(body, mapObject);
 
 		return body;
 	}
@@ -282,6 +344,9 @@ public class Box2DMapObjectParser {
 	 *  @param body the {@link Body} to create the {@link Fixture Fixtures} on
 	 *  @return the parsed {@link Fixture} */
 	public Fixture createFixture(MapObject mapObject, Body body) {
+		if((mapObject = listener.createFixture(mapObject)) == null)
+			return null;
+
 		MapProperties properties = mapObject.getProperties();
 
 		Shape shape = null;
@@ -347,6 +412,7 @@ public class Box2DMapObjectParser {
 		shape.dispose();
 
 		fixtures.put(findAvailableName(mapObject.getName(), fixtures), fixture);
+		listener.created(fixture, mapObject);
 
 		return fixture;
 	}
@@ -356,6 +422,9 @@ public class Box2DMapObjectParser {
 	 *  @param body the {@link Body} to create the {@link Fixture Fixtures} on
 	 *  @return an array of parsed {@link Fixture Fixtures} */
 	public Fixture[] createFixtures(MapObject mapObject, Body body) {
+		if((mapObject = listener.createFixtures(mapObject)) == null)
+			return null;
+
 		Polygon polygon;
 
 		if(!(mapObject instanceof PolygonMapObject) || isConvex(polygon = ((PolygonMapObject) mapObject).getPolygon()) && (!Box2DUtils.checkPreconditions || polygon.getVertices().length <= Box2DUtils.maxPolygonVertices))
@@ -423,6 +492,9 @@ public class Box2DMapObjectParser {
 	 *  @param mapObject the {@link Joint} to parse
 	 *  @return the parsed {@link Joint} */
 	public Joint createJoint(MapObject mapObject) {
+		if((mapObject = listener.createJoint(mapObject)) == null)
+			return null;
+
 		MapProperties properties = mapObject.getProperties();
 
 		JointDef jointDef = null;
@@ -508,6 +580,7 @@ public class Box2DMapObjectParser {
 		joint.setUserData(getProperty(properties, aliases.userData, joint.getUserData()));
 
 		joints.put(findAvailableName(mapObject.getName(), joints), joint);
+		listener.created(joint, mapObject);
 
 		return joint;
 	}
@@ -758,6 +831,16 @@ public class Box2DMapObjectParser {
 	/** @param aliases the {@link Aliases} to set */
 	public void setAliases(Aliases aliases) {
 		this.aliases = aliases;
+	}
+
+	/** @return the {@link #listener} */
+	public Listener getListener() {
+		return listener;
+	}
+
+	/** @param listener the {@link #listener} to set */
+	public void setListener(Listener listener) {
+		this.listener = listener != null ? listener : defaultListener;
 	}
 
 	/** @return the parsed {@link #bodies} */
