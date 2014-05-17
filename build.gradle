@@ -16,11 +16,10 @@ allprojects {
 		
 		libVersion = file("$rootProject.projectDir/VERSION").text
 		libName = "libgdx-utils"
-		libWeb = "dermetfan.net"
 		libManifestAttributes = [
-			"web": "http://$libWeb",
-			"repository": "http://bitbucket.org/dermetfan/libgdx-utils",
-			"download": "https://bintray.com/dermetfan/libgdx-utils",
+			"web": "http://dermetfan.net",
+			"VCS": "http://bitbucket.org/dermetfan/libgdx-utils",
+			"download": "http://bintray.com/dermetfan/generic/libgdx-utils",
 			"version": libVersion
 		]
 		
