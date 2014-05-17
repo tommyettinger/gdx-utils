@@ -141,7 +141,7 @@ allprojects {
 	task publishBintray(type: Exec, dependsOn: dist, group: "publish") {
 		description = "Publishes the artifacts to Bintray."
 		executable "$rootProject.projectDir/bintray"
-		args jar.destinationDir, nameFull, libVersion, bintray_api_key
+		args jar.destinationDir, libVersion, bintray_api_key
 	}
 	
 	task publish(dependsOn: [publishBintray, publishSite], group: "publish") {

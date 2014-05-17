@@ -2,7 +2,8 @@
 
 BT_API=api.bintray.com
 BT_SUBJECT=dermetfan
-BT_REPO=libgdx-utils
+BT_REPO=generic
+BT_PACKAGE=libgdx-utils
 
 api ( ) {
 	echo https://$BT_SUBJECT:$BT_API_KEY@$BT_API
@@ -10,29 +11,26 @@ api ( ) {
 
 upload ( ) {
 	FILE=$1
-	BT_PACKAGE=$2
-	BT_VERSION=$3
-	BT_FILEPATH=$4
-	BT_PUBLISH=$5
+	BT_VERSION=$2
+	BT_FILEPATH=$3
+	BT_PUBLISH=$4
 	
 	curl -T $FILE `api`/content/$BT_SUBJECT/$BT_REPO/$BT_PACKAGE/$BT_VERSION/$BT_FILEPATH?publish=$BT_PUBLISH
 }
 
 uploadDir ( ) {
 	DIR=$1
-	BT_PACKAGE=$2
-	BT_VERSION=$3
-	BT_PUBLISH=$4
+	BT_VERSION=$2
+	BT_PUBLISH=$3
 	
 	for file in $DIR/*
 	do
-		upload $file $BT_PACKAGE $BT_VERSION `basename $file` $BT_PUBLISH
+		upload $file $BT_VERSION $BT_PACKAGE/$BT_VERSION/`basename $file` $BT_PUBLISH
 	done
 }
 
 ensure_version ( ) {
-	BT_PACKAGE=$1
-	BT_VERSION=$2
+	BT_VERSION=$1
 	
 	if [ -z 'curl `api`/packages/$BT_SUBJECT/$BT_REPO/$BT_PACKAGE/versions/$BT_VERSION | grep -o "\"name\":\"[0-9.]*\"" | grep -o "[0-9.]*"' ]
 		then
@@ -42,20 +40,19 @@ ensure_version ( ) {
 }
 
 DIR=$1
-BT_PACKAGE=$2
-VERSION=$3
+VERSION=$2
+
+if [ -n "$3" ]
+	then
+		BT_API_KEY=$3
+fi
 
 if [ -n "$4" ]
 	then
-		BT_API_KEY=$4
-fi
-
-if [ -n "$5" ]
-	then
-		BT_PUBLISH=$5
+		BT_PUBLISH=$4
 	else
 		BT_PUBLISH=1
 fi
 
-ensure_version $BT_PACKAGE $VERSION
-uploadDir $DIR $BT_PACKAGE $VERSION $BT_PUBLISH
+ensure_version $VERSION
+uploadDir $DIR $VERSION $BT_PUBLISH
