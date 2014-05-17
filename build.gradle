@@ -18,8 +18,8 @@ allprojects {
 		libName = "libgdx-utils"
 		libManifestAttributes = [
 			"web": "http://dermetfan.net",
-			"VCS": "http://bitbucket.org/dermetfan/libgdx-utils",
-			"download": "http://bintray.com/dermetfan/generic/libgdx-utils",
+			"bitbucket": "http://bitbucket.org/dermetfan/libgdx-utils",
+			"bintray": "http://bintray.com/dermetfan/generic/libgdx-utils",
 			"version": libVersion
 		]
 		
