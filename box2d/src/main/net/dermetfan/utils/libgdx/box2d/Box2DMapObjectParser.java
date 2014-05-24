@@ -26,6 +26,7 @@ import net.dermetfan.utils.libgdx.box2d.Box2DMapObjectParser.Listener.Adapter;
 
 import com.badlogic.gdx.maps.Map;
 import com.badlogic.gdx.maps.MapLayer;
+import com.badlogic.gdx.maps.MapLayers;
 import com.badlogic.gdx.maps.MapObject;
 import com.badlogic.gdx.maps.MapObjects;
 import com.badlogic.gdx.maps.MapProperties;
@@ -67,9 +68,10 @@ import com.badlogic.gdx.physics.box2d.joints.WeldJointDef;
 import com.badlogic.gdx.physics.box2d.joints.WheelJointDef;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.ObjectMap;
+import com.badlogic.gdx.utils.Pools;
 
-/** An utility class that parses {@link MapObjects} from a {@link Map} and generates Box2D {@link Body Bodies}, {@link Fixture Fixtures} and {@link Joint Joints} from it.<br>
- *  Just create a new {@link Box2DMapObjectParser} in any way you like and call {@link #load(World, MapLayer)} to load all compatible objects (defined by the {@link Aliases}) into your {@link World}.<br>
+/** Parses {@link MapObjects} from a {@link Map} and generates Box2D {@link Body Bodies}, {@link Fixture Fixtures} and {@link Joint Joints} from them.<br>
+ *  Just create a new {@link Box2DMapObjectParser} and call {@link #load(World, MapLayer)} to load all compatible objects (defined by the the {@link #aliases}) into your {@link World}.<br>
  *  <br>
  *  If you only want specific Fixtures or Bodies, you can use the {@link #createBody(World, MapObject)} and {@link #createFixture(MapObject)} methods.<br>
  *  <br>
@@ -79,7 +81,7 @@ import com.badlogic.gdx.utils.ObjectMap;
  *  To add Fixtures to a Body, add a {@link Aliases#body} property with the same value to each Fixture of a Body.<br>
  *  To create {@link Joint Joints}, add any object to the layer and just put everything needed in its properties. Note that you use the editors unit here which will be converted to Box2D meters automatically using {@link Aliases#unitScale}.
  *  <br>
- *  For more information visit the <a href="http://bitbucket.org/dermetfan/libgdx-utils/wiki/Box2DMapObjectParser">wiki</a>.
+ *  For more information read the <a href="http://bitbucket.org/dermetfan/libgdx-utils/wiki/Box2DMapObjectParser">wiki</a>.
  *  @author dermetfan */
 public class Box2DMapObjectParser {
 
@@ -96,6 +98,17 @@ public class Box2DMapObjectParser {
 	 * 	Also listens to Box2D objects that have been created.
 	 * 	@author dermetfan */
 	public static interface Listener {
+
+		/** @param parser the {@link Box2DMapObjectParser} instance that is going to {@link Box2DMapObjectParser#load(World, Map) process} a map */
+		public void init(Box2DMapObjectParser parser);
+
+		/** @param map the {@link Map} to load from
+		 *  @param queue the {@link MapLayer MapLayers} to actually parse */
+		public void load(Map map, Array<MapLayer> queue);
+
+		/** @param layer the {@link MapObject MapObjects} in the layer
+		 *  @param queue the {@link MapObject MapObjects} to actually parse */
+		public void load(MapLayer layer, Array<MapObject> queue);
 
 		/** @param mapObject the map object to create an object from
 		 *  @return the map object to create an object from, null to cancel the creation */
@@ -132,6 +145,28 @@ public class Box2DMapObjectParser {
 		/**	Does nothing. Subclass this if you only want to override only some methods.
 		 *  @author dermetfan */
 		public static class Adapter implements Listener {
+
+			/** does nothing */
+			@Override
+			public void init(Box2DMapObjectParser parser) {}
+
+			/** adds all layers to the processing queue */
+			@Override
+			public void load(Map map, Array<MapLayer> queue) {
+				MapLayers layers = map.getLayers();
+				queue.ensureCapacity(layers.getCount());
+				for(MapLayer layer : layers)
+					queue.add(layer);
+			}
+
+			/** adds all map objects to the parsing queue */
+			@Override
+			public void load(MapLayer layer, Array<MapObject> queue) {
+				MapObjects objects = layer.getObjects();
+				queue.ensureCapacity(objects.getCount());
+				for(MapObject object : objects)
+					queue.add(object);
+			}
 
 			/** @return the given map object */
 			@Override
@@ -212,7 +247,7 @@ public class Box2DMapObjectParser {
 	/** the parsed {@link Joint Joints} */
 	private ObjectMap<String, Joint> joints = new ObjectMap<String, Joint>();
 
-	/** the {@link MapLayer} which properties {@link MapObject MapObjects} will inherit in {@link #createBody(World, MapObject)}, {@link #createFixture(MapObject)} and {@link #createJoint(MapObject)} */
+	/** the properties {@link MapObject MapObjects} will inherit in {@link #createBody(World, MapObject)}, {@link #createFixture(MapObject)} and {@link #createJoint(MapObject)} */
 	private MapProperties heritage;
 
 	/** the {@link MapProperties} of the currently {@link #load(World, Map) loading} map */
@@ -370,6 +405,8 @@ public class Box2DMapObjectParser {
 		MapProperties oldMapProperties = mapProperties;
 		mapProperties = map.getProperties();
 
+		listener.init(this);
+
 		world.setGravity(vec2.set(getProperty(mapProperties, aliases.gravityX, world.getGravity().x), getProperty(mapProperties, aliases.gravityY, world.getGravity().y)));
 		world.setAutoClearForces(getProperty(mapProperties, aliases.autoClearForces, world.getAutoClearForces()));
 
@@ -378,8 +415,16 @@ public class Box2DMapObjectParser {
 		tileWidth = getProperty(mapProperties, aliases.tileWidth, tileWidth);
 		tileHeight = getProperty(mapProperties, aliases.tileHeight, tileHeight);
 
-		for(MapLayer mapLayer : map.getLayers())
+		@SuppressWarnings("unchecked")
+		Array<MapLayer> layers = Pools.obtain(Array.class);
+		layers.clear();
+		listener.load(map, layers);
+
+		for(MapLayer mapLayer : layers)
 			load(world, mapLayer);
+
+		layers.clear();
+		Pools.free(layers);
 
 		mapProperties = oldMapProperties;
 		return world;
@@ -399,21 +444,29 @@ public class Box2DMapObjectParser {
 
 		String mapType = getProperty(mapProperties, aliases.type, ""), heritageType = getProperty(heritage, aliases.type, "");
 
-		for(MapObject object : layer.getObjects())
+		@SuppressWarnings("unchecked")
+		Array<MapObject> objects = Pools.obtain(Array.class);
+		objects.clear();
+		listener.load(layer, objects);
+
+		for(MapObject object : objects)
 			if(getProperty(object.getProperties(), aliases.type, "").equals(aliases.object) || getProperty(layer.getProperties(), aliases.type, "").equals(aliases.object) || mapType.equals(aliases.object) || heritageType.equals(aliases.object))
 				createObject(world, object);
 
-		for(MapObject object : layer.getObjects())
-			if(getProperty(object.getProperties(), aliases.type, "").equals(aliases.body) || getProperty(layer.getProperties(), aliases.type, "").equals(aliases.body) || mapType.equals(aliases.object) || heritageType.equals(aliases.object))
+		for(MapObject object : objects)
+			if(getProperty(object.getProperties(), aliases.type, "").equals(aliases.body) || getProperty(layer.getProperties(), aliases.type, "").equals(aliases.body) || mapType.equals(aliases.body) || heritageType.equals(aliases.body))
 				createBody(world, object);
 
-		for(MapObject object : layer.getObjects())
-			if(getProperty(object.getProperties(), aliases.type, "").equals(aliases.fixture) || getProperty(layer.getProperties(), aliases.type, "").equals(aliases.fixture) || mapType.equals(aliases.object) || heritageType.equals(aliases.object))
+		for(MapObject object : objects)
+			if(getProperty(object.getProperties(), aliases.type, "").equals(aliases.fixture) || getProperty(layer.getProperties(), aliases.type, "").equals(aliases.fixture) || mapType.equals(aliases.fixture) || heritageType.equals(aliases.fixture))
 				createFixtures(object);
 
-		for(MapObject object : layer.getObjects())
-			if(getProperty(object.getProperties(), aliases.type, "").equals(aliases.joint) || getProperty(layer.getProperties(), aliases.type, "").equals(aliases.joint) || mapType.equals(aliases.object) || heritageType.equals(aliases.object))
+		for(MapObject object : objects)
+			if(getProperty(object.getProperties(), aliases.type, "").equals(aliases.joint) || getProperty(layer.getProperties(), aliases.type, "").equals(aliases.joint) || mapType.equals(aliases.joint) || heritageType.equals(aliases.joint))
 				createJoint(object);
+
+		objects.clear();
+		Pools.free(objects);
 
 		layerProperties = oldLayerProperties;
 		unitScale = oldUnitScale;
