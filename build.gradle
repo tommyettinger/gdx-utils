@@ -85,7 +85,7 @@ allprojects {
 		appendix = "sources"
 		destinationDir = jar.destinationDir
 		manifest.attributes += libManifestAttributes
-		doLast { announce.local.send "Distributed $nameFull", "Sources $libVersion" }
+		doLast { announce.local.send "$nameFull $libVersion", "distributed sources" }
 	}
 	
 	task distJavadoc(type: Jar, dependsOn: javadoc, group: "distribution") {
@@ -95,20 +95,19 @@ allprojects {
 		appendix = "javadoc"
 		destinationDir = jar.destinationDir
 		manifest.attributes += libManifestAttributes
-		doLast { announce.local.send "Distributed $nameFull", "Javadoc $libVersion" }
+		doLast { announce.local.send "$nameFull $libVersion", "distributed javadoc" }
 	}
 	
 	task dist(type: Zip, dependsOn: [build, distSources, distJavadoc], group: "distribution") {
-		description = "Assembles a zip archive containing the binary, source and javadoc jar archives as well as the LICENSE and RELEASE NOTES files."
+		description = "Assembles a zip archive containing the binary, source and javadoc jar archives as well as the LICENSE file."
 		from distSources.destinationDir
 		from distJavadoc.destinationDir
 		from "$rootDir/LICENSE"
-		from "$rootDir/RELEASE NOTES"
 		destinationDir = temporaryDir
 		baseName = nameFull
 		doLast {
 			archivePath.renameTo("$jar.destinationDir.path/$archiveName")
-			announce.local.send "Distributed $nameFull", libVersion
+			announce.local.send "$nameFull $libVersion", "distributed"
 		}
 	}
 	
@@ -131,9 +130,9 @@ allprojects {
 		dependsOn javadoc
 		doFirst {
 			baseDir.mkdirs() // workaround issue #2 https://bitbucket.org/davidmc24/gradle-site-plugin/issue/2/publishsite-basedir-is-not-automatically
-			announce.local.send "Publishing ${nameFull}...", "Publishing Javadoc $libVersion to ${url}..."
+			announce.local.send "$nameFull $libVersion", "Publishing Javadoc to ${url}..."
 		}
-		doLast { announce.local.send "Published $nameFull", "Published Javadoc $libVersion to $url" }
+		doLast { announce.local.send "$nameFull $libVersion", "Published Javadoc $libVersion to $url" }
 		group = "publish"
 	}
 	
