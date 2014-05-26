@@ -17,9 +17,9 @@ libgdx-utils is a small support library for games and applications powered by [L
 - [Homepage](http://dermetfan.net/libgdx-utils.php)
 - [BadlogicGames Forums Thread](http://badlogicgames.com/forum/viewtopic.php?f=17&t=10357)
 
-# Games using libgdx-utils #
+# Projects using libgdx-utils #
 
-If you would like your game listed here, feel free to [contact me](mailto:tickets@dermetfan.uservoice.com).
+If you would like your game or other project listed here, feel free to [contact me](mailto:tickets@dermetfan.uservoice.com).
 
 # Many thanks to everyone who donated! #
 
