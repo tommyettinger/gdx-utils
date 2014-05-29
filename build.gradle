@@ -12,7 +12,7 @@ allprojects {
 	ext {
 		javaVersion = 1.7
 		
-		libgdxVersion = "1.0.2-SNAPSHOT"
+		libgdxVersion = "1.1.1-SNAPSHOT"
 		
 		libVersion = file("$rootProject.projectDir/VERSION").text
 		libName = "libgdx-utils"
@@ -28,7 +28,6 @@ allprojects {
 	}
 	
 	repositories {
-		mavenLocal()
 		mavenCentral()
 		maven { url "https://oss.sonatype.org/content/repositories/snapshots/" }
 	}
@@ -72,7 +71,10 @@ allprojects {
 	
 	eclipse {
 		project.name = nameFull
-		classpath.containers = ["org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-$javaVersion"]
+		classpath {
+			sourceSets -= sourceSets.site
+			containers = ["org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-$javaVersion"]
+		}
 	}
 	
 	// distribution
@@ -107,7 +109,7 @@ allprojects {
 		baseName = nameFull
 		doLast {
 			archivePath.renameTo("$jar.destinationDir.path/$archiveName")
-			announce.local.send "$nameFull $libVersion", "distributed"
+			announce.local.send "$nameFull $libVersion", "distributed bundle"
 		}
 	}
 	
