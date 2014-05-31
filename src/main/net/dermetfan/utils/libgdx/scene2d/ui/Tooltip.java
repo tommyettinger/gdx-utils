@@ -123,18 +123,20 @@ public class Tooltip implements EventListener {
 			showTask.cancel();
 
 		if((hideFlags & flag) == flag)
-			if(hideDelay > 0)
-				Timer.schedule(hideTask, hideDelay);
-			else
+			if(hideDelay > 0) {
+				if(!hideTask.isScheduled())
+					Timer.schedule(hideTask, hideDelay);
+			} else
 				hideTask.run();
 
 		if((showFlags & flag) == flag) {
 			showTask.listenerActor = event.getListenerActor();
 			showTask.x = event.getStageX();
 			showTask.y = event.getStageY();
-			if(showDelay > 0)
-				Timer.schedule(showTask, showDelay);
-			else
+			if(showDelay > 0) {
+				if(!showTask.isScheduled())
+					Timer.schedule(showTask, showDelay);
+			} else
 				showTask.run();
 		}
 		return false;
@@ -158,7 +160,7 @@ public class Tooltip implements EventListener {
 
 	/** @param flag the {@link Type} on which not to show the tooltip */
 	public void showNotOn(Type flag) {
-		showFlags ^= mask << flag.ordinal();
+		showFlags &= ~(mask << flag.ordinal());
 	}
 
 	/** @param flag the {@link Type} on which to hide the tooltip */
@@ -168,7 +170,7 @@ public class Tooltip implements EventListener {
 
 	/** @param flag the {@link Type} on which not to hide the tooltip */
 	public void hideNotOn(Type flag) {
-		hideFlags ^= mask << flag.ordinal();
+		hideFlags &= ~(mask << flag.ordinal());
 	}
 
 	/** @param flag the {@link Type} on which to cancel showing the tooltip */
@@ -178,7 +180,7 @@ public class Tooltip implements EventListener {
 
 	/** @param flag the {@link Type} on which to not cancel showing the tooltip */
 	public void cancelNotOn(Type flag) {
-		cancelFlags ^= mask << flag.ordinal();
+		cancelFlags &= ~(mask << flag.ordinal());
 	}
 
 	/** never show the tooltip */
