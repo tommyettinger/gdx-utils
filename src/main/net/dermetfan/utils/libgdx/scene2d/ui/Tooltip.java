@@ -38,10 +38,10 @@ public class Tooltip implements EventListener {
 	private boolean showAtPointer = true;
 
 	/** the delay before {@link #show()} */
-	private float showDelay = 0;
+	private float showDelay = .75f;
 
 	/** the delay before {@link #hide()} */
-	private float hideDelay = 0;
+	private float hideDelay;
 
 	/** the offset of the tooltip in respect to the mouse or enter position */
 	private float offsetX, offsetY;
@@ -117,7 +117,7 @@ public class Tooltip implements EventListener {
 		int flag = mask << type.ordinal();
 
 		if(type == mouseMoved && followPointer)
-			tooltip.setPosition(event.getStageX(), event.getStageY());
+			tooltip.setPosition(event.getStageX() + offsetX, event.getStageY() + offsetY);
 
 		if((cancelFlags & flag) == flag)
 			showTask.cancel();
@@ -214,6 +214,13 @@ public class Tooltip implements EventListener {
 	/** @param delay the {@link #showDelay} and {@link #hideDelay} */
 	public void setDelay(float delay) {
 		showDelay = hideDelay = delay;
+	}
+
+	/** @param offsetX the {@link #offsetX}
+	 *  @param offsetY the {@link #offsetY} */
+	public void setOffset(float offsetX, float offsetY) {
+		this.offsetX = offsetX;
+		this.offsetY = offsetY;
 	}
 
 	/** @return the {@link #tooltip} */
