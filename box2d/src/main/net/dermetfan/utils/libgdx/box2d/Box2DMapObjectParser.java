@@ -442,28 +442,44 @@ public class Box2DMapObjectParser {
 		if(!ignoreLayerUnitScale)
 			unitScale = getProperty(layer.getProperties(), aliases.unitScale, unitScale);
 
-		String mapType = getProperty(mapProperties, aliases.type, ""), heritageType = getProperty(heritage, aliases.type, "");
+		String layerType = getProperty(layer.getProperties(), aliases.type, ""), mapType = getProperty(mapProperties, aliases.type, ""), heritageType = getProperty(heritage, aliases.type, ""), typeFallback = !layerType.isEmpty() ? layerType : !mapType.isEmpty() ? mapType : heritageType;
 
 		@SuppressWarnings("unchecked")
 		Array<MapObject> objects = Pools.obtain(Array.class);
 		objects.clear();
 		listener.load(layer, objects);
 
-		for(MapObject object : objects)
-			if(getProperty(object.getProperties(), aliases.type, "").equals(aliases.object) || getProperty(layer.getProperties(), aliases.type, "").equals(aliases.object) || mapType.equals(aliases.object) || heritageType.equals(aliases.object))
+		for(MapObject object : objects) {
+			String type = getProperty(object.getProperties(), aliases.type, "");
+			if(type.isEmpty())
+				type = typeFallback;
+			if(type.equals(aliases.object))
 				createObject(world, object);
+		}
 
-		for(MapObject object : objects)
-			if(getProperty(object.getProperties(), aliases.type, "").equals(aliases.body) || getProperty(layer.getProperties(), aliases.type, "").equals(aliases.body) || mapType.equals(aliases.body) || heritageType.equals(aliases.body))
+		for(MapObject object : objects) {
+			String type = getProperty(object.getProperties(), aliases.type, "");
+			if(type.isEmpty())
+				type = typeFallback;
+			if(type.equals(aliases.body))
 				createBody(world, object);
+		}
 
-		for(MapObject object : objects)
-			if(getProperty(object.getProperties(), aliases.type, "").equals(aliases.fixture) || getProperty(layer.getProperties(), aliases.type, "").equals(aliases.fixture) || mapType.equals(aliases.fixture) || heritageType.equals(aliases.fixture))
+		for(MapObject object : objects) {
+			String type = getProperty(object.getProperties(), aliases.type, "");
+			if(type.isEmpty())
+				type = typeFallback;
+			if(type.equals(aliases.fixture))
 				createFixtures(object);
+		}
 
-		for(MapObject object : objects)
-			if(getProperty(object.getProperties(), aliases.type, "").equals(aliases.joint) || getProperty(layer.getProperties(), aliases.type, "").equals(aliases.joint) || mapType.equals(aliases.joint) || heritageType.equals(aliases.joint))
+		for(MapObject object : objects) {
+			String type = getProperty(object.getProperties(), aliases.type, "");
+			if(type.isEmpty())
+				type = typeFallback;
+			if(type.equals(aliases.joint))
 				createJoint(object);
+		}
 
 		objects.clear();
 		Pools.free(objects);
