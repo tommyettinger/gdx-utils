@@ -97,6 +97,19 @@ public abstract class GeometryUtils {
 		add(vertices, -x, -y);
 	}
 
+	/** @see #add(Vector2[], float, float) */
+	public static void add(float[] vertices, float x, float y) {
+		for(int i = 1; i < vertices.length; i += 2) {
+			vertices[i - 1] += x;
+			vertices[i] += y;
+		}
+	}
+
+	/** @see #add(Vector2[], float, float) */
+	public static void sub(float[] vertices, float x, float y) {
+		add(vertices, -x, -y);
+	}
+
 	/** @return a Vector2 representing the size of a rectangle containing all given vertices */
 	public static Vector2 size(Vector2[] vertices, Vector2 output) {
 		return output.set(width(vertices), height(vertices));
