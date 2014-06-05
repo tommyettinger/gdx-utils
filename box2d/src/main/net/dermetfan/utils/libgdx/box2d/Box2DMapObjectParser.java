@@ -15,11 +15,8 @@
 package net.dermetfan.utils.libgdx.box2d;
 
 import static net.dermetfan.utils.libgdx.maps.MapUtils.getProperty;
-import static net.dermetfan.utils.libgdx.math.GeometryUtils.areVerticesClockwise;
 import static net.dermetfan.utils.libgdx.math.GeometryUtils.decompose;
 import static net.dermetfan.utils.libgdx.math.GeometryUtils.isConvex;
-import static net.dermetfan.utils.libgdx.math.GeometryUtils.toFloatArray;
-import static net.dermetfan.utils.libgdx.math.GeometryUtils.toVector2Array;
 import static net.dermetfan.utils.libgdx.math.GeometryUtils.triangulate;
 
 import net.dermetfan.utils.libgdx.box2d.Box2DMapObjectParser.Listener.Adapter;
@@ -39,10 +36,11 @@ import com.badlogic.gdx.maps.objects.TextureMapObject;
 import com.badlogic.gdx.math.Circle;
 import com.badlogic.gdx.math.Ellipse;
 import com.badlogic.gdx.math.MathUtils;
+import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Polygon;
-import com.badlogic.gdx.math.Polyline;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.BodyDef;
 import com.badlogic.gdx.physics.box2d.BodyDef.BodyType;
@@ -67,6 +65,7 @@ import com.badlogic.gdx.physics.box2d.joints.RopeJointDef;
 import com.badlogic.gdx.physics.box2d.joints.WeldJointDef;
 import com.badlogic.gdx.physics.box2d.joints.WheelJointDef;
 import com.badlogic.gdx.utils.Array;
+import com.badlogic.gdx.utils.FloatArray;
 import com.badlogic.gdx.utils.ObjectMap;
 import com.badlogic.gdx.utils.Pools;
 
@@ -89,7 +88,7 @@ public class Box2DMapObjectParser {
 	public static class Aliases {
 
 		/** the aliases */
-		public String x = "x", y = "y", type = "type", bodyType = "bodyType", dynamicBody = "DynamicBody", kinematicBody = "KinematicBody", staticBody = "StaticBody", active = "active", allowSleep = "allowSleep", angle = "angle", angularDamping = "angularDamping", angularVelocity = "angularVelocity", awake = "awake", bullet = "bullet", fixedRotation = "fixedRotation", gravityScale = "gravityScale", linearDamping = "linearDamping", linearVelocityX = "linearVelocityX", linearVelocityY = "linearVelocityY", density = "density", categoryBits = "categoryBits", groupIndex = "groupIndex", maskBits = "maskBits", friciton = "friction", isSensor = "isSensor", restitution = "restitution", body = "body", fixture = "fixture", joint = "joint", jointType = "jointType", distanceJoint = "DistanceJoint", frictionJoint = "FrictionJoint", gearJoint = "GearJoint", mouseJoint = "MouseJoint", prismaticJoint = "PrismaticJoint", pulleyJoint = "PulleyJoint", revoluteJoint = "RevoluteJoint", ropeJoint = "RopeJoint", weldJoint = "WeldJoint", wheelJoint = "WheelJoint", bodyA = "bodyA", bodyB = "bodyB", collideConnected = "collideConnected", dampingRatio = "dampingRatio", frequencyHz = "frequencyHz", length = "length", localAnchorAX = "localAnchorAX", localAnchorAY = "localAnchorAY", localAnchorBX = "localAnchorBX", localAnchorBY = "localAnchorBY", maxForce = "maxForce", maxTorque = "maxTorque", joint1 = "joint1", joint2 = "joint2", ratio = "ratio", targetX = "targetX", targetY = "targetY", enableLimit = "enableLimit", enableMotor = "enableMotor", localAxisAX = "localAxisAX", localAxisAY = "localAxisAY", lowerTranslation = "lowerTranslation", maxMotorForce = "maxMotorForce", motorSpeed = "motorSpeed", referenceAngle = "referenceAngle", upperTranslation = "upperTranslation", groundAnchorAX = "groundAnchorAX", groundAnchorAY = "groundAnchorAY", groundAnchorBX = "groundAnchorBX", groundAnchorBY = "groundAnchorBY", lengthA = "lengthA", lengthB = "lengthB", lowerAngle = "lowerAngle", maxMotorTorque = "maxMotorTorque", upperAngle = "upperAngle", maxLength = "maxLength", object = "object", unitScale = "unitScale", userData = "userData", tileWidth = "tilewidth", tileHeight = "tileheight", gravityX = "gravityX", gravityY = "gravityY", autoClearForces = "autoClearForces";
+		public String x = "x", y = "y", type = "type", bodyType = "bodyType", dynamicBody = "DynamicBody", kinematicBody = "KinematicBody", staticBody = "StaticBody", active = "active", allowSleep = "allowSleep", angle = "angle", angularDamping = "angularDamping", angularVelocity = "angularVelocity", awake = "awake", bullet = "bullet", fixedRotation = "fixedRotation", gravityScale = "gravityScale", linearDamping = "linearDamping", linearVelocityX = "linearVelocityX", linearVelocityY = "linearVelocityY", density = "density", categoryBits = "categoryBits", groupIndex = "groupIndex", maskBits = "maskBits", friciton = "friction", isSensor = "isSensor", restitution = "restitution", body = "body", fixture = "fixture", joint = "joint", jointType = "jointType", distanceJoint = "DistanceJoint", frictionJoint = "FrictionJoint", gearJoint = "GearJoint", mouseJoint = "MouseJoint", prismaticJoint = "PrismaticJoint", pulleyJoint = "PulleyJoint", revoluteJoint = "RevoluteJoint", ropeJoint = "RopeJoint", weldJoint = "WeldJoint", wheelJoint = "WheelJoint", bodyA = "bodyA", bodyB = "bodyB", collideConnected = "collideConnected", dampingRatio = "dampingRatio", frequencyHz = "frequencyHz", length = "length", localAnchorAX = "localAnchorAX", localAnchorAY = "localAnchorAY", localAnchorBX = "localAnchorBX", localAnchorBY = "localAnchorBY", maxForce = "maxForce", maxTorque = "maxTorque", joint1 = "joint1", joint2 = "joint2", ratio = "ratio", targetX = "targetX", targetY = "targetY", enableLimit = "enableLimit", enableMotor = "enableMotor", localAxisAX = "localAxisAX", localAxisAY = "localAxisAY", lowerTranslation = "lowerTranslation", maxMotorForce = "maxMotorForce", motorSpeed = "motorSpeed", referenceAngle = "referenceAngle", upperTranslation = "upperTranslation", groundAnchorAX = "groundAnchorAX", groundAnchorAY = "groundAnchorAY", groundAnchorBX = "groundAnchorBX", groundAnchorBY = "groundAnchorBY", lengthA = "lengthA", lengthB = "lengthB", lowerAngle = "lowerAngle", maxMotorTorque = "maxMotorTorque", upperAngle = "upperAngle", maxLength = "maxLength", object = "object", unitScale = "unitScale", userData = "userData", tileWidth = "tilewidth", tileHeight = "tileheight", gravityX = "gravityX", gravityY = "gravityY", autoClearForces = "autoClearForces", orientation = "orientation", orthogonal = "orthogonal", isometric = "isometric";
 
 	}
 
@@ -258,6 +257,12 @@ public class Box2DMapObjectParser {
 
 	/** for internal, temporary usage */
 	private final Vector2 vec2 = new Vector2();
+
+	/** for internal, temporary usage */
+	private final Vector3 vec3 = new Vector3();
+
+	/** for internal, temporary usage */
+	private final Matrix4 mat4 = new Matrix4();
 
 	/** creates a new {@link Box2DMapObjectParser} with the default {@link Aliases} */
 	public Box2DMapObjectParser() {}
@@ -538,56 +543,67 @@ public class Box2DMapObjectParser {
 		if((mapObject = listener.createFixture(mapObject)) == null)
 			return null;
 
-		MapProperties properties = mapObject.getProperties();
+		mat4.idt();
+		String orientation = getProperty(mapProperties, aliases.orientation, aliases.orthogonal);
+		if(orientation.equals(aliases.orthogonal))
+			mat4.scale(unitScale, unitScale, unitScale);
+		else if(orientation.equals(aliases.isometric)) {
+			mat4.scale((float) (Math.sqrt(2) / 2), (float) (Math.sqrt(2) / 4), 1);
+			mat4.rotate(0, 0, 1, -45);
+			mat4.translate(-1, 1, 0);
+			mat4.scale(unitScale * 2, unitScale * 2, unitScale * 2);
+		}
 
 		Shape shape = null;
 		if(mapObject instanceof RectangleMapObject) {
-			shape = new PolygonShape();
 			Rectangle rectangle = ((RectangleMapObject) mapObject).getRectangle();
-			float x = rectangle.x * unitScale, y = rectangle.y * unitScale, width = rectangle.width * unitScale, height = rectangle.height * unitScale;
-			((PolygonShape) shape).setAsBox(width / 2, height / 2, vec2.set(x - body.getPosition().x + width / 2, y - body.getPosition().y + height / 2), body.getAngle());
-		} else if(mapObject instanceof PolygonMapObject) {
-			shape = new PolygonShape();
-			Polygon polygon = new Polygon(((PolygonMapObject) mapObject).getPolygon().getTransformedVertices());
-			polygon.setScale(unitScale, unitScale);
-			polygon.setPosition(-body.getPosition().x, -body.getPosition().y);
-			((PolygonShape) shape).set(polygon.getTransformedVertices());
-		} else if(mapObject instanceof PolylineMapObject) {
-			Polyline polyline = new Polyline(((PolylineMapObject) mapObject).getPolyline().getTransformedVertices());
-			polyline.setPosition(polyline.getX() * unitScale - body.getPosition().x, polyline.getY() * unitScale - body.getPosition().y);
-			polyline.setScale(unitScale, unitScale);
-			float[] vertices = polyline.getTransformedVertices();
-			if(vertices.length == 4)
-				((EdgeShape) (shape = new EdgeShape())).set(vertices[0], vertices[1], vertices[2], vertices[3]);
-			else
-				((ChainShape) (shape = new ChainShape())).createChain(vertices);
-		} else if(mapObject instanceof CircleMapObject) {
-			shape = new CircleShape();
-			Circle mapObjectCircle = ((CircleMapObject) mapObject).getCircle();
-			Circle circle = new Circle(mapObjectCircle.x, mapObjectCircle.y, mapObjectCircle.radius);
-			circle.setPosition(circle.x * unitScale - body.getPosition().x, circle.y * unitScale - body.getPosition().y);
-			circle.radius *= unitScale;
-			CircleShape circleShape = (CircleShape) shape;
-			circleShape.setPosition(vec2.set(circle.x, circle.y));
-			circleShape.setRadius(circle.radius);
-		} else if(mapObject instanceof EllipseMapObject) {
-			Ellipse ellipse = ((EllipseMapObject) mapObject).getEllipse();
-
-			if(ellipse.width == ellipse.height) {
-				CircleMapObject circleMapObject = new CircleMapObject(ellipse.x + ellipse.width / 2, ellipse.y + ellipse.height / 2, ellipse.width / 2);
-				circleMapObject.setName(mapObject.getName());
-				circleMapObject.getProperties().putAll(mapObject.getProperties());
-				circleMapObject.setColor(mapObject.getColor());
-				circleMapObject.setVisible(mapObject.isVisible());
-				circleMapObject.setOpacity(mapObject.getOpacity());
-				return createFixture(circleMapObject, body);
+			vec3.set(rectangle.x, rectangle.y, 0);
+			vec3.mul(mat4);
+			float x = vec3.x, y = vec3.y;
+			vec3.set(rectangle.width, rectangle.height, 0);
+			vec3.mul(mat4);
+			float width = vec3.x, height = vec3.y;
+			((PolygonShape) (shape = new PolygonShape())).setAsBox(width / 2, height / 2, vec2.set(x - body.getPosition().x + width / 2, y - body.getPosition().y + height / 2), body.getAngle());
+		} else if(mapObject instanceof PolygonMapObject || mapObject instanceof PolylineMapObject) {
+			FloatArray vertices = Pools.obtain(FloatArray.class);
+			vertices.clear();
+			vertices.addAll(mapObject instanceof PolygonMapObject ? ((PolygonMapObject) mapObject).getPolygon().getTransformedVertices() : ((PolylineMapObject) mapObject).getPolyline().getTransformedVertices());
+			for(int ix = 0, iy = 1; iy < vertices.size; ix += 2, iy += 2) {
+				vec3.set(vertices.get(ix), vertices.get(iy), 0);
+				vec3.mul(mat4);
+				vertices.set(ix, vec3.x - body.getPosition().x);
+				vertices.set(iy, vec3.y - body.getPosition().y);
 			}
-
-			throw new IllegalArgumentException("Cannot parse " + mapObject.getName() + " because " + mapObject.getClass().getSimpleName() + "s that are not circles are not supported");
+			if(mapObject instanceof PolygonMapObject)
+				((PolygonShape) (shape = new PolygonShape())).set(vertices.items, 0, vertices.size);
+			else if(vertices.size == 4)
+				((EdgeShape) (shape = new EdgeShape())).set(vertices.get(0), vertices.get(1), vertices.get(2), vertices.get(3));
+			else {
+				vertices.shrink();
+				((ChainShape) (shape = new ChainShape())).createChain(vertices.items);
+			}
+			Pools.free(vertices);
+		} else if(mapObject instanceof CircleMapObject || mapObject instanceof EllipseMapObject) {
+			if(mapObject instanceof CircleMapObject) {
+				Circle circle = ((CircleMapObject) mapObject).getCircle();
+				vec3.set(circle.x, circle.y, circle.radius);
+			} else {
+				Ellipse ellipse = ((EllipseMapObject) mapObject).getEllipse();
+				if(ellipse.width != ellipse.height)
+					throw new IllegalArgumentException("Cannot parse " + mapObject.getName() + " because " + mapObject.getClass().getSimpleName() + "s that are not circles are not supported");
+				vec3.set(ellipse.x + ellipse.width / 2, ellipse.y + ellipse.height / 2, ellipse.width / 2);
+			}
+			vec3.mul(mat4);
+			vec3.sub(body.getPosition().x, body.getPosition().y, 0);
+			CircleShape circleShape = (CircleShape) (shape = new CircleShape());
+			circleShape.setPosition(vec2.set(vec3.x, vec3.y));
+			circleShape.setRadius(vec3.z);
 		} else if(mapObject instanceof TextureMapObject)
 			throw new IllegalArgumentException("Cannot parse " + mapObject.getName() + " because " + mapObject.getClass().getSimpleName() + "s are not supported");
 		else
 			assert false : mapObject + " is a not known subclass of " + MapObject.class.getName();
+
+		MapProperties properties = mapObject.getProperties();
 
 		FixtureDef fixtureDef = new FixtureDef();
 		fixtureDef.shape = shape;
@@ -621,20 +637,7 @@ public class Box2DMapObjectParser {
 		if(!(mapObject instanceof PolygonMapObject) || isConvex(polygon = ((PolygonMapObject) mapObject).getPolygon()) && (!Box2DUtils.checkPreconditions || polygon.getVertices().length <= Box2DUtils.maxPolygonVertices))
 			return new Fixture[] {createFixture(mapObject, body)};
 
-		Polygon[] convexPolygons;
-		if(triangulate) {
-			if(areVerticesClockwise(polygon)) { // ensure the vertices are in counterclockwise order (not really necessary according to EarClippingTriangulator's javadoc, but sometimes better)
-				Array<Vector2> vertices = new Array<Vector2>(toVector2Array(polygon.getVertices()));
-				Vector2 first = vertices.removeIndex(0);
-				vertices.reverse();
-				vertices.insert(0, first);
-				polygon.setVertices(toFloatArray(vertices.items));
-			}
-			convexPolygons = triangulate(polygon);
-		} else
-			convexPolygons = decompose(polygon);
-
-		// create the fixtures using the convex polygons
+		Polygon[] convexPolygons = triangulate ? triangulate(polygon) : decompose(polygon);
 		Fixture[] fixtures = new Fixture[convexPolygons.length];
 		for(int i = 0; i < fixtures.length; i++) {
 			PolygonMapObject convexObject = new PolygonMapObject(convexPolygons[i]);
