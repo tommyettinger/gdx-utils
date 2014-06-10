@@ -459,33 +459,25 @@ public class Box2DMapObjectParser {
 		listener.load(layer, objects);
 
 		for(MapObject object : objects) {
-			String type = getProperty(object.getProperties(), aliases.type, "");
-			if(type.isEmpty())
-				type = typeFallback;
+			String type = getProperty(object.getProperties(), aliases.type, typeFallback);
 			if(type.equals(aliases.object))
 				createObject(world, object);
 		}
 
 		for(MapObject object : objects) {
-			String type = getProperty(object.getProperties(), aliases.type, "");
-			if(type.isEmpty())
-				type = typeFallback;
+			String type = getProperty(object.getProperties(), aliases.type, typeFallback);
 			if(type.equals(aliases.body))
 				createBody(world, object);
 		}
 
 		for(MapObject object : objects) {
-			String type = getProperty(object.getProperties(), aliases.type, "");
-			if(type.isEmpty())
-				type = typeFallback;
+			String type = getProperty(object.getProperties(), aliases.type, typeFallback);
 			if(type.equals(aliases.fixture))
 				createFixtures(object);
 		}
 
 		for(MapObject object : objects) {
-			String type = getProperty(object.getProperties(), aliases.type, "");
-			if(type.isEmpty())
-				type = typeFallback;
+			String type = getProperty(object.getProperties(), aliases.type, typeFallback);
 			if(type.equals(aliases.joint))
 				createJoint(object);
 		}
@@ -556,14 +548,13 @@ public class Box2DMapObjectParser {
 			orientation = getProperty(heritage, aliases.orientation, aliases.orthogonal);
 
 		mat4.idt();
-		if(orientation.equals(aliases.orthogonal))
-			mat4.scale(unitScale, unitScale, unitScale);
-		else if(orientation.equals(aliases.isometric)) {
+		if(orientation.equals(aliases.isometric)) {
 			mat4.scale((float) (Math.sqrt(2) / 2), (float) (Math.sqrt(2) / 4), 1);
 			mat4.rotate(0, 0, 1, -45);
 			mat4.translate(-1, 1, 0);
 			mat4.scale(unitScale * 2, unitScale * 2, unitScale * 2);
-		}
+		} else
+			mat4.scale(unitScale, unitScale, unitScale);
 
 		Shape shape = null;
 		if(mapObject instanceof RectangleMapObject) {
