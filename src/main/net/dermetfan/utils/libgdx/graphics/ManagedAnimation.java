@@ -37,7 +37,7 @@ public interface ManagedAnimation extends Animated<Animation> {
 	/** flips all frames
 	 *  @see #flipFrames(float, float, boolean, boolean, boolean) */
 	default void flipFrames(boolean flipX, boolean flipY, boolean set) {
-		flipFrames(0, getAnimated().animationDuration, flipX, flipY, set);
+		flipFrames(0, getAnimated().getAnimationDuration(), flipX, flipY, set);
 	}
 
 	/** flips all frames
@@ -52,7 +52,7 @@ public interface ManagedAnimation extends Animated<Animation> {
 	 *  @param set if the frames should be set to {@code flipX} and {@code flipY} instead of actually flipping them */
 	default void flipFrames(float startTime, float endTime, boolean flipX, boolean flipY, boolean set) {
 		Animation animation = getAnimated();
-		for(float t = startTime; t < endTime; t += animation.frameDuration) {
+		for(float t = startTime; t < endTime; t += animation.getFrameDuration()) {
 			TextureRegion frame = animation.getKeyFrame(t);
 			frame.flip(flipX && (set ? !frame.isFlipX() : true), flipY && (set ? !frame.isFlipY() : true));
 		}
