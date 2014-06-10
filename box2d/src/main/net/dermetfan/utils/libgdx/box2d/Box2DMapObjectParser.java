@@ -246,6 +246,8 @@ public class Box2DMapObjectParser {
 	/** the parsed {@link Joint Joints} */
 	private ObjectMap<String, Joint> joints = new ObjectMap<String, Joint>();
 
+	// state variables
+
 	/** the properties {@link MapObject MapObjects} will inherit in {@link #createBody(World, MapObject)}, {@link #createFixture(MapObject)} and {@link #createJoint(MapObject)} */
 	private MapProperties heritage;
 
@@ -254,6 +256,8 @@ public class Box2DMapObjectParser {
 
 	/** the {@link MapProperties} of the currently {@link #load(World, MapLayer) loading} layer */
 	private MapProperties layerProperties;
+
+	// temporary variables
 
 	/** for internal, temporary usage */
 	private final Vector2 vec2 = new Vector2();
