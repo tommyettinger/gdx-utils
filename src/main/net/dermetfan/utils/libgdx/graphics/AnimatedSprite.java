@@ -28,7 +28,7 @@ import com.badlogic.gdx.graphics.g2d.TextureRegion;
  * 	animation.setPlayMode(Animation.LOOP);<br>
  * 	animatedSprite = new AnimatedSprite(animation);</code></p>
  *  You can draw using any of the {@link Sprite Sprite's} draw methods:<br>
- *  <code>animatedSprite.draw(batch);</code> 
+ *  <code>animatedSprite.draw(batch);</code>
  *  @author dermetfan */
 public class AnimatedSprite extends Sprite {
 
@@ -95,7 +95,7 @@ public class AnimatedSprite extends Sprite {
 		if(autoUpdate)
 			update();
 
-		boolean centerFramesEnabled = centerFrames && !keepSize; // if keepSize is true centerFrames has no effect 
+		boolean centerFramesEnabled = centerFrames && !keepSize; // if keepSize is true centerFrames has no effect
 
 		if(centerFramesEnabled) {
 			float differenceX = oldWidth - getRegionWidth(), differenceY = oldHeight - getRegionHeight();
@@ -120,7 +120,7 @@ public class AnimatedSprite extends Sprite {
 	/** flips all frames
 	 *  @see #flipFrames(float, float, boolean, boolean, boolean) */
 	public void flipFrames(boolean flipX, boolean flipY, boolean set) {
-		flipFrames(0, animation.animationDuration, flipX, flipY, set);
+		flipFrames(0, animation.getAnimationDuration(), flipX, flipY, set);
 	}
 
 	/** flips all frames
@@ -134,7 +134,7 @@ public class AnimatedSprite extends Sprite {
 	 *  @param endTime the animation state time of the last frame to flip
 	 *  @param set if the frames should be set to {@code flipX} and {@code flipY} instead of actually flipping them */
 	public void flipFrames(float startTime, float endTime, boolean flipX, boolean flipY, boolean set) {
-		for(float t = startTime; t < endTime; t += animation.frameDuration) {
+		for(float t = startTime; t < endTime; t += animation.getFrameDuration()) {
 			TextureRegion frame = animation.getKeyFrame(t);
 			frame.flip(flipX && (set ? !frame.isFlipX() : true), flipY && (set ? !frame.isFlipY() : true));
 		}
