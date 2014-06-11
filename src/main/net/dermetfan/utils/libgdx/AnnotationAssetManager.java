@@ -170,16 +170,16 @@ public class AnnotationAssetManager extends AssetManager {
 				if(alreadyExistingDescriptor.type == type)
 					return (AssetDescriptor<T>) alreadyExistingDescriptor;
 				else
-					return new AssetDescriptor<T>(alreadyExistingDescriptor.file, (Class<T>) type);
+					return new AssetDescriptor<>(alreadyExistingDescriptor.file, (Class<T>) type);
 			} catch(IllegalArgumentException | IllegalAccessException e) {
 				Gdx.app.error(AnnotationAssetManager.class.getSimpleName(), "couldn't access field \"" + field.getName() + "\"", e);
 			}
 		else
 			try {
 				if(fieldType == String.class)
-					return new AssetDescriptor<T>((String) field.get(instance), (Class<T>) type);
+					return new AssetDescriptor<>((String) field.get(instance), (Class<T>) type);
 				else
-					return new AssetDescriptor<T>((FileHandle) field.get(instance), (Class<T>) type);
+					return new AssetDescriptor<>((FileHandle) field.get(instance), (Class<T>) type);
 			} catch(IllegalArgumentException | IllegalAccessException e) {
 				Gdx.app.error(AnnotationAssetManager.class.getSimpleName(), "couldn't access field \"" + field.getName() + "\"", e);
 			}

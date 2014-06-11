@@ -24,7 +24,7 @@ public abstract class BayazitDecomposer {
 	}
 
 	private static Array<Vector2> copy(int i, int j, Array<Vector2> vertices) {
-		Array<Vector2> p = new Array<Vector2>();
+		Array<Vector2> p = new Array<>();
 		while(j < i)
 			j += vertices.size;
 		// p.reserve(j - i + 1);
@@ -42,7 +42,7 @@ public abstract class BayazitDecomposer {
 		// vertices.ForceCounterClockWise();
 		if(areVerticesClockwise(toFloatArray((Vector2[]) vertices.toArray(Vector2.class))))
 			vertices.reverse();
-		Array<Array<Vector2>> list = new Array<Array<Vector2>>();
+		Array<Array<Vector2>> list = new Array<>();
 		float d, lowerDist, upperDist;
 		Vector2 p;
 		Vector2 lowerInt = new Vector2();
@@ -287,7 +287,7 @@ public abstract class BayazitDecomposer {
 			// We can't simplify polygons under 3 vertices
 			if(vertices.size < 3)
 				return vertices;
-			Array<Vector2> simplified = new Array<Vector2>();
+			Array<Vector2> simplified = new Array<>();
 			for(int i = 0; i < vertices.size; i++) {
 				int prevId = i - 1;
 				if(prevId < 0)
@@ -335,7 +335,7 @@ public abstract class BayazitDecomposer {
 			for(int i = 0; i < vertices.size; i++)
 				usePt[i] = true;
 			simplifySection(vertices, 0, vertices.size - 1);
-			Array<Vector2> result = new Array<Vector2>();
+			Array<Vector2> result = new Array<>();
 			for(int i = 0; i < vertices.size; i++)
 				if(usePt[i])
 					result.add(vertices.get(i));
@@ -402,7 +402,7 @@ public abstract class BayazitDecomposer {
 				return vertices;
 			if(areaTolerance < 0)
 				throw new IllegalArgumentException("areaTolerance: must be equal to or greater then zero.");
-			Array<Vector2> result = new Array<Vector2>();
+			Array<Vector2> result = new Array<>();
 			Vector2 v1, v2, v3;
 			float old1, old2, new1;
 			v1 = vertices.get(vertices.size - 2);
@@ -469,7 +469,7 @@ public abstract class BayazitDecomposer {
 				return;
 			int currIndex = 0;
 			// Copy the vertices to a new list and clear the old
-			Array<Vector2> oldVertices = new Array<Vector2>(vertices);
+			Array<Vector2> oldVertices = new Array<>(vertices);
 			vertices.clear();
 			for(int i = 0; i < oldVertices.size; ++i) {
 				if(mergeMe[i] || newNVertices == 0 || currIndex == newNVertices)
@@ -482,7 +482,7 @@ public abstract class BayazitDecomposer {
 
 		/** Merges the identical points in the polygon. */
 		public static Array<Vector2> mergeIdenticalPoints(Array<Vector2> vertices) {
-			Array<Vector2> results = new Array<Vector2>();
+			Array<Vector2> results = new Array<>();
 			for(int i = 0; i < vertices.size; i++) {
 				Vector2 vOriginal = vertices.get(i);
 
@@ -507,7 +507,7 @@ public abstract class BayazitDecomposer {
 			// We can't simplify polygons under 3 vertices
 			if(vertices.size < 3)
 				return vertices;
-			Array<Vector2> simplified = new Array<Vector2>();
+			Array<Vector2> simplified = new Array<>();
 			for(int i = 0; i < vertices.size; i++) {
 				Vector2 current = vertices.get(i);
 				int ii = i + 1;
@@ -532,7 +532,7 @@ public abstract class BayazitDecomposer {
 				return vertices;
 			if(nth == 0)
 				return vertices;
-			Array<Vector2> result = new Array<Vector2>(vertices.size);
+			Array<Vector2> result = new Array<>(vertices.size);
 			for(int i = 0; i < vertices.size; i++) {
 				if(i % nth == 0)
 					continue;

@@ -90,11 +90,11 @@ public abstract class Noise {
 		float[][] map = new float[width][height];
 		boolean sy, sx;
 
-		Pair<Float, Float> coord = new Pair<Float, Float>();
+		Pair<Float, Float> coord = new Pair<>();
 
 		for(x = 0; x < width; x += power)
 			for(y = 0; y < height; y += power)
-				map[x][y] = initializeRandomly ? random(-range, range) : init.access(coord.set(Float.valueOf(x), Float.valueOf(y)));
+				map[x][y] = initializeRandomly ? random(-range, range) : init.access(coord.set((float) x, (float) y));
 
 		for(step = power / 2; step > 0; step /= 2, range /= smoothness) {
 			sx = false;
@@ -159,12 +159,12 @@ public abstract class Noise {
 		int power = (int) Math.pow(2, n), width = scaleX * power + 1, height = scaleY * power + 1, x, y;
 		float map[][] = new float[width][height], avg;
 
-		Pair<Float, Float> coord = new Pair<Float, Float>();
+		Pair<Float, Float> coord = new Pair<>();
 
 		// seed the grid
 		for(x = 0; x < width; x += power)
 			for(y = 0; y < height; y += power)
-				map[x][y] = initializeRandomly ? random(-range, range) : init.access(coord.set(Float.valueOf(x), Float.valueOf(y)));
+				map[x][y] = initializeRandomly ? random(-range, range) : init.access(coord.set((float) x, (float) y));
 
 		for(power /= 2; power > 0; power /= 2, range /= smoothness) {
 			// square step

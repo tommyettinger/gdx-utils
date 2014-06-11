@@ -136,7 +136,7 @@ public class AnimatedSprite extends Sprite {
 	public void flipFrames(float startTime, float endTime, boolean flipX, boolean flipY, boolean set) {
 		for(float t = startTime; t < endTime; t += animation.getFrameDuration()) {
 			TextureRegion frame = animation.getKeyFrame(t);
-			frame.flip(flipX && (set ? !frame.isFlipX() : true), flipY && (set ? !frame.isFlipY() : true));
+			frame.flip(flipX && (!set || !frame.isFlipX()), flipY && (!set || !frame.isFlipY()));
 		}
 	}
 

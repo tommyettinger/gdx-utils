@@ -162,7 +162,8 @@ public class Scene2DUtils {
 	 *  @return the created Node */
 	public static Node fileNode(final FileHandle file, final FileFilter filter, final Accessor<Label, FileHandle> labelSupplier, final Accessor<Void, Node> nodeConsumer) {
 		Label label = labelSupplier.access(file);
-		Node node = null;
+		//noinspection UnusedAssignment
+		Node node;
 		if(file.isDirectory()) {
 			final Node dummy = new Node(new Actor());
 

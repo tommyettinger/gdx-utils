@@ -238,13 +238,13 @@ public class Box2DMapObjectParser {
 	private boolean triangulate;
 
 	/** the parsed {@link Body Bodies} */
-	private ObjectMap<String, Body> bodies = new ObjectMap<String, Body>();
+	private ObjectMap<String, Body> bodies = new ObjectMap<>();
 
 	/** the parsed {@link Fixture Fixtures} */
-	private ObjectMap<String, Fixture> fixtures = new ObjectMap<String, Fixture>();
+	private ObjectMap<String, Fixture> fixtures = new ObjectMap<>();
 
 	/** the parsed {@link Joint Joints} */
-	private ObjectMap<String, Joint> joints = new ObjectMap<String, Joint>();
+	private ObjectMap<String, Joint> joints = new ObjectMap<>();
 
 	// state variables
 

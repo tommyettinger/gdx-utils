@@ -59,7 +59,7 @@ public class ListFileChooser extends FileChooser {
 	private Style style;
 
 	/** the directories that have been visited previously, for the {@link #backButton} */
-	private Array<FileHandle> fileHistory = new Array<FileHandle>();
+	private Array<FileHandle> fileHistory = new Array<>();
 
 	/** the current directory */
 	private FileHandle directory = Gdx.files.absolute(Gdx.files.getExternalStoragePath());
@@ -256,8 +256,8 @@ public class ListFileChooser extends FileChooser {
 		addListener(keyControlsListener);
 
 		(pathField = new TextField(directory.path(), style.pathFieldStyle)).setTextFieldListener(pathFieldListener);
-		contents = new List<String>(style.contentsStyle);
-		contents.setItems(new String[] {directory.name()});
+		contents = new List<>(style.contentsStyle);
+		contents.setItems(directory.name());
 		contents.addListener(contentsListener);
 
 		(chooseButton = Scene2DUtils.newButton(style.chooseButtonStyle, "select")).addListener(chooseButtonListener);

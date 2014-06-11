@@ -39,13 +39,13 @@ public class Breakable {
 	public static class Manager implements ContactListener {
 
 		/** the fixtures that broke in {@link #strain(Contact, ContactImpulse)} */
-		public final Array<Fixture> brokenFixtures = new Array<Fixture>(1);
+		public final Array<Fixture> brokenFixtures = new Array<>(1);
 
 		/** the bodies that broke in {@link #strain(Contact, ContactImpulse)} */
-		public final Array<Body> brokenBodies = new Array<Body>(1);
+		public final Array<Body> brokenBodies = new Array<>(1);
 
 		/** the joints that broke in {@link #strain(Joint, float)} */
-		public final Array<Joint> brokenJoints = new Array<Joint>(1);
+		public final Array<Joint> brokenJoints = new Array<>(1);
 
 		/** the {@link #userDataAccessor} used by default */
 		public static final Accessor<Breakable, Object> defaultUserDataAccessor = new Accessor<Breakable, Object>() {
@@ -61,7 +61,7 @@ public class Breakable {
 		private Accessor<Breakable, Object> userDataAccessor = defaultUserDataAccessor;
 
 		/** used for {@link World#getJoints(Array)} in {@link #strain(World, float)} */
-		private final Array<Joint> tmpJoints = new Array<Joint>(0);
+		private final Array<Joint> tmpJoints = new Array<>(0);
 
 		/** instantiates a new {@link Manager} */
 		public Manager() {
@@ -134,7 +134,7 @@ public class Breakable {
 		 *  @param fixture for {@link Callback#strained(Fixture, Breakable, Contact, ContactImpulse, float, float)}
 		 *  @return if the fixtures and bodies involved in the given contact should break under the given circumstances */
 		public static boolean shouldBreak(Breakable breakable, float normalImpulse, float tangentImpulse, Contact contact, ContactImpulse impulse, Fixture fixture) {
-			return breakable != null && (normalImpulse > breakable.normalResistance || tangentImpulse > breakable.tangentResistance) && (breakable.callback == null || breakable.callback != null && !breakable.callback.strained(fixture, breakable, contact, impulse, normalImpulse, tangentImpulse));
+			return breakable != null && (normalImpulse > breakable.normalResistance || tangentImpulse > breakable.tangentResistance) && (breakable.callback == null || !breakable.callback.strained(fixture, breakable, contact, impulse, normalImpulse, tangentImpulse));
 		}
 
 		/** @param reactionForce the {@link Joint#getReactionForce(float) reaction force}
@@ -142,7 +142,7 @@ public class Breakable {
 		 *  @param joint which circumstances to test
 		 *  @return if the joint strained with the given values should break */
 		public static boolean shouldBreak(Breakable breakable, Vector2 reactionForce, float reactionTorque, Joint joint) {
-			return breakable != null && (Math.abs(reactionForce.x) > breakable.reactionForceResistance.x || Math.abs(reactionForce.y) > breakable.reactionForceResistance.y || reactionForce.len2() > breakable.reactionForceLength2Resistance || reactionTorque > breakable.reactionTorqueResistance) && (breakable.callback == null || breakable.callback != null && !breakable.callback.strained(joint, breakable, reactionForce, reactionTorque));
+			return breakable != null && (Math.abs(reactionForce.x) > breakable.reactionForceResistance.x || Math.abs(reactionForce.y) > breakable.reactionForceResistance.y || reactionForce.len2() > breakable.reactionForceLength2Resistance || reactionTorque > breakable.reactionTorqueResistance) && (breakable.callback == null || !breakable.callback.strained(joint, breakable, reactionForce, reactionTorque));
 		}
 
 		/** destroys the given fixture (and its body depending on {@link #breakBodyWithoutFixtures} and {@link #breakBody})
@@ -152,7 +152,7 @@ public class Breakable {
 				return;
 
 			Breakable breakable = userDataAccessor.access(fixture.getUserData());
-			if(breakable == null || breakable != null && (breakable.callback == null || breakable.callback != null && !breakable.callback.destroyed(fixture, breakable)))
+			if(breakable == null || breakable != null && (breakable.callback == null || !breakable.callback.destroyed(fixture, breakable)))
 				brokenFixtures.add(fixture);
 
 			if(breakable != null) {
@@ -176,7 +176,7 @@ public class Breakable {
 				return;
 
 			Breakable breakable = userDataAccessor.access(body.getUserData());
-			if(breakable == null || breakable != null && (breakable.callback == null || breakable.callback != null && !breakable.callback.destroyed(body, breakable)))
+			if(breakable == null || (breakable.callback == null || breakable.callback != null && !breakable.callback.destroyed(body, breakable)))
 				brokenBodies.add(body);
 		}
 
@@ -186,7 +186,7 @@ public class Breakable {
 				return;
 
 			Breakable breakable = userDataAccessor.access(joint.getUserData());
-			if(breakable == null || breakable != null && (breakable.callback == null || breakable.callback != null && !breakable.callback.destroyed(joint, breakable)))
+			if(breakable == null || (breakable.callback == null || breakable.callback != null && !breakable.callback.destroyed(joint, breakable)))
 				brokenJoints.add(joint);
 
 			if(breakable != null && breakable.breakBody) {

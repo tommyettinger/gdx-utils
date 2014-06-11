@@ -58,7 +58,7 @@ public class TmxMapWriter extends XmlWriter {
 	}
 
 	/** a temporary HashSet for use with {@link #tmx(MapProperties, Set)} */
-	private final HashSet<String> excludedKeys = new HashSet<String>();
+	private final HashSet<String> excludedKeys = new HashSet<>();
 
 	/** creates a new {@link TmxMapWriter} using the given {@link Writer} */
 	public TmxMapWriter(Writer writer) {
@@ -229,7 +229,7 @@ public class TmxMapWriter extends XmlWriter {
 				}
 				csv.append('\n');
 			}
-			append('\n' + csv.toString());
+			append("\n").append(csv);
 			break;
 		case Base64:
 			attribute("encoding", "base64");
@@ -324,7 +324,7 @@ public class TmxMapWriter extends XmlWriter {
 	private static String points(float[] vertices) {
 		StringBuilder points = new StringBuilder();
 		for(int i = 0; i < vertices.length; i++)
-			points.append((int) vertices[i] + ((i + 1) % 2 == 0 ? i + 1 < vertices.length ? " " : "" : ","));
+			points.append((int) vertices[i]).append((i + 1) % 2 == 0 ? i + 1 < vertices.length ? " " : "" : ",");
 		return points.toString();
 	}
 
