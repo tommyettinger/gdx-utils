@@ -10,7 +10,7 @@ buildscript {
 
 allprojects {
 	ext {
-		javaVersion = 1.7
+		javaVersion = 1.8
 		
 		libgdxVersion = "1.1.1-SNAPSHOT"
 		
