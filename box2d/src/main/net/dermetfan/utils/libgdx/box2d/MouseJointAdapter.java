@@ -35,7 +35,7 @@ public class MouseJointAdapter extends InputAdapter {
 	public class Manager extends InputAdapter {
 
 		/** the {@link MouseJointAdapter MouseJointAdapters} */
-		private Array<MouseJointAdapter> adapters = new Array<MouseJointAdapter>(false, 2);
+		private Array<MouseJointAdapter> adapters = new Array<>(false, 2);
 
 		/** the max size of {@link #adapters} */
 		private byte max = -1;

@@ -39,7 +39,7 @@ public abstract class FileChooser extends Table {
 
 		@Override
 		public boolean accept(File file) {
-			return (showHidden || !file.isHidden()) && (fileFilter == null || fileFilter != null && fileFilter.accept(file));
+			return (showHidden || !file.isHidden()) && (fileFilter == null || fileFilter.accept(file));
 		}
 
 	};

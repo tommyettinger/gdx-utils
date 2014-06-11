@@ -28,7 +28,7 @@ public class ContactMultiplexer implements ContactListener {
 	private Array<ContactListener> listeners;
 
 	public ContactMultiplexer(ContactListener... listeners) {
-		this.listeners = new Array<ContactListener>(listeners);
+		this.listeners = new Array<>(listeners);
 	}
 
 	public void add(ContactListener listener) {

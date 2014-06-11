@@ -87,7 +87,7 @@ public abstract class ArrayUtils {
 	public static float[] unbox(Float[] values) {
 		float[] unboxed = new float[values.length];
 		for(int i = 0; i < unboxed.length; i++)
-			unboxed[i] = values[i].floatValue();
+			unboxed[i] = values[i];
 		return unboxed;
 	}
 
@@ -105,7 +105,7 @@ public abstract class ArrayUtils {
 	public static int[] unbox(Integer[] values) {
 		int[] unboxed = new int[values.length];
 		for(int i = 0; i < unboxed.length; i++)
-			unboxed[i] = values[i].intValue();
+			unboxed[i] = values[i];
 		return unboxed;
 	}
 
@@ -123,7 +123,7 @@ public abstract class ArrayUtils {
 	public static boolean[] unbox(Boolean[] values) {
 		boolean[] unboxed = new boolean[values.length];
 		for(int i = 0; i < unboxed.length; i++)
-			unboxed[i] = values[i].booleanValue();
+			unboxed[i] = values[i];
 		return unboxed;
 	}
 

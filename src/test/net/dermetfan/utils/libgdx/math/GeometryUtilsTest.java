@@ -103,8 +103,8 @@ public class GeometryUtilsTest {
 		Vector2 zero = new Vector2(), oneOne = new Vector2(1, 1), oneZero = new Vector2(1, 0); // apparently testing with Gradle adds one to the Vector2 constants
 		Polygon[] polygons = GeometryUtils.toPolygonArray(new Vector2[] {zero, oneOne, oneZero, zero, oneOne, oneZero, zero, oneOne, oneZero}, 3);
 		assertTrue(polygons.length == 3);
-		for(int i = 0; i < polygons.length; i++)
-			assertArrayEquals(expected, polygons[i].getVertices(), 0);
+		for(Polygon polygon : polygons)
+			assertArrayEquals(expected, polygon.getVertices(), 0);
 	}
 
 	@Test

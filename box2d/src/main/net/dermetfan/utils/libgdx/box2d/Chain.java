@@ -302,7 +302,7 @@ public class Chain {
 	public static class Connection {
 
 		/** the {@link Joint joints} of this {@link Connection} */
-		public final Array<Joint> joints = new Array<Joint>(2);
+		public final Array<Joint> joints = new Array<>(2);
 
 		/** creates a new Connection and {@link #add(Joint) adds} the given joint */
 		public Connection(Joint joint) {
@@ -355,10 +355,10 @@ public class Chain {
 	private Builder builder;
 
 	/** the {@link Body segments} of this Chain */
-	private final Array<Body> segments = new Array<Body>();
+	private final Array<Body> segments = new Array<>();
 
 	/** the {@link Joint Joints} of this Chain */
-	private final Array<Connection> connections = new Array<Connection>();
+	private final Array<Connection> connections = new Array<>();
 
 	/** creates a shallow copy of the given {@link Chain} instance
 	 *  @param other the {@link Chain} to copy */
@@ -612,7 +612,7 @@ public class Chain {
 	}
 
 	/** <strong>Warning: This is used by multiple methods and may be modified unexpectedly. It's highly recommended to {@link Array#addAll(Array) add} its items to your own collection.</strong> */
-	private final Array<Body> tmpSegments = new Array<Body>();
+	private final Array<Body> tmpSegments = new Array<>();
 
 	/** <strong>Warning: The returned Array is used by other methods and may be modified unexpectedly. It's highly recommended to {@link Array#addAll(Array) add} its items to your own collection.</strong>
 	 *  @return the {@link #segments}
@@ -624,7 +624,7 @@ public class Chain {
 	}
 
 	/** <strong>Warning: This is used by multiple methods and may be modified unexpectedly. It's highly recommended to {@link Array#addAll(Array) add} its items to your own collection.</strong> */
-	private final Array<Connection> tmpConnections = new Array<Connection>();
+	private final Array<Connection> tmpConnections = new Array<>();
 
 	/** <strong>Warning: The returned Array is used by other methods and may be modified unexpectedly. It's highly recommended to {@link Array#addAll(Array) add} its items to your own collection.</strong> 
 	 *  @return an Array representing the current state of {@link #connections}

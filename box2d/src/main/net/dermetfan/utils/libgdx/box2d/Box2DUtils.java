@@ -91,7 +91,7 @@ public abstract class Box2DUtils {
 	}
 
 	/** Cached {@link Shape Shapes} and their {@link ShapeCache}. You should {@link ObjectMap#clear() clear} this when you don't use the shapes anymore. */
-	public static final ObjectMap<Shape, ShapeCache> cache = new ObjectMap<Shape, ShapeCache>();
+	public static final ObjectMap<Shape, ShapeCache> cache = new ObjectMap<>();
 
 	/** if shapes should automatically be cached when they are inspected for the first time */
 	public static boolean autoCache = true;
@@ -124,7 +124,7 @@ public abstract class Box2DUtils {
 	/** @param shape the Shape which vertices to get (for circles, the bounding box vertices will be returned)
 	 *  @return the vertices of the given Shape*/
 	private static Vector2[] vertices0(Shape shape) {
-		Vector2[] vertices = null;
+		Vector2[] vertices;
 		switch(shape.getType()) {
 		case Polygon:
 			PolygonShape polygonShape = (PolygonShape) shape;
@@ -340,8 +340,8 @@ public abstract class Box2DUtils {
 		Vector2[][] fixtureVertices = fixtureVertices(body);
 
 		int vertexCount = 0;
-		for(int i = 0; i < fixtureVertices.length; i++)
-			vertexCount += fixtureVertices[i].length;
+		for(Vector2[] fixtureVertice : fixtureVertices)
+			vertexCount += fixtureVertice.length;
 
 		Vector2[] vertices = new Vector2[vertexCount];
 		int vi = -1;
@@ -822,22 +822,22 @@ public abstract class Box2DUtils {
 			bVertices.add(aa);
 			bVertices.add(bb);
 
-			for(int i = 0; i < vertices.length; i++) {
-				float det = MathUtils.det(aa.x, aa.y, vertices[i].x, vertices[i].y, bb.x, bb.y);
+			for(Vector2 vertice : vertices) {
+				float det = MathUtils.det(aa.x, aa.y, vertice.x, vertice.y, bb.x, bb.y);
 				if(det < 0)
-					aVertices.add(vertices[i]);
+					aVertices.add(vertice);
 				else if(det > 0)
-					bVertices.add(vertices[i]);
+					bVertices.add(vertice);
 				else {
-					aVertices.add(vertices[i]);
-					bVertices.add(vertices[i]);
+					aVertices.add(vertice);
+					bVertices.add(vertice);
 				}
 			}
 
 			GeometryUtils.arrangeClockwise(aVertices);
 			GeometryUtils.arrangeClockwise(bVertices);
 
-			Vector2[] aVerticesArray = (Vector2[]) aVertices.toArray(Vector2.class), bVerticesArray = (Vector2[]) bVertices.toArray(Vector2.class);
+			Vector2[] aVerticesArray = aVertices.toArray(Vector2.class), bVerticesArray = bVertices.toArray(Vector2.class);
 
 			if(checkPreconditions) {
 				if(aVertices.size >= 3 && aVertices.size <= maxPolygonVertices && bVertices.size >= 3 && bVertices.size <= maxPolygonVertices) {
@@ -870,7 +870,7 @@ public abstract class Box2DUtils {
 				}
 			}
 			if(intersected)
-				if(!checkPreconditions || checkPreconditions && aVertices.size >= 3 && bVertices.size >= 3) {
+				if(!checkPreconditions || aVertices.size >= 3 && bVertices.size >= 3) {
 					ChainShape sa = new ChainShape(), sb = new ChainShape();
 					sa.createChain((Vector2[]) aVertices.toArray(Vector2.class));
 					sb.createChain((Vector2[]) bVertices.toArray(Vector2.class));

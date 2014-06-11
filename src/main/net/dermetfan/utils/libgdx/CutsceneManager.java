@@ -21,7 +21,7 @@ import com.badlogic.gdx.utils.Array;
 public class CutsceneManager {
 
 	/** the currently active {@link Cutscene Cutscenes} */
-	private final Array<Cutscene> cutscenes = new Array<Cutscene>();
+	private final Array<Cutscene> cutscenes = new Array<>();
 
 	/** adds a {@link Cutscene} to the {@link #cutscenes} so it will be {@link #update(float) updated} and calls {@link Cutscene#init() init()} on it*/
 	public void start(Cutscene cutscene) {

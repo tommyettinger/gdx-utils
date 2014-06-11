@@ -494,7 +494,7 @@ public abstract class GeometryUtils {
 			area -= vertices[x2] * vertices[y1];
 		}
 
-		return area /= 2;
+		return area / 2;
 	}
 
 	/** @param vertices the vertices of the polygon to examine for convexity
@@ -538,7 +538,7 @@ public abstract class GeometryUtils {
 	 *  @return an array of convex polygons representing the given concave polygon
 	 *  @see BayazitDecomposer#convexPartition(Array) */
 	public static Polygon[] decompose(Polygon concave) {
-		Array<Array<Vector2>> convexPolys = BayazitDecomposer.convexPartition(new Array<Vector2>(toVector2Array(concave.getTransformedVertices())));
+		Array<Array<Vector2>> convexPolys = BayazitDecomposer.convexPartition(new Array<>(toVector2Array(concave.getTransformedVertices())));
 		Polygon[] convexPolygons = new Polygon[convexPolys.size];
 		for(int i = 0; i < convexPolygons.length; i++)
 			convexPolygons[i] = new Polygon(toFloatArray((Vector2[]) convexPolys.get(i).toArray(Vector2.class)));

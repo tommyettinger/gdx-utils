@@ -103,7 +103,7 @@ public abstract class TileAnimator {
 	 *  @param animationKey the key used to tell if a tile is a frame
 	 *  @return an {@link ObjectMap} which values are tiles that are frames and which keys are their animation names */
 	public static ObjectMap<String, Array<StaticTiledMapTile>> filterFrames(TiledMapTile[] tiles, String animationKey) {
-		ObjectMap<String, Array<StaticTiledMapTile>> animations = new ObjectMap<String, Array<StaticTiledMapTile>>();
+		ObjectMap<String, Array<StaticTiledMapTile>> animations = new ObjectMap<>();
 
 		MapProperties tileProperties;
 		String animationName;
