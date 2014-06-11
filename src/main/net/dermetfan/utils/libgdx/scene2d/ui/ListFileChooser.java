@@ -337,7 +337,7 @@ public class ListFileChooser extends FileChooser {
 	/** @param backButton the {@link #backButton} to set */
 	public void setBackButton(Button backButton) {
 		backButton.addListener(backButtonListener);
-		getCell(this.backButton).setWidget(this.backButton = backButton);
+		getCell(this.backButton).setActor(this.backButton = backButton);
 	}
 
 	/** @return the {@link #cancelButton} */
@@ -348,7 +348,7 @@ public class ListFileChooser extends FileChooser {
 	/** @param cancelButton the {@link #cancelButton} to set */
 	public void setCancelButton(Button cancelButton) {
 		cancelButton.addListener(cancelButtonListener);
-		getCell(this.cancelButton).setWidget(this.cancelButton = cancelButton);
+		getCell(this.cancelButton).setActor(this.cancelButton = cancelButton);
 	}
 
 	/** @return the {@link #chooseButton} */
@@ -359,7 +359,7 @@ public class ListFileChooser extends FileChooser {
 	/** @param chooseButton the {@link #chooseButton} to set */
 	public void setChooseButton(Button chooseButton) {
 		chooseButton.addListener(chooseButtonListener);
-		getCell(this.chooseButton).setWidget(this.chooseButton = chooseButton);
+		getCell(this.chooseButton).setActor(this.chooseButton = chooseButton);
 	}
 
 	/** @return the {@link #contents} */
@@ -369,7 +369,7 @@ public class ListFileChooser extends FileChooser {
 
 	/** @param contents the {@link #contents} to set */
 	public void setContents(List<String> contents) {
-		getCell(this.contents).setWidget(this.contents = contents);
+		getCell(this.contents).setActor(this.contents = contents);
 	}
 
 	/** @return the {@link #contentsPane} */
@@ -379,7 +379,7 @@ public class ListFileChooser extends FileChooser {
 
 	/** @param contentsPane the {@link #contentsPane} to set */
 	public void setContentsPane(ScrollPane contentsPane) {
-		getCell(this.contentsPane).setWidget(this.contentsPane = contentsPane);
+		getCell(this.contentsPane).setActor(this.contentsPane = contentsPane);
 	}
 
 	/** @return the {@link #directory} */
@@ -405,7 +405,7 @@ public class ListFileChooser extends FileChooser {
 	/** @param openButton the {@link #openButton} to set */
 	public void setOpenButton(Button openButton) {
 		openButton.addListener(openButtonListener);
-		getCell(this.openButton).setWidget(this.openButton = openButton);
+		getCell(this.openButton).setActor(this.openButton = openButton);
 	}
 
 	/** @return the {@link #parentButton} */
@@ -416,7 +416,7 @@ public class ListFileChooser extends FileChooser {
 	/** @param parentButton the {@link #parentButton} to set */
 	public void setParentButton(Button parentButton) {
 		parentButton.addListener(parentButtonListener);
-		getCell(this.parentButton).setWidget(this.parentButton = parentButton);
+		getCell(this.parentButton).setActor(this.parentButton = parentButton);
 	}
 
 	/** @return the {@link #pathField} */
@@ -427,7 +427,7 @@ public class ListFileChooser extends FileChooser {
 	/** @param pathField the {@link #pathField} to set */
 	public void setPathField(TextField pathField) {
 		pathField.setTextFieldListener(pathFieldListener);
-		getCell(this.pathField).setWidget(this.pathField = pathField);
+		getCell(this.pathField).setActor(this.pathField = pathField);
 	}
 
 	/** {@link #build() builds} if necessary */
