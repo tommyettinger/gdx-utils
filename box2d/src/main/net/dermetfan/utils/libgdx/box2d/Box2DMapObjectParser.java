@@ -61,13 +61,9 @@ import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.FloatArray;
 import com.badlogic.gdx.utils.ObjectMap;
 import com.badlogic.gdx.utils.Pools;
-import net.dermetfan.utils.libgdx.box2d.Box2DMapObjectParser.Listener.Adapter;
 
-import static net.dermetfan.utils.libgdx.maps.MapUtils.findProperty;
 import static net.dermetfan.utils.libgdx.maps.MapUtils.getProperty;
-import static net.dermetfan.utils.libgdx.math.GeometryUtils.decompose;
-import static net.dermetfan.utils.libgdx.math.GeometryUtils.isConvex;
-import static net.dermetfan.utils.libgdx.math.GeometryUtils.triangulate;
+import static net.dermetfan.utils.libgdx.math.GeometryUtils.*;
 
 /** Parses {@link MapObjects} from a {@link Map} and generates Box2D {@link Body Bodies}, {@link Fixture Fixtures} and {@link Joint Joints} from them.<br>
  *  Just create a new {@link Box2DMapObjectParser} and call {@link #load(World, MapLayer)} to load all compatible objects (defined by the the {@link #aliases}) into your {@link World}.<br>
@@ -99,125 +95,77 @@ public class Box2DMapObjectParser {
 	public static interface Listener {
 
 		/** @param parser the {@link Box2DMapObjectParser} instance that is going to {@link Box2DMapObjectParser#load(World, Map) process} a map */
-		public void init(Box2DMapObjectParser parser);
+		default public void init(Box2DMapObjectParser parser) {}
 
-		/** @param map the {@link Map} to load from
+		/** by default adds all layers to the queue
+		 *	@param map the {@link Map} to load from
 		 *  @param queue the {@link MapLayer MapLayers} to actually parse */
-		public void load(Map map, Array<MapLayer> queue);
+		default public void load(Map map, Array<MapLayer> queue) {
+			MapLayers layers = map.getLayers();
+			queue.ensureCapacity(layers.getCount());
+			for(MapLayer layer : layers)
+				queue.add(layer);
+		}
 
-		/** @param layer the {@link MapObject MapObjects} in the layer
+		/** by default adds all objects to the queue
+		 *	@param layer the {@link MapObject MapObjects} in the layer
 		 *  @param queue the {@link MapObject MapObjects} to actually parse */
-		public void load(MapLayer layer, Array<MapObject> queue);
+		default public void load(MapLayer layer, Array<MapObject> queue) {
+			MapObjects objects = layer.getObjects();
+			queue.ensureCapacity(objects.getCount());
+			for(MapObject object : objects)
+				queue.add(object);
+		}
 
 		/** @param mapObject the map object to create an object from
-		 *  @return the map object to create an object from, null to cancel the creation */
-		public MapObject createObject(MapObject mapObject);
+		 *  @return the map object to create an object from, null to cancel the creation, the given map object by default */
+		default public MapObject createObject(MapObject mapObject) {
+			return mapObject;
+		}
 
 		/** @param mapObject the map object to create a body from
-		 *  @return the map object to create a body from, null to cancel the creation */
-		public MapObject createBody(MapObject mapObject);
+		 *  @return the map object to create a body from, null to cancel the creation, the given map object by default */
+		default public MapObject createBody(MapObject mapObject) {
+			return mapObject;
+		}
 
 		/** @param mapObject the map object to create fixtures from
-		 *  @return the map object to create fixtures from, null to cancel the creation */
-		public MapObject createFixtures(MapObject mapObject);
+		 *  @return the map object to create fixtures from, null to cancel the creation, the given map object by default */
+		default public MapObject createFixtures(MapObject mapObject) {
+			return mapObject;
+		}
 
 		/** @param mapObject the map object to create a fixture from
-		 *  @return the map object to create a fixture from, null to cancel the creation */
-		public MapObject createFixture(MapObject mapObject);
+		 *  @return the map object to create a fixture from, null to cancel the creation, the given map object by default */
+		default public MapObject createFixture(MapObject mapObject) {
+			return mapObject;
+		}
 
 		/** @param mapObject the map object to create a joint from
-		 *  @return the map object to create a joint from, null to cancel the creation */
-		public MapObject createJoint(MapObject mapObject);
+		 *  @return the map object to create a joint from, null to cancel the creation, the given map object by default */
+		default public MapObject createJoint(MapObject mapObject) {
+			return mapObject;
+		}
 
 		/** @param body the created body
 		 *  @param mapObject the map object used to create the body */
-		public void created(Body body, MapObject mapObject);
+		default public void created(Body body, MapObject mapObject) {}
 
 		/** @param fixture the created fixture
 		 *  @param mapObject the map object used to create the fixture */
-		public void created(Fixture fixture, MapObject mapObject);
+		default public void created(Fixture fixture, MapObject mapObject) {}
 
 		/** @param joint the created joint
 		 *  @param mapObject the map object used to create the joint */
-		public void created(Joint joint, MapObject mapObject);
-
-		/**	Does nothing. Subclass this if you only want to override only some methods.
-		 *  @author dermetfan */
-		public static class Adapter implements Listener {
-
-			/** does nothing */
-			@Override
-			public void init(Box2DMapObjectParser parser) {}
-
-			/** adds all layers to the processing queue */
-			@Override
-			public void load(Map map, Array<MapLayer> queue) {
-				MapLayers layers = map.getLayers();
-				queue.ensureCapacity(layers.getCount());
-				for(MapLayer layer : layers)
-					queue.add(layer);
-			}
-
-			/** adds all map objects to the parsing queue */
-			@Override
-			public void load(MapLayer layer, Array<MapObject> queue) {
-				MapObjects objects = layer.getObjects();
-				queue.ensureCapacity(objects.getCount());
-				for(MapObject object : objects)
-					queue.add(object);
-			}
-
-			/** @return the given map object */
-			@Override
-			public MapObject createObject(MapObject mapObject) {
-				return mapObject;
-			}
-
-			/** @return the given map object */
-			@Override
-			public MapObject createBody(MapObject mapObject) {
-				return mapObject;
-			}
-
-			/** @return the given map object */
-			@Override
-			public MapObject createFixtures(MapObject mapObject) {
-				return mapObject;
-			}
-
-			/** @return the given map object */
-			@Override
-			public MapObject createFixture(MapObject mapObject) {
-				return mapObject;
-			}
-
-			/** @return the given map object */
-			@Override
-			public MapObject createJoint(MapObject mapObject) {
-				return mapObject;
-			}
-
-			/** does nothing */
-			@Override
-			public void created(Body body, MapObject mapObject) {}
-
-			/** does nothing */
-			@Override
-			public void created(Fixture fixture, MapObject mapObject) {}
-
-			/** does nothing */
-			@Override
-			public void created(Joint joint, MapObject mapObject) {}
-
-		}
+		default public void created(Joint joint, MapObject mapObject) {}
 
 	}
 
 	/** @see Aliases */
 	private Aliases aliases = new Aliases();
 
-	/** the {@link Listener} used by default (an {@link Adapter} instance) */
-	public static final Adapter defaultListener = new Adapter();
+	/** the {@link Listener} used by default (does nothing) */
+	public static final Listener defaultListener = new Listener() {};
 
 	/** the {@link Listener} to use ({@link #defaultListener} by default) */
 	private Listener listener = defaultListener;
@@ -414,6 +362,8 @@ public class Box2DMapObjectParser {
 		MapProperties oldMapProperties = mapProperties;
 		mapProperties = map.getProperties();
 
+		listener.init(this);
+
 		world.setGravity(vec2.set(getProperty(mapProperties, aliases.gravityX, world.getGravity().x), getProperty(mapProperties, aliases.gravityY, world.getGravity().y)));
 		world.setAutoClearForces(getProperty(mapProperties, aliases.autoClearForces, world.getAutoClearForces()));
 
@@ -421,8 +371,6 @@ public class Box2DMapObjectParser {
 			unitScale = getProperty(mapProperties, aliases.unitScale, unitScale);
 		tileWidth = getProperty(mapProperties, aliases.tileWidth, tileWidth);
 		tileHeight = getProperty(mapProperties, aliases.tileHeight, tileHeight);
-
-		listener.init(this);
 
 		@SuppressWarnings("unchecked")
 		Array<MapLayer> layers = Pools.obtain(Array.class);
@@ -451,7 +399,7 @@ public class Box2DMapObjectParser {
 		if(!ignoreLayerUnitScale)
 			unitScale = getProperty(layer.getProperties(), aliases.unitScale, unitScale);
 
-		String typeFallback = findProperty(aliases.type, "", heritage, mapProperties, layerProperties);
+		String layerType = getProperty(layer.getProperties(), aliases.type, ""), mapType = getProperty(mapProperties, aliases.type, ""), heritageType = getProperty(heritage, aliases.type, ""), typeFallback = !layerType.isEmpty() ? layerType : !mapType.isEmpty() ? mapType : heritageType;
 
 		@SuppressWarnings("unchecked")
 		Array<MapObject> objects = Pools.obtain(Array.class);
@@ -520,7 +468,10 @@ public class Box2DMapObjectParser {
 		assignProperties(bodyDef, properties);
 
 		Body body = world.createBody(bodyDef);
-		body.setUserData(findProperty(aliases.userData, body.getUserData(), heritage, mapProperties, layerProperties, properties));
+		body.setUserData(getProperty(heritage, aliases.userData, body.getUserData()));
+		body.setUserData(getProperty(mapProperties, aliases.userData, body.getUserData()));
+		body.setUserData(getProperty(layerProperties, aliases.userData, body.getUserData()));
+		body.setUserData(getProperty(properties, aliases.userData, body.getUserData()));
 
 		bodies.put(findAvailableName(mapObject.getName(), bodies), body);
 		listener.created(body, mapObject);
@@ -536,7 +487,13 @@ public class Box2DMapObjectParser {
 		if((mapObject = listener.createFixture(mapObject)) == null)
 			return null;
 
-		String orientation = findProperty(aliases.orientation, aliases.orthogonal, heritage, mapProperties, layerProperties, mapObject.getProperties());
+		String orientation = getProperty(mapObject.getProperties(), aliases.orientation, "");
+		if(orientation.equals(""))
+			orientation = getProperty(layerProperties, aliases.orientation, "");
+		if(orientation.equals(""))
+			orientation = getProperty(mapProperties, aliases.orientation, "");
+		if(orientation.equals(""))
+			orientation = getProperty(heritage, aliases.orientation, aliases.orthogonal);
 
 		mat4.idt();
 		if(orientation.equals(aliases.isometric)) {
@@ -606,7 +563,8 @@ public class Box2DMapObjectParser {
 		assignProperties(fixtureDef, properties);
 
 		Fixture fixture = body.createFixture(fixtureDef);
-		fixture.setUserData(findProperty(aliases.userData, fixture.getUserData(), heritage, mapProperties, layerProperties, properties));
+		fixture.setUserData(getProperty(layerProperties, aliases.userData, fixture.getUserData()));
+		fixture.setUserData(getProperty(properties, aliases.userData, fixture.getUserData()));
 
 		shape.dispose();
 
@@ -937,7 +895,6 @@ public class Box2DMapObjectParser {
 	/** resets all fields to their default values */
 	public void reset() {
 		aliases = new Aliases();
-		listener = defaultListener;
 		unitScale = 1;
 		tileWidth = 1;
 		tileHeight = 1;
