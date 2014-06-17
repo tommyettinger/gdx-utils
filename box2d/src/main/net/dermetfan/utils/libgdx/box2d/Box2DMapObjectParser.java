@@ -14,13 +14,6 @@
 
 package net.dermetfan.utils.libgdx.box2d;
 
-import static net.dermetfan.utils.libgdx.maps.MapUtils.getProperty;
-import static net.dermetfan.utils.libgdx.math.GeometryUtils.decompose;
-import static net.dermetfan.utils.libgdx.math.GeometryUtils.isConvex;
-import static net.dermetfan.utils.libgdx.math.GeometryUtils.triangulate;
-
-import net.dermetfan.utils.libgdx.box2d.Box2DMapObjectParser.Listener.Adapter;
-
 import com.badlogic.gdx.maps.Map;
 import com.badlogic.gdx.maps.MapLayer;
 import com.badlogic.gdx.maps.MapLayers;
@@ -68,6 +61,13 @@ import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.FloatArray;
 import com.badlogic.gdx.utils.ObjectMap;
 import com.badlogic.gdx.utils.Pools;
+import net.dermetfan.utils.libgdx.box2d.Box2DMapObjectParser.Listener.Adapter;
+
+import static net.dermetfan.utils.libgdx.maps.MapUtils.findProperty;
+import static net.dermetfan.utils.libgdx.maps.MapUtils.getProperty;
+import static net.dermetfan.utils.libgdx.math.GeometryUtils.decompose;
+import static net.dermetfan.utils.libgdx.math.GeometryUtils.isConvex;
+import static net.dermetfan.utils.libgdx.math.GeometryUtils.triangulate;
 
 /** Parses {@link MapObjects} from a {@link Map} and generates Box2D {@link Body Bodies}, {@link Fixture Fixtures} and {@link Joint Joints} from them.<br>
  *  Just create a new {@link Box2DMapObjectParser} and call {@link #load(World, MapLayer)} to load all compatible objects (defined by the the {@link #aliases}) into your {@link World}.<br>
@@ -414,8 +414,6 @@ public class Box2DMapObjectParser {
 		MapProperties oldMapProperties = mapProperties;
 		mapProperties = map.getProperties();
 
-		listener.init(this);
-
 		world.setGravity(vec2.set(getProperty(mapProperties, aliases.gravityX, world.getGravity().x), getProperty(mapProperties, aliases.gravityY, world.getGravity().y)));
 		world.setAutoClearForces(getProperty(mapProperties, aliases.autoClearForces, world.getAutoClearForces()));
 
@@ -423,6 +421,8 @@ public class Box2DMapObjectParser {
 			unitScale = getProperty(mapProperties, aliases.unitScale, unitScale);
 		tileWidth = getProperty(mapProperties, aliases.tileWidth, tileWidth);
 		tileHeight = getProperty(mapProperties, aliases.tileHeight, tileHeight);
+
+		listener.init(this);
 
 		@SuppressWarnings("unchecked")
 		Array<MapLayer> layers = Pools.obtain(Array.class);
@@ -451,7 +451,7 @@ public class Box2DMapObjectParser {
 		if(!ignoreLayerUnitScale)
 			unitScale = getProperty(layer.getProperties(), aliases.unitScale, unitScale);
 
-		String layerType = getProperty(layer.getProperties(), aliases.type, ""), mapType = getProperty(mapProperties, aliases.type, ""), heritageType = getProperty(heritage, aliases.type, ""), typeFallback = !layerType.isEmpty() ? layerType : !mapType.isEmpty() ? mapType : heritageType;
+		String typeFallback = findProperty(aliases.type, "", heritage, mapProperties, layerProperties);
 
 		@SuppressWarnings("unchecked")
 		Array<MapObject> objects = Pools.obtain(Array.class);
@@ -520,10 +520,7 @@ public class Box2DMapObjectParser {
 		assignProperties(bodyDef, properties);
 
 		Body body = world.createBody(bodyDef);
-		body.setUserData(getProperty(heritage, aliases.userData, body.getUserData()));
-		body.setUserData(getProperty(mapProperties, aliases.userData, body.getUserData()));
-		body.setUserData(getProperty(layerProperties, aliases.userData, body.getUserData()));
-		body.setUserData(getProperty(properties, aliases.userData, body.getUserData()));
+		body.setUserData(findProperty(aliases.userData, body.getUserData(), heritage, mapProperties, layerProperties, properties));
 
 		bodies.put(findAvailableName(mapObject.getName(), bodies), body);
 		listener.created(body, mapObject);
@@ -539,13 +536,7 @@ public class Box2DMapObjectParser {
 		if((mapObject = listener.createFixture(mapObject)) == null)
 			return null;
 
-		String orientation = getProperty(mapObject.getProperties(), aliases.orientation, "");
-		if(orientation.equals(""))
-			orientation = getProperty(layerProperties, aliases.orientation, "");
-		if(orientation.equals(""))
-			orientation = getProperty(mapProperties, aliases.orientation, "");
-		if(orientation.equals(""))
-			orientation = getProperty(heritage, aliases.orientation, aliases.orthogonal);
+		String orientation = findProperty(aliases.orientation, aliases.orthogonal, heritage, mapProperties, layerProperties, mapObject.getProperties());
 
 		mat4.idt();
 		if(orientation.equals(aliases.isometric)) {
@@ -615,8 +606,7 @@ public class Box2DMapObjectParser {
 		assignProperties(fixtureDef, properties);
 
 		Fixture fixture = body.createFixture(fixtureDef);
-		fixture.setUserData(getProperty(layerProperties, aliases.userData, fixture.getUserData()));
-		fixture.setUserData(getProperty(properties, aliases.userData, fixture.getUserData()));
+		fixture.setUserData(findProperty(aliases.userData, fixture.getUserData(), heritage, mapProperties, layerProperties, properties));
 
 		shape.dispose();
 
@@ -947,6 +937,7 @@ public class Box2DMapObjectParser {
 	/** resets all fields to their default values */
 	public void reset() {
 		aliases = new Aliases();
+		listener = defaultListener;
 		unitScale = 1;
 		tileWidth = 1;
 		tileHeight = 1;

@@ -16,11 +16,7 @@ package net.dermetfan.utils.libgdx.maps;
 
 import java.util.Iterator;
 
-import com.badlogic.gdx.maps.Map;
-import com.badlogic.gdx.maps.MapLayer;
-import com.badlogic.gdx.maps.MapObject;
-import com.badlogic.gdx.maps.MapObjects;
-import com.badlogic.gdx.maps.MapProperties;
+import com.badlogic.gdx.maps.*;
 import com.badlogic.gdx.maps.tiled.TiledMap;
 import com.badlogic.gdx.maps.tiled.TiledMapTile;
 import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
@@ -29,18 +25,37 @@ import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Array;
 
-/** provides useful methods when dealing with maps
- *  @author dermetfan */
+/**
+ * provides useful methods for dealing with maps
+ * @author dermetfan
+ */
 public abstract class MapUtils {
 
 	/** for internal, temporary usage */
 	private static final Vector2 vec2 = new Vector2();
 
-	/** Makes sure the return value is of the desired type (null-safe). If the value of the property is not of the desired type, it will be parsed. 
-	 *  @param properties the {@link MapProperties} to get the value from
-	 *  @param key the key of the property
-	 *  @param defaultValue the value to return in case the value was null or an empty String or couldn't be returned 
-	 *  @return the key's value as the type of defaultValue */
+	/**
+	 * Finds a property in an array of {@link MapProperties}. If multiple {@link MapProperties} contain the value, the later given one's value is returned.
+	 * @param key the key
+	 * @param defaultValue the default value
+	 * @param properties the {@link MapProperties} to search
+	 * @param <T> the type of the value
+	 * @return the last found value or defaultValue
+	 */
+	public static <T> T findProperty(String key, T defaultValue, MapProperties... properties) {
+		T value = defaultValue;
+		for(MapProperties property : properties)
+			value = getProperty(property, key, defaultValue);
+		return value;
+	}
+
+	/**
+	 * Makes sure the return value is of the desired type (null-safe). If the value of the property is not of the desired type, it will be parsed.
+	 * @param properties the {@link MapProperties} to get the value from
+	 * @param key the key of the property
+	 * @param defaultValue the value to return in case the value was null or an empty String or couldn't be returned
+	 * @return the key's value as the type of defaultValue
+	 */
 	@SuppressWarnings("unchecked")
 	public static <T> T getProperty(MapProperties properties, String key, T defaultValue) {
 		if(properties == null || key == null)
@@ -77,8 +92,10 @@ public abstract class MapUtils {
 		return (T) value;
 	}
 
-	/** @param map the {@link Map} which hierarchy to print
-	 *  @return a human readable {@link String} of the hierarchy of the {@link MapObjects} of the given {@link Map} */
+	/**
+	 * @param map the {@link Map} which hierarchy to print
+	 * @return a human readable {@link String} of the hierarchy of the {@link MapObjects} of the given {@link Map}
+	 */
 	public static String readableHierarchy(Map map) {
 		String hierarchy = map.getClass().getSimpleName() + "\n", key, layerHierarchy;
 
@@ -102,8 +119,10 @@ public abstract class MapUtils {
 		return hierarchy;
 	}
 
-	/** @param layer the {@link MapLayer} which hierarchy to print
-	 *  @return a human readable {@link String} of the hierarchy of the {@link MapObjects} of the given {@link MapLayer} */
+	/**
+	 * @param layer the {@link MapLayer} which hierarchy to print
+	 * @return a human readable {@link String} of the hierarchy of the {@link MapObjects} of the given {@link MapLayer}
+	 */
 	public static String readableHierarchy(MapLayer layer) {
 		String hierarchy = "", key;
 		Iterator<String> keys = layer.getProperties().getKeys();
@@ -118,9 +137,11 @@ public abstract class MapUtils {
 		return hierarchy;
 	}
 
-	/** creates an array of TiledMapTiles from a {@link TiledMapTileSet}
-	 *  @param tiles the {@link TiledMapTileSet} to create an array from
-	 *  @return the array of TiledMapTiles */
+	/**
+	 * creates an array of TiledMapTiles from a {@link TiledMapTileSet}
+	 * @param tiles the {@link TiledMapTileSet} to create an array from
+	 * @return the array of TiledMapTiles
+	 */
 	public static TiledMapTile[] toTiledMapTileArray(TiledMapTileSet tiles) {
 		TiledMapTile[] tileArray = new TiledMapTile[tiles.size()];
 		Iterator<TiledMapTile> tileIterator = tiles.iterator();
@@ -129,11 +150,13 @@ public abstract class MapUtils {
 		return tileArray;
 	}
 
-	/** converts point to its coordinates on an isometric grid
-	 *  @param point the point to convert
-	 *  @param cellWidth the width of the grid cells
-	 *  @param cellHeight the height of the grid cells
-	 *  @return the given point converted to its coordinates on an isometric grid */
+	/**
+	 * converts point to its coordinates on an isometric grid
+	 * @param point the point to convert
+	 * @param cellWidth the width of the grid cells
+	 * @param cellHeight the height of the grid cells
+	 * @return the given point converted to its coordinates on an isometric grid
+	 */
 	public static Vector2 toIsometricGridPoint(Vector2 point, float cellWidth, float cellHeight) {
 		point.x = (point.x /= cellWidth) - ((point.y = (point.y - cellHeight / 2) / cellHeight + point.x) - point.x);
 		return point;
@@ -152,10 +175,12 @@ public abstract class MapUtils {
 		return point;
 	}
 
-	/** sets the given Vector2 to the max width and height of all {@link TiledMapTileLayer tile layers} of the given map
-	 *  @param map the map to measure
-	 *  @param output the Vector2 to set to the map size
-	 *  @return the given Vector2 representing the map size */
+	/**
+	 * sets the given Vector2 to the max width and height of all {@link TiledMapTileLayer tile layers} of the given map
+	 * @param map the map to measure
+	 * @param output the Vector2 to set to the map size
+	 * @return the given Vector2 representing the map size
+	 */
 	public static Vector2 size(TiledMap map, Vector2 output) {
 		Array<TiledMapTileLayer> layers = map.getLayers().getByType(TiledMapTileLayer.class);
 		float maxWidth = 0, maxTileWidth = 0, maxHeight = 0, maxTileHeight = 0;
