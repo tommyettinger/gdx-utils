@@ -33,8 +33,8 @@ allprojects {
 	}
 	
 	apply plugin: "java"
-	apply plugin: "eclipse"
 	apply plugin: "idea"
+	apply plugin: "eclipse"
 	apply plugin: "site"
 	apply plugin: "announce"
 	
@@ -100,8 +100,8 @@ allprojects {
 		manifest.attributes += libManifestAttributes
 		doLast { announce.local.send "$nameFull $libVersion", "distributed javadoc" }
 	}
-	
-	task dist(type: Zip, dependsOn: [build, distSources, distJavadoc], group: "distribution") {
+
+	task distBundle(type: Zip, dependsOn: [build, distSources, distJavadoc], group: "distribution") {
 		description = "Assembles a zip archive containing the binary, source and javadoc jar archives as well as the LICENSE file."
 		from distSources.destinationDir
 		from distJavadoc.destinationDir
@@ -113,7 +113,12 @@ allprojects {
 			announce.local.send "$nameFull $libVersion", "distributed bundle"
 		}
 	}
-	
+
+	task cleanDistBundle(type: Delete, group: "distribution") {
+		description = "Deletes the artifacts of distBundle."
+		delete "$jar.destinationDir.path/${nameFull}.zip"
+	}
+
 	// publish
 	
 	sourceSets.site.resources {
@@ -139,8 +144,8 @@ allprojects {
 		group = "publish"
 	}
 	
-	task publishBintray(type: Exec, dependsOn: dist, group: "publish") {
-		description = "Publishes the artifacts to Bintray."
+	task publishBintray(type: Exec, group: "publish") {
+		description = "Publishes all artifacts in the jar task destination directory to Bintray."
 		executable "$rootProject.projectDir/bintray"
 		args jar.destinationDir, libVersion, bintray_api_key
 	}
