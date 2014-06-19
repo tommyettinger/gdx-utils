@@ -547,7 +547,7 @@ public class Box2DMapObjectParser {
 		} else if(orientation.equals(aliases.staggered)) {
 			mat4.scale(unitScale, unitScale, unitScale);
 			int mapHeight = findProperty(aliases.height, 0, mapProperties, layerProperties);
-			mat4.translate(-tileWidth / 2, -tileHeight * (mapHeight / 2) + tileHeight, 0);
+			mat4.translate(-tileWidth / 2, -tileHeight * (mapHeight / 2) + tileHeight / 2, 0);
 		} else
 			mat4.scale(unitScale, unitScale, unitScale);
 
