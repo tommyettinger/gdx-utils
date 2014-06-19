@@ -88,7 +88,7 @@ public class Box2DMapObjectParser {
 	public static class Aliases {
 
 		/** the aliases */
-		public String x = "x", y = "y", type = "type", bodyType = "bodyType", dynamicBody = "DynamicBody", kinematicBody = "KinematicBody", staticBody = "StaticBody", active = "active", allowSleep = "allowSleep", angle = "angle", angularDamping = "angularDamping", angularVelocity = "angularVelocity", awake = "awake", bullet = "bullet", fixedRotation = "fixedRotation", gravityScale = "gravityScale", linearDamping = "linearDamping", linearVelocityX = "linearVelocityX", linearVelocityY = "linearVelocityY", density = "density", categoryBits = "categoryBits", groupIndex = "groupIndex", maskBits = "maskBits", friciton = "friction", isSensor = "isSensor", restitution = "restitution", body = "body", fixture = "fixture", joint = "joint", jointType = "jointType", distanceJoint = "DistanceJoint", frictionJoint = "FrictionJoint", gearJoint = "GearJoint", mouseJoint = "MouseJoint", prismaticJoint = "PrismaticJoint", pulleyJoint = "PulleyJoint", revoluteJoint = "RevoluteJoint", ropeJoint = "RopeJoint", weldJoint = "WeldJoint", wheelJoint = "WheelJoint", bodyA = "bodyA", bodyB = "bodyB", collideConnected = "collideConnected", dampingRatio = "dampingRatio", frequencyHz = "frequencyHz", length = "length", localAnchorAX = "localAnchorAX", localAnchorAY = "localAnchorAY", localAnchorBX = "localAnchorBX", localAnchorBY = "localAnchorBY", maxForce = "maxForce", maxTorque = "maxTorque", joint1 = "joint1", joint2 = "joint2", ratio = "ratio", targetX = "targetX", targetY = "targetY", enableLimit = "enableLimit", enableMotor = "enableMotor", localAxisAX = "localAxisAX", localAxisAY = "localAxisAY", lowerTranslation = "lowerTranslation", maxMotorForce = "maxMotorForce", motorSpeed = "motorSpeed", referenceAngle = "referenceAngle", upperTranslation = "upperTranslation", groundAnchorAX = "groundAnchorAX", groundAnchorAY = "groundAnchorAY", groundAnchorBX = "groundAnchorBX", groundAnchorBY = "groundAnchorBY", lengthA = "lengthA", lengthB = "lengthB", lowerAngle = "lowerAngle", maxMotorTorque = "maxMotorTorque", upperAngle = "upperAngle", maxLength = "maxLength", object = "object", unitScale = "unitScale", userData = "userData", tileWidth = "tilewidth", tileHeight = "tileheight", gravityX = "gravityX", gravityY = "gravityY", autoClearForces = "autoClearForces", orientation = "orientation", orthogonal = "orthogonal", isometric = "isometric";
+		public String x = "x", y = "y", width = "width", height = "height", type = "type", bodyType = "bodyType", dynamicBody = "DynamicBody", kinematicBody = "KinematicBody", staticBody = "StaticBody", active = "active", allowSleep = "allowSleep", angle = "angle", angularDamping = "angularDamping", angularVelocity = "angularVelocity", awake = "awake", bullet = "bullet", fixedRotation = "fixedRotation", gravityScale = "gravityScale", linearDamping = "linearDamping", linearVelocityX = "linearVelocityX", linearVelocityY = "linearVelocityY", density = "density", categoryBits = "categoryBits", groupIndex = "groupIndex", maskBits = "maskBits", friciton = "friction", isSensor = "isSensor", restitution = "restitution", body = "body", fixture = "fixture", joint = "joint", jointType = "jointType", distanceJoint = "DistanceJoint", frictionJoint = "FrictionJoint", gearJoint = "GearJoint", mouseJoint = "MouseJoint", prismaticJoint = "PrismaticJoint", pulleyJoint = "PulleyJoint", revoluteJoint = "RevoluteJoint", ropeJoint = "RopeJoint", weldJoint = "WeldJoint", wheelJoint = "WheelJoint", bodyA = "bodyA", bodyB = "bodyB", collideConnected = "collideConnected", dampingRatio = "dampingRatio", frequencyHz = "frequencyHz", length = "length", localAnchorAX = "localAnchorAX", localAnchorAY = "localAnchorAY", localAnchorBX = "localAnchorBX", localAnchorBY = "localAnchorBY", maxForce = "maxForce", maxTorque = "maxTorque", joint1 = "joint1", joint2 = "joint2", ratio = "ratio", targetX = "targetX", targetY = "targetY", enableLimit = "enableLimit", enableMotor = "enableMotor", localAxisAX = "localAxisAX", localAxisAY = "localAxisAY", lowerTranslation = "lowerTranslation", maxMotorForce = "maxMotorForce", motorSpeed = "motorSpeed", referenceAngle = "referenceAngle", upperTranslation = "upperTranslation", groundAnchorAX = "groundAnchorAX", groundAnchorAY = "groundAnchorAY", groundAnchorBX = "groundAnchorBX", groundAnchorBY = "groundAnchorBY", lengthA = "lengthA", lengthB = "lengthB", lowerAngle = "lowerAngle", maxMotorTorque = "maxMotorTorque", upperAngle = "upperAngle", maxLength = "maxLength", object = "object", unitScale = "unitScale", userData = "userData", tileWidth = "tilewidth", tileHeight = "tileheight", gravityX = "gravityX", gravityY = "gravityY", autoClearForces = "autoClearForces", orientation = "orientation", orthogonal = "orthogonal", isometric = "isometric", staggered = "staggered";
 
 	}
 
@@ -544,6 +544,10 @@ public class Box2DMapObjectParser {
 			mat4.rotate(0, 0, 1, -45);
 			mat4.translate(-1, 1, 0);
 			mat4.scale(unitScale * 2, unitScale * 2, unitScale * 2);
+		} else if(orientation.equals(aliases.staggered)) {
+			mat4.scale(unitScale, unitScale, unitScale);
+			int mapHeight = findProperty(aliases.height, 0, mapProperties, layerProperties);
+			mat4.translate(-tileWidth / 2, -tileHeight * (mapHeight / 2) + tileHeight, 0);
 		} else
 			mat4.scale(unitScale, unitScale, unitScale);
 
@@ -552,10 +556,15 @@ public class Box2DMapObjectParser {
 			Rectangle rectangle = ((RectangleMapObject) mapObject).getRectangle();
 			vec3.set(rectangle.x, rectangle.y, 0);
 			vec3.mul(mat4);
-			float x = vec3.x, y = vec3.y;
-			vec3.set(rectangle.width, rectangle.height, 0);
-			vec3.mul(mat4);
-			float width = vec3.x, height = vec3.y;
+			float x = vec3.x, y = vec3.y, width, height;
+			if(!orientation.equals(aliases.staggered)) {
+				vec3.set(rectangle.width, rectangle.height, 0).mul(mat4);
+				width = vec3.x;
+				height = vec3.y;
+			} else {
+				width = rectangle.width * unitScale;
+				height = rectangle.height * unitScale;
+			}
 			((PolygonShape) (shape = new PolygonShape())).setAsBox(width / 2, height / 2, vec2.set(x - body.getPosition().x + width / 2, y - body.getPosition().y + height / 2), body.getAngle());
 		} else if(mapObject instanceof PolygonMapObject || mapObject instanceof PolylineMapObject) {
 			FloatArray vertices = Pools.obtain(FloatArray.class);
