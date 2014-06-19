@@ -833,7 +833,6 @@ public class Box2DMapObjectParser {
 	public void assignProperties(DistanceJointDef distanceJointDef, MapProperties properties) {
 		if(properties == null)
 			return;
-		assignProperties((JointDef) distanceJointDef, properties);
 		distanceJointDef.dampingRatio = getProperty(properties, aliases.dampingRatio, distanceJointDef.dampingRatio);
 		distanceJointDef.frequencyHz = getProperty(properties, aliases.frequencyHz, distanceJointDef.frequencyHz);
 		distanceJointDef.length = getProperty(properties, aliases.length, distanceJointDef.length) * (tileWidth + tileHeight) / 2 * unitScale;
