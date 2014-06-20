@@ -9,11 +9,22 @@ libgdx-utils is a small support library for games and applications powered by [L
 [![Build Status](https://drone.io/bitbucket.org/dermetfan/libgdx-utils/status.png)](https://drone.io/bitbucket.org/dermetfan/libgdx-utils/latest) 
 
 # Wiki Content #
+
 - [API Reference](http://bitbucket.org/dermetfan/libgdx-utils/wiki/API Reference) - Articles about how to use the classes
 - [Gradle Dependency Management Instructions](http://bitbucket.org/dermetfan/libgdx-utils/wiki/Gradle Dependency Instructions) - How to add libgdx-utils to your dependencies
 - [The Java 8 Branch](http://bitbucket.org/dermetfan/libgdx-utils/wiki/java1.8 Branch) - What is the Java 8 branch and what does it offer you?
 
+# Compatibility #
+
+|libgdx version|libgdx-utils version
+|-|-
+|1.1.1-SNAPSHOT|0.3.3+
+|1.1.0|0.3.2
+
+Check the `build.gradle` file to see the libgdx version used in each commit.
+
 # Links #
+
 - [Homepage](http://dermetfan.net/libgdx-utils.php)
 - [BadlogicGames Forums Thread](http://badlogicgames.com/forum/viewtopic.php?f=17&t=10357)
 
