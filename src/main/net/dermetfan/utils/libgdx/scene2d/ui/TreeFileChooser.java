@@ -1,7 +1,12 @@
 package net.dermetfan.utils.libgdx.scene2d.ui;
 
 import java.io.File;
+import java.io.FileFilter;
+import java.util.function.Consumer;
+import java.util.function.Function;
 
+import com.badlogic.gdx.scenes.scene2d.Actor;
+import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import net.dermetfan.utils.libgdx.scene2d.Scene2DUtils;
 
 import com.badlogic.gdx.files.FileHandle;
@@ -28,6 +33,86 @@ import com.badlogic.gdx.utils.Pools;
  *  @author dermetfan */
 public class TreeFileChooser extends FileChooser {
 
+	/** @see #fileNode(FileHandle, LabelStyle, java.util.function.Consumer) */
+	public static Node fileNode(FileHandle file, LabelStyle labelStyle) {
+		return fileNode(file, labelStyle, null);
+	}
+
+	/** @see #fileNode(FileHandle, java.io.FileFilter, LabelStyle, java.util.function.Consumer) */
+	public static Node fileNode(FileHandle file, LabelStyle labelStyle, Consumer<Node> nodeConsumer) {
+		return fileNode(file, null, labelStyle, nodeConsumer);
+	}
+
+	/** @see #fileNode(FileHandle, java.io.FileFilter, LabelStyle, Consumer) */
+	public static Node fileNode(FileHandle file, FileFilter filter, final LabelStyle labelStyle) {
+		return fileNode(file, filter, labelStyle, null);
+	}
+
+	/** passes a Function that creates labels representing the file name (with slash if it's a folder) using the given label style to {@link #fileNode(FileHandle, FileFilter, java.util.function.Function, Consumer)} (labelSupplier)
+	 *  @param labelStyle the {@link LabelStyle} to use for created labels
+	 *  @see #fileNode(FileHandle, FileFilter, java.util.function.Function, Consumer) */
+	public static Node fileNode(FileHandle file, FileFilter filter, final LabelStyle labelStyle, Consumer<Node> nodeConsumer) {
+		return fileNode(file, filter, (nodeFile) -> {
+			String name = nodeFile.name();
+			if(nodeFile.isDirectory())
+				name += File.separator;
+			return new Label(name, labelStyle);
+		}, nodeConsumer);
+	}
+
+	/** @see #fileNode(FileHandle, FileFilter, java.util.function.Function, Consumer) */
+	public static Node fileNode(FileHandle file, FileFilter filter, Function<FileHandle, Label> labelSupplier) {
+		return fileNode(file, filter, labelSupplier, null);
+	}
+
+	/** creates an anonymous subclass of {@link Node} that recursively adds the children of the given file to it when being {@link Node#setExpanded(boolean) expanded} for the first time
+	 *  @param file the file to put in {@link Node#setObject(Object)}
+	 *  @param filter Filters children from being added. May be null to accept all files.
+	 *  @param labelSupplier supplies labels to use
+	 *  @param nodeConsumer Does something with nodes after they were created. May be null.
+	 *  @return the created Node */
+	public static Node fileNode(final FileHandle file, final FileFilter filter, final Function<FileHandle, Label> labelSupplier, final Consumer<Node> nodeConsumer) {
+		Label label = labelSupplier.apply(file);
+		Node node;
+		if(file.isDirectory()) {
+			final Node dummy = new Node(new Actor());
+
+			node = new Node(label) {
+				private boolean childrenAdded;
+
+				@Override
+				public void setExpanded(boolean expanded) {
+					if(expanded == isExpanded())
+						return;
+
+					if(expanded && !childrenAdded) {
+						if(filter != null)
+							for(File child : file.file().listFiles(filter))
+								add(fileNode(file.child(child.getName()), filter, labelSupplier, nodeConsumer));
+						else
+							for(FileHandle child : file.list())
+								add(fileNode(child, filter, labelSupplier, nodeConsumer));
+						childrenAdded = true;
+						remove(dummy);
+					}
+
+					super.setExpanded(expanded);
+				}
+			};
+			node.add(dummy);
+
+			if(nodeConsumer != null)
+				nodeConsumer.accept(dummy);
+		} else
+			node = new Node(label);
+		node.setObject(file);
+
+		if(nodeConsumer != null)
+			nodeConsumer.accept(node);
+
+		return node;
+	}
+
 	/** the style of this TreeFileChooser */
 	private Style style;
 
@@ -43,7 +128,6 @@ public class TreeFileChooser extends FileChooser {
 	/** Listener for {@link #tree}.
 	 *  {@link Button#setDisabled(boolean) Disables/enables} {@link #chooseButton} based on the {@link Tree#getSelection() selection} of {@link #tree} and {@link #isDirectoriesChoosable()} */
 	public final ClickListener treeListener = new ClickListener() {
-
 		@Override
 		public void clicked(InputEvent event, float x, float y) {
 			Selection<Node> selection = tree.getSelection();
@@ -63,13 +147,11 @@ public class TreeFileChooser extends FileChooser {
 			}
 			chooseButton.setDisabled(false);
 		}
-
 	};
 
 	/** Listener for {@link #chooseButton}.
 	 *  Calls {@link Listener#choose(Array)} or {@link Listener#choose(FileHandle)} depending on the {@link Tree#getSelection() selection} of {@link #tree} */
 	public final ClickListener chooseButtonListener = new ClickListener() {
-
 		@Override
 		public void clicked(InputEvent event, float x, float y) {
 			if(chooseButton.isDisabled())
@@ -100,18 +182,15 @@ public class TreeFileChooser extends FileChooser {
 				}
 			}
 		}
-
 	};
 
 	/** Listener for {@link #cancelButton}.
 	 *  Calls {@link Listener#cancel()} of the {@link #getListener() listener} */
 	public final ClickListener cancelButtonListener = new ClickListener() {
-
 		@Override
 		public void clicked(InputEvent event, float x, float y) {
 			getListener().cancel();
 		}
-
 	};
 
 	/** @param skin the skin to get a {@link Style} from
@@ -141,9 +220,9 @@ public class TreeFileChooser extends FileChooser {
 	}
 
 	/** @param file the {@link File} to {@link Tree#add(Node) add a root} for
-	 *  @return the added {@link Scene2DUtils#fileNode(FileHandle, java.io.FileFilter, LabelStyle) file node} */
+	 *  @return the added {@link #fileNode(FileHandle, java.io.FileFilter, LabelStyle) file node} */
 	public Node add(FileHandle file) {
-		Node node = Scene2DUtils.fileNode(file, handlingFileFilter, style.labelStyle);
+		Node node = fileNode(file, handlingFileFilter, style.labelStyle);
 		tree.add(node);
 		return node;
 	}
