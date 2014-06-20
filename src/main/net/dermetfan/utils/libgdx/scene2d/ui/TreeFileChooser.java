@@ -131,7 +131,6 @@ public class TreeFileChooser extends FileChooser {
 	/** Listener for {@link #tree}.
 	 *  {@link Button#setDisabled(boolean) Disables/enables} {@link #chooseButton} based on the {@link Tree#getSelection() selection} of {@link #tree} and {@link #isDirectoriesChoosable()} */
 	public final ClickListener treeListener = new ClickListener() {
-
 		@Override
 		public void clicked(InputEvent event, float x, float y) {
 			Selection<Node> selection = tree.getSelection();
@@ -151,13 +150,11 @@ public class TreeFileChooser extends FileChooser {
 			}
 			chooseButton.setDisabled(false);
 		}
-
 	};
 
 	/** Listener for {@link #chooseButton}.
 	 *  Calls {@link Listener#choose(Array)} or {@link Listener#choose(FileHandle)} depending on the {@link Tree#getSelection() selection} of {@link #tree} */
 	public final ClickListener chooseButtonListener = new ClickListener() {
-
 		@Override
 		public void clicked(InputEvent event, float x, float y) {
 			if(chooseButton.isDisabled())
@@ -188,7 +185,6 @@ public class TreeFileChooser extends FileChooser {
 				}
 			}
 		}
-
 	};
 
 	/** Listener for {@link #cancelButton}.
