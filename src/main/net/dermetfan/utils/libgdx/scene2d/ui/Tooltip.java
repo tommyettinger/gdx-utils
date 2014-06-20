@@ -1,13 +1,5 @@
 package net.dermetfan.utils.libgdx.scene2d.ui;
 
-import static com.badlogic.gdx.scenes.scene2d.InputEvent.Type.enter;
-import static com.badlogic.gdx.scenes.scene2d.InputEvent.Type.exit;
-import static com.badlogic.gdx.scenes.scene2d.InputEvent.Type.mouseMoved;
-import static com.badlogic.gdx.scenes.scene2d.InputEvent.Type.touchDown;
-import static com.badlogic.gdx.scenes.scene2d.InputEvent.Type.touchUp;
-
-import net.dermetfan.utils.libgdx.scene2d.Scene2DUtils;
-
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Event;
@@ -16,9 +8,17 @@ import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.InputEvent.Type;
 import com.badlogic.gdx.scenes.scene2d.Touchable;
 import com.badlogic.gdx.scenes.scene2d.actions.Actions;
+import com.badlogic.gdx.scenes.scene2d.actions.SequenceAction;
 import com.badlogic.gdx.scenes.scene2d.ui.Dialog;
 import com.badlogic.gdx.utils.Timer;
 import com.badlogic.gdx.utils.Timer.Task;
+import net.dermetfan.utils.libgdx.scene2d.Scene2DUtils;
+
+import static com.badlogic.gdx.scenes.scene2d.InputEvent.Type.enter;
+import static com.badlogic.gdx.scenes.scene2d.InputEvent.Type.exit;
+import static com.badlogic.gdx.scenes.scene2d.InputEvent.Type.mouseMoved;
+import static com.badlogic.gdx.scenes.scene2d.InputEvent.Type.touchDown;
+import static com.badlogic.gdx.scenes.scene2d.InputEvent.Type.touchUp;
 
 /** An {@link EventListener} that shows or hides an Actor at the event or pointer position on different events with an optional offset. Making only the {@link Touchable#childrenOnly children} of {@link #tooltip} touchable or {@link Touchable#disabled disabling} touchability completely, you can also create interactive tooltips.
  *  <p>
@@ -45,6 +45,12 @@ public class Tooltip implements EventListener {
 
 	/** the offset of the tooltip in respect to the mouse or enter position */
 	private float offsetX, offsetY;
+
+	/** if not null, {@link #show()} will set the touchability of the {@link #tooltip} to this */
+	private Touchable showTouchable = Touchable.enabled;
+
+	/** if not null, {@link #hide()} will set the touchability of the {@link #tooltip} to this */
+	private Touchable hideTouchable = Touchable.disabled;
 
 	/** the mask bits */
 	public static final byte mask = 1;
@@ -81,28 +87,18 @@ public class Tooltip implements EventListener {
 
 	/** @see #hide() */
 	private final Task hideTask = new Task() {
-
 		@Override
 		public void run() {
 			hide();
 		}
-
 	};
 
 	/** <strong>Use with caution.</strong> {@link #setTooltip(Actor) Set} a tooltip before usage (may throw NPEs otherwise). */
 	public Tooltip() {}
 
-	/** @param tooltip the {@link #tooltip} (will be set to {@link Touchable#disabled}) */
+	/** @param tooltip the {@link #tooltip} */
 	public Tooltip(Actor tooltip) {
-		this(tooltip, Touchable.disabled);
-	}
-
-	/** @param tooltip the {@link #tooltip}
-	 *  @param touchable the {@link Touchable} to set on the {@link #tooltip} (if null, not touchability will not be changed) */
-	public Tooltip(Actor tooltip, Touchable touchable) {
 		this.tooltip = tooltip;
-		if(touchable != null)
-			tooltip.setTouchable(touchable);
 	}
 
 	@Override
@@ -145,12 +141,18 @@ public class Tooltip implements EventListener {
 	/** Brings the {@link #tooltip} {@link Actor#toFront() to front} and {@link Actions#fadeIn(float) fades} it in for {@link Dialog#fadeDuration} seconds. Override this for custom behavior. */
 	public void show() {
 		tooltip.toFront();
-		tooltip.addAction(Actions.fadeIn(Dialog.fadeDuration));
+		SequenceAction sequence = Actions.sequence(Actions.fadeIn(Dialog.fadeDuration));
+		if(showTouchable != null)
+			sequence.addAction(Actions.touchable(showTouchable));
+		tooltip.addAction(sequence);
 	}
 
 	/** {@link Actions#fadeOut(float) Fades} the tooltip out for {@link Dialog#fadeDuration} seconds. Override this for custom behavior. */
 	public void hide() {
-		tooltip.addAction(Actions.fadeOut(Dialog.fadeDuration));
+		SequenceAction sequence = Actions.sequence(Actions.fadeOut(Dialog.fadeDuration));
+		if(hideTouchable != null)
+			sequence.addAction(Actions.touchable(hideTouchable));
+		tooltip.addAction(sequence);
 	}
 
 	/** @param flag the {@link Type} on which to show the tooltip */
@@ -293,6 +295,26 @@ public class Tooltip implements EventListener {
 	/** @param offsetY the {@link #offsetY} to set */
 	public void setOffsetY(float offsetY) {
 		this.offsetY = offsetY;
+	}
+
+	/** @return the {@link #showTouchable} */
+	public Touchable getShowTouchable() {
+		return showTouchable;
+	}
+
+	/** @param showTouchable the {@link #showTouchable} to set */
+	public void setShowTouchable(Touchable showTouchable) {
+		this.showTouchable = showTouchable;
+	}
+
+	/** @return the {@link #hideTouchable} */
+	public Touchable getHideTouchable() {
+		return hideTouchable;
+	}
+
+	/** @param hideTouchable the {@link #hideTouchable} to set */
+	public void setHideTouchable(Touchable hideTouchable) {
+		this.hideTouchable = hideTouchable;
 	}
 
 	/** @return the {@link #showFlags} */
