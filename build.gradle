@@ -62,7 +62,7 @@ allprojects {
 	javadoc {
 		title = nameFull
 		options {
-			memberLevel = JavadocMemberLevel.PACKAGE
+			memberLevel = JavadocMemberLevel.PRIVATE
 			author true
 			setUse true
 		}
