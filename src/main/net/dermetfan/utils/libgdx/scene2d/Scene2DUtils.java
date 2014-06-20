@@ -14,13 +14,7 @@
 
 package net.dermetfan.utils.libgdx.scene2d;
 
-import java.io.File;
-import java.io.FileFilter;
-
-import net.dermetfan.utils.Accessor;
-
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Group;
@@ -31,11 +25,8 @@ import com.badlogic.gdx.scenes.scene2d.ui.ImageButton;
 import com.badlogic.gdx.scenes.scene2d.ui.ImageButton.ImageButtonStyle;
 import com.badlogic.gdx.scenes.scene2d.ui.ImageTextButton;
 import com.badlogic.gdx.scenes.scene2d.ui.ImageTextButton.ImageTextButtonStyle;
-import com.badlogic.gdx.scenes.scene2d.ui.Label;
-import com.badlogic.gdx.scenes.scene2d.ui.Label.LabelStyle;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton.TextButtonStyle;
-import com.badlogic.gdx.scenes.scene2d.ui.Tree.Node;
 import com.badlogic.gdx.utils.Json;
 import com.badlogic.gdx.utils.JsonValue;
 
@@ -87,12 +78,12 @@ public class Scene2DUtils {
 
 	/** creates a {@link Button} according to the given {@link ButtonStyle} instance that may be {@link ButtonStyle}, {@link TextButtonStyle}, {@link ImageButtonStyle} or {@link ImageTextButtonStyle} */
 	public static Button newButton(ButtonStyle style, String textIfAny) {
+		if(style instanceof ImageTextButtonStyle)
+			return new ImageTextButton(textIfAny, (ImageTextButtonStyle) style);
 		if(style instanceof TextButtonStyle)
 			return new TextButton(textIfAny, (TextButtonStyle) style);
 		if(style instanceof ImageButtonStyle)
 			return new ImageButton((ImageButtonStyle) style);
-		if(style instanceof ImageTextButtonStyle)
-			return new ImageTextButton(textIfAny, (ImageTextButtonStyle) style);
 		return new Button(style);
 	}
 
@@ -115,94 +106,6 @@ public class Scene2DUtils {
 				}
 			}
 		}
-	}
-
-	/** @see #fileNode(FileHandle, LabelStyle, Accessor) */
-	public static Node fileNode(FileHandle file, LabelStyle labelStyle) {
-		return fileNode(file, labelStyle, null);
-	}
-
-	/** @see #fileNode(FileHandle, FileFilter, LabelStyle, Accessor) */
-	public static Node fileNode(FileHandle file, LabelStyle labelStyle, Accessor<Void, Node> nodeConsumer) {
-		return fileNode(file, null, labelStyle, nodeConsumer);
-	}
-
-	/** @see #fileNode(FileHandle, FileFilter, LabelStyle, Accessor) */
-	public static Node fileNode(FileHandle file, FileFilter filter, final LabelStyle labelStyle) {
-		return fileNode(file, filter, labelStyle, null);
-	}
-
-	/** passes an Accessor that creates labels representing the file name (with slash if it's a folder) using the given label style to {@link #fileNode(FileHandle, FileFilter, Accessor, Accessor)} (labelSupplier)  
-	 *  @param labelStyle the {@link LabelStyle} to use for created labels
-	 *  @see #fileNode(FileHandle, FileFilter, Accessor, Accessor) */
-	public static Node fileNode(FileHandle file, FileFilter filter, final LabelStyle labelStyle, Accessor<Void, Node> nodeConsumer) {
-		return fileNode(file, filter, new Accessor<Label, FileHandle>() {
-
-			@Override
-			public Label access(FileHandle file) {
-				String name = file.name();
-				if(file.isDirectory())
-					name += File.separator;
-				return new Label(name, labelStyle);
-			}
-
-		}, nodeConsumer);
-	}
-
-	/** @see #fileNode(FileHandle, FileFilter, Accessor, Accessor) */
-	public static Node fileNode(FileHandle file, FileFilter filter, Accessor<Label, FileHandle> labelSupplier) {
-		return fileNode(file, filter, labelSupplier, null);
-	}
-
-	/** creates an anonymous subclass of {@link Node} that recursively adds the children of the given file to it when being {@link Node#setExpanded(boolean) expanded} for the first time  
-	 *  @param file the file to put in {@link Node#setObject(Object)}
-	 *  @param filter Filters children from being added. May be null to accept all files.
-	 *  @param labelSupplier supplies labels to use
-	 *  @param nodeConsumer Does something with nodes after they were created. May be null.
-	 *  @return the created Node */
-	public static Node fileNode(final FileHandle file, final FileFilter filter, final Accessor<Label, FileHandle> labelSupplier, final Accessor<Void, Node> nodeConsumer) {
-		Label label = labelSupplier.access(file);
-		//noinspection UnusedAssignment
-		Node node;
-		if(file.isDirectory()) {
-			final Node dummy = new Node(new Actor());
-
-			node = new Node(label) {
-
-				private boolean childrenAdded;
-
-				@Override
-				public void setExpanded(boolean expanded) {
-					if(expanded == isExpanded())
-						return;
-
-					if(expanded && !childrenAdded) {
-						if(filter != null)
-							for(File child : file.file().listFiles(filter))
-								add(fileNode(file.child(child.getName()), filter, labelSupplier, nodeConsumer));
-						else
-							for(FileHandle child : file.list())
-								add(fileNode(child, filter, labelSupplier, nodeConsumer));
-						childrenAdded = true;
-						remove(dummy);
-					}
-
-					super.setExpanded(expanded);
-				}
-
-			};
-			node.add(dummy);
-
-			if(nodeConsumer != null)
-				nodeConsumer.access(dummy);
-		} else
-			node = new Node(label);
-		node.setObject(file);
-
-		if(nodeConsumer != null)
-			nodeConsumer.access(node);
-
-		return node;
 	}
 
 }
