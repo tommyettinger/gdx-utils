@@ -37,6 +37,29 @@ public class Scene2DUtils {
 	/** Some methods return this, so if you get your hands on it make sure to make a copy! This is used internally so it might change unexpectedly. */
 	private static Vector2 tmp = new Vector2();
 
+	/** @param vec the coordinates
+	 *  @param actor the actor in which coordinate system vec is given
+	 *  @param other the actor into which coordinate system to convert the coordinates to
+	 *  @throws IllegalArgumentException if the given actors are not in the same hierarchy */
+	public static void localToOtherCoordinates(Vector2 vec, Actor actor, Actor other) {
+		Group lastParent = lastParent(actor);
+		if(lastParent == null || lastParent != lastParent(other))
+			throw new IllegalArgumentException(actor + " and " + other + " are not in the same hierarchy");
+		actor.localToAscendantCoordinates(lastParent, vec);
+		lastParent.localToDescendantCoordinates(other, vec);
+	}
+
+	/** @return the highest parent in the hierarchy tree of the given actor */
+	public static Group lastParent(Actor actor) {
+		if(!actor.hasParent())
+			return null;
+		Group parent = actor.getParent();
+		while(parent.hasParent())
+			parent = parent.getParent();
+		assert !parent.hasParent();
+		return parent;
+	}
+
 	/** @param actor the actor which position in stage coordinates to return
 	 *  @return the position of the given actor in the stage coordinate system */
 	public static Vector2 positionInStageCoordinates(Actor actor) {
