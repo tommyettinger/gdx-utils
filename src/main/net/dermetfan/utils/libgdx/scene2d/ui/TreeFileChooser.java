@@ -2,10 +2,11 @@ package net.dermetfan.utils.libgdx.scene2d.ui;
 
 import java.io.File;
 import java.io.FileFilter;
+import java.util.function.Consumer;
+import java.util.function.Function;
 
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
-import net.dermetfan.utils.Accessor;
 import net.dermetfan.utils.libgdx.scene2d.Scene2DUtils;
 
 import com.badlogic.gdx.files.FileHandle;
@@ -32,38 +33,35 @@ import com.badlogic.gdx.utils.Pools;
  *  @author dermetfan */
 public class TreeFileChooser extends FileChooser {
 
-	/** @see #fileNode(FileHandle, LabelStyle, net.dermetfan.utils.Accessor) */
+	/** @see #fileNode(FileHandle, LabelStyle, java.util.function.Consumer) */
 	public static Node fileNode(FileHandle file, LabelStyle labelStyle) {
 		return fileNode(file, labelStyle, null);
 	}
 
-	/** @see #fileNode(FileHandle, java.io.FileFilter, LabelStyle, net.dermetfan.utils.Accessor) */
-	public static Node fileNode(FileHandle file, LabelStyle labelStyle, Accessor<Void, Node> nodeConsumer) {
+	/** @see #fileNode(FileHandle, java.io.FileFilter, LabelStyle, java.util.function.Consumer) */
+	public static Node fileNode(FileHandle file, LabelStyle labelStyle, Consumer<Node> nodeConsumer) {
 		return fileNode(file, null, labelStyle, nodeConsumer);
 	}
 
-	/** @see #fileNode(FileHandle, java.io.FileFilter, LabelStyle, Accessor) */
+	/** @see #fileNode(FileHandle, java.io.FileFilter, LabelStyle, Consumer) */
 	public static Node fileNode(FileHandle file, FileFilter filter, final LabelStyle labelStyle) {
 		return fileNode(file, filter, labelStyle, null);
 	}
 
-	/** passes an Accessor that creates labels representing the file name (with slash if it's a folder) using the given label style to {@link #fileNode(FileHandle, FileFilter, Accessor, Accessor)} (labelSupplier)
+	/** passes a Function that creates labels representing the file name (with slash if it's a folder) using the given label style to {@link #fileNode(FileHandle, FileFilter, java.util.function.Function, Consumer)} (labelSupplier)
 	 *  @param labelStyle the {@link LabelStyle} to use for created labels
-	 *  @see #fileNode(FileHandle, FileFilter, Accessor, Accessor) */
-	public static Node fileNode(FileHandle file, FileFilter filter, final LabelStyle labelStyle, Accessor<Void, Node> nodeConsumer) {
-		return fileNode(file, filter, new Accessor<Label, FileHandle>() {
-			@Override
-			public Label access(FileHandle file) {
-				String name = file.name();
-				if(file.isDirectory())
-					name += File.separator;
-				return new Label(name, labelStyle);
-			}
+	 *  @see #fileNode(FileHandle, FileFilter, java.util.function.Function, Consumer) */
+	public static Node fileNode(FileHandle file, FileFilter filter, final LabelStyle labelStyle, Consumer<Node> nodeConsumer) {
+		return fileNode(file, filter, (nodeFile) -> {
+			String name = nodeFile.name();
+			if(nodeFile.isDirectory())
+				name += File.separator;
+			return new Label(name, labelStyle);
 		}, nodeConsumer);
 	}
 
-	/** @see #fileNode(FileHandle, FileFilter, Accessor, Accessor) */
-	public static Node fileNode(FileHandle file, FileFilter filter, Accessor<Label, FileHandle> labelSupplier) {
+	/** @see #fileNode(FileHandle, FileFilter, java.util.function.Function, Consumer) */
+	public static Node fileNode(FileHandle file, FileFilter filter, Function<FileHandle, Label> labelSupplier) {
 		return fileNode(file, filter, labelSupplier, null);
 	}
 
@@ -73,9 +71,8 @@ public class TreeFileChooser extends FileChooser {
 	 *  @param labelSupplier supplies labels to use
 	 *  @param nodeConsumer Does something with nodes after they were created. May be null.
 	 *  @return the created Node */
-	public static Node fileNode(final FileHandle file, final FileFilter filter, final Accessor<Label, FileHandle> labelSupplier, final Accessor<Void, Node> nodeConsumer) {
-		Label label = labelSupplier.access(file);
-
+	public static Node fileNode(final FileHandle file, final FileFilter filter, final Function<FileHandle, Label> labelSupplier, final Consumer<Node> nodeConsumer) {
+		Label label = labelSupplier.apply(file);
 		Node node;
 		if(file.isDirectory()) {
 			final Node dummy = new Node(new Actor());
@@ -105,13 +102,13 @@ public class TreeFileChooser extends FileChooser {
 			node.add(dummy);
 
 			if(nodeConsumer != null)
-				nodeConsumer.access(dummy);
+				nodeConsumer.accept(dummy);
 		} else
 			node = new Node(label);
 		node.setObject(file);
 
 		if(nodeConsumer != null)
-			nodeConsumer.access(node);
+			nodeConsumer.accept(node);
 
 		return node;
 	}
