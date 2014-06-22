@@ -142,16 +142,16 @@ allprojects {
 		dependsOn javadoc
 		doFirst {
 			baseDir.mkdirs() // workaround issue #2 https://bitbucket.org/davidmc24/gradle-site-plugin/issue/2/publishsite-basedir-is-not-automatically
-			announce.local.send "$nameFull $version", "Deploying Javadoc to ${url}..."
+			announce.local.send "$nameFull $version", "Uploading Javadoc to ${url}..."
 		}
-		doLast { announce.local.send "$nameFull $version", "Deployed Javadoc $version to $url" }
+		doLast { announce.local.send "$nameFull $version", "Uploaded Javadoc to $url" }
 		group = 'upload'
 	}
 
 	// signing
 
 	signing {
-		required { !version.endsWith("SNAPSHOT") && gradle.taskGraph.hasTask("uploadArchives") }
+		required { !version.endsWith("-SNAPSHOT") && gradle.taskGraph.hasTask("uploadArchives") }
 		sign configurations.archives
 	}
 
