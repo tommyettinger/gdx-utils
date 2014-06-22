@@ -17,7 +17,9 @@ package net.dermetfan.utils.libgdx.scene2d;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.Actor;
+import com.badlogic.gdx.scenes.scene2d.Event;
 import com.badlogic.gdx.scenes.scene2d.Group;
+import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Button;
 import com.badlogic.gdx.scenes.scene2d.ui.Button.ButtonStyle;
@@ -36,6 +38,30 @@ public class Scene2DUtils {
 
 	/** Some methods return this, so if you get your hands on it make sure to make a copy! This is used internally so it might change unexpectedly. */
 	private static Vector2 tmp = new Vector2();
+
+	/** @param c the event to copy to
+	 *  @param e the event to copy from */
+	public static void copy(Event c, Event e) {
+		c.setTarget(e.getTarget());
+		c.setStage(e.getStage());
+		c.setCapture(e.isCapture());
+		c.setBubbles(e.getBubbles());
+		c.setListenerActor(e.getListenerActor());
+	}
+
+	/** @see #copy(Event, Event)  */
+	public static void copy(InputEvent c, InputEvent e) {
+		copy(c, e);
+		c.setStageX(e.getStageX());
+		c.setStageY(e.getStageY());
+		c.setButton(e.getButton());
+		c.setCharacter(e.getCharacter());
+		c.setKeyCode(e.getKeyCode());
+		c.setPointer(e.getPointer());
+		c.setType(e.getType());
+		c.setRelatedActor(e.getRelatedActor());
+		c.setScrollAmount(e.getScrollAmount());
+	}
 
 	/** @param vec the coordinates
 	 *  @param actor the actor in which coordinate system vec is given
@@ -80,15 +106,15 @@ public class Scene2DUtils {
 		actor.setPosition(tmp.x, tmp.y);
 	}
 
-	/** @see #getPointerPosition(Stage, int) */
-	public static Vector2 getPointerPosition(Stage stage) {
-		return getPointerPosition(stage, 0);
+	/** @see #pointerPosition(Stage, int) */
+	public static Vector2 pointerPosition(Stage stage) {
+		return pointerPosition(stage, 0);
 	}
 
 	/** @param stage the Stage which coordinate system should be used
 	 *  @param pointer the pointer which position to return
 	 *  @return the position of the given pointer in stage coordinates */
-	public static Vector2 getPointerPosition(Stage stage, int pointer) {
+	public static Vector2 pointerPosition(Stage stage, int pointer) {
 		tmp.set(Gdx.input.getX(pointer), Gdx.input.getY(pointer));
 		stage.screenToStageCoordinates(tmp);
 		return tmp;

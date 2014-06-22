@@ -39,14 +39,6 @@ public class ContactMultiplexer implements ContactListener {
 		listeners.removeValue(listener, true);
 	}
 
-	public void add(int index, ContactListener listener) {
-		listeners.insert(index, listener);
-	}
-
-	public void remove(int index) {
-		listeners.removeIndex(index);
-	}
-
 	public int size() {
 		return listeners.size;
 	}
