@@ -73,7 +73,7 @@ public class Tooltip implements EventListener {
 		@Override
 		public void run() {
 			if(showAtPointer) {
-				Vector2 pos = Scene2DUtils.getPointerPosition(listenerActor.getStage());
+				Vector2 pos = Scene2DUtils.pointerPosition(listenerActor.getStage());
 				tooltip.setPosition(pos.x + offsetX, pos.y + offsetY);
 			} else
 				tooltip.setPosition(x + offsetX, y + offsetY);
