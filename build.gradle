@@ -15,7 +15,7 @@ allprojects {
 		libName = 'libgdx-utils'
 		nameAppendix = project != rootProject ? project.name : ''
 		nameFull = libName + (nameAppendix.empty ? '' : "-$nameAppendix")
-		javaVersion = 1.8
+		javaVersion = 1.7
 		libgdxVersion = '1.1.1-SNAPSHOT'
 		libManifestAttributes = [
 				'web': 'http://dermetfan.net',
