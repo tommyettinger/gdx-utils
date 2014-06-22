@@ -13,18 +13,23 @@ allprojects {
 		libGroup = 'net.dermetfan.utils.libgdx'
 		libVersion = '0.3.4-SNAPSHOT'
 		libName = 'libgdx-utils'
+		nameAppendix = project != rootProject ? project.name : ''
+		nameFull = libName + (nameAppendix.empty ? '' : "-$nameAppendix")
+		javaVersion = 1.8
+		libgdxVersion = '1.1.1-SNAPSHOT'
 		libManifestAttributes = [
 				'web': 'http://dermetfan.net',
 				'bitbucket': 'http://bitbucket.org/dermetfan/libgdx-utils',
 				'bintray': 'http://bintray.com/dermetfan/generic/libgdx-utils',
-				'version': libVersion
+				'license': 'Apache-2.0',
+				'groupId': libGroup,
+				'artifactId': nameFull,
+				'version': libVersion,
+				'libgdx': libgdxVersion,
+				'java': javaVersion,
+				'jdk': System.getProperty('java.version'),
+				'timestamp': System.currentTimeMillis()
 		]
-
-		javaVersion = 1.8
-		libgdxVersion = '1.1.1-SNAPSHOT'
-
-		nameAppendix = project != rootProject ? project.name : ''
-		nameFull = libName + (nameAppendix.empty ? '' : "-$nameAppendix")
 	}
 
 	group = libGroup
