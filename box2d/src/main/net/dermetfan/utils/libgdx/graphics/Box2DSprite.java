@@ -14,11 +14,9 @@
 
 package net.dermetfan.utils.libgdx.graphics;
 
-import static net.dermetfan.utils.libgdx.box2d.Box2DUtils.height;
-import static net.dermetfan.utils.libgdx.box2d.Box2DUtils.minX;
-import static net.dermetfan.utils.libgdx.box2d.Box2DUtils.minY;
-import static net.dermetfan.utils.libgdx.box2d.Box2DUtils.position;
-import static net.dermetfan.utils.libgdx.box2d.Box2DUtils.width;
+import java.util.Comparator;
+import java.util.Iterator;
+import java.util.function.Function;
 
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Batch;
@@ -33,9 +31,11 @@ import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.ObjectMap;
 import com.badlogic.gdx.utils.Pools;
 
-import java.util.Comparator;
-import java.util.Iterator;
-import java.util.function.Function;
+import static net.dermetfan.utils.libgdx.box2d.Box2DUtils.height;
+import static net.dermetfan.utils.libgdx.box2d.Box2DUtils.minX;
+import static net.dermetfan.utils.libgdx.box2d.Box2DUtils.minY;
+import static net.dermetfan.utils.libgdx.box2d.Box2DUtils.position;
+import static net.dermetfan.utils.libgdx.box2d.Box2DUtils.width;
 
 /** A {@link Box2DSprite} is a {@link Sprite} with additional drawing information and the abililty to draw itself on a given {@link Body} or {@link Fixture}.
  *  It is supposed to be put in the user data of {@link Fixture Fixtures} or {@link Body Bodies}. The Fixture's user data is recommend though to make use of caching which will increase performance!
