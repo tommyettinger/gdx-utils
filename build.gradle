@@ -2,7 +2,7 @@ buildscript {
 	repositories {
 		jcenter()
 	}
-	
+
 	dependencies {
 		classpath 'us.carrclan.david.gradle:gradle-site-plugin:0.1.2'
 	}
@@ -13,17 +13,20 @@ allprojects {
 		libGroup = 'net.dermetfan.utils.libgdx'
 		libVersion = '0.3.4-SNAPSHOT'
 		libName = 'libgdx-utils'
+
 		nameAppendix = project != rootProject ? project.name : ''
 		nameFull = libName + (nameAppendix.empty ? '' : "-$nameAppendix")
+
 		javaVersion = 1.7
 		libgdxVersion = '1.1.1-SNAPSHOT'
+
 		libManifestAttributes = [
 				'web': 'http://dermetfan.net',
 				'bitbucket': 'http://bitbucket.org/dermetfan/libgdx-utils',
 				'bintray': 'http://bintray.com/dermetfan/generic/libgdx-utils',
 				'license': 'Apache-2.0',
-				'groupId': libGroup,
-				'artifactId': nameFull,
+				'group': libGroup,
+				'artifact': nameFull,
 				'version': libVersion,
 				'libgdx': libgdxVersion,
 				'java': javaVersion,
@@ -45,6 +48,7 @@ allprojects {
 
 	repositories {
 		mavenCentral()
+		mavenLocal()
 		maven { url 'https://oss.sonatype.org/content/repositories/releases/' }
 		maven { url 'https://oss.sonatype.org/content/repositories/snapshots/' }
 	}
@@ -95,7 +99,7 @@ allprojects {
 		classifier = 'sources'
 		destinationDir = jar.destinationDir
 		manifest.attributes += libManifestAttributes
-		doLast { announce.local.send "$nameFull $version", 'distributed sources' }
+		doLast { announce.local.send "$nameFull $version", 'Distributed sources' }
 	}
 
 	task distJavadoc(type: Jar, dependsOn: javadoc, group: 'distribution') {
@@ -104,24 +108,17 @@ allprojects {
 		classifier = 'javadoc'
 		destinationDir = jar.destinationDir
 		manifest.attributes += libManifestAttributes
-		doLast { announce.local.send "$nameFull $version", 'distributed javadoc' }
+		doLast { announce.local.send "$nameFull $version", 'Distributed javadoc' }
 	}
 
-	task distBundle(type: Zip, dependsOn: [build, distSources, distJavadoc], group: 'distribution') {
-		description = 'Assembles a zip archive containing the binary, source and javadoc jar archives as well as the LICENSE file.'
-		from distSources.destinationDir
-		from distJavadoc.destinationDir
+	task distBundle(type: Zip, dependsOn: [jar, distSources, distJavadoc], group: 'distribution') {
+		description = 'Assembles a zip archive containing the binary, source and javadoc archives as well as the LICENSE file.'
+		from jar.archivePath
+		from distSources.archivePath
+		from distJavadoc.archivePath
 		from "$rootDir/LICENSE"
-		destinationDir = temporaryDir
-		doLast {
-			archivePath.renameTo("$jar.destinationDir.path/$archiveName")
-			announce.local.send "$nameFull $version", 'distributed bundle'
-		}
-	}
-
-	task cleanDistBundle(type: Delete, group: 'distribution') {
-		description = 'Deletes the artifacts of distBundle.'
-		delete "$jar.destinationDir.path/${nameFull}.zip"
+		destinationDir = jar.destinationDir
+		doLast { announce.local.send "$nameFull $version", 'Distributed bundle' }
 	}
 
 	// upload
@@ -132,7 +129,7 @@ allprojects {
 
 	uploadArchives.repositories.mavenDeployer {
 		beforeDeployment { deployment -> signing.signPom(deployment) }
-		repository(url: 'file://localhost/tmp/repo')
+		repository(url: 'file://localhost/tmp/m2')
 	}
 
 	site {
@@ -144,20 +141,24 @@ allprojects {
 	}
 
 	publishSite {
-		dependsOn javadoc
+		dependsOn test, javadoc
 		doFirst {
 			baseDir.mkdirs() // workaround issue #2 https://bitbucket.org/davidmc24/gradle-site-plugin/issue/2/publishsite-basedir-is-not-automatically
-			announce.local.send "$nameFull $version", "Uploading Javadoc to ${url}..."
+			announce.local.send "$nameFull $version", "Uploading javadoc to ${url}..."
 		}
-		doLast { announce.local.send "$nameFull $version", "Uploaded Javadoc to $url" }
+		doLast { announce.local.send "$nameFull $version", "Uploaded javadoc to $url" }
 		group = 'upload'
 	}
 
 	// signing
 
 	signing {
-		required { !version.endsWith("-SNAPSHOT") && gradle.taskGraph.hasTask("uploadArchives") }
+		required { !version.endsWith('-SNAPSHOT') && gradle.taskGraph.hasTask(tasks.uploadArchives) }
 		sign configurations.archives
+	}
+
+	signArchives << {
+		announce.local.send "$nameFull $version", "Signed archives artifacts"
 	}
 
 	// IDE integration
