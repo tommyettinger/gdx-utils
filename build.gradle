@@ -1,6 +1,172 @@
-apply from: 'common.gradle'
+buildscript {
+	repositories { jcenter() }
+	dependencies { classpath 'us.carrclan.david.gradle:gradle-site-plugin:0.1.2' }
+}
+
+allprojects {
+	group = 'net.dermetfan.utils.libgdx'
+
+	ext {
+		libName = 'libgdx-utils'
+
+		nameAppendix = project != rootProject ? project.name : ''
+		nameFull = libName + (nameAppendix.empty ? '' : "-$nameAppendix")
+
+		javaVersion = 1.8
+		libgdxVersion = '1.1.1-SNAPSHOT'
+
+		libManifestAttributes = [
+			'web': 'http://dermetfan.net',
+			'bitbucket': 'http://bitbucket.org/dermetfan/libgdx-utils',
+			'bintray': "http://bintray.com/dermetfan/generic/libgdx-utils${nameAppendix.empty ? '' : "-$nameAppendix"}",
+			'license': 'Apache-2.0',
+			'group': group,
+			'artifact': nameFull,
+			'version': version,
+			'libgdx': libgdxVersion,
+			'java': javaVersion,
+			'jdk': System.getProperty('java.version'),
+			'timestamp': System.currentTimeMillis()
+		]
+	}
+
+	apply plugin: 'java'
+	apply plugin: 'maven'
+	apply plugin: 'signing'
+	apply plugin: 'site'
+	apply plugin: 'idea'
+	apply plugin: 'eclipse'
+	apply plugin: 'announce'
+
+	repositories {
+		mavenCentral()
+		mavenLocal()
+		maven { url 'https://oss.sonatype.org/content/repositories/releases/' }
+		maven { url 'https://oss.sonatype.org/content/repositories/snapshots/' }
+	}
+
+	dependencies {
+		testCompile 'junit:junit:+'
+	}
+
+	// java
+
+	sourceCompatibility = javaVersion
+
+	sourceSets {
+		main {
+			java.srcDirs = ['src/main']
+			resources.srcDirs = ['src/main']
+		}
+		test.java.srcDirs = ['src/test']
+		site.resources.srcDirs = [javadoc.destinationDir.parentFile, testReportDir.parentFile]
+	}
+
+	jar {
+		baseName = libName
+		appendix = nameAppendix
+		manifest.attributes += libManifestAttributes
+	}
+
+	javadoc {
+		title = nameFull
+		options {
+			memberLevel = JavadocMemberLevel.PRIVATE
+			author true
+			setUse true
+		}
+	}
+
+	// distribution
+
+	task distSources(type: Jar, group: 'distribution') {
+		description = 'Assembles a jar archive containing the main sources and resources.'
+		from sourceSets.main.java
+		from sourceSets.main.resources
+		baseName = libName
+		appendix = nameAppendix
+		classifier = 'sources'
+		destinationDir = jar.destinationDir
+		manifest.attributes += libManifestAttributes
+		doLast { announce.local.send "$nameFull $version", 'Distributed sources' }
+	}
+
+	task distJavadoc(type: Jar, dependsOn: javadoc, group: 'distribution') {
+		description = 'Assembles a jar archive containing the javadoc.'
+		from javadoc.destinationDir
+		baseName = libName
+		appendix = nameAppendix
+		classifier = 'javadoc'
+		destinationDir = jar.destinationDir
+		manifest.attributes += libManifestAttributes
+		doLast { announce.local.send "$nameFull $version", 'Distributed javadoc' }
+	}
+
+	task distBundle(type: Zip, dependsOn: [jar, distSources, distJavadoc], group: 'distribution') {
+		description = 'Assembles a zip archive containing the binary, source and javadoc archives as well as the LICENSE file.'
+		from jar.archivePath
+		from distSources.archivePath
+		from distJavadoc.archivePath
+		from "$rootDir/LICENSE"
+		baseName = libName
+		appendix = nameAppendix
+		destinationDir = jar.destinationDir
+		doLast { announce.local.send "$nameFull $version", 'Distributed bundle' }
+	}
+
+	// upload
+
+	artifacts {
+		archives distSources, distJavadoc
+	}
+
+	uploadArchives.repositories.mavenDeployer {
+		beforeDeployment { deployment -> signing.signPom(deployment) }
+		repository(url: 'file://localhost/tmp/m2')
+	}
+
+	site {
+		url = "ftp://dermetfan.net/$libName${nameAppendix.empty ? '' : '/' + nameAppendix}"
+		authenticationInfo {
+			userName = site_ftp_username
+			password = site_ftp_password
+		}
+	}
+
+	publishSite {
+		dependsOn test, javadoc
+		doFirst {
+			baseDir.mkdirs() // workaround issue #2 https://bitbucket.org/davidmc24/gradle-site-plugin/issue/2/publishsite-basedir-is-not-automatically
+			announce.local.send "$nameFull $version", "Uploading javadoc to ${url}..."
+		}
+		doLast { announce.local.send "$nameFull $version", "Uploaded javadoc to $url" }
+		group = 'upload'
+	}
+
+	// signing
+
+	signing {
+		required { !version.endsWith('-SNAPSHOT') && gradle.taskGraph.hasTask(tasks.uploadArchives) }
+		sign configurations.archives
+	}
+
+	signArchives << {
+		announce.local.send "$nameFull $version", "Signed archives artifacts"
+	}
+
+	// IDE integration
+
+	eclipse {
+		project.name = nameFull
+		classpath {
+			sourceSets -= sourceSets.site
+			containers = ["org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-$javaVersion"]
+		}
+	}
+}
+
+version = '0.3.4-SNAPSHOT'
 
 dependencies {
 	compile "com.badlogicgames.gdx:gdx:$libgdxVersion"
-	testCompile 'junit:junit:+'
 }
