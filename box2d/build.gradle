@@ -1,0 +1,6 @@
+version = '0.3.4-SNAPSHOT'
+
+dependencies {
+	compile rootProject
+	compile "com.badlogicgames.gdx:gdx-box2d:$libgdxVersion"
+}
