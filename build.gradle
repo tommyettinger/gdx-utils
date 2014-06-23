@@ -12,7 +12,7 @@ allprojects {
 		nameAppendix = project != rootProject ? project.name : ''
 		nameFull = libName + (nameAppendix.empty ? '' : "-$nameAppendix")
 
-		javaVersion = 1.7
+		javaVersion = 1.8
 		libgdxVersion = '1.1.1-SNAPSHOT'
 
 		libManifestAttributes = [
