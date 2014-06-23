@@ -16,10 +16,12 @@ libgdx-utils is a small support library for games and applications powered by [L
 
 # Compatibility #
 
-|libgdx version|libgdx-utils version
-|-|-
-|1.1.1-SNAPSHOT|0.3.3+
-|1.1.0|0.3.2
+This table lists the latest versions compatible with each other.
+
+|libgdx|libgdx-utils|libgdx-utils-box2d
+|-|-|-
+|1.1.1-SNAPSHOT|0.3.3+|0.3.3+
+|1.1.0|0.3.2|0.3.2
 
 Check the `build.gradle` file to see the libgdx version used in each commit.
 
