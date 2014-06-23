@@ -1,17 +1,12 @@
 buildscript {
-	repositories {
-		jcenter()
-	}
-
-	dependencies {
-		classpath 'us.carrclan.david.gradle:gradle-site-plugin:0.1.2'
-	}
+	repositories { jcenter() }
+	dependencies { classpath 'us.carrclan.david.gradle:gradle-site-plugin:0.1.2' }
 }
 
 allprojects {
+	group = 'net.dermetfan.utils.libgdx'
+
 	ext {
-		libGroup = 'net.dermetfan.utils.libgdx'
-		libVersion = '0.3.4-SNAPSHOT'
 		libName = 'libgdx-utils'
 
 		nameAppendix = project != rootProject ? project.name : ''
@@ -21,22 +16,19 @@ allprojects {
 		libgdxVersion = '1.1.1-SNAPSHOT'
 
 		libManifestAttributes = [
-				'web': 'http://dermetfan.net',
-				'bitbucket': 'http://bitbucket.org/dermetfan/libgdx-utils',
-				'bintray': 'http://bintray.com/dermetfan/generic/libgdx-utils',
-				'license': 'Apache-2.0',
-				'group': libGroup,
-				'artifact': nameFull,
-				'version': libVersion,
-				'libgdx': libgdxVersion,
-				'java': javaVersion,
-				'jdk': System.getProperty('java.version'),
-				'timestamp': System.currentTimeMillis()
+			'web': 'http://dermetfan.net',
+			'bitbucket': 'http://bitbucket.org/dermetfan/libgdx-utils',
+			'bintray': "http://bintray.com/dermetfan/generic/libgdx-utils${nameAppendix.empty ? '' : "-$nameAppendix"}",
+			'license': 'Apache-2.0',
+			'group': group,
+			'artifact': nameFull,
+			'version': version,
+			'libgdx': libgdxVersion,
+			'java': javaVersion,
+			'jdk': System.getProperty('java.version'),
+			'timestamp': System.currentTimeMillis()
 		]
 	}
-
-	group = libGroup
-	version = libVersion
 
 	apply plugin: 'java'
 	apply plugin: 'maven'
@@ -67,10 +59,7 @@ allprojects {
 			resources.srcDirs = ['src/main']
 		}
 		test.java.srcDirs = ['src/test']
-		site.resources {
-			srcDirs = [javadoc.destinationDir.parentFile]
-			srcDirs = [testReportDir.parentFile]
-		}
+		site.resources.srcDirs = [javadoc.destinationDir.parentFile, testReportDir.parentFile]
 	}
 
 	jar {
@@ -105,6 +94,8 @@ allprojects {
 	task distJavadoc(type: Jar, dependsOn: javadoc, group: 'distribution') {
 		description = 'Assembles a jar archive containing the javadoc.'
 		from javadoc.destinationDir
+		baseName = libName
+		appendix = nameAppendix
 		classifier = 'javadoc'
 		destinationDir = jar.destinationDir
 		manifest.attributes += libManifestAttributes
@@ -117,6 +108,8 @@ allprojects {
 		from distSources.archivePath
 		from distJavadoc.archivePath
 		from "$rootDir/LICENSE"
+		baseName = libName
+		appendix = nameAppendix
 		destinationDir = jar.destinationDir
 		doLast { announce.local.send "$nameFull $version", 'Distributed bundle' }
 	}
@@ -172,13 +165,8 @@ allprojects {
 	}
 }
 
+version = '0.3.4-SNAPSHOT'
+
 dependencies {
 	compile "com.badlogicgames.gdx:gdx:$libgdxVersion"
-}
-
-project(':box2d') {
-	dependencies {
-		compile rootProject
-		compile "com.badlogicgames.gdx:gdx-box2d:$libgdxVersion"
-	}
 }
