@@ -16,13 +16,12 @@ package net.dermetfan.utils.libgdx.graphics;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Graphics;
-import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 
-/** An {@link AnimatedSprite} holds an {@link Animation} and sets the {@link Texture} of its super type {@link Sprite} to the correct one according to the information in the {@link Animation}.<br>
+/** An {@link AnimatedSprite} holds an {@link Animation} and sets the {@link TextureRegion} of its super type {@link Sprite} to the correct one according to the information in the {@link Animation}.<br>
  *  Usage:
  *  <p><code>Animation animation = new Animation(1 / 3f, frame1, frame2, frame3);<br>
  * 	animation.setPlayMode(Animation.LOOP);<br>
@@ -30,12 +29,12 @@ import com.badlogic.gdx.graphics.g2d.TextureRegion;
  *  You can draw using any of the {@link Sprite Sprite's} draw methods:<br>
  *  <code>animatedSprite.draw(batch);</code>
  *  @author dermetfan */
-public class AnimatedSprite extends Sprite {
+public class AnimatedSprite extends Sprite implements ManagedAnimation {
 
-	/** the {@link Animation} to display */
+	/** the {@link ManagedAnimation} to display */
 	private Animation animation;
 
-	/** the current time of the {@link Animation} */
+	/** the current time of the {@link ManagedAnimation} */
 	private float time;
 
 	/** if the animation is playing */
@@ -44,19 +43,19 @@ public class AnimatedSprite extends Sprite {
 	/** if the animation should be updated every time it's drawn */
 	private boolean autoUpdate = true;
 
-	/** if the size of the previous frame should be kept by the following frames */
+	/** if the size of the previous frame should be kept by the following frame */
 	private boolean keepSize;
 
 	/** if a frame should be centered in the previous one */
 	private boolean centerFrames;
 
-	/** creates a new {@link AnimatedSprite} with the given {@link Animation}
+	/** creates a new {@link AnimatedSprite} with the given {@link ManagedAnimation}
 	 *  @param animation the {@link #animation} to use */
 	public AnimatedSprite(Animation animation) {
 		this(animation, false);
 	}
 
-	/** creates a new {@link AnimatedSprite} with the given {@link Animation}
+	/** creates a new {@link AnimatedSprite} with the given {@link ManagedAnimation}
 	 *  @param animation the {@link #animation} to use
 	 *  @param keepSize the {@link #keepSize} to use */
 	public AnimatedSprite(Animation animation, boolean keepSize) {
@@ -71,6 +70,7 @@ public class AnimatedSprite extends Sprite {
 	}
 
 	/** updates the {@link AnimatedSprite} with the given delta time */
+	@Override
 	public void update(float delta) {
 		oldX = getX();
 		oldY = getY();
@@ -111,84 +111,39 @@ public class AnimatedSprite extends Sprite {
 		}
 	}
 
-	/** flips all frames
-	 *  @see #flipFrames(boolean, boolean, boolean) */
-	public void flipFrames(boolean flipX, boolean flipY) {
-		flipFrames(flipX, flipY, false);
-	}
-
-	/** flips all frames
-	 *  @see #flipFrames(float, float, boolean, boolean, boolean) */
-	public void flipFrames(boolean flipX, boolean flipY, boolean set) {
-		flipFrames(0, animation.getAnimationDuration(), flipX, flipY, set);
-	}
-
-	/** flips all frames
-	 *  @see #flipFrames(float, float, boolean, boolean, boolean) */
-	public void flipFrames(float startTime, float endTime, boolean flipX, boolean flipY) {
-		flipFrames(startTime, endTime, flipX, flipY, false);
-	}
-
-	/** flips all frames from {@code startTime} to {@code endTime}
-	 *  @param startTime the animation state time of the first frame to flip
-	 *  @param endTime the animation state time of the last frame to flip
-	 *  @param set if the frames should be set to {@code flipX} and {@code flipY} instead of actually flipping them */
-	public void flipFrames(float startTime, float endTime, boolean flipX, boolean flipY, boolean set) {
-		for(float t = startTime; t < endTime; t += animation.getFrameDuration()) {
-			TextureRegion frame = animation.getKeyFrame(t);
-			frame.flip(flipX && (!set || !frame.isFlipX()), flipY && (!set || !frame.isFlipY()));
-		}
-	}
-
-	/** sets {@link #playing} to true */
-	public void play() {
-		playing = true;
-	}
-
-	/** sets {@link #playing} to false */
-	public void pause() {
-		playing = false;
-	}
-
-	/** pauses and sets the {@link #time} to 0 */
-	public void stop() {
-		playing = false;
-		time = 0;
-	}
-
 	/** @param time the {@link #time} to go to */
+	@Override
 	public void setTime(float time) {
 		this.time = time;
 	}
 
 	/** @return the current {@link #time} */
+	@Override
 	public float getTime() {
 		return time;
 	}
 
 	/** @return the {@link #animation} */
-	public Animation getAnimation() {
+	@Override
+	public Animation getAnimated() {
 		return animation;
 	}
 
 	/** @param animation the {@link #animation} to set */
-	public void setAnimation(Animation animation) {
+	public void setAnimated(Animation animation) {
 		this.animation = animation;
 	}
 
 	/** @return if this {@link AnimatedSprite} is playing */
+	@Override
 	public boolean isPlaying() {
 		return playing;
 	}
 
 	/** @param playing if the {@link AnimatedSprite} should be playing */
+	@Override
 	public void setPlaying(boolean playing) {
 		this.playing = playing;
-	}
-
-	/** @return if the {@link #animation} has finished playing */
-	public boolean isAnimationFinished() {
-		return animation.isAnimationFinished(time);
 	}
 
 	/** @return the {@link #autoUpdate} */
@@ -201,7 +156,7 @@ public class AnimatedSprite extends Sprite {
 		this.autoUpdate = autoUpdate;
 	}
 
-	/** @return the {{@link #keepSize} */
+	/** @return the {@link #keepSize} */
 	public boolean isKeepSize() {
 		return keepSize;
 	}
