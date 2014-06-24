@@ -1,4 +1,4 @@
-/** Copyright 2013 Robin Stumm (serverkorken@googlemail.com, http://dermetfan.net/)
+/** Copyright 2014 Robin Stumm (serverkorken@gmail.com, http://dermetfan.net)
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -19,66 +19,42 @@ import com.badlogic.gdx.physics.box2d.ContactImpulse;
 import com.badlogic.gdx.physics.box2d.ContactListener;
 import com.badlogic.gdx.physics.box2d.Manifold;
 import com.badlogic.gdx.utils.Array;
+import net.dermetfan.utils.libgdx.Multiplexer;
 
 /** a {@link ContactListener} that sends {@link Contact Contacts} to an {@link Array} of ContactListeners
  *  @author dermetfan */
-public class ContactMultiplexer implements ContactListener {
+public class ContactMultiplexer extends Multiplexer<ContactListener> implements ContactListener {
 
-	/** the {@link ContactListener ContactListeners} to notify */
-	private Array<ContactListener> listeners;
-
-	public ContactMultiplexer(ContactListener... listeners) {
-		this.listeners = new Array<>(listeners);
+	public ContactMultiplexer(ContactListener... receivers) {
+		super(receivers);
 	}
 
-	public void add(ContactListener listener) {
-		listeners.add(listener);
-	}
-
-	public void remove(ContactListener listener) {
-		listeners.removeValue(listener, true);
-	}
-
-	public int size() {
-		return listeners.size;
-	}
-
-	public void clear() {
-		listeners.clear();
+	public ContactMultiplexer(Array<ContactListener> receivers) {
+		super(receivers);
 	}
 
 	@Override
 	public void beginContact(Contact contact) {
-		for(ContactListener listener : listeners)
+		for(ContactListener listener : receivers)
 			listener.beginContact(contact);
 	}
 
 	@Override
 	public void preSolve(Contact contact, Manifold oldManifold) {
-		for(ContactListener listener : listeners)
+		for(ContactListener listener : receivers)
 			listener.preSolve(contact, oldManifold);
 	}
 
 	@Override
 	public void postSolve(Contact contact, ContactImpulse impulse) {
-		for(ContactListener listener : listeners)
+		for(ContactListener listener : receivers)
 			listener.postSolve(contact, impulse);
 	}
 
 	@Override
 	public void endContact(Contact contact) {
-		for(ContactListener listener : listeners)
+		for(ContactListener listener : receivers)
 			listener.endContact(contact);
-	}
-
-	/** @return the {@link #listeners} */
-	public Array<ContactListener> getListeners() {
-		return listeners;
-	}
-
-	/** @param listeners the {@link #listeners} to set */
-	public void setListeners(Array<ContactListener> listeners) {
-		this.listeners = listeners;
 	}
 
 }
