@@ -1,4 +1,4 @@
-/** Copyright 2014 Robin Stumm (serverkorken@googlemail.com, http://dermetfan.net/)
+/** Copyright 2014 Robin Stumm (serverkorken@gmail.com, http://dermetfan.net)
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@
 
 package net.dermetfan.utils.libgdx.scene2d.ui;
 
-import net.dermetfan.utils.libgdx.scene2d.Scene2DUtils;
+import java.io.File;
 
 import com.badlogic.gdx.Files.FileType;
 import com.badlogic.gdx.Gdx;
@@ -44,8 +44,7 @@ import com.badlogic.gdx.utils.Json;
 import com.badlogic.gdx.utils.Json.Serializable;
 import com.badlogic.gdx.utils.JsonValue;
 import com.badlogic.gdx.utils.Pools;
-
-import java.io.File;
+import net.dermetfan.utils.libgdx.scene2d.Scene2DUtils;
 
 /** A {@link TextField} showing the {@link #pathField} of the currently browsed folder with {@link #backButton} and {@link #parentButton} buttons.
  *  There's a {@link #contentsPane scrollable} {@link List} under those showing the contents of the currently browsed folder and {@link #chooseButton} and {@link #cancelButton} buttons.

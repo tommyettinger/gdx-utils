@@ -1,4 +1,4 @@
-/** Copyright 2013 Robin Stumm (serverkorken@googlemail.com, http://dermetfan.net/)
+/** Copyright 2014 Robin Stumm (serverkorken@gmail.com, http://dermetfan.net)
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -14,9 +14,6 @@
 
 package net.dermetfan.utils.libgdx.maps;
 
-import static net.dermetfan.utils.libgdx.maps.MapUtils.getProperty;
-import static net.dermetfan.utils.libgdx.maps.MapUtils.toTiledMapTileArray;
-
 import java.util.Comparator;
 
 import com.badlogic.gdx.maps.MapProperties;
@@ -30,6 +27,9 @@ import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.ObjectMap;
 import com.badlogic.gdx.utils.ObjectMap.Entries;
 import com.badlogic.gdx.utils.ObjectMap.Entry;
+
+import static net.dermetfan.utils.libgdx.maps.MapUtils.getProperty;
+import static net.dermetfan.utils.libgdx.maps.MapUtils.toTiledMapTileArray;
 
 /** Animates the tiles in a {@link TiledMapTileLayer tile map layer} by replacing them with {@link AnimatedTiledMapTile animated tiles}.<br>
  * 
