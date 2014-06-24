@@ -25,6 +25,7 @@ public abstract class Multiplexer<T> {
 	protected Array<T> receivers;
 
 	/** @param receivers the {@link #receivers} to set */
+	@SafeVarargs
 	public Multiplexer(T... receivers) {
 		this.receivers = new Array<>(receivers);
 	}
