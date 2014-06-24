@@ -1,9 +1,22 @@
+/** Copyright 2014 Robin Stumm (serverkorken@gmail.com, http://dermetfan.net)
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License. */
+
 package net.dermetfan.utils.libgdx.scene2d.ui;
 
-import com.badlogic.gdx.math.Vector2;
+import java.lang.Override;import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Event;
-import com.badlogic.gdx.scenes.scene2d.EventListener;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.InputEvent.Type;
 import com.badlogic.gdx.scenes.scene2d.Touchable;
@@ -20,16 +33,7 @@ import static com.badlogic.gdx.scenes.scene2d.InputEvent.Type.mouseMoved;
 import static com.badlogic.gdx.scenes.scene2d.InputEvent.Type.touchDown;
 import static com.badlogic.gdx.scenes.scene2d.InputEvent.Type.touchUp;
 
-/** An {@link EventListener} that shows or hides an Actor at the event or pointer position on different events with an optional offset. Making only the {@link Touchable#childrenOnly children} of {@link #tooltip} touchable or {@link Touchable#disabled disabling} touchability completely, you can also create interactive tooltips.
- *  <p>
- *  	If you want to set flags manually, note that the {@link Enum#ordinal() ordinal} value of the {@link Type event type} is used as flag and masked with {@link #mask}.
- *  	For example, this is how you would add the {@link Type#scrolled} event manually: {@code tooltip.setHideFlags(tooltip.getHideFlags() | Tooltip.mask << Type.scrolled.ordinal())}
- *  </p>
- *  @author dermetfan */
-public class Tooltip implements EventListener {
-
-	/** the actual tooltip */
-	private Actor tooltip;
+public class Tooltip<T extends Actor> extends ContextPopup<T> {
 
 	/** if the tooltip should follow the pointer */
 	private boolean followPointer;
@@ -37,19 +41,19 @@ public class Tooltip implements EventListener {
 	/** if the tooltip should be shown at the pointer */
 	private boolean showAtPointer = true;
 
-	/** the delay before {@link #show()} */
+	/** the delay before {@link #show(Event)} */
 	private float showDelay = .75f;
 
-	/** the delay before {@link #hide()} */
+	/** the delay before {@link #hide(Event)} */
 	private float hideDelay;
 
 	/** the offset of the tooltip in respect to the mouse or enter position */
 	private float offsetX, offsetY;
 
-	/** if not null, {@link #show()} will set the touchability of the {@link #tooltip} to this */
+	/** if not null, {@link #show(Event)} will set the touchability of the {@link #popup} to this */
 	private Touchable showTouchable = Touchable.enabled;
 
-	/** if not null, {@link #hide()} will set the touchability of the {@link #tooltip} to this */
+	/** if not null, {@link #hide(Event)} will set the touchability of the {@link #popup} to this */
 	private Touchable hideTouchable = Touchable.disabled;
 
 	/** the mask bits */
@@ -58,47 +62,45 @@ public class Tooltip implements EventListener {
 	/** the flags that define when to hide, show or cancel the tooltip */
 	private int showFlags = mask << enter.ordinal(), hideFlags = mask << touchDown.ordinal() | mask << touchUp.ordinal() | mask << exit.ordinal(), cancelFlags = mask << touchDown.ordinal() | mask << exit.ordinal();
 
-	/** calls {@link Tooltip#show()} after setting the position of the tooltip
+	/** calls {@link #show(Event)} after setting the position of the popup
 	 *  @see #run()
 	 *  @author dermetfan */
 	protected class ShowTask extends Task {
+		private final InputEvent event = new InputEvent();
 
-		/** @see InputEvent#getListenerActor() */
-		private Actor listenerActor;
-
-		/** @see InputEvent#getStageX() */
-		private float x, y;
-
-		/** calls {@link Tooltip#show()} after setting the position of the tooltip */
+		/** calls {@link #show(Event)} after setting the position of the tooltip */
 		@Override
 		public void run() {
 			if(showAtPointer) {
-				Vector2 pos = Scene2DUtils.pointerPosition(listenerActor.getStage());
-				tooltip.setPosition(pos.x + offsetX, pos.y + offsetY);
+				Vector2 pos = Scene2DUtils.pointerPosition(event.getListenerActor().getStage());
+				popup.setPosition(pos.x + offsetX, pos.y + offsetY);
 			} else
-				tooltip.setPosition(x + offsetX, y + offsetY);
-			show();
+				popup.setPosition(event.getStageX() + offsetX, event.getStageY() + offsetY);
+			show(event);
 		}
+	}
 
+	/** calls {@link #hide(Event)}
+	 *  @see #run()
+	 *  @author dermetfan */
+	protected class HideTask extends Task {
+		private final InputEvent event = new InputEvent();
+
+		@Override
+		public void run() {
+			hide(event);
+		}
 	}
 
 	/** a local {@link ShowTask} instance */
 	private final ShowTask showTask = new ShowTask();
 
-	/** @see #hide() */
-	private final Task hideTask = new Task() {
-		@Override
-		public void run() {
-			hide();
-		}
-	};
+	/** @see #hide(Event) */
+	private final HideTask hideTask = new HideTask();
 
-	/** <strong>Use with caution.</strong> {@link #setTooltip(Actor) Set} a tooltip before usage (may throw NPEs otherwise). */
-	public Tooltip() {}
-
-	/** @param tooltip the {@link #tooltip} */
-	public Tooltip(Actor tooltip) {
-		this.tooltip = tooltip;
+	/** @see Popup#Popup(Actor)  */
+	public Tooltip(T popup) {
+		super(popup);
 	}
 
 	@Override
@@ -106,29 +108,29 @@ public class Tooltip implements EventListener {
 		if(!(e instanceof InputEvent))
 			return false;
 		InputEvent event = (InputEvent) e;
-		if(event.getRelatedActor() == tooltip)
+		if(event.getRelatedActor() == popup)
 			return false;
 
 		Type type = event.getType();
 		int flag = mask << type.ordinal();
 
 		if(type == mouseMoved && followPointer)
-			tooltip.setPosition(event.getStageX() + offsetX, event.getStageY() + offsetY);
+			popup.setPosition(event.getStageX() + offsetX, event.getStageY() + offsetY);
 
 		if((cancelFlags & flag) == flag)
 			showTask.cancel();
 
-		if((hideFlags & flag) == flag)
+		if((hideFlags & flag) == flag) {
+			Scene2DUtils.copy(hideTask.event, event);
 			if(hideDelay > 0) {
 				if(!hideTask.isScheduled())
 					Timer.schedule(hideTask, hideDelay);
 			} else
 				hideTask.run();
+		}
 
 		if((showFlags & flag) == flag) {
-			showTask.listenerActor = event.getListenerActor();
-			showTask.x = event.getStageX();
-			showTask.y = event.getStageY();
+			Scene2DUtils.copy(showTask.event, event);
 			if(showDelay > 0) {
 				if(!showTask.isScheduled())
 					Timer.schedule(showTask, showDelay);
@@ -138,21 +140,28 @@ public class Tooltip implements EventListener {
 		return false;
 	}
 
-	/** Brings the {@link #tooltip} {@link Actor#toFront() to front} and {@link Actions#fadeIn(float) fades} it in for {@link Dialog#fadeDuration} seconds. Override this for custom behavior. */
-	public void show() {
-		tooltip.toFront();
+	/** Brings the {@link #popup} {@link Actor#toFront() to front} and {@link Actions#fadeIn(float) fades} it in for {@link Dialog#fadeDuration} seconds.
+	 *  @param event {@link Scene2DUtils#copy(InputEvent, InputEvent) copied} {@link ShowTask#event} from {@link #showTask}, so cancelling has no effect */
+	@Override
+	public boolean show(Event event) {
+		super.show(event);
 		SequenceAction sequence = Actions.sequence(Actions.fadeIn(Dialog.fadeDuration));
 		if(showTouchable != null)
 			sequence.addAction(Actions.touchable(showTouchable));
-		tooltip.addAction(sequence);
+		popup.addAction(sequence);
+		return false;
 	}
 
-	/** {@link Actions#fadeOut(float) Fades} the tooltip out for {@link Dialog#fadeDuration} seconds. Override this for custom behavior. */
-	public void hide() {
+	/** {@link Actions#fadeOut(float) Fades} the tooltip out for {@link Dialog#fadeDuration} seconds.
+	 *  @param event {@link Scene2DUtils#copy(InputEvent, InputEvent) copied} {@link HideTask#event} from {@link #hideTask}, so cancelling has no effect */
+	@Override
+	public boolean hide(Event event) {
+		super.hide(event);
 		SequenceAction sequence = Actions.sequence(Actions.fadeOut(Dialog.fadeDuration));
 		if(hideTouchable != null)
 			sequence.addAction(Actions.touchable(hideTouchable));
-		tooltip.addAction(sequence);
+		popup.addAction(sequence);
+		return false;
 	}
 
 	/** @param flag the {@link Type} on which to show the tooltip */
@@ -227,14 +236,9 @@ public class Tooltip implements EventListener {
 		this.offsetY = offsetY;
 	}
 
-	/** @return the {@link #tooltip} */
-	public Actor getTooltip() {
-		return tooltip;
-	}
-
-	/** @param tooltip the {@link #tooltip} to set */
-	public void setTooltip(Actor tooltip) {
-		this.tooltip = tooltip;
+	/** @param popup the {@link #popup} to set */
+	public void setPopup(T popup) {
+		this.popup = popup;
 	}
 
 	/** @return the {@link #followPointer} */
