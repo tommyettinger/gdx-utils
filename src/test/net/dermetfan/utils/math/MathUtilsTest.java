@@ -1,13 +1,26 @@
 package net.dermetfan.utils.math;
 
+import net.dermetfan.utils.ArrayUtils;
+import org.junit.Test;
+
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-import net.dermetfan.utils.ArrayUtils;
-
-import org.junit.Test;
 
 public class MathUtilsTest {
+
+	@Test
+	public void factorial() {
+		assertEquals(1, MathUtils.factorial(0));
+		assertEquals(1, MathUtils.factorial(1));
+		assertEquals(120, MathUtils.factorial(5));
+		assertEquals(1, MathUtils.factorial(0f), 0);
+		assertEquals(1, MathUtils.factorial(.5f), 0);
+		assertEquals(1, MathUtils.factorial(1f), 0);
+		assertEquals(120, MathUtils.factorial(5f), 0);
+		assertEquals(1.25f, MathUtils.factorial(1.25f), 0);
+		assertEquals(9.140625f, MathUtils.factorial(3.25f), 0);
+	}
 
 	@Test
 	public void normalize() {
