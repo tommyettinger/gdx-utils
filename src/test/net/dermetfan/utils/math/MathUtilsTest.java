@@ -10,6 +10,16 @@ import static org.junit.Assert.assertTrue;
 public class MathUtilsTest {
 
 	@Test
+	public void crossSum() {
+		assertEquals(0, MathUtils.crossSum(0));
+		assertEquals(1, MathUtils.crossSum(1));
+		assertEquals(3, MathUtils.crossSum(3));
+		assertEquals(1, MathUtils.crossSum(10));
+		assertEquals(10, MathUtils.crossSum(55));
+		assertEquals(19, MathUtils.crossSum(793));
+	}
+
+	@Test
 	public void factorial() {
 		assertEquals(1, MathUtils.factorial(0));
 		assertEquals(1, MathUtils.factorial(1));
