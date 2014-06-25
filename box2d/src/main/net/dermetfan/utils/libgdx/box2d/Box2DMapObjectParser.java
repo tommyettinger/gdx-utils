@@ -142,7 +142,7 @@ public class Box2DMapObjectParser {
 		 *  @param mapObject the map object used to create the joint */
 		public void created(Joint joint, MapObject mapObject);
 
-		/**    Does nothing. Subclass this if you only want to override only some methods.
+		/** Does nothing. Subclass this if you only want to override only some methods.
 		 *  @author dermetfan */
 		public static class Adapter implements Listener {
 
@@ -313,7 +313,7 @@ public class Box2DMapObjectParser {
 	}
 
 	/** creates a new {@link Box2DMapObjectParser} using the given {@link Listener}, {@link Aliases}, {@link #tileWidth} and {@link #tileHeight}
-	 *    @param aliases the {@link #aliases}
+	 *  @param aliases the {@link #aliases}
 	 *  @param listener the {@link #listener}
 	 *  @param tileWidth the {@link #tileWidth}
 	 *  @param tileHeight the {@link #tileHeight} */
