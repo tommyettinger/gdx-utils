@@ -18,6 +18,20 @@ package net.dermetfan.utils.math;
  *  @author dermetfan */
 public class MathUtils {
 
+	/** int wrapper for {@link #factorial(float)}
+	 *  @see #factorial(float) */
+	public static int factorial(int n) {
+		return (int) factorial((float) n);
+	}
+
+	/** @param n the number to find the factorial for
+	 *  @return the factorial of the given number */
+	public static float factorial(float n) {
+		if(n < 0)
+			throw new IllegalArgumentException("n must be >= 0: " + n);
+		return n <= 1 ? 1 : n * factorial(n - 1);
+	}
+
 	/** @return if the given value is in between min and max (exclusive)
 	 *  @see #between(float, float, float, boolean) */
 	public static boolean between(float value, float min, float max) {
