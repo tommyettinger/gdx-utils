@@ -18,6 +18,17 @@ package net.dermetfan.utils.math;
  *  @author dermetfan */
 public class MathUtils {
 
+	/** @param n the number which cross sum to calculate
+	 *  @return the cross sum (sum of a number's digits) */
+	public static int crossSum(int n) {
+		int csum = 0;
+		while(n > 0) {
+			csum += n % 10;
+			n /= 10;
+		}
+		return csum;
+	}
+
 	/** int wrapper for {@link #factorial(float)}
 	 *  @see #factorial(float) */
 	public static int factorial(int n) {

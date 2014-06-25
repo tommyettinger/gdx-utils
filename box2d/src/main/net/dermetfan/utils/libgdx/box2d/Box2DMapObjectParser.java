@@ -93,10 +93,10 @@ public class Box2DMapObjectParser {
 
 	}
 
-	/**    Allows modification of {@link MapObject MapObjects} before they are used to create Box2D objects.<br>
-	 * 	<strong>Note that the map object given to you is the one directly from the map, so if you modify it, you modify the {@link Map} instance! If you want to avoid that, make a copy.</strong><br>
-	 * 	Also listens to Box2D objects that have been created.
-	 *    @author dermetfan */
+	/** Allows modification of {@link MapObject MapObjects} before they are used to create Box2D objects.<br>
+	 *  <strong>Note that the map object given to you is the one directly from the map, so if you modify it, you modify the {@link Map} instance! If you want to avoid that, make a copy.</strong><br>
+	 *  Also listens to Box2D objects that have been created.
+	 *  @author dermetfan */
 	public static interface Listener {
 
 		/** @param parser the {@link Box2DMapObjectParser} instance that is going to {@link Box2DMapObjectParser#load(World, Map) process} a map */
@@ -238,6 +238,11 @@ public class Box2DMapObjectParser {
 	/** if concave polygons should be triangulated instead of being decomposed into convex polygons */
 	private boolean triangulate;
 
+	/** the properties {@link MapObject MapObjects} will inherit in {@link #createBody(World, MapObject)}, {@link #createFixture(MapObject)} and {@link #createJoint(MapObject)} */
+	private MapProperties heritage;
+
+	// state variables
+
 	/** the parsed {@link Body Bodies} */
 	private ObjectMap<String, Body> bodies = new ObjectMap<>();
 
@@ -246,11 +251,6 @@ public class Box2DMapObjectParser {
 
 	/** the parsed {@link Joint Joints} */
 	private ObjectMap<String, Joint> joints = new ObjectMap<>();
-
-	// state variables
-
-	/** the properties {@link MapObject MapObjects} will inherit in {@link #createBody(World, MapObject)}, {@link #createFixture(MapObject)} and {@link #createJoint(MapObject)} */
-	private MapProperties heritage;
 
 	/** the {@link MapProperties} of the currently {@link #load(World, Map) loading} map */
 	private MapProperties mapProperties;
