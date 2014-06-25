@@ -29,7 +29,7 @@ public class TargetedContextPopup<T extends Actor> extends ContextPopup<T> {
 	private final Array<Actor> targets;
 
 	/** @param target the {@link #targets target} to add
-	 *  @see Popup#Popup(Actor) */
+	 *  @see net.dermetfan.utils.libgdx.scene2d.Popup#Popup(Actor) */
 	public TargetedContextPopup(T popup, Actor target) {
 		super(popup);
 		this.targets = new Array<>(1);
@@ -37,14 +37,14 @@ public class TargetedContextPopup<T extends Actor> extends ContextPopup<T> {
 	}
 
 	/** @param targets the {@link #targets} to add
-	 *  @see Popup#Popup(Actor) */
+	 *  @see net.dermetfan.utils.libgdx.scene2d.Popup#Popup(Actor) */
 	public TargetedContextPopup(T popup, Actor... targets) {
 		super(popup);
 		this.targets = new Array<>(targets);
 	}
 
 	/** @param targets the {@link #targets} to add
-	 *  @see Popup#Popup(Actor) */
+	 *  @see net.dermetfan.utils.libgdx.scene2d.Popup#Popup(Actor) */
 	public TargetedContextPopup(T popup, Array<Actor> targets) {
 		super(popup);
 		this.targets = new Array<>(targets);
