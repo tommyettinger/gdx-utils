@@ -98,7 +98,7 @@ public class Tooltip<T extends Actor> extends ContextPopup<T> {
 	/** @see #hide(Event) */
 	private final HideTask hideTask = new HideTask();
 
-	/** @see Popup#Popup(Actor)  */
+	/** @see net.dermetfan.utils.libgdx.scene2d.Popup#Popup(Actor)  */
 	public Tooltip(T popup) {
 		super(popup);
 	}
