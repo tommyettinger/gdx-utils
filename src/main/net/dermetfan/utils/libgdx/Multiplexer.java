@@ -61,6 +61,7 @@ public abstract class Multiplexer<T> {
 	}
 
 	/** @param receivers the {@link #receivers} to set */
+	@SuppressWarnings("unchecked")
 	public void setReceivers(T... receivers) {
 		this.receivers.clear();
 		this.receivers.addAll(receivers);
