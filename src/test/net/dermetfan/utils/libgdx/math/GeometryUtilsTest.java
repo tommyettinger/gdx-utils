@@ -15,6 +15,11 @@ import static org.junit.Assert.assertTrue;
 public class GeometryUtilsTest {
 
 	@Test
+	public void invertAxis() {
+		assertEquals(5, GeometryUtils.invertAxis(27, 32), 0);
+	}
+
+	@Test
 	public void between() {
 		Vector2 a = new Vector2(0, 0), b = new Vector2(1, 1);
 		assertTrue(GeometryUtils.between(new Vector2(.5f, .5f), a, b));

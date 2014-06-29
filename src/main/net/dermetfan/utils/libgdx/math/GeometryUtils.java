@@ -419,9 +419,7 @@ public abstract class GeometryUtils {
 
 	/** @see #areVerticesClockwise(Polygon) */
 	public static boolean areVerticesClockwise(float[] vertices) {
-		if(vertices.length <= 4)
-			return true;
-		return area(vertices) < 0;
+		return vertices.length <= 4 || area(vertices) < 0;
 	}
 
 	/** used in {@link #arrangeClockwise(Array)} */
@@ -498,16 +496,10 @@ public abstract class GeometryUtils {
 	}
 
 	/** @param coord the position of the object
-	 *  @param size the size of the object
 	 *  @param axisSize the size of the axis
 	 *  @return the position of the object on the axis, inverted from going to positive to negative */
-	public static float toAxisNegative(float coord, float size, float axisSize) {
-		return mirror(coord, axisSize / 2) - size;
-	}
-
-	/** @see #toAxisNegative(float, float, float) */
-	public static float toAxisPositive(float coord, float size, float axisSize) {
-		return mirror(coord, axisSize / 2) + size;
+	public static float invertAxis(float coord, float axisSize) {
+		return mirror(coord, axisSize / 2);
 	}
 
 	/** @param vertices the vertices of the polygon to examine for convexity
@@ -531,7 +523,6 @@ public abstract class GeometryUtils {
 					return false;
 			}
 		}
-
 		return true;
 	}
 
