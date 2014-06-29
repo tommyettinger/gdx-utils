@@ -14,16 +14,8 @@
 
 package net.dermetfan.utils.libgdx.math;
 
-import static net.dermetfan.utils.ArrayUtils.wrapIndex;
-import static net.dermetfan.utils.math.MathUtils.amplitude;
-import static net.dermetfan.utils.math.MathUtils.det;
-import static net.dermetfan.utils.math.MathUtils.max;
-import static net.dermetfan.utils.math.MathUtils.min;
-
 import java.util.Arrays;
 import java.util.Comparator;
-
-import net.dermetfan.utils.ArrayUtils;
 
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.math.EarClippingTriangulator;
@@ -37,6 +29,14 @@ import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.FloatArray;
 import com.badlogic.gdx.utils.Pools;
 import com.badlogic.gdx.utils.ShortArray;
+import net.dermetfan.utils.ArrayUtils;
+
+import static net.dermetfan.utils.ArrayUtils.wrapIndex;
+import static net.dermetfan.utils.math.MathUtils.amplitude;
+import static net.dermetfan.utils.math.MathUtils.det;
+import static net.dermetfan.utils.math.MathUtils.max;
+import static net.dermetfan.utils.math.MathUtils.min;
+import static net.dermetfan.utils.math.MathUtils.mirror;
 
 /** Provides some useful methods for geometric calculations. Note that many methods return the same array instance so make a copy for subsequent calls.
  *  @author dermetfan */
@@ -495,6 +495,19 @@ public abstract class GeometryUtils {
 		}
 
 		return area / 2;
+	}
+
+	/** @param coord the position of the object
+	 *  @param size the size of the object
+	 *  @param axisSize the size of the axis
+	 *  @return the position of the object on the axis, inverted from going to positive to negative */
+	public static float toAxisNegative(float coord, float size, float axisSize) {
+		return mirror(coord, axisSize / 2) - size;
+	}
+
+	/** @see #toAxisNegative(float, float, float) */
+	public static float toAxisPositive(float coord, float size, float axisSize) {
+		return mirror(coord, axisSize / 2) + size;
 	}
 
 	/** @param vertices the vertices of the polygon to examine for convexity
