@@ -14,13 +14,14 @@
 
 package net.dermetfan.utils.libgdx.box2d;
 
-import static net.dermetfan.utils.math.MathUtils.normalize;
-import net.dermetfan.utils.Accessor;
-
 import com.badlogic.gdx.math.Interpolation;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Body;
+import net.dermetfan.utils.Accessor;
+
+import static net.dermetfan.utils.math.MathUtils.normalize;
+import static net.dermetfan.utils.math.MathUtils.mirror;
 
 /** navigates bodies to a destination
  *  @author dermetfan */
@@ -59,7 +60,8 @@ public class Autopilot {
 	public static float calculateTorque(Vector2 target, float rotation, float angularVelocity, float inertia, float force, float delta) {
 		// http://www.iforce2d.net/b2dtut/rotate-to-angle
 		float rotate = MathUtils.atan2(target.y, target.x) - (rotation + angularVelocity * delta);
-		rotate = normalize(rotate, MathUtils.PI, MathUtils.PI2);
+		rotate = normalize(rotate, -MathUtils.PI, MathUtils.PI);
+		rotate = mirror(rotate, 0); // FIXME simulate whatever the previous (broken) MathUtils#normalize(..) method did
 		return inertia * (rotate / MathUtils.PI2 * force * delta) / delta;
 	}
 

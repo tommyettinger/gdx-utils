@@ -14,13 +14,13 @@
 
 package net.dermetfan.utils.libgdx.maps;
 
-import static net.dermetfan.utils.libgdx.maps.MapUtils.getProperty;
-
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.io.Writer;
-import java.util.HashSet;
 import java.util.Iterator;
-import java.util.Set;
+import java.util.zip.DeflaterOutputStream;
+import java.util.zip.GZIPOutputStream;
 
 import com.badlogic.gdx.maps.Map;
 import com.badlogic.gdx.maps.MapLayer;
@@ -44,21 +44,37 @@ import com.badlogic.gdx.math.Ellipse;
 import com.badlogic.gdx.math.Polygon;
 import com.badlogic.gdx.math.Polyline;
 import com.badlogic.gdx.math.Rectangle;
+import com.badlogic.gdx.utils.Array;
+import com.badlogic.gdx.utils.Base64Coder;
+import com.badlogic.gdx.utils.Pools;
 import com.badlogic.gdx.utils.StringBuilder;
 import com.badlogic.gdx.utils.XmlWriter;
+import net.dermetfan.utils.libgdx.math.GeometryUtils;
+
+import static net.dermetfan.utils.libgdx.maps.MapUtils.getProperty;
+import static net.dermetfan.utils.libgdx.maps.TmxMapWriter.Format.Base64;
+import static net.dermetfan.utils.libgdx.maps.TmxMapWriter.Format.Base64Gzip;
+import static net.dermetfan.utils.libgdx.maps.TmxMapWriter.Format.Base64Zlib;
+import static net.dermetfan.utils.libgdx.maps.TmxMapWriter.Format.CSV;
+import static net.dermetfan.utils.libgdx.maps.TmxMapWriter.Format.XML;
 
 /** an {@link XmlWriter} with additional {@link #tmx(Map, Format) tmx(..)} methods
  *  @author dermetfan */
 public class TmxMapWriter extends XmlWriter {
 
-	/** the encoding and compression of {@link TiledMapTileLayer layer} data
+	/** the encoding of {@link TiledMapTileLayer layer} data
 	 *  @author dermetfan */
 	public static enum Format {
 		XML, CSV, Base64, Base64Zlib, Base64Gzip
 	}
 
-	/** a temporary HashSet for use with {@link #tmx(MapProperties, Set)} */
-	private final HashSet<String> excludedKeys = new HashSet<>();
+	/** The height of a tile, to invert the y-axis. {@link #setTileHeight(int) Set} this explicitly if you wan to write something that does not know the layer size.
+	 *  @see #layerHeight */
+	private int tileHeight;
+
+	/** The height of a layer, to invert the y-axis. {@link #setLayerHeight(int) Set} this explicitly if you want to write something that does not know the layer size, like a {@link #tmx(MapLayer) single} or {@link #tmx(MapLayers, Format) multiple} layers or {@link #tmx(MapObject) object}{@link #tmx(MapObjects) s}.
+	 *  @see #tileHeight */
+	private int layerHeight;
 
 	/** creates a new {@link TmxMapWriter} using the given {@link Writer} */
 	public TmxMapWriter(Writer writer) {
@@ -70,16 +86,24 @@ public class TmxMapWriter extends XmlWriter {
 	 *  @return this {@link TmxMapWriter} */
 	public TmxMapWriter tmx(Map map, Format format) throws IOException {
 		append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
+		append("<!DOCTYPE map SYSTEM \"http://mapeditor.org/dtd/1.0/map.dtd\">\n");
 
 		MapProperties props = map.getProperties();
+		int oldTileHeight = tileHeight;
+		tileHeight = getProperty(props, "tileheight", tileHeight);
+		int oldLayerHeight = layerHeight;
+		layerHeight = getProperty(props, "height", layerHeight);
+
 		element("map");
 		attribute("version", "1.0");
 		attribute("orientation", getProperty(props, "orientation", "orthogonal"));
 		attribute("width", getProperty(props, "width", 0));
-		attribute("height", getProperty(props, "height", 0));
+		attribute("height", layerHeight);
 		attribute("tilewidth", getProperty(props, "tilewidth", 0));
-		attribute("tileheight", getProperty(props, "tilewidth", 0));
+		attribute("tileheight", tileHeight);
 
+		@SuppressWarnings("unchecked")
+		Array<String> excludedKeys = Pools.obtain(Array.class);
 		excludedKeys.clear();
 		excludedKeys.add("version");
 		excludedKeys.add("orientation");
@@ -88,6 +112,8 @@ public class TmxMapWriter extends XmlWriter {
 		excludedKeys.add("tilewidth");
 		excludedKeys.add("tileheight");
 		tmx(props, excludedKeys);
+		excludedKeys.clear();
+		Pools.free(excludedKeys);
 
 		if(map instanceof TiledMap)
 			tmx(((TiledMap) map).getTileSets());
@@ -95,6 +121,9 @@ public class TmxMapWriter extends XmlWriter {
 		tmx(map.getLayers(), format);
 
 		pop();
+
+		tileHeight = oldTileHeight;
+		layerHeight = oldLayerHeight;
 		return this;
 	}
 
@@ -104,10 +133,11 @@ public class TmxMapWriter extends XmlWriter {
 		return tmx(properties, null);
 	}
 
-	/** @param properties the {@link MapProperties} to write in TMX format
-	 *  @param exclude the keys that should not be written
+	/** writes nothing if the given {@link MapProperties} are empty or every key is excluded
+	 *  @param properties the {@link MapProperties} to write in TMX format
+	 *  @param exclude the keys not to write
 	 *  @return this {@link TmxMapWriter} */
-	public TmxMapWriter tmx(MapProperties properties, Set<String> exclude) throws IOException {
+	public TmxMapWriter tmx(MapProperties properties, Array<String> exclude) throws IOException {
 		Iterator<String> keys = properties.getKeys();
 		if(!keys.hasNext())
 			return this;
@@ -115,13 +145,13 @@ public class TmxMapWriter extends XmlWriter {
 		boolean elementEmitted = false;
 		while(keys.hasNext()) {
 			String key = keys.next();
-			if(exclude != null && exclude.contains(key))
+			if(exclude != null && exclude.contains(key, false))
 				continue;
 			if(!elementEmitted) {
 				element("properties");
 				elementEmitted = true;
 			}
-			element(key, properties.get(key));
+			element("property").attribute("name", key).attribute("value", properties.get(key)).pop();
 		}
 
 		if(elementEmitted)
@@ -152,11 +182,44 @@ public class TmxMapWriter extends XmlWriter {
 		if(!Float.isNaN(margin))
 			attribute("margin", (int) margin);
 
+		Iterator<TiledMapTile> iter = set.iterator();
+		if(iter.hasNext()) {
+			TiledMapTile tile = iter.next();
+			element("tileoffset");
+			attribute("x", (int) tile.getOffsetX());
+			attribute("y", (int) -tile.getOffsetY());
+			pop();
+		}
+
 		element("image");
 		attribute("source", getProperty(props, "imagesource", ""));
 		attribute("imagewidth", getProperty(props, "imagewidth", 0));
 		attribute("imageheight", getProperty(props, "imageheight", 0));
 		pop();
+
+		iter = set.iterator();
+		if(iter.hasNext()) {
+			@SuppressWarnings("unchecked")
+			Array<String> asAttributes = Pools.obtain(Array.class);
+			asAttributes.clear();
+			boolean elementEmitted = false;
+			for(TiledMapTile tile = iter.next(); iter.hasNext(); tile = iter.next()) {
+				MapProperties tileProps = tile.getProperties();
+				for(String attribute : asAttributes)
+					if(tileProps.containsKey(attribute)) {
+						if(!elementEmitted) {
+							element("tile");
+							elementEmitted = true;
+						}
+						attribute(attribute, tileProps.get(attribute));
+					}
+				tmx(tileProps, asAttributes);
+			}
+			asAttributes.clear();
+			Pools.free(asAttributes);
+			if(elementEmitted)
+				pop();
+		}
 
 		pop();
 		return this;
@@ -177,11 +240,14 @@ public class TmxMapWriter extends XmlWriter {
 	/** @param layer the {@link MapLayer} to write in TMX format
 	 *  @return this {@link TmxMapWriter} */
 	public TmxMapWriter tmx(MapLayer layer) throws IOException {
+		int oldLayerHeight = layerHeight;
+		layerHeight = getProperty(layer.getProperties(), "height", layerHeight);
 		element("objectgroup");
 		attribute("name", layer.getName());
 		tmx(layer.getProperties());
 		tmx(layer.getObjects());
 		pop();
+		layerHeight = oldLayerHeight;
 		return this;
 	}
 
@@ -193,14 +259,15 @@ public class TmxMapWriter extends XmlWriter {
 		attribute("name", layer.getName());
 		attribute("width", layer.getWidth());
 		attribute("height", layer.getHeight());
+		attribute("visible", layer.isVisible() ? 1 : 0);
+		attribute("opacity", layer.getOpacity());
 
 		tmx(layer.getProperties());
 
 		element("data");
-		switch(format) {
-		case XML:
+		if(format == XML) {
 			attribute("encoding", "xml");
-			for(int y = 0; y < layer.getHeight(); y++)
+			for(int y = layer.getHeight() - 1; y > -1; y--)
 				for(int x = 0; x < layer.getWidth(); x++) {
 					Cell cell = layer.getCell(x, y);
 					if(cell != null) {
@@ -212,36 +279,44 @@ public class TmxMapWriter extends XmlWriter {
 						pop();
 					}
 				}
-			break;
-		case CSV:
+		} else if(format == CSV) {
 			attribute("encoding", "csv");
 			StringBuilder csv = new StringBuilder();
-			for(int y = 0; y < layer.getHeight(); y++) {
+			for(int y = layer.getHeight() - 1; y > -1; y--) {
 				for(int x = 0; x < layer.getWidth(); x++) {
 					Cell cell = layer.getCell(x, y);
-					if(cell != null) {
-						TiledMapTile tile = cell.getTile();
-						if(tile != null)
-							csv.append(tile.getId());
-					}
-					if(x + 1 < layer.getWidth() || y + 1 < layer.getHeight())
+					TiledMapTile tile = cell != null ? cell.getTile() : null;
+					csv.append(tile != null ? tile.getId() : 0);
+					if(x + 1 < layer.getWidth() || y - 1 > -1)
 						csv.append(',');
 				}
 				csv.append('\n');
 			}
-			append("\n").append(csv);
-			break;
-		case Base64:
+			append('\n').append(csv);
+		} else if(format == Base64 || format == Base64Zlib || format == Base64Gzip) {
 			attribute("encoding", "base64");
-			throw new UnsupportedOperationException("Base64 encoding is not implemented yet"); // TODO implement
-		case Base64Gzip:
-			attribute("encoding", "base64");
-			attribute("compression", "gzip");
-			throw new UnsupportedOperationException("Base64 encoding with gzip compression is not implemented yet"); // TODO implement
-		case Base64Zlib:
-			attribute("encoding", "base64");
-			attribute("compression", "zlib");
-			throw new UnsupportedOperationException("Base64 encoding with zlip compression is not implemented yet"); // TODO implement
+			if(format == Base64Zlib)
+				attribute("compression", "zlib");
+			else if(format == Base64Gzip)
+				attribute("compression", "gzip");
+			ByteArrayOutputStream baos = new ByteArrayOutputStream();
+			OutputStream out = format == Base64Zlib ? new DeflaterOutputStream(baos) : format == Base64Gzip ? new GZIPOutputStream(baos) : baos;
+			final short LAST_BYTE = 0xFF;
+			for(int y = layer.getHeight() - 1; y > -1; y--)
+				for(int x = 0; x < layer.getWidth(); x++) {
+					Cell cell = layer.getCell(x, y);
+					TiledMapTile tile = cell != null ? cell.getTile() : null;
+					int gid = tile != null ? tile.getId() : 0;
+					out.write(gid & LAST_BYTE);
+					out.write(gid >> 8 & LAST_BYTE);
+					out.write(gid >> 16 & LAST_BYTE);
+					out.write(gid >> 24 & LAST_BYTE);
+				}
+			if(out instanceof DeflaterOutputStream)
+				((DeflaterOutputStream) out).finish();
+			out.close();
+			baos.close();
+			append('\n').append(String.valueOf(Base64Coder.encode(baos.toByteArray()))).append('\n');
 		}
 		pop();
 
@@ -265,36 +340,15 @@ public class TmxMapWriter extends XmlWriter {
 		attribute("name", object.getName());
 		if(props.containsKey("type"))
 			attribute("type", getProperty(props, "type", ""));
-		attribute("x", getProperty(props, "x", 0));
-		attribute("y", getProperty(props, "y", 0));
-		if(props.containsKey("width"))
-			attribute("width", getProperty(props, "width", 0));
-		if(props.containsKey("height"))
-			attribute("height", getProperty(props, "height", 0));
+		if(props.containsKey("gid"))
+			attribute("gid", getProperty(props, "gid", 0));
 
-		excludedKeys.clear();
-		excludedKeys.add("type");
-		excludedKeys.add("x");
-		excludedKeys.add("y");
-		excludedKeys.add("width");
-		excludedKeys.add("height");
-		tmx(props, excludedKeys);
+		attribute("x", getProperty(props, "x", 0));
+		attribute("y", (int) toYDown(getProperty(props, "y", layerHeight), getProperty(props, "height", 0)));
 
 		if(object instanceof RectangleMapObject) {
 			Rectangle rect = ((RectangleMapObject) object).getRectangle();
-			element("rectangle");
-			attribute("x", rect.x);
-			attribute("y", rect.y);
-			attribute("width", rect.width);
-			attribute("height", rect.height);
-			pop();
-		} else if(object instanceof CircleMapObject) {
-			Circle circle = ((CircleMapObject) object).getCircle();
-			element("circle");
-			attribute("x", circle.x);
-			attribute("y", circle.y);
-			attribute("radius", circle.radius);
-			pop();
+			attribute("width", (int) rect.width).attribute("height", (int) rect.height);
 		} else if(object instanceof PolygonMapObject) {
 			Polygon polygon = ((PolygonMapObject) object).getPolygon();
 			element("polygon");
@@ -307,25 +361,81 @@ public class TmxMapWriter extends XmlWriter {
 			pop();
 		} else if(object instanceof EllipseMapObject) {
 			Ellipse ellipse = ((EllipseMapObject) object).getEllipse();
-			element("ellipse");
-			attribute("x", ellipse.x);
-			attribute("y", ellipse.y);
-			attribute("width", ellipse.width);
-			attribute("height", ellipse.height);
-			pop();
+			attribute("width", (int) ellipse.width).attribute("height", (int) ellipse.width);
+			element("ellipse").pop();
+		} else if(object instanceof CircleMapObject) {
+			Circle circle = ((CircleMapObject) object).getCircle();
+			attribute("width", (int) circle.radius * 2).attribute("height", (int) circle.radius * 2);
+			element("ellipse").pop();
 		}
+
+		if(props.containsKey("rotation"))
+			attribute("rotation", getProperty(props, "rotation", 0f));
+		if(props.containsKey("visible"))
+			attribute("visible", object.isVisible() ? 1 : 0);
+		if(object.getOpacity() != 1)
+			attribute("opacity", object.getOpacity());
+
+		@SuppressWarnings("unchecked")
+		Array<String> excludedKeys = Pools.obtain(Array.class);
+		excludedKeys.clear();
+		excludedKeys.add("type");
+		excludedKeys.add("gid");
+		excludedKeys.add("x");
+		excludedKeys.add("y");
+		excludedKeys.add("width");
+		excludedKeys.add("height");
+		excludedKeys.add("rotation");
+		excludedKeys.add("visible");
+		excludedKeys.add("opacity");
+		tmx(props, excludedKeys);
+		excludedKeys.clear();
+		Pools.free(excludedKeys);
 
 		pop();
 		return this;
 	}
 
-	/** @param vertices the vertices to arrange in TMX format
+	/** @param vertices the vertices to arrange in TMX format and invert on the y axis
 	 *  @return a String of the given vertices ready for use in TMX maps */
-	private static String points(float[] vertices) {
+	private String points(float[] vertices) {
 		StringBuilder points = new StringBuilder();
-		for(int i = 0; i < vertices.length; i++)
-			points.append((int) vertices[i]).append((i + 1) % 2 == 0 ? i + 1 < vertices.length ? " " : "" : ",");
+		float y = vertices[1], height = GeometryUtils.height(vertices);
+		for(int i = 0; i < vertices.length; i++) {
+			boolean x = i % 2 == 0;
+			points.append((int) (x ? vertices[i] : toYDown(vertices[i], height) + y) // TODO continue here; toYDown(..) +y/-y? GeometryUtils#toYDown +size/-size? ellipses radius as height?
+			).append(!x ? i + 1 < vertices.length ? " " : "" : ",");
+		}
 		return points.toString();
+	}
+
+	/** @param y the y coordinate
+	 *  @param height the height of the object
+	 *  @return the y coordinate converted from a y-up to a y-down coordinate system */
+	public float toYDown(float y, float height) {
+		return GeometryUtils.toAxisNegative(y, height, layerHeight);
+	}
+
+	// getters and setters
+
+	/** @return the {@link #tileHeight} */
+	public int getTileHeight() {
+		return tileHeight;
+	}
+
+	/** @param tileHeight the {@link #tileHeight} to set */
+	public void setTileHeight(int tileHeight) {
+		this.tileHeight = tileHeight;
+	}
+
+	/** @return the {@link #layerHeight} */
+	public int getLayerHeight() {
+		return layerHeight;
+	}
+
+	/** @param layerHeight the {@link #layerHeight} to set */
+	public void setLayerHeight(int layerHeight) {
+		this.layerHeight = layerHeight;
 	}
 
 }
