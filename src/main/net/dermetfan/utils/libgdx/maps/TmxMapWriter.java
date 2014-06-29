@@ -68,10 +68,6 @@ public class TmxMapWriter extends XmlWriter {
 		XML, CSV, Base64, Base64Zlib, Base64Gzip
 	}
 
-	/** The height of a tile, to invert the y-axis. {@link #setTileHeight(int) Set} this explicitly if you wan to write something that does not know the layer size.
-	 *  @see #layerHeight */
-	private int tileHeight;
-
 	/** The height of a layer, to invert the y-axis. {@link #setLayerHeight(int) Set} this explicitly if you want to write something that does not know the layer size, like a {@link #tmx(MapLayer) single} or {@link #tmx(MapLayers, Format) multiple} layers or {@link #tmx(MapObject) object}{@link #tmx(MapObjects) s}.
 	 *  @see #tileHeight */
 	private int layerHeight;
@@ -89,8 +85,6 @@ public class TmxMapWriter extends XmlWriter {
 		append("<!DOCTYPE map SYSTEM \"http://mapeditor.org/dtd/1.0/map.dtd\">\n");
 
 		MapProperties props = map.getProperties();
-		int oldTileHeight = tileHeight;
-		tileHeight = getProperty(props, "tileheight", tileHeight);
 		int oldLayerHeight = layerHeight;
 		layerHeight = getProperty(props, "height", layerHeight);
 
@@ -100,7 +94,7 @@ public class TmxMapWriter extends XmlWriter {
 		attribute("width", getProperty(props, "width", 0));
 		attribute("height", layerHeight);
 		attribute("tilewidth", getProperty(props, "tilewidth", 0));
-		attribute("tileheight", tileHeight);
+		attribute("tileheight", getProperty(props, "tileheight", 0));
 
 		@SuppressWarnings("unchecked")
 		Array<String> excludedKeys = Pools.obtain(Array.class);
@@ -122,7 +116,6 @@ public class TmxMapWriter extends XmlWriter {
 
 		pop();
 
-		tileHeight = oldTileHeight;
 		layerHeight = oldLayerHeight;
 		return this;
 	}
@@ -344,7 +337,7 @@ public class TmxMapWriter extends XmlWriter {
 			attribute("gid", getProperty(props, "gid", 0));
 
 		attribute("x", getProperty(props, "x", 0));
-		attribute("y", (int) toYDown(getProperty(props, "y", layerHeight), getProperty(props, "height", 0)));
+		attribute("y", (int) toYDown(getProperty(props, "y", layerHeight)));
 
 		if(object instanceof RectangleMapObject) {
 			Rectangle rect = ((RectangleMapObject) object).getRectangle();
@@ -400,33 +393,22 @@ public class TmxMapWriter extends XmlWriter {
 	 *  @return a String of the given vertices ready for use in TMX maps */
 	private String points(float[] vertices) {
 		StringBuilder points = new StringBuilder();
-		float y = vertices[1], height = GeometryUtils.height(vertices);
+		float y = vertices[1];
 		for(int i = 0; i < vertices.length; i++) {
 			boolean x = i % 2 == 0;
-			points.append((int) (x ? vertices[i] : toYDown(vertices[i], height) + y) // TODO continue here; toYDown(..) +y/-y? GeometryUtils#toYDown +size/-size? ellipses radius as height?
+			points.append((int) (x ? vertices[i] : toYDown(vertices[i])) // TODO continue here; toYDown(..) +y/-y? ellipses radius as height?
 			).append(!x ? i + 1 < vertices.length ? " " : "" : ",");
 		}
 		return points.toString();
 	}
 
 	/** @param y the y coordinate
-	 *  @param height the height of the object
 	 *  @return the y coordinate converted from a y-up to a y-down coordinate system */
-	public float toYDown(float y, float height) {
-		return GeometryUtils.toAxisNegative(y, height, layerHeight);
+	public float toYDown(float y) {
+		return GeometryUtils.invertAxis(y, layerHeight);
 	}
 
 	// getters and setters
-
-	/** @return the {@link #tileHeight} */
-	public int getTileHeight() {
-		return tileHeight;
-	}
-
-	/** @param tileHeight the {@link #tileHeight} to set */
-	public void setTileHeight(int tileHeight) {
-		this.tileHeight = tileHeight;
-	}
 
 	/** @return the {@link #layerHeight} */
 	public int getLayerHeight() {
