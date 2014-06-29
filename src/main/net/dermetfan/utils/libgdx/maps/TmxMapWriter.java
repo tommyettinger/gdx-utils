@@ -68,8 +68,7 @@ public class TmxMapWriter extends XmlWriter {
 		XML, CSV, Base64, Base64Zlib, Base64Gzip
 	}
 
-	/** The height of a layer, to invert the y-axis. {@link #setLayerHeight(int) Set} this explicitly if you want to write something that does not know the layer size, like a {@link #tmx(MapLayer) single} or {@link #tmx(MapLayers, Format) multiple} layers or {@link #tmx(MapObject) object}{@link #tmx(MapObjects) s}.
-	 *  @see #tileHeight */
+	/** The height of a layer, to invert the y-axis. {@link #setLayerHeight(int) Set} this explicitly if you want to write something that does not know the layer size, like a {@link #tmx(MapLayer) single} or {@link #tmx(MapLayers, Format) multiple} layers or {@link #tmx(MapObject) object}{@link #tmx(MapObjects) s}. */
 	private int layerHeight;
 
 	/** creates a new {@link TmxMapWriter} using the given {@link Writer} */
