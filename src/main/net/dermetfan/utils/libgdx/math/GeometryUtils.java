@@ -86,28 +86,51 @@ public abstract class GeometryUtils {
 
 	/** @param vertices the vertices to add the given values to
 	 *  @param x the x value to add
-	 *  @param y the y value to add */
-	public static void add(Vector2[] vertices, float x, float y) {
+	 *  @param y the y value to add
+	 *  @return the given vertices for chaining */
+	public static Vector2[] add(Vector2[] vertices, float x, float y) {
 		for(Vector2 vertice : vertices)
 			vertice.add(x, y);
+		return vertices;
 	}
 
 	/** @see #add(Vector2[], float, float) */
-	public static void sub(Vector2[] vertices, float x, float y) {
-		add(vertices, -x, -y);
+	public static Vector2[] sub(Vector2[] vertices, float x, float y) {
+		return add(vertices, -x, -y);
 	}
 
 	/** @see #add(Vector2[], float, float) */
-	public static void add(float[] vertices, float x, float y) {
+	public static float[] add(float[] vertices, float x, float y) {
 		for(int i = 1; i < vertices.length; i += 2) {
 			vertices[i - 1] += x;
 			vertices[i] += y;
 		}
+		return vertices;
 	}
 
 	/** @see #add(Vector2[], float, float) */
-	public static void sub(float[] vertices, float x, float y) {
-		add(vertices, -x, -y);
+	public static float[] sub(float[] vertices, float x, float y) {
+		return add(vertices, -x, -y);
+	}
+
+	/** @see #add(float[], float, float) */
+	public static float[] addX(float[] vertices, float value) {
+		return add(vertices, value, 0);
+	}
+
+	/** @see #sub(float[], float, float) */
+	public static float[] subX(float[] vertices, float value) {
+		return sub(vertices, value, 0);
+	}
+
+	/** @see #add(float[], float, float) */
+	public static float[] addY(float[] vertices, float value) {
+		return add(vertices, 0, value);
+	}
+
+	/** @see #sub(float[], float, float) */
+	public static float[] subY(float[] vertices, float value) {
+		return sub(vertices, 0, value);
 	}
 
 	/** @return a Vector2 representing the size of a rectangle containing all given vertices */
@@ -424,7 +447,6 @@ public abstract class GeometryUtils {
 
 	/** used in {@link #arrangeClockwise(Array)} */
 	private static final Comparator<Vector2> arrangeClockwiseComparator = new Comparator<Vector2>() {
-
 		/** compares the x coordinates */
 		@Override
 		public int compare(Vector2 a, Vector2 b) {
@@ -434,7 +456,6 @@ public abstract class GeometryUtils {
 				return -1;
 			return 0;
 		}
-
 	};
 
 	/** @param vertices the vertices to arrange in clockwise order */
@@ -497,6 +518,34 @@ public abstract class GeometryUtils {
 	 *  @return the position of the object on the axis, inverted from going to positive to negative */
 	public static float invertAxis(float coord, float axisSize) {
 		return mirror(coord, axisSize / 2);
+	}
+
+	/** Converts the given vertices to their position on inverted axes.
+	 *  @param vertices the vertices to convert
+	 *  @param x if the x-axis should be inverted
+	 *  @param y if the y-axis should be inverted
+	 *  @return the given vertices converted to the inversed axis in their <strong>local</strong> coordinate system */
+	public static float[] invertAxes(float[] vertices, boolean x, boolean y) {
+		if(!x && !y)
+			return vertices;
+		float height = height(vertices), width = width(vertices);
+		for(int i = x ? 0 : 1; i < vertices.length; i += x ^ y ? 2 : 1)
+			vertices[i] = i % 2 == 0 ? invertAxis(vertices[i], width): invertAxis(vertices[i], height);
+		return vertices;
+	}
+
+	/** inverts the given vertices to a y-down coordinate system and translates them according to their parent coordinate system by their {@link #height(float[]) height}
+	 *  @see #invertAxes(float[], boolean, boolean) */
+	public static float[] toYDown(float[] vertices) {
+		invertAxes(vertices, false, true);
+		return subY(vertices, height(vertices));
+	}
+
+	/** inverts the given vertices to a y-up coordinate system and translates them according to their parent coordinate system by their {@link #height(float[]) height}
+	 *  @see #invertAxes(float[], boolean, boolean) */
+	public static float[] toYUp(float[] vertices) {
+		invertAxes(vertices, false, true);
+		return addY(vertices, height(vertices));
 	}
 
 	/** @param vertices the vertices of the polygon to examine for convexity
