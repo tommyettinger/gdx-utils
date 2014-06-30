@@ -480,18 +480,15 @@ public abstract class GeometryUtils {
 	public static float area(float[] vertices) {
 		// from com.badlogic.gdx.math.Polygon#area()
 		float area = 0;
-
 		int x1, y1, x2, y2;
 		for(int i = 0; i < vertices.length; i += 2) {
 			x1 = i;
 			y1 = i + 1;
 			x2 = (i + 2) % vertices.length;
 			y2 = (i + 3) % vertices.length;
-
 			area += vertices[x1] * vertices[y2];
 			area -= vertices[x2] * vertices[y1];
 		}
-
 		return area / 2;
 	}
 

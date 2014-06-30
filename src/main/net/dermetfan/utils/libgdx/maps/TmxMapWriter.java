@@ -68,7 +68,7 @@ public class TmxMapWriter extends XmlWriter {
 		XML, CSV, Base64, Base64Zlib, Base64Gzip
 	}
 
-	/** The height of a layer, to invert the y-axis. {@link #setLayerHeight(int) Set} this explicitly if you want to write something that does not know the layer size, like a {@link #tmx(MapLayer) single} or {@link #tmx(MapLayers, Format) multiple} layers or {@link #tmx(MapObject) object}{@link #tmx(MapObjects) s}. */
+	/** The height of a layer <strong>IN PIXELS</strong>, to invert the y-axis. {@link #setLayerHeight(int) Set} this explicitly if you want to write something that does not know the layer size, like a {@link #tmx(MapLayer) single} or {@link #tmx(MapLayers, Format) multiple} layers or {@link #tmx(MapObject) object}{@link #tmx(MapObjects) s}. */
 	private int layerHeight;
 
 	/** creates a new {@link TmxMapWriter} using the given {@link Writer} */
@@ -84,16 +84,18 @@ public class TmxMapWriter extends XmlWriter {
 		append("<!DOCTYPE map SYSTEM \"http://mapeditor.org/dtd/1.0/map.dtd\">\n");
 
 		MapProperties props = map.getProperties();
+		int height = getProperty(props, "height", 0);
+		int tileHeight = getProperty(props, "tileheight", 0);
 		int oldLayerHeight = layerHeight;
-		layerHeight = getProperty(props, "height", layerHeight);
+		layerHeight = height * tileHeight;
 
 		element("map");
 		attribute("version", "1.0");
 		attribute("orientation", getProperty(props, "orientation", "orthogonal"));
 		attribute("width", getProperty(props, "width", 0));
-		attribute("height", layerHeight);
+		attribute("height", height);
 		attribute("tilewidth", getProperty(props, "tilewidth", 0));
-		attribute("tileheight", getProperty(props, "tileheight", 0));
+		attribute("tileheight", tileHeight);
 
 		@SuppressWarnings("unchecked")
 		Array<String> excludedKeys = Pools.obtain(Array.class);
@@ -232,14 +234,11 @@ public class TmxMapWriter extends XmlWriter {
 	/** @param layer the {@link MapLayer} to write in TMX format
 	 *  @return this {@link TmxMapWriter} */
 	public TmxMapWriter tmx(MapLayer layer) throws IOException {
-		int oldLayerHeight = layerHeight;
-		layerHeight = getProperty(layer.getProperties(), "height", layerHeight);
 		element("objectgroup");
 		attribute("name", layer.getName());
 		tmx(layer.getProperties());
 		tmx(layer.getObjects());
 		pop();
-		layerHeight = oldLayerHeight;
 		return this;
 	}
 
@@ -335,30 +334,35 @@ public class TmxMapWriter extends XmlWriter {
 		if(props.containsKey("gid"))
 			attribute("gid", getProperty(props, "gid", 0));
 
-		attribute("x", getProperty(props, "x", 0));
-		attribute("y", (int) toYDown(getProperty(props, "y", layerHeight)));
+		int objectX = getProperty(props, "x", 0);
+		int objectY = getProperty(props, "y", 0);
 
 		if(object instanceof RectangleMapObject) {
 			Rectangle rect = ((RectangleMapObject) object).getRectangle();
+			attribute("x", objectX).attribute("y", toYDown(rect.y));
 			attribute("width", (int) rect.width).attribute("height", (int) rect.height);
+		} else if(object instanceof EllipseMapObject) {
+			Ellipse ellipse = ((EllipseMapObject) object).getEllipse();
+			attribute("x", objectX).attribute("y", toYDown(objectY - (int) ellipse.y / 2));
+			attribute("width", (int) ellipse.width).attribute("height", (int) ellipse.height);
+			element("ellipse").pop();
+		} else if(object instanceof CircleMapObject) {
+			Circle circle = ((CircleMapObject) object).getCircle();
+			attribute("x", objectX).attribute("y", toYDown(objectY - (int) circle.y / 2));
+			attribute("width", (int) circle.radius * 2).attribute("height", (int) circle.radius * 2);
+			element("ellipse").pop();
 		} else if(object instanceof PolygonMapObject) {
+			attribute("x", objectX).attribute("y", toYDown(objectY));
 			Polygon polygon = ((PolygonMapObject) object).getPolygon();
 			element("polygon");
 			attribute("points", points(polygon.getVertices()));
 			pop();
 		} else if(object instanceof PolylineMapObject) {
+			attribute("x", objectX).attribute("y", toYDown(objectY));
 			Polyline polyline = ((PolylineMapObject) object).getPolyline();
 			element("polyline");
 			attribute("points", points(polyline.getVertices()));
 			pop();
-		} else if(object instanceof EllipseMapObject) {
-			Ellipse ellipse = ((EllipseMapObject) object).getEllipse();
-			attribute("width", (int) ellipse.width).attribute("height", (int) ellipse.width);
-			element("ellipse").pop();
-		} else if(object instanceof CircleMapObject) {
-			Circle circle = ((CircleMapObject) object).getCircle();
-			attribute("width", (int) circle.radius * 2).attribute("height", (int) circle.radius * 2);
-			element("ellipse").pop();
 		}
 
 		if(props.containsKey("rotation"))
@@ -392,19 +396,22 @@ public class TmxMapWriter extends XmlWriter {
 	 *  @return a String of the given vertices ready for use in TMX maps */
 	private String points(float[] vertices) {
 		StringBuilder points = new StringBuilder();
-		float y = vertices[1];
 		for(int i = 0; i < vertices.length; i++) {
 			boolean x = i % 2 == 0;
-			points.append((int) (x ? vertices[i] : toYDown(vertices[i])) // TODO continue here; toYDown(..) +y/-y? ellipses radius as height?
-			).append(!x ? i + 1 < vertices.length ? " " : "" : ",");
+			points.append((int) (x ? vertices[i] : toYDown(vertices[i]))).append(!x ? i + 1 < vertices.length ? " " : "" : ",");
 		}
 		return points.toString();
+	}
+
+	/** @see #toYDown(float) */
+	public int toYDown(int y) {
+		return (int) toYDown((float) y);
 	}
 
 	/** @param y the y coordinate
 	 *  @return the y coordinate converted from a y-up to a y-down coordinate system */
 	public float toYDown(float y) {
-		return GeometryUtils.invertAxis(y, layerHeight);
+		return GeometryUtils.invertAxis(y, layerHeight); // TODO continue here; why does it have to be layerHeight / 2? How on earth do I position ellipses/circles and rectangles? And why is it working for polygons, it's working (with layerHeight / 2) but it most be working an incorrect way!
 	}
 
 	// getters and setters
