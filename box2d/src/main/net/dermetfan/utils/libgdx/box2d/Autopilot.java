@@ -14,14 +14,15 @@
 
 package net.dermetfan.utils.libgdx.box2d;
 
-import static net.dermetfan.utils.math.MathUtils.normalize;
+import java.util.function.Function;
 
 import com.badlogic.gdx.math.Interpolation;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Body;
 
-import java.util.function.Function;
+import static net.dermetfan.utils.math.MathUtils.mirror;
+import static net.dermetfan.utils.math.MathUtils.normalize;
 
 /** navigates bodies to a destination
  *  @author dermetfan */
@@ -60,7 +61,8 @@ public class Autopilot {
 	public static float calculateTorque(Vector2 target, float rotation, float angularVelocity, float inertia, float force, float delta) {
 		// http://www.iforce2d.net/b2dtut/rotate-to-angle
 		float rotate = MathUtils.atan2(target.y, target.x) - (rotation + angularVelocity * delta);
-		rotate = normalize(rotate, MathUtils.PI, MathUtils.PI2);
+		rotate = normalize(rotate, -MathUtils.PI, MathUtils.PI);
+		rotate = mirror(rotate, 0); // FIXME simulate whatever the previous (broken) MathUtils#normalize(..) method did
 		return inertia * (rotate / MathUtils.PI2 * force * delta) / delta;
 	}
 
@@ -90,7 +92,7 @@ public class Autopilot {
 	private Interpolation interpolation = Interpolation.linear;
 
 	/** returns {@link Body#getPosition()} */
-	public static final Function<Body, Vector2> defaultPositionAccessor = (body) -> body.getWorldCenter();
+	public static final Function<Body, Vector2> defaultPositionAccessor = Body::getWorldCenter;
 
 	/** used to determine a bodies position */
 	private Function<Body, Vector2> positionAccessor = defaultPositionAccessor;

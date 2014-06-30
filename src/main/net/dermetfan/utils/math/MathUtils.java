@@ -63,28 +63,63 @@ public class MathUtils {
 		return x1 * y2 + x2 * y3 + x3 * y1 - y1 * x2 - y2 * x3 - y3 * x1;
 	}
 
-	/** normalizes a value in a given range using the range as step
+	/** @param value the value to normalize between 0 and the given range
+	 *  @param range the other bound of the interval with 0
 	 *  @see #normalize(float, float, float) */
 	public static float normalize(float value, float range) {
-		// if((value = Math.abs(Math.min(value, max) - Math.max(value, max))) > max) value = normalize(value, max);
-		return normalize(value, range, range);
+		return normalize(value, 0, range);
 	}
 
-	/** normalizes a value in a given range
-	 *  @param value the value to normalize
-	 *  @param range the range in which to normalize the given value (from -range to range)
-	 *  @param step the step to use to normalize the value
-	 *  @return the normalized value */
-	public static float normalize(float value, float range, float step) {
-		if((range = Math.abs(range)) == 0)
-			return range;
-		if((step = Math.abs(step)) == 0)
-			return value;
-		while(value > range)
-			value -= step;
-		while(value < -range)
-			value += step;
+	/** Normalizes/repeats the given value in the given interval [min, max] as if min and max were portals the value travels through. For example:<br>
+	 *  <table summary="examples">
+	 *      <tr>
+	 *          <th>value</th>
+	 *          <th>min</th>
+	 *          <th>max</th>
+	 *          <th>result</th>
+	 *      </tr>
+	 *      <tr>
+	 *          <td>150</td>
+	 *          <td>0</td>
+	 *          <td>100</td>
+	 *          <td>50</td>
+	 *      </tr>
+	 *      <tr>
+	 *          <td>200</td>
+	 *          <td>-100</td>
+	 *          <td>100</td>
+	 *          <td>0</td>
+	 *      </tr>
+	 *      <tr>
+	 *          <td>50</td>
+	 *          <td>0</td>
+	 *          <td>100</td>
+	 *          <td>50</td>
+	 *      </tr>
+	 *  </table>
+	 *  @param value the value to normalize in the interval [min, max]
+	 *  @param min the minimum
+	 *  @param max the maximum
+	 *  @return the value repeated in the interval [min, max] */
+	public static float normalize(float value, float min, float max) {
+		if(min == max)
+			return min;
+		float oldMin = min, oldMax = max;
+		min = Math.min(min, max);
+		max = Math.max(oldMin, max);
+		float under = value < min ? Math.abs(min - value) : 0, over = value > max ? value - Math.abs(max) : 0;
+		if(under > 0)
+			return normalize(oldMax + (oldMax > oldMin ? -under : under), min, max);
+		if(over > 0)
+			return normalize(oldMin + (oldMin < oldMax ? over : -over), min, max);
 		return value;
+	}
+
+	/** @param value the value to mirror
+	 *  @param baseline the max/min value
+	 *  @return the value mirrored at baseline */
+	public static float mirror(float value, float baseline) {
+		return baseline * 2 - value;
 	}
 
 	/** @return value, min or max */

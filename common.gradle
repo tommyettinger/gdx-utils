@@ -115,10 +115,10 @@ uploadArchives {
 	repositories.mavenDeployer {
 		beforeDeployment { signing.signPom(it) }
 		repository(url: 'https://oss.sonatype.org/service/local/staging/deploy/maven2/') {
-			authentication(userName: sonatype_jira_username, password: sonatype_jira_password)
+			authentication(userName: ifHasProperty('sonatype_jira_username'), password: ifHasProperty('sonatype_jira_password'))
 		}
 		snapshotRepository(url: 'https://oss.sonatype.org/content/repositories/snapshots/') {
-			authentication(userName: sonatype_jira_username, password: sonatype_jira_password)
+			authentication(userName: ifHasProperty('sonatype_jira_username'), password: ifHasProperty('sonatype_jira_password'))
 		}
 	}
 	doLast { announce.local.send "$nameFull $version",  'Uploaded archives artifacts'}
@@ -127,8 +127,8 @@ uploadArchives {
 site {
 	url = "ftp://dermetfan.net/$libName${nameAppendix.empty ? '' : '/' + nameAppendix}"
 	authenticationInfo {
-		userName = site_ftp_username
-		password = site_ftp_password
+		userName = ifHasProperty 'site_ftp_username'
+		password = ifHasProperty 'site_ftp_password'
 	}
 }
 
@@ -159,4 +159,9 @@ eclipse {
 		sourceSets -= sourceSets.site
 		containers = ["org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-$targetCompatibility"]
 	}
+}
+
+// methods
+Object ifHasProperty(String name) {
+	return project.hasProperty(name) ? project.name : ''
 }
