@@ -17,6 +17,8 @@ public class GeometryUtilsTest {
 	@Test
 	public void invertAxis() {
 		assertEquals(5, GeometryUtils.invertAxis(27, 32), 0);
+		assertEquals(27, GeometryUtils.invertAxis(5, 32), 0);
+		assertEquals(11, GeometryUtils.invertAxis(19, 32), 0);
 	}
 
 	@Test

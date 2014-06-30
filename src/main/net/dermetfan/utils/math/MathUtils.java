@@ -119,9 +119,7 @@ public class MathUtils {
 	 *  @param baseline the max/min value
 	 *  @return the value mirrored at baseline */
 	public static float mirror(float value, float baseline) {
-		float dist = Math.abs(baseline - value) * 2;
-		value += value < baseline ? dist : -dist;
-		return value;
+		return baseline * 2 - value;
 	}
 
 	/** @return value, min or max */
