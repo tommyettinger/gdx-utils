@@ -162,6 +162,6 @@ eclipse {
 }
 
 // methods
-Object ifHasProperty(String name) {
-	return project.hasProperty(name) ? project.name : ''
+Object ifHasProperty(String prop) {
+	return hasProperty(prop) ? project[prop] : ''
 }
