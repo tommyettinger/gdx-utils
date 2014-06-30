@@ -51,6 +51,7 @@ import com.badlogic.gdx.utils.StringBuilder;
 import com.badlogic.gdx.utils.XmlWriter;
 import net.dermetfan.utils.libgdx.math.GeometryUtils;
 
+import static com.badlogic.gdx.math.MathUtils.round;
 import static net.dermetfan.utils.libgdx.maps.MapUtils.getProperty;
 import static net.dermetfan.utils.libgdx.maps.TmxMapWriter.Format.Base64;
 import static net.dermetfan.utils.libgdx.maps.TmxMapWriter.Format.Base64Gzip;
@@ -172,16 +173,16 @@ public class TmxMapWriter extends XmlWriter {
 		attribute("tileheight", getProperty(props, "tileheight", 0));
 		float spacing = getProperty(props, "spacing", Float.NaN), margin = getProperty(props, "margin", Float.NaN);
 		if(!Float.isNaN(spacing))
-			attribute("spacing", (int) spacing);
+			attribute("spacing", round(spacing));
 		if(!Float.isNaN(margin))
-			attribute("margin", (int) margin);
+			attribute("margin", round(margin));
 
 		Iterator<TiledMapTile> iter = set.iterator();
 		if(iter.hasNext()) {
 			TiledMapTile tile = iter.next();
 			element("tileoffset");
-			attribute("x", (int) tile.getOffsetX());
-			attribute("y", (int) -tile.getOffsetY());
+			attribute("x", round(tile.getOffsetX()));
+			attribute("y", round(-tile.getOffsetY()));
 			pop();
 		}
 
@@ -339,29 +340,31 @@ public class TmxMapWriter extends XmlWriter {
 
 		if(object instanceof RectangleMapObject) {
 			Rectangle rect = ((RectangleMapObject) object).getRectangle();
-			attribute("x", objectX).attribute("y", toYDown(rect.y));
-			attribute("width", (int) rect.width).attribute("height", (int) rect.height);
+			int height = round(rect.height);
+			attribute("x", objectX).attribute("y", toYDown(objectY + height));
+			attribute("width", round(rect.width)).attribute("height", height);
 		} else if(object instanceof EllipseMapObject) {
 			Ellipse ellipse = ((EllipseMapObject) object).getEllipse();
-			attribute("x", objectX).attribute("y", toYDown(objectY - (int) ellipse.y / 2));
-			attribute("width", (int) ellipse.width).attribute("height", (int) ellipse.height);
+			int height = round(ellipse.height);
+			attribute("x", objectX).attribute("y", toYDown(objectY + height));
+			attribute("width", round(ellipse.width)).attribute("height", height);
 			element("ellipse").pop();
 		} else if(object instanceof CircleMapObject) {
 			Circle circle = ((CircleMapObject) object).getCircle();
-			attribute("x", objectX).attribute("y", toYDown(objectY - (int) circle.y / 2));
-			attribute("width", (int) circle.radius * 2).attribute("height", (int) circle.radius * 2);
+			attribute("x", objectX).attribute("y", objectY);
+			attribute("width", round(circle.radius * 2)).attribute("height", round(circle.radius * 2));
 			element("ellipse").pop();
 		} else if(object instanceof PolygonMapObject) {
 			attribute("x", objectX).attribute("y", toYDown(objectY));
 			Polygon polygon = ((PolygonMapObject) object).getPolygon();
 			element("polygon");
-			attribute("points", points(polygon.getVertices()));
+			attribute("points", points(GeometryUtils.toYDown(polygon.getVertices())));
 			pop();
 		} else if(object instanceof PolylineMapObject) {
 			attribute("x", objectX).attribute("y", toYDown(objectY));
 			Polyline polyline = ((PolylineMapObject) object).getPolyline();
 			element("polyline");
-			attribute("points", points(polyline.getVertices()));
+			attribute("points", points(GeometryUtils.toYDown(polyline.getVertices())));
 			pop();
 		}
 
@@ -392,26 +395,24 @@ public class TmxMapWriter extends XmlWriter {
 		return this;
 	}
 
-	/** @param vertices the vertices to arrange in TMX format and invert on the y axis
+	/** @param vertices the vertices to arrange in TMX format
 	 *  @return a String of the given vertices ready for use in TMX maps */
 	private String points(float[] vertices) {
 		StringBuilder points = new StringBuilder();
-		for(int i = 0; i < vertices.length; i++) {
-			boolean x = i % 2 == 0;
-			points.append((int) (x ? vertices[i] : toYDown(vertices[i]))).append(!x ? i + 1 < vertices.length ? " " : "" : ",");
-		}
+		for(int i = 0; i < vertices.length; i++)
+			points.append(round(vertices[i])).append(i % 2 != 0 ? i + 1 < vertices.length ? " " : "" : ",");
 		return points.toString();
 	}
 
 	/** @see #toYDown(float) */
 	public int toYDown(int y) {
-		return (int) toYDown((float) y);
+		return round(toYDown((float) y));
 	}
 
 	/** @param y the y coordinate
 	 *  @return the y coordinate converted from a y-up to a y-down coordinate system */
 	public float toYDown(float y) {
-		return GeometryUtils.invertAxis(y, layerHeight); // TODO continue here; why does it have to be layerHeight / 2? How on earth do I position ellipses/circles and rectangles? And why is it working for polygons, it's working (with layerHeight / 2) but it most be working an incorrect way!
+		return GeometryUtils.invertAxis(y, layerHeight);
 	}
 
 	// getters and setters
