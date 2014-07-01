@@ -14,7 +14,6 @@
 
 package net.dermetfan.utils.libgdx.box2d;
 
-import net.dermetfan.utils.Accessor;
 import net.dermetfan.utils.math.MathUtils;
 
 import com.badlogic.gdx.math.Vector2;
@@ -27,6 +26,8 @@ import com.badlogic.gdx.physics.box2d.Joint;
 import com.badlogic.gdx.physics.box2d.Manifold;
 import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.utils.Array;
+
+import java.util.function.Function;
 
 /** Breaks bodies or fixtures if they get hit too hard. Put in fixture's or body's user data and set {@link Manager} as {@link ContactListener}.<br>
  *  Don't forget to call {@link Manager#destroy()} after every world time step.<br>
@@ -48,27 +49,19 @@ public class Breakable {
 		public final Array<Joint> brokenJoints = new Array<>(1);
 
 		/** the {@link #userDataAccessor} used by default */
-		public static final Accessor<Breakable, Object> defaultUserDataAccessor = new Accessor<Breakable, Object>() {
+		public static final Function<Object, Breakable> defaultUserDataAccessor = (userData) -> userData instanceof Breakable ? (Breakable) userData : null;
 
-			@Override
-			public Breakable access(Object userData) {
-				return userData instanceof Breakable ? (Breakable) userData : null;
-			}
-
-		};
-
-		/** the {@link Accessor} used to access a Breakable in user data ({@link Accessor#access(Object) access} must return a Breakable) */
-		private Accessor<Breakable, Object> userDataAccessor = defaultUserDataAccessor;
+		/** the function used to access a Breakable in user data */
+		private Function<Object, Breakable> userDataAccessor = defaultUserDataAccessor;
 
 		/** used for {@link World#getJoints(Array)} in {@link #strain(World, float)} */
 		private final Array<Joint> tmpJoints = new Array<>(0);
 
 		/** instantiates a new {@link Manager} */
-		public Manager() {
-		}
+		public Manager() {}
 
 		/** instantiates a new {@link Manager} with the given {@link #userDataAccessor} */
-		public Manager(Accessor<Breakable, Object> userDataAccessor) {
+		public Manager(Function<Object, Breakable> userDataAccessor) {
 			setUserDataAccessor(userDataAccessor);
 		}
 
@@ -93,20 +86,20 @@ public class Breakable {
 			float normalImpulse = MathUtils.sum(impulse.getNormalImpulses()), tangentImpulse = Math.abs(MathUtils.sum(impulse.getTangentImpulses()));
 
 			Fixture fixtureA = contact.getFixtureA(), fixtureB = contact.getFixtureB();
-			Breakable breakable = userDataAccessor.access(fixtureA.getUserData());
+			Breakable breakable = userDataAccessor.apply(fixtureA.getUserData());
 			if(shouldBreak(breakable, normalImpulse, tangentImpulse, contact, impulse, fixtureA))
 				destroy(fixtureA);
 
-			breakable = userDataAccessor.access(fixtureB.getUserData());
+			breakable = userDataAccessor.apply(fixtureB.getUserData());
 			if(shouldBreak(breakable, normalImpulse, tangentImpulse, contact, impulse, fixtureB))
 				destroy(fixtureB);
 
 			Body bodyA = fixtureA.getBody(), bodyB = fixtureB.getBody();
-			breakable = userDataAccessor.access(bodyA.getUserData());
+			breakable = userDataAccessor.apply(bodyA.getUserData());
 			if(shouldBreak(breakable, normalImpulse, tangentImpulse, contact, impulse, fixtureA))
 				destroy(bodyA);
 
-			breakable = userDataAccessor.access(bodyB.getUserData());
+			breakable = userDataAccessor.apply(bodyB.getUserData());
 			if(shouldBreak(breakable, normalImpulse, tangentImpulse, contact, impulse, fixtureB))
 				destroy(bodyB);
 		}
@@ -120,7 +113,7 @@ public class Breakable {
 
 		/** {@link #destroy(Joint) destroy} */
 		public void strain(Joint joint, float delta) {
-			Breakable breakable = userDataAccessor.access(joint.getUserData());
+			Breakable breakable = userDataAccessor.apply(joint.getUserData());
 			if(breakable == null)
 				return;
 			Vector2 reactionForce = joint.getReactionForce(1 / delta);
@@ -151,8 +144,8 @@ public class Breakable {
 			if(brokenFixtures.contains(fixture, true))
 				return;
 
-			Breakable breakable = userDataAccessor.access(fixture.getUserData());
-			if(breakable == null || breakable != null && (breakable.callback == null || !breakable.callback.destroyed(fixture, breakable)))
+			Breakable breakable = userDataAccessor.apply(fixture.getUserData());
+			if(breakable == null || (breakable.callback == null || breakable.callback != null && !breakable.callback.destroyed(fixture, breakable)))
 				brokenFixtures.add(fixture);
 
 			if(breakable != null) {
@@ -175,7 +168,7 @@ public class Breakable {
 			if(brokenBodies.contains(body, true))
 				return;
 
-			Breakable breakable = userDataAccessor.access(body.getUserData());
+			Breakable breakable = userDataAccessor.apply(body.getUserData());
 			if(breakable == null || (breakable.callback == null || breakable.callback != null && !breakable.callback.destroyed(body, breakable)))
 				brokenBodies.add(body);
 		}
@@ -185,7 +178,7 @@ public class Breakable {
 			if(brokenJoints.contains(joint, true))
 				return;
 
-			Breakable breakable = userDataAccessor.access(joint.getUserData());
+			Breakable breakable = userDataAccessor.apply(joint.getUserData());
 			if(breakable == null || (breakable.callback == null || breakable.callback != null && !breakable.callback.destroyed(joint, breakable)))
 				brokenJoints.add(joint);
 
@@ -197,13 +190,11 @@ public class Breakable {
 
 		/** does nothing */
 		@Override
-		public void beginContact(Contact contact) {
-		}
+		public void beginContact(Contact contact) {}
 
 		/** does nothing */
 		@Override
-		public void preSolve(Contact contact, Manifold oldManifold) {
-		}
+		public void preSolve(Contact contact, Manifold oldManifold) {}
 
 		/** calls {@link #strain(Contact, ContactImpulse)} */
 		@Override
@@ -213,8 +204,7 @@ public class Breakable {
 
 		/** does nothing */
 		@Override
-		public void endContact(Contact contact) {
-		}
+		public void endContact(Contact contact) {}
 
 		/** @return the {@link #brokenFixtures} */
 		public Array<Fixture> getBrokenFixtures() {
@@ -227,12 +217,12 @@ public class Breakable {
 		}
 
 		/** @return the {@link #userDataAccessor} */
-		public Accessor<Breakable, Object> getUserDataAccessor() {
+		public Function<Object, Breakable> getUserDataAccessor() {
 			return userDataAccessor;
 		}
 
 		/** @param userDataAccessor the {@link #userDataAccessor} to set */
-		public void setUserDataAccessor(Accessor<Breakable, Object> userDataAccessor) {
+		public void setUserDataAccessor(Function<Object, Breakable> userDataAccessor) {
 			this.userDataAccessor = userDataAccessor != null ? userDataAccessor : defaultUserDataAccessor;
 		}
 
