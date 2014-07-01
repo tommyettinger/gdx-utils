@@ -117,6 +117,26 @@ uploadArchives {
 		snapshotRepository(url: 'https://oss.sonatype.org/content/repositories/snapshots/') {
 			authentication(userName: property('sonatype_jira_username'), password: property('sonatype_jira_password'))
 		}
+		pom.project {
+			name nameFull
+			description 'support library for libGDX'
+			url 'http://dermetfan.net'
+			licenses.license {
+				name 'Apache 2.0'
+				url 'http://apache.org/licenses/LICENSE-2.0.txt'
+			}
+			developers.developer {
+				name 'Robin Stumm'
+				email 'serverkorken@gmail.com'
+				organization 'dermetfan'
+				organizationUrl 'http://dermetfan.net'
+			}
+			scm {
+				connection 'scm:hg:http://bitbucket.org/dermetfan/libgdx-utils'
+				developerConnection 'scm:hg:http://bitbucket.org/dermetfan/libgdx-utils'
+				url 'http://bitbucket.org/dermetfan/libgdx-utils'
+			}
+		}
 	}
 } << { announce.local.send "$nameFull $version",  'Uploaded archives artifacts'}
 
