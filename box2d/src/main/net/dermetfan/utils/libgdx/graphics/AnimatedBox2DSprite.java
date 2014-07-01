@@ -21,7 +21,7 @@ import com.badlogic.gdx.graphics.g2d.Batch;
 
 /** A {@link Box2DSprite} using an {@link AnimatedSprite} for animation.
  *  @author dermetfan */
-public class AnimatedBox2DSprite extends Box2DSprite {
+public class AnimatedBox2DSprite extends Box2DSprite implements Animated<AnimatedSprite> {
 
 	/** the {@link AnimatedSprite} used for animation */
 	private AnimatedSprite animatedSprite;
@@ -48,56 +48,58 @@ public class AnimatedBox2DSprite extends Box2DSprite {
 	}
 
 	/** @param delta the delta time to update with */
+	@Override
 	public void update(float delta) {
 		animatedSprite.update(delta);
 		setRegion(animatedSprite);
 	}
 
-	/** @return the {@link AnimatedSprite} */
-	public AnimatedSprite getAnimatedSprite() {
+	/** @see AnimatedSprite#getAnimated() */
+	@Override
+	public AnimatedSprite getAnimated() {
 		return animatedSprite;
 	}
 
 	/** @param animatedSprite the {@link AnimatedSprite} to set */
-	public void setAnimatedSprite(AnimatedSprite animatedSprite) {
+	public void setAnimated(AnimatedSprite animatedSprite) {
 		if(animatedSprite == null)
 			throw new IllegalArgumentException("animatedSprite must not be null");
 		this.animatedSprite = animatedSprite;
 	}
 
 	/** @see AnimatedSprite#play() */
+	@Override
 	public void play() {
 		animatedSprite.play();
 	}
 
 	/** @see AnimatedSprite#pause() */
+	@Override
 	public void pause() {
 		animatedSprite.pause();
 	}
 
 	/** @see AnimatedSprite#stop() */
+	@Override
 	public void stop() {
 		animatedSprite.stop();
 	}
 
 	/** @see AnimatedSprite#setTime(float) */
+	@Override
 	public void setTime(float time) {
 		animatedSprite.setTime(time);
 	}
 
 	/** @see AnimatedSprite#getTime() */
+	@Override
 	public float getTime() {
 		return animatedSprite.getTime();
 	}
 
-	/** @see AnimatedSprite#getAnimation() */
-	public Animation getAnimation() {
-		return animatedSprite.getAnimation();
-	}
-
-	/** @see AnimatedSprite#setAnimation(Animation) */
+	/** @see AnimatedSprite#setAnimated(Animation) */
 	public void setAnimation(Animation animation) {
-		animatedSprite.setAnimation(animation);
+		animatedSprite.setAnimated(animation);
 	}
 
 	/** @see AnimatedSprite#flipFrames(boolean, boolean) */
@@ -121,11 +123,13 @@ public class AnimatedBox2DSprite extends Box2DSprite {
 	}
 
 	/** @see AnimatedSprite#isPlaying() */
+	@Override
 	public boolean isPlaying() {
 		return animatedSprite.isPlaying();
 	}
 
 	/** @see AnimatedSprite#setPlaying(boolean) */
+	@Override
 	public void setPlaying(boolean playing) {
 		animatedSprite.setPlaying(playing);
 	}
