@@ -10,18 +10,6 @@ libgdx-utils is a small support library for games and applications powered by [L
 - [Dependency Management Instructions](http://bitbucket.org/dermetfan/libgdx-utils/wiki/Dependency Instructions) - How to add libgdx-utils to your dependencies
 - [The Java 8 Branch](http://bitbucket.org/dermetfan/libgdx-utils/wiki/java1.8 Branch) - What is the Java 8 branch and what does it offer you?
 
-# Compatibility #
-
-This table lists the latest versions compatible with each other.
-
-|libgdx|libgdx-utils
-|-|-
-|1.2.1-SNAPSHOT|0.3.4-SNAPSHOT
-|1.1.1-SNAPSHOT|0.3.3
-|1.1.0|0.3.2
-
-Check the `build.gradle` file to see the libgdx version used in each commit.
-
 # Links #
 
 - [Homepage](http://dermetfan.net/libgdx-utils.php)
