@@ -16,11 +16,17 @@ package net.dermetfan.utils.libgdx.maps;
 
 import java.util.Iterator;
 
-import com.badlogic.gdx.maps.*;
+import com.badlogic.gdx.maps.Map;
+import com.badlogic.gdx.maps.MapLayer;
+import com.badlogic.gdx.maps.MapLayers;
+import com.badlogic.gdx.maps.MapObject;
+import com.badlogic.gdx.maps.MapObjects;
+import com.badlogic.gdx.maps.MapProperties;
 import com.badlogic.gdx.maps.tiled.TiledMap;
 import com.badlogic.gdx.maps.tiled.TiledMapTile;
 import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
 import com.badlogic.gdx.maps.tiled.TiledMapTileSet;
+import com.badlogic.gdx.maps.tiled.TiledMapTileSets;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Array;
@@ -86,43 +92,108 @@ public abstract class MapUtils {
 		return (T) value;
 	}
 
-	/** @param map the {@link Map} which hierarchy to print
-	 *  @return a human readable {@link String} of the hierarchy of the {@link MapObjects} of the given {@link Map} */
+	/** @see #readableHierarchy(com.badlogic.gdx.maps.Map, int) */
 	public static String readableHierarchy(Map map) {
-		String hierarchy = map.getClass().getSimpleName() + "\n", key, layerHierarchy;
+		return readableHierarchy(map, 0);
+	}
 
-		Iterator<String> keys = map.getProperties().getKeys();
-		while(keys.hasNext())
-			hierarchy += (key = keys.next()) + ": " + map.getProperties().get(key) + "\n";
-
-		for(MapLayer layer : map.getLayers()) {
-			hierarchy += "\t" + layer.getName() + " (" + layer.getClass().getSimpleName();
-			if(layer instanceof TiledMapTileLayer) {
-				TiledMapTileLayer tileLayer = (TiledMapTileLayer) layer;
-				hierarchy += ", size: " + tileLayer.getWidth() + "x" + tileLayer.getHeight() + ", tile size: " + tileLayer.getTileWidth() + "x" + tileLayer.getTileHeight();
-			}
-			hierarchy += "):\n";
-			layerHierarchy = readableHierarchy(layer).replace("\n", "\n\t\t");
-			layerHierarchy = layerHierarchy.endsWith("\n\t\t") ? layerHierarchy.substring(0, layerHierarchy.lastIndexOf("\n\t\t")) : layerHierarchy;
-			if(!layerHierarchy.isEmpty())
-				hierarchy += "\t\t" + layerHierarchy + "\n";
-		}
-
+	/** @param map the map to represent
+	 *  @param indent the indentation size (indent is {@code '\t'})
+	 *  @return a human-readable hierarchy of the given map and its descendants */
+	public static String readableHierarchy(Map map, int indent) {
+		String hierarchy = "";
+		for(int i = 0; i < indent; i++)
+			hierarchy += '\t';
+		hierarchy += map.getClass().getSimpleName() + '\n';
+		hierarchy += readableHierarchy(map.getProperties(), indent + 1);
+		if(map instanceof TiledMap)
+			hierarchy += readableHierarchy(((TiledMap) map).getTileSets(), indent + 1);
+		hierarchy += readableHierarchy(map.getLayers(), indent + 1);
 		return hierarchy;
 	}
 
-	/** @param layer the {@link MapLayer} which hierarchy to print
-	 *  @return a human readable {@link String} of the hierarchy of the {@link MapObjects} of the given {@link MapLayer} */
-	public static String readableHierarchy(MapLayer layer) {
-		String hierarchy = "", key;
-		Iterator<String> keys = layer.getProperties().getKeys();
-		while(keys.hasNext())
-			hierarchy += (key = keys.next()) + ": " + layer.getProperties().get(key) + "\n";
-		for(MapObject object : layer.getObjects()) {
-			hierarchy += object.getName() + " (" + object.getClass().getSimpleName() + "):\n";
-			Iterator<String> objectKeys = object.getProperties().getKeys();
-			while(objectKeys.hasNext())
-				hierarchy += "\t" + (key = objectKeys.next()) + ": " + object.getProperties().get(key) + "\n";
+	/** @see #readableHierarchy(com.badlogic.gdx.maps.Map, int) */
+	public static String readableHierarchy(TiledMapTileSets sets, int indent) {
+		String hierarchy = "";
+		for(TiledMapTileSet set : sets)
+			hierarchy += readableHierarchy(set, indent);
+		return hierarchy;
+	}
+
+	/** @see #readableHierarchy(com.badlogic.gdx.maps.Map, int) */
+	public static String readableHierarchy(TiledMapTileSet set, int indent) {
+		String hierarchy = "";
+		for(int i = 0; i < indent; i++)
+			hierarchy += '\t';
+		hierarchy += set.getClass().getSimpleName() + ' ' + set.getName() + " (" + set.size() + " tiles)\n";
+		hierarchy += readableHierarchy(set.getProperties(), indent + 1);
+		for(TiledMapTile tile : set)
+			hierarchy += readableHierarchy(tile, indent + 1);
+		return hierarchy;
+	}
+
+	/** @see #readableHierarchy(com.badlogic.gdx.maps.Map, int) */
+	public static String readableHierarchy(TiledMapTile tile, int indent) {
+		String hierarchy = "";
+		for(int i = 0; i < indent; i++)
+			hierarchy += '\t';
+		hierarchy += tile.getClass().getSimpleName() + " (ID: " + tile.getId() + ", offset: " + tile.getOffsetX() + 'x' + tile.getOffsetY() + ", BlendMode: " + tile.getBlendMode() + ")\n";
+		hierarchy += readableHierarchy(tile.getProperties(), indent + 1);
+		return hierarchy;
+	}
+
+	/** @see #readableHierarchy(com.badlogic.gdx.maps.Map, int) */
+	public static String readableHierarchy(MapLayers layers, int indent) {
+		String hierarchy = "";
+		for(MapLayer layer : layers)
+			hierarchy += readableHierarchy(layer, indent);
+		return hierarchy;
+	}
+
+	/** @see #readableHierarchy(com.badlogic.gdx.maps.Map, int) */
+	public static String readableHierarchy(MapLayer layer, int indent) {
+		String hierarchy = "";
+		for(int i = 0; i < indent; i++)
+			hierarchy += '\t';
+		hierarchy += layer.getClass().getSimpleName();
+		if(layer instanceof TiledMapTileLayer) {
+			TiledMapTileLayer tileLayer = (TiledMapTileLayer) layer;
+			hierarchy += " (size: " + tileLayer.getWidth() + 'x' + tileLayer.getHeight() + ", tile size: " + tileLayer.getTileWidth() + 'x' + tileLayer.getTileHeight() + ')';
+		} else
+			hierarchy += ' ' + layer.getName();
+		hierarchy += '\n';
+		hierarchy += readableHierarchy(layer.getProperties(), indent + 1);
+		hierarchy += readableHierarchy(layer.getObjects(), indent + 1);
+		return hierarchy;
+	}
+
+	/** @see #readableHierarchy(com.badlogic.gdx.maps.Map, int) */
+	public static String readableHierarchy(MapObjects objects, int indent) {
+		String hierarchy = "";
+		for(MapObject object : objects)
+			hierarchy += readableHierarchy(object, indent);
+		return hierarchy;
+	}
+
+	/** @see #readableHierarchy(com.badlogic.gdx.maps.Map, int) */
+	public static String readableHierarchy(MapObject object, int indent) {
+		String hierarchy = "";
+		for(int i = 0; i < indent; i++)
+			hierarchy += '\t';
+		hierarchy += object.getClass().getSimpleName() + ' ' + object.getName()+ '\n';
+		hierarchy += readableHierarchy(object.getProperties(), indent + 1);
+		return hierarchy;
+	}
+
+	/** @see #readableHierarchy(com.badlogic.gdx.maps.Map, int) */
+	public static String readableHierarchy(MapProperties properties, int indent) {
+		String hierarchy = "";
+		Iterator<String> keys = properties.getKeys();
+		while(keys.hasNext()) {
+			String key = keys.next();
+			for(int i = 0; i < indent; i++)
+				hierarchy += '\t';
+			hierarchy += key + ": " + properties.get(key).toString() + '\n';
 		}
 		return hierarchy;
 	}
