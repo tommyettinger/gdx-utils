@@ -61,7 +61,7 @@ public class Autopilot {
 		// http://www.iforce2d.net/b2dtut/rotate-to-angle
 		float rotate = MathUtils.atan2(target.y, target.x) - (rotation + angularVelocity * delta);
 		rotate = normalize(rotate, -MathUtils.PI, MathUtils.PI);
-		rotate = mirror(rotate, 0); // FIXME simulate whatever the previous (broken) MathUtils#normalize(..) method did
+		rotate = mirror(rotate, 0);
 		return inertia * (rotate / MathUtils.PI2 * force * delta) / delta;
 	}
 
