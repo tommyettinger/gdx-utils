@@ -7,11 +7,11 @@ ext {
 	libName = 'libgdx-utils'
 	nameAppendix = project != rootProject ? project.name : ''
 	nameFull = libName + (nameAppendix.empty ? '' : "-$nameAppendix")
-	libgdxVersion = '1.2.1-SNAPSHOT'
+	libgdxVersion = '1.2.0'
 }
 
 group = 'net.dermetfan.libgdx-utils'
-version = '0.3.4-SNAPSHOT'
+version = '0.3.4'
 
 apply plugin: 'java'
 apply plugin: 'maven'
@@ -141,9 +141,11 @@ publishSite {
 
 signing.sign configurations.archives
 
-signArchives {
-	enabled = !version.endsWith('-SNAPSHOT') && !gradle.taskGraph.hasTask(uploadArchives) // workaround for signing.setRequired(..)
-} << { announce.local.send "$nameFull $version", "Signed archives artifacts" }
+gradle.taskGraph.whenReady {
+	signArchives {
+		enabled = !version.endsWith('-SNAPSHOT') && gradle.taskGraph.hasTask(uploadArchives) // workaround for signing.setRequired(..)
+	} << { announce.local.send "$nameFull $version", 'Signed archives artifacts' }
+}
 
 // IDE integration
 
