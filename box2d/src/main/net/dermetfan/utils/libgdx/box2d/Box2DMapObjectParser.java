@@ -62,7 +62,6 @@ import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.FloatArray;
 import com.badlogic.gdx.utils.ObjectMap;
 import com.badlogic.gdx.utils.Pools;
-import net.dermetfan.utils.libgdx.box2d.Box2DMapObjectParser.Listener.Adapter;
 
 import static net.dermetfan.utils.libgdx.maps.MapUtils.findProperty;
 import static net.dermetfan.utils.libgdx.maps.MapUtils.getProperty;
@@ -100,125 +99,77 @@ public class Box2DMapObjectParser {
 	public static interface Listener {
 
 		/** @param parser the {@link Box2DMapObjectParser} instance that is going to {@link Box2DMapObjectParser#load(World, Map) process} a map */
-		public void init(Box2DMapObjectParser parser);
+		default public void init(Box2DMapObjectParser parser) {}
 
-		/** @param map the {@link Map} to load from
+		/** by default adds all layers to the queue
+		 *	@param map the {@link Map} to load from
 		 *  @param queue the {@link MapLayer MapLayers} to actually parse */
-		public void load(Map map, Array<MapLayer> queue);
+		default public void load(Map map, Array<MapLayer> queue) {
+			MapLayers layers = map.getLayers();
+			queue.ensureCapacity(layers.getCount());
+			for(MapLayer layer : layers)
+				queue.add(layer);
+		}
 
-		/** @param layer the {@link MapObject MapObjects} in the layer
+		/** by default adds all objects to the queue
+		 *	@param layer the {@link MapObject MapObjects} in the layer
 		 *  @param queue the {@link MapObject MapObjects} to actually parse */
-		public void load(MapLayer layer, Array<MapObject> queue);
+		default public void load(MapLayer layer, Array<MapObject> queue) {
+			MapObjects objects = layer.getObjects();
+			queue.ensureCapacity(objects.getCount());
+			for(MapObject object : objects)
+				queue.add(object);
+		}
 
 		/** @param mapObject the map object to create an object from
-		 *  @return the map object to create an object from, null to cancel the creation */
-		public MapObject createObject(MapObject mapObject);
+		 *  @return the map object to create an object from, null to cancel the creation, the given map object by default */
+		default public MapObject createObject(MapObject mapObject) {
+			return mapObject;
+		}
 
 		/** @param mapObject the map object to create a body from
-		 *  @return the map object to create a body from, null to cancel the creation */
-		public MapObject createBody(MapObject mapObject);
+		 *  @return the map object to create a body from, null to cancel the creation, the given map object by default */
+		default public MapObject createBody(MapObject mapObject) {
+			return mapObject;
+		}
 
 		/** @param mapObject the map object to create fixtures from
-		 *  @return the map object to create fixtures from, null to cancel the creation */
-		public MapObject createFixtures(MapObject mapObject);
+		 *  @return the map object to create fixtures from, null to cancel the creation, the given map object by default */
+		default public MapObject createFixtures(MapObject mapObject) {
+			return mapObject;
+		}
 
 		/** @param mapObject the map object to create a fixture from
-		 *  @return the map object to create a fixture from, null to cancel the creation */
-		public MapObject createFixture(MapObject mapObject);
+		 *  @return the map object to create a fixture from, null to cancel the creation, the given map object by default */
+		default public MapObject createFixture(MapObject mapObject) {
+			return mapObject;
+		}
 
 		/** @param mapObject the map object to create a joint from
-		 *  @return the map object to create a joint from, null to cancel the creation */
-		public MapObject createJoint(MapObject mapObject);
+		 *  @return the map object to create a joint from, null to cancel the creation, the given map object by default */
+		default public MapObject createJoint(MapObject mapObject) {
+			return mapObject;
+		}
 
 		/** @param body the created body
 		 *  @param mapObject the map object used to create the body */
-		public void created(Body body, MapObject mapObject);
+		default public void created(Body body, MapObject mapObject) {}
 
 		/** @param fixture the created fixture
 		 *  @param mapObject the map object used to create the fixture */
-		public void created(Fixture fixture, MapObject mapObject);
+		default public void created(Fixture fixture, MapObject mapObject) {}
 
 		/** @param joint the created joint
 		 *  @param mapObject the map object used to create the joint */
-		public void created(Joint joint, MapObject mapObject);
-
-		/** Does nothing. Subclass this if you only want to override only some methods.
-		 *  @author dermetfan */
-		public static class Adapter implements Listener {
-
-			/** does nothing */
-			@Override
-			public void init(Box2DMapObjectParser parser) {}
-
-			/** adds all layers to the processing queue */
-			@Override
-			public void load(Map map, Array<MapLayer> queue) {
-				MapLayers layers = map.getLayers();
-				queue.ensureCapacity(layers.getCount());
-				for(MapLayer layer : layers)
-					queue.add(layer);
-			}
-
-			/** adds all map objects to the parsing queue */
-			@Override
-			public void load(MapLayer layer, Array<MapObject> queue) {
-				MapObjects objects = layer.getObjects();
-				queue.ensureCapacity(objects.getCount());
-				for(MapObject object : objects)
-					queue.add(object);
-			}
-
-			/** @return the given map object */
-			@Override
-			public MapObject createObject(MapObject mapObject) {
-				return mapObject;
-			}
-
-			/** @return the given map object */
-			@Override
-			public MapObject createBody(MapObject mapObject) {
-				return mapObject;
-			}
-
-			/** @return the given map object */
-			@Override
-			public MapObject createFixtures(MapObject mapObject) {
-				return mapObject;
-			}
-
-			/** @return the given map object */
-			@Override
-			public MapObject createFixture(MapObject mapObject) {
-				return mapObject;
-			}
-
-			/** @return the given map object */
-			@Override
-			public MapObject createJoint(MapObject mapObject) {
-				return mapObject;
-			}
-
-			/** does nothing */
-			@Override
-			public void created(Body body, MapObject mapObject) {}
-
-			/** does nothing */
-			@Override
-			public void created(Fixture fixture, MapObject mapObject) {}
-
-			/** does nothing */
-			@Override
-			public void created(Joint joint, MapObject mapObject) {}
-
-		}
+		default public void created(Joint joint, MapObject mapObject) {}
 
 	}
 
 	/** @see Aliases */
 	private Aliases aliases = new Aliases();
 
-	/** the {@link Listener} used by default (an {@link Adapter} instance) */
-	public static final Adapter defaultListener = new Adapter();
+	/** the {@link Listener} used by default (does nothing) */
+	public static final Listener defaultListener = new Listener() {};
 
 	/** the {@link Listener} to use ({@link #defaultListener} by default) */
 	private Listener listener = defaultListener;
@@ -313,7 +264,7 @@ public class Box2DMapObjectParser {
 	}
 
 	/** creates a new {@link Box2DMapObjectParser} using the given {@link Listener}, {@link Aliases}, {@link #tileWidth} and {@link #tileHeight}
-	 *  @param aliases the {@link #aliases}
+	 * 	@param aliases the {@link #aliases}
 	 *  @param listener the {@link #listener}
 	 *  @param tileWidth the {@link #tileWidth}
 	 *  @param tileHeight the {@link #tileHeight} */
