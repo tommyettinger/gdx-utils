@@ -7,11 +7,11 @@ ext {
 	libName = 'libgdx-utils'
 	nameAppendix = project != rootProject ? project.name : ''
 	nameFull = libName + (nameAppendix.empty ? '' : "-$nameAppendix")
-	libgdxVersion = '1.2.1-SNAPSHOT'
+	libgdxVersion = '1.2.0'
 }
 
 group = 'net.dermetfan.libgdx-utils'
-version = '0.3.4-SNAPSHOT'
+version = '0.3.4'
 
 apply plugin: 'java'
 apply plugin: 'maven'
@@ -78,8 +78,7 @@ task distSources(type: Jar, group: 'distribution') {
 	classifier = 'sources'
 	destinationDir = jar.destinationDir
 	manifest = jar.manifest
-	doLast { announce.local.send "$nameFull $version", 'Distributed sources' }
-}
+} << { announce.local.send "$nameFull $version", 'Distributed sources' }
 
 task distJavadoc(type: Jar, dependsOn: javadoc, group: 'distribution') {
 	description = 'Assembles a jar archive containing the javadoc.'
@@ -89,8 +88,7 @@ task distJavadoc(type: Jar, dependsOn: javadoc, group: 'distribution') {
 	classifier = 'javadoc'
 	destinationDir = jar.destinationDir
 	manifest = jar.manifest
-	doLast { announce.local.send "$nameFull $version", 'Distributed javadoc' }
-}
+} << { announce.local.send "$nameFull $version", 'Distributed javadoc' }
 
 task distBundle(type: Zip, dependsOn: [jar, distSources, distJavadoc], group: 'distribution') {
 	description = 'Assembles a zip archive containing the binary, source and javadoc archives as well as the LICENSE file.'
@@ -101,8 +99,7 @@ task distBundle(type: Zip, dependsOn: [jar, distSources, distJavadoc], group: 'd
 	baseName = libName
 	appendix = nameAppendix
 	destinationDir = jar.destinationDir
-	doLast { announce.local.send "$nameFull $version", 'Distributed bundle' }
-}
+} << { announce.local.send "$nameFull $version", 'Distributed bundle' }
 
 // upload
 
@@ -115,41 +112,40 @@ uploadArchives {
 	repositories.mavenDeployer {
 		beforeDeployment { signing.signPom(it) }
 		repository(url: 'https://oss.sonatype.org/service/local/staging/deploy/maven2/') {
-			authentication(userName: ifHasProperty('sonatype_jira_username'), password: ifHasProperty('sonatype_jira_password'))
+			authentication(userName: property('sonatype_jira_username'), password: property('sonatype_jira_password'))
 		}
 		snapshotRepository(url: 'https://oss.sonatype.org/content/repositories/snapshots/') {
-			authentication(userName: ifHasProperty('sonatype_jira_username'), password: ifHasProperty('sonatype_jira_password'))
+			authentication(userName: property('sonatype_jira_username'), password: property('sonatype_jira_password'))
 		}
 	}
-	doLast { announce.local.send "$nameFull $version",  'Uploaded archives artifacts'}
-}
+} << { announce.local.send "$nameFull $version",  'Uploaded archives artifacts'}
 
 site {
 	url = "ftp://dermetfan.net/$libName${nameAppendix.empty ? '' : '/' + nameAppendix}"
 	authenticationInfo {
-		userName = ifHasProperty 'site_ftp_username'
-		password = ifHasProperty 'site_ftp_password'
+		userName = property 'site_ftp_username'
+		password = property 'site_ftp_password'
 	}
 }
 
 publishSite {
-	dependsOn test, javadoc
+	dependsOn javadoc
+	group = 'upload'
 	doFirst {
 		baseDir.mkdirs() // workaround issue #2 https://bitbucket.org/davidmc24/gradle-site-plugin/issue/2/publishsite-basedir-is-not-automatically
 		announce.local.send "$nameFull $version", "Uploading javadoc to ${url}..."
 	}
-	doLast { announce.local.send "$nameFull $version", "Uploaded javadoc to $url" }
-	group = 'upload'
-}
+} << { announce.local.send "$nameFull $version", "Uploaded javadoc to $url" }
 
 // signing
 
-signing {
-	required { !version.endsWith('-SNAPSHOT') && gradle.taskGraph.hasTask(tasks.uploadArchives) }
-	sign configurations.archives
-}
+signing.sign configurations.archives
 
-signArchives << { announce.local.send "$nameFull $version", "Signed archives artifacts" }
+gradle.taskGraph.whenReady {
+	signArchives {
+		enabled = !version.endsWith('-SNAPSHOT') && gradle.taskGraph.hasTask(uploadArchives) // workaround for signing.setRequired(..)
+	} << { announce.local.send "$nameFull $version", 'Signed archives artifacts' }
+}
 
 // IDE integration
 
@@ -162,6 +158,6 @@ eclipse {
 }
 
 // methods
-Object ifHasProperty(String prop) {
-	return hasProperty(prop) ? project[prop] : ''
+Object property(String property) {
+	return hasProperty(property) ? project[property] : ''
 }
