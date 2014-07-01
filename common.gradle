@@ -117,9 +117,10 @@ uploadArchives {
 		snapshotRepository(url: 'https://oss.sonatype.org/content/repositories/snapshots/') {
 			authentication(userName: property('sonatype_jira_username'), password: property('sonatype_jira_password'))
 		}
+		pom.withXml { asNode().appendNode('packaging', 'jar') } // http://issues.gradle.org/browse/GRADLE-1200
 		pom.project {
 			name nameFull
-			description 'support library for libGDX'
+			description "support library for libGDX${!nameAppendix.empty ? " ($nameAppendix module)" : ''}"
 			url 'http://dermetfan.net'
 			licenses {
 				license {
@@ -131,7 +132,8 @@ uploadArchives {
 				developer {
 					name 'Robin Stumm'
 					email 'serverkorken@gmail.com'
-					organization 'dermetfan'
+					url 'http://dermetfan.net'
+					organization = 'dermetfan' // http://issues.gradle.org/browse/GRADLE-1200
 					organizationUrl 'http://dermetfan.net'
 				}
 			}
