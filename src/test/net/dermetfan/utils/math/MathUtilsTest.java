@@ -48,6 +48,12 @@ public class MathUtilsTest {
 
 		assertEquals(25, MathUtils.mirror(175, 100), 0);
 		assertEquals(-75, MathUtils.mirror(275, 100), 0);
+
+		assertEquals(-25, MathUtils.mirror(25, 0), 0);
+		assertEquals(25, MathUtils.mirror(-25, 0), 0);
+
+		assertEquals(200, MathUtils.mirror(0, 100), 0);
+		assertEquals(0, MathUtils.mirror(200, 100), 0);
 	}
 
 	@Test
