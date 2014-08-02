@@ -62,6 +62,7 @@ import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.FloatArray;
 import com.badlogic.gdx.utils.ObjectMap;
 import com.badlogic.gdx.utils.Pools;
+import com.badlogic.gdx.utils.reflect.ClassReflection;
 import net.dermetfan.utils.libgdx.box2d.Box2DMapObjectParser.Listener.Adapter;
 
 import static net.dermetfan.utils.libgdx.maps.MapUtils.findProperty;
@@ -581,7 +582,7 @@ public class Box2DMapObjectParser {
 			} else {
 				Ellipse ellipse = ((EllipseMapObject) mapObject).getEllipse();
 				if(ellipse.width != ellipse.height)
-					throw new IllegalArgumentException("Cannot parse " + mapObject.getName() + " because " + mapObject.getClass().getSimpleName() + "s that are not circles are not supported");
+					throw new IllegalArgumentException("Cannot parse " + mapObject.getName() + " because " + ClassReflection.getSimpleName(mapObject.getClass()) + "s that are not circles are not supported");
 				vec3.set(ellipse.x + ellipse.width / 2, ellipse.y + ellipse.height / 2, ellipse.width / 2);
 			}
 			vec3.mul(mat4);
@@ -590,7 +591,7 @@ public class Box2DMapObjectParser {
 			circleShape.setPosition(vec2.set(vec3.x, vec3.y));
 			circleShape.setRadius(vec3.z);
 		} else if(mapObject instanceof TextureMapObject)
-			throw new IllegalArgumentException("Cannot parse " + mapObject.getName() + " because " + mapObject.getClass().getSimpleName() + "s are not supported");
+			throw new IllegalArgumentException("Cannot parse " + mapObject.getName() + " because " + ClassReflection.getSimpleName(mapObject.getClass()) + "s are not supported");
 		else
 			assert false : mapObject + " is a not known subclass of " + MapObject.class.getName();
 
@@ -773,7 +774,7 @@ public class Box2DMapObjectParser {
 			assignProperties(wheelJointDef, properties);
 			jointDef = wheelJointDef;
 		} else
-			throw new IllegalArgumentException(JointType.class.getSimpleName() + " " + jointType + " is unknown");
+			throw new IllegalArgumentException(ClassReflection.getSimpleName(JointType.class) + " " + jointType + " is unknown");
 
 		assignProperties(jointDef, properties);
 

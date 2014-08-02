@@ -14,6 +14,8 @@
 
 package net.dermetfan.utils;
 
+import com.badlogic.gdx.utils.reflect.ClassReflection;
+
 /** @param <K> the type of the key
  *  @param <V> the type of the value
  *  @author dermetfan */
@@ -71,8 +73,8 @@ public class Pair<K, V> {
 	 *  @throws IllegalStateException if the classes of {@link #key} and {@link #value} are not {@link Class#isAssignableFrom(Class) assignable} from each other */
 	@SuppressWarnings("unchecked")
 	public void swap() throws IllegalStateException {
-		if(!key.getClass().isAssignableFrom(value.getClass()) || !value.getClass().isAssignableFrom(key.getClass()))
-			throw new IllegalStateException("the types of key and value are not assignable from each other: " + key.getClass().getName() + " - " + value.getClass().getName());
+		if(!ClassReflection.isAssignableFrom(key.getClass(), value.getClass()) || !ClassReflection.isAssignableFrom(value.getClass(), key.getClass()))
+			throw new IllegalStateException("the types of key and value are not assignable from each other: " + ClassReflection.getSimpleName(key.getClass()) + " - " + ClassReflection.getSimpleName(value.getClass()));
 		V oldValue = value;
 		value = (V) key;
 		key = (K) oldValue;

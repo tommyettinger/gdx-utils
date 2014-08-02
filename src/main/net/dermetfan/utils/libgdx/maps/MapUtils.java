@@ -30,6 +30,7 @@ import com.badlogic.gdx.maps.tiled.TiledMapTileSets;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Array;
+import com.badlogic.gdx.utils.reflect.ClassReflection;
 
 /** provides useful methods for dealing with maps
  *  @author dermetfan */
@@ -104,7 +105,7 @@ public abstract class MapUtils {
 		String hierarchy = "";
 		for(int i = 0; i < indent; i++)
 			hierarchy += '\t';
-		hierarchy += map.getClass().getSimpleName() + '\n';
+		hierarchy += ClassReflection.getSimpleName(map.getClass()) + '\n';
 		hierarchy += readableHierarchy(map.getProperties(), indent + 1);
 		if(map instanceof TiledMap)
 			hierarchy += readableHierarchy(((TiledMap) map).getTileSets(), indent + 1);
@@ -125,7 +126,7 @@ public abstract class MapUtils {
 		String hierarchy = "";
 		for(int i = 0; i < indent; i++)
 			hierarchy += '\t';
-		hierarchy += set.getClass().getSimpleName() + ' ' + set.getName() + " (" + set.size() + " tiles)\n";
+		hierarchy += ClassReflection.getSimpleName(set.getClass()) + ' ' + set.getName() + " (" + set.size() + " tiles)\n";
 		hierarchy += readableHierarchy(set.getProperties(), indent + 1);
 		for(TiledMapTile tile : set)
 			hierarchy += readableHierarchy(tile, indent + 1);
@@ -137,7 +138,7 @@ public abstract class MapUtils {
 		String hierarchy = "";
 		for(int i = 0; i < indent; i++)
 			hierarchy += '\t';
-		hierarchy += tile.getClass().getSimpleName() + " (ID: " + tile.getId() + ", offset: " + tile.getOffsetX() + 'x' + tile.getOffsetY() + ", BlendMode: " + tile.getBlendMode() + ")\n";
+		hierarchy += ClassReflection.getSimpleName(tile.getClass()) + " (ID: " + tile.getId() + ", offset: " + tile.getOffsetX() + 'x' + tile.getOffsetY() + ", BlendMode: " + tile.getBlendMode() + ")\n";
 		hierarchy += readableHierarchy(tile.getProperties(), indent + 1);
 		return hierarchy;
 	}
@@ -155,7 +156,7 @@ public abstract class MapUtils {
 		String hierarchy = "";
 		for(int i = 0; i < indent; i++)
 			hierarchy += '\t';
-		hierarchy += layer.getClass().getSimpleName();
+		hierarchy += ClassReflection.getSimpleName(layer.getClass());
 		if(layer instanceof TiledMapTileLayer) {
 			TiledMapTileLayer tileLayer = (TiledMapTileLayer) layer;
 			hierarchy += " (size: " + tileLayer.getWidth() + 'x' + tileLayer.getHeight() + ", tile size: " + tileLayer.getTileWidth() + 'x' + tileLayer.getTileHeight() + ')';
@@ -180,7 +181,7 @@ public abstract class MapUtils {
 		String hierarchy = "";
 		for(int i = 0; i < indent; i++)
 			hierarchy += '\t';
-		hierarchy += object.getClass().getSimpleName() + ' ' + object.getName()+ '\n';
+		hierarchy += ClassReflection.getSimpleName(object.getClass()) + ' ' + object.getName()+ '\n';
 		hierarchy += readableHierarchy(object.getProperties(), indent + 1);
 		return hierarchy;
 	}
