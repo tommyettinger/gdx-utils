@@ -44,6 +44,7 @@ import com.badlogic.gdx.utils.Json;
 import com.badlogic.gdx.utils.Json.Serializable;
 import com.badlogic.gdx.utils.JsonValue;
 import com.badlogic.gdx.utils.Pools;
+import com.badlogic.gdx.utils.reflect.ClassReflection;
 import net.dermetfan.utils.libgdx.scene2d.Scene2DUtils;
 
 /** A {@link TextField} showing the {@link #pathField} of the currently browsed folder with {@link #backButton} and {@link #parentButton} buttons.
@@ -325,7 +326,7 @@ public class ListFileChooser extends FileChooser {
 			pathField.setText(loc.path());
 			pathField.setCursorPosition(pathField.getText().length());
 		} else
-			Gdx.app.error(ListFileChooser.class.getSimpleName(), " cannot read " + dir);
+			Gdx.app.error(ClassReflection.getSimpleName(ListFileChooser.class), " cannot read " + dir);
 	}
 
 	/** @return the {@link #backButton} */

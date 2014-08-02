@@ -29,7 +29,8 @@ import com.badlogic.gdx.assets.loaders.FileHandleResolver;
 import com.badlogic.gdx.assets.loaders.resolvers.InternalFileHandleResolver;
 import com.badlogic.gdx.files.FileHandle;
 
-/** An {@link AssetManager} that {@link AssetManager#load(AssetDescriptor) loads} assets from a container class using reflection.
+/** An {@link AssetManager} that {@link AssetManager#load(AssetDescriptor) loads} assets from a container class using reflection.<br>
+ *  <strong>NOTE: Not supported in the HTML backend! Since the libGDX reflection API does not provide access to annotations, the java reflection API is used here instead.</strong>
  *  @author dermetfan */
 public class AnnotationAssetManager extends AssetManager {
 
