@@ -14,7 +14,7 @@
 
 package net.dermetfan.utils.libgdx.scene2d.ui;
 
-import java.lang.Override;import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Event;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
@@ -22,7 +22,6 @@ import com.badlogic.gdx.scenes.scene2d.InputEvent.Type;
 import com.badlogic.gdx.scenes.scene2d.Touchable;
 import com.badlogic.gdx.scenes.scene2d.actions.Actions;
 import com.badlogic.gdx.scenes.scene2d.actions.SequenceAction;
-import com.badlogic.gdx.scenes.scene2d.ui.Dialog;
 import com.badlogic.gdx.utils.Timer;
 import com.badlogic.gdx.utils.Timer.Task;
 import net.dermetfan.utils.libgdx.scene2d.Scene2DUtils;
@@ -140,24 +139,24 @@ public class Tooltip<T extends Actor> extends ContextPopup<T> {
 		return false;
 	}
 
-	/** Brings the {@link #popup} {@link Actor#toFront() to front} and {@link Actions#fadeIn(float) fades} it in for {@link Dialog#fadeDuration} seconds.
+	/** Brings the {@link #popup} {@link Actor#toFront() to front} and {@link Actions#fadeIn(float) fades} it in for 0.4 seconds ({@code Dialog#fadeDuration} when it still existed).
 	 *  @param event {@link Scene2DUtils#copy(InputEvent, InputEvent) copied} {@link ShowTask#event} from {@link #showTask}, so cancelling has no effect */
 	@Override
 	public boolean show(Event event) {
 		super.show(event);
-		SequenceAction sequence = Actions.sequence(Actions.fadeIn(Dialog.fadeDuration));
+		SequenceAction sequence = Actions.sequence(Actions.fadeIn(.4f));
 		if(showTouchable != null)
 			sequence.addAction(Actions.touchable(showTouchable));
 		popup.addAction(sequence);
 		return false;
 	}
 
-	/** {@link Actions#fadeOut(float) Fades} the tooltip out for {@link Dialog#fadeDuration} seconds.
+	/** {@link Actions#fadeOut(float) Fades} the tooltip out for 0.4 seconds ({@code Dialog#fadeDuration when it still existed}).
 	 *  @param event {@link Scene2DUtils#copy(InputEvent, InputEvent) copied} {@link HideTask#event} from {@link #hideTask}, so cancelling has no effect */
 	@Override
 	public boolean hide(Event event) {
 		super.hide(event);
-		SequenceAction sequence = Actions.sequence(Actions.fadeOut(Dialog.fadeDuration));
+		SequenceAction sequence = Actions.sequence(Actions.fadeOut(.4f));
 		if(hideTouchable != null)
 			sequence.addAction(Actions.touchable(hideTouchable));
 		popup.addAction(sequence);
