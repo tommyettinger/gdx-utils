@@ -36,7 +36,6 @@ sourceSets {
 	main {
 		java.srcDirs = ['src/main']
 		resources.srcDirs = ['src/main']
-
 	}
 	test.java.srcDirs = ['src/test']
 	site.resources.srcDirs = [javadoc.destinationDir.parentFile, testReportDir.parentFile]
