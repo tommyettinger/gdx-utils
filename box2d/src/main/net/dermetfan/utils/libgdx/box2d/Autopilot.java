@@ -18,7 +18,7 @@ import com.badlogic.gdx.math.Interpolation;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Body;
-import net.dermetfan.utils.Accessor;
+import net.dermetfan.utils.Function;
 
 import static net.dermetfan.utils.math.MathUtils.normalize;
 
@@ -89,17 +89,17 @@ public class Autopilot {
 	private Interpolation interpolation = Interpolation.linear;
 
 	/** returns {@link Body#getPosition()} */
-	public static final Accessor<Vector2, Body> defaultPositionAccessor = new Accessor<Vector2, Body>() {
+	public static final Function<Vector2, Body> defaultPositionAccessor = new Function<Vector2, Body>() {
 
 		@Override
-		public Vector2 access(Body body) {
+		public Vector2 apply(Body body) {
 			return body.getWorldCenter();
 		}
 
 	};
 
 	/** used to determine a bodies position */
-	private Accessor<Vector2, Body> positionAccessor = defaultPositionAccessor;
+	private Function<Vector2, Body> positionAccessor = defaultPositionAccessor;
 
 	/** sets {@link #movementForce} and {@link #rotationForce} to the given {@code force}
 	 *  @see #Autopilot(Vector2, float, float) */
@@ -125,7 +125,7 @@ public class Autopilot {
 	 *  @see #calculateForce(Vector2, Vector2)
 	 *  @see #move(Body, Vector2, Vector2, Interpolation, float, boolean) */
 	public void move(Body body, Vector2 destination, Vector2 force, boolean wake) {
-		Vector2 position = positionAccessor.access(body);
+		Vector2 position = positionAccessor.apply(body);
 		Vector2 apply = calculateForce(moveRelative ? destination : vec2_0.set(destination).sub(position), adaptForceToMass ? vec2_1.set(force).scl(body.getMass()) : force);
 		body.applyForce(apply, position, wake);
 	}
@@ -140,7 +140,7 @@ public class Autopilot {
 	 *  @see #move(Body, Vector2, Vector2, boolean)
 	 *  @see #calculateForce(Vector2, Vector2, float, Interpolation) */
 	public void move(Body body, Vector2 destination, Vector2 force, Interpolation interpolation, float distanceScalar, boolean wake) {
-		Vector2 position = positionAccessor.access(body);
+		Vector2 position = positionAccessor.apply(body);
 		body.applyForce(calculateForce(moveRelative ? destination : vec2_0.set(destination).sub(position), adaptForceToMass ? vec2_1.set(force).scl(body.getMass()) : force, distanceScalar, interpolation), position, wake);
 	}
 
@@ -155,7 +155,7 @@ public class Autopilot {
 	/** @param wake if the body should be woken up if its sleeping
 	 *  @see #calculateTorque(Vector2, float, float, float, float, float) */
 	public void rotate(Body body, Vector2 target, float angle, float force, float delta, boolean wake) {
-		body.applyTorque(calculateTorque(rotateRelative ? target : vec2_0.set(positionAccessor.access(body)).sub(target), body.getTransform().getRotation() + angle, body.getAngularVelocity(), body.getInertia(), adaptForceToMass ? force * body.getMass() : force, delta), wake);
+		body.applyTorque(calculateTorque(rotateRelative ? target : vec2_0.set(positionAccessor.apply(body)).sub(target), body.getTransform().getRotation() + angle, body.getAngularVelocity(), body.getInertia(), adaptForceToMass ? force * body.getMass() : force, delta), wake);
 	}
 
 	/** {@link #rotate(Body, Vector2, float, float, float, boolean) rotates} the given {@code body} */
@@ -314,12 +314,12 @@ public class Autopilot {
 	}
 
 	/** @return the {@link #positionAccessor} */
-	public Accessor<Vector2, Body> getPositionAccessor() {
+	public Function<Vector2, Body> getPositionAccessor() {
 		return positionAccessor;
 	}
 
 	/** @param positionAccessor the {@link #positionAccessor} to set */
-	public void setPositionAccessor(Accessor<Vector2, Body> positionAccessor) {
+	public void setPositionAccessor(Function<Vector2, Body> positionAccessor) {
 		this.positionAccessor = positionAccessor != null ? positionAccessor : defaultPositionAccessor;
 	}
 

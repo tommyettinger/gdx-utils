@@ -12,7 +12,7 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License. */
 
-package net.dermetfan.utils.libgdx.scene2d;
+package net.dermetfan.utils.libgdx.scene2d.ui;
 
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Event;

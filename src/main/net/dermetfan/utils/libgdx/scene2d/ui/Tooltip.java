@@ -14,7 +14,6 @@
 
 package net.dermetfan.utils.libgdx.scene2d.ui;
 
-import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Event;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
@@ -24,6 +23,7 @@ import com.badlogic.gdx.scenes.scene2d.actions.Actions;
 import com.badlogic.gdx.scenes.scene2d.actions.SequenceAction;
 import com.badlogic.gdx.utils.Timer;
 import com.badlogic.gdx.utils.Timer.Task;
+import net.dermetfan.utils.Function;
 import net.dermetfan.utils.libgdx.scene2d.Scene2DUtils;
 
 import static com.badlogic.gdx.scenes.scene2d.InputEvent.Type.enter;
@@ -32,7 +32,43 @@ import static com.badlogic.gdx.scenes.scene2d.InputEvent.Type.mouseMoved;
 import static com.badlogic.gdx.scenes.scene2d.InputEvent.Type.touchDown;
 import static com.badlogic.gdx.scenes.scene2d.InputEvent.Type.touchUp;
 
-public class Tooltip<T extends Actor> extends ContextPopup<T> {
+/** Shows a tooltip under the pointer or at the event position after {@link #showDelay} and hides it on certain events.
+ *  @author dermetfan */
+public class Tooltip<T extends Actor> extends ImmutableContextPopup<T> {
+
+	/** calls {@link #show(Event)}
+	 *  @author dermetfan */
+	protected class ShowTask extends Task {
+		private final InputEvent event = new InputEvent();
+
+		@Override
+		public void run() {
+			show(event);
+		}
+	}
+
+	/** calls {@link #hide(Event)}
+	 *  @author dermetfan */
+	protected class HideTask extends Task {
+		private final InputEvent event = new InputEvent();
+
+		@Override
+		public void run() {
+			hide(event);
+		}
+	}
+
+	/** @see #show(Event)  */
+	private final ShowTask showTask = new ShowTask();
+
+	/** @see #hide(Event) */
+	private final HideTask hideTask = new HideTask();
+
+	/** the mask bits */
+	public static final byte mask = 1;
+
+	/** the flags that define when to hide, show or cancel the tooltip */
+	private int showFlags = mask << enter.ordinal(), hideFlags = mask << touchDown.ordinal() | mask << touchUp.ordinal() | mask << exit.ordinal(), cancelFlags = mask << touchDown.ordinal() | mask << exit.ordinal();
 
 	/** if the tooltip should follow the pointer */
 	private boolean followPointer;
@@ -46,104 +82,62 @@ public class Tooltip<T extends Actor> extends ContextPopup<T> {
 	/** the delay before {@link #hide(Event)} */
 	private float hideDelay;
 
-	/** the offset of the tooltip in respect to the mouse or enter position */
-	private float offsetX, offsetY;
-
 	/** if not null, {@link #show(Event)} will set the touchability of the {@link #popup} to this */
 	private Touchable showTouchable = Touchable.enabled;
 
 	/** if not null, {@link #hide(Event)} will set the touchability of the {@link #popup} to this */
 	private Touchable hideTouchable = Touchable.disabled;
 
-	/** the mask bits */
-	public static final byte mask = 1;
-
-	/** the flags that define when to hide, show or cancel the tooltip */
-	private int showFlags = mask << enter.ordinal(), hideFlags = mask << touchDown.ordinal() | mask << touchUp.ordinal() | mask << exit.ordinal(), cancelFlags = mask << touchDown.ordinal() | mask << exit.ordinal();
-
-	/** calls {@link #show(Event)} after setting the position of the popup
-	 *  @see #run()
-	 *  @author dermetfan */
-	protected class ShowTask extends Task {
-		private final InputEvent event = new InputEvent();
-
-		/** calls {@link #show(Event)} after setting the position of the tooltip */
-		@Override
-		public void run() {
-			if(showAtPointer) {
-				Vector2 pos = Scene2DUtils.pointerPosition(event.getListenerActor().getStage());
-				popup.setPosition(pos.x + offsetX, pos.y + offsetY);
-			} else
-				popup.setPosition(event.getStageX() + offsetX, event.getStageY() + offsetY);
-			show(event);
-		}
-	}
-
-	/** calls {@link #hide(Event)}
-	 *  @see #run()
-	 *  @author dermetfan */
-	protected class HideTask extends Task {
-		private final InputEvent event = new InputEvent();
-
-		@Override
-		public void run() {
-			hide(event);
-		}
-	}
-
-	/** a local {@link ShowTask} instance */
-	private final ShowTask showTask = new ShowTask();
-
-	/** @see #hide(Event) */
-	private final HideTask hideTask = new HideTask();
-
-	/** @see net.dermetfan.utils.libgdx.scene2d.Popup#Popup(Actor)  */
+	/** @see Popup#Popup(Actor) */
 	public Tooltip(T popup) {
 		super(popup);
-	}
+		handler = new Function<Boolean, InputEvent>() {
+			@Override
+			public Boolean apply(InputEvent event) {
+				if(event.getRelatedActor() == Tooltip.this.popup)
+					return false;
 
-	@Override
-	public boolean handle(Event e) {
-		if(!(e instanceof InputEvent))
-			return false;
-		InputEvent event = (InputEvent) e;
-		if(event.getRelatedActor() == popup)
-			return false;
+				Type type = event.getType();
+				int flag = mask << type.ordinal();
 
-		Type type = event.getType();
-		int flag = mask << type.ordinal();
+				if(type == mouseMoved && followPointer)
+					Tooltip.this.popup.setPosition(event.getStageX() + getOffsetX(), event.getStageY() + getOffsetY());
 
-		if(type == mouseMoved && followPointer)
-			popup.setPosition(event.getStageX() + offsetX, event.getStageY() + offsetY);
+				if((cancelFlags & flag) == flag)
+					showTask.cancel();
 
-		if((cancelFlags & flag) == flag)
-			showTask.cancel();
+				if((hideFlags & flag) == flag) {
+					Scene2DUtils.copy(hideTask.event, event);
+					if(hideDelay > 0) {
+						if(!hideTask.isScheduled())
+							Timer.schedule(hideTask, hideDelay);
+					} else
+						hideTask.run();
+				}
 
-		if((hideFlags & flag) == flag) {
-			Scene2DUtils.copy(hideTask.event, event);
-			if(hideDelay > 0) {
-				if(!hideTask.isScheduled())
-					Timer.schedule(hideTask, hideDelay);
-			} else
-				hideTask.run();
-		}
-
-		if((showFlags & flag) == flag) {
-			Scene2DUtils.copy(showTask.event, event);
-			if(showDelay > 0) {
-				if(!showTask.isScheduled())
-					Timer.schedule(showTask, showDelay);
-			} else
-				showTask.run();
-		}
-		return false;
+				if((showFlags & flag) == flag) {
+					Scene2DUtils.copy(showTask.event, event);
+					if(showDelay > 0) {
+						if(!showTask.isScheduled())
+							Timer.schedule(showTask, showDelay);
+					} else
+						showTask.run();
+				}
+				return false;
+			}
+		};
 	}
 
 	/** Brings the {@link #popup} {@link Actor#toFront() to front} and {@link Actions#fadeIn(float) fades} it in for 0.4 seconds ({@code Dialog#fadeDuration} when it still existed).
 	 *  @param event {@link Scene2DUtils#copy(InputEvent, InputEvent) copied} {@link ShowTask#event} from {@link #showTask}, so cancelling has no effect */
 	@Override
 	public boolean show(Event event) {
-		super.show(event);
+		if(showAtPointer)
+			super.show(event);
+		else if(event instanceof InputEvent) {
+			InputEvent e = (InputEvent) event;
+			popup.setPosition(e.getStageX() + getOffsetX(), e.getStageY() + getOffsetY());
+		}
 		SequenceAction sequence = Actions.sequence(Actions.fadeIn(.4f));
 		if(showTouchable != null)
 			sequence.addAction(Actions.touchable(showTouchable));
@@ -155,7 +149,6 @@ public class Tooltip<T extends Actor> extends ContextPopup<T> {
 	 *  @param event {@link Scene2DUtils#copy(InputEvent, InputEvent) copied} {@link HideTask#event} from {@link #hideTask}, so cancelling has no effect */
 	@Override
 	public boolean hide(Event event) {
-		super.hide(event);
 		SequenceAction sequence = Actions.sequence(Actions.fadeOut(.4f));
 		if(hideTouchable != null)
 			sequence.addAction(Actions.touchable(hideTouchable));
@@ -228,13 +221,6 @@ public class Tooltip<T extends Actor> extends ContextPopup<T> {
 		showDelay = hideDelay = delay;
 	}
 
-	/** @param offsetX the {@link #offsetX}
-	 *  @param offsetY the {@link #offsetY} */
-	public void setOffset(float offsetX, float offsetY) {
-		this.offsetX = offsetX;
-		this.offsetY = offsetY;
-	}
-
 	/** @param popup the {@link #popup} to set */
 	public void setPopup(T popup) {
 		this.popup = popup;
@@ -278,26 +264,6 @@ public class Tooltip<T extends Actor> extends ContextPopup<T> {
 	/** @param hideDelay the {@link #hideDelay} to set */
 	public void setHideDelay(float hideDelay) {
 		this.hideDelay = hideDelay;
-	}
-
-	/** @return the {@link #offsetX} */
-	public float getOffsetX() {
-		return offsetX;
-	}
-
-	/** @param offsetX the {@link #offsetX} to set */
-	public void setOffsetX(float offsetX) {
-		this.offsetX = offsetX;
-	}
-
-	/** @return the {@link #offsetY} */
-	public float getOffsetY() {
-		return offsetY;
-	}
-
-	/** @param offsetY the {@link #offsetY} to set */
-	public void setOffsetY(float offsetY) {
-		this.offsetY = offsetY;
 	}
 
 	/** @return the {@link #showTouchable} */

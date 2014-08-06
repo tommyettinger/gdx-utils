@@ -11,7 +11,7 @@ ext {
 }
 
 group = 'net.dermetfan.libgdx-utils'
-version = '0.3.5-SNAPSHOT'
+version = '0.4.0-SNAPSHOT'
 
 apply plugin: 'java'
 apply plugin: 'maven'
@@ -36,6 +36,7 @@ sourceSets {
 	main {
 		java.srcDirs = ['src/main']
 		resources.srcDirs = ['src/main']
+
 	}
 	test.java.srcDirs = ['src/test']
 	site.resources.srcDirs = [javadoc.destinationDir.parentFile, testReportDir.parentFile]
