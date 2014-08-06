@@ -4,12 +4,13 @@ import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import net.dermetfan.utils.Function;
 
-/** an {@link ImmutableContextPopup} that is not immutable
+/** an {@link ImmutableEventPopup} that is not immutable
  *  @author dermetfan
  *  @since 0.4.0 */
-public class ContextPopup<T extends Actor> extends ImmutableContextPopup<T> {
+public class EventPopup<T extends Actor> extends ImmutableEventPopup<T> {
 
-	public ContextPopup(T popup) {
+	/** @see Popup#Popup(Actor) */
+	public EventPopup(T popup) {
 		super(popup);
 	}
 

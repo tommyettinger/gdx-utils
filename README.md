@@ -1,29 +1,16 @@
-# libgdx-utils #
-
-libgdx-utils is a small support library for games and applications powered by [LibGDX](http://libgdx.badlogicgames.com). It provides tools for various problems to save you time and effort. Everything is well documented.
-
-[![Build Status](https://drone.io/bitbucket.org/dermetfan/libgdx-utils/status.png)](https://drone.io/bitbucket.org/dermetfan/libgdx-utils/latest) 
-
-# Wiki Content #
-
-- [API Reference](http://bitbucket.org/dermetfan/libgdx-utils/wiki/API Reference) - Articles about how to use the classes
-- [Dependency Management Instructions](http://bitbucket.org/dermetfan/libgdx-utils/wiki/Dependency Instructions) - How to add libgdx-utils to your dependencies
-- [The Java 8 Branch](http://bitbucket.org/dermetfan/libgdx-utils/wiki/java1.8 Branch) - What is the Java 8 branch and what does it offer you?
-
-# Links #
-
+- [Wiki](http://bitbucket.org/dermetfan/libgdx-utils/wiki)
 - [Homepage](http://dermetfan.net/libgdx-utils.php)
-- [BadlogicGames Forums Thread](http://badlogicgames.com/forum/viewtopic.php?f=17&t=10357)
 
-# Projects using libgdx-utils #
+[![Build Status](https://drone.io/bitbucket.org/dermetfan/libgdx-utils/status.png)](https://drone.io/bitbucket.org/dermetfan/libgdx-utils/latest)
 
-If you would like your game or other project listed here, feel free to [contact me](mailto:tickets@dermetfan.uservoice.com).
+# Versioning #
 
-# Many thanks to everyone who donated! #
+The version number consists of MAJOR.MINOR.PATCH.
 
-| Donator | email | web
-|-----|-----|-----
-| Roi | [roioteromorales@gmail.com](mailto:roioteromorales@gmail.com) | http://roisoftstudio.freefri.es/
-| Stephen Schlie | [heschlie@gmail.com](mailto:heschlie@gmail.com) | http://iridiumflaregames.com/
-| Rhys Parker |
-| Martin Haug | martinhaug (at) smart - mail (dot) de
+- MAJOR is incremented whenever the fuck I want. Resets MINOR to 0.
+- MINOR is incremented when backwards-incompatible changes are made. Resets PATCH to 0.
+- PATCH is incremented when backwards-compatible changes are made, such as bug fixes or new features.
+
+# Philosophy #
+
+Legacy tends to prevent you from writing the best code possible. Being compatible with previous versions is therefore of low priority.

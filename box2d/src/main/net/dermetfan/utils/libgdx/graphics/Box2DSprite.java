@@ -29,7 +29,7 @@ import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.ObjectMap;
 import com.badlogic.gdx.utils.Pools;
-import net.dermetfan.utils.Accessor;
+import net.dermetfan.utils.Function;
 
 import static net.dermetfan.utils.libgdx.box2d.Box2DUtils.height;
 import static net.dermetfan.utils.libgdx.box2d.Box2DUtils.minX;
@@ -90,26 +90,22 @@ public class Box2DSprite extends Sprite {
 	}
 
 	/** the {@link #userDataAccessor} used by default */
-	public final static Accessor<Box2DSprite, Object> defaultUserDataAccessor = new Accessor<Box2DSprite, Object>() {
-
+	public final static Function<Box2DSprite, Object> defaultUserDataAccessor = new Function<Box2DSprite, Object>() {
 		@Override
-		public Box2DSprite access(Object userData) {
+		public Box2DSprite apply(Object userData) {
 			return userData instanceof Box2DSprite ? (Box2DSprite) userData : null;
 		}
-
 	};
 
-	/** the {@link Accessor} used to get a {@link Box2DSprite} from the user data of a body or fixture */
-	private static Accessor<Box2DSprite, Object> userDataAccessor = defaultUserDataAccessor;
+	/** the {@link Function} used to get a {@link Box2DSprite} from the user data of a body or fixture */
+	private static Function<Box2DSprite, Object> userDataAccessor = defaultUserDataAccessor;
 
 	/** a {@link Comparator} used to sort {@link Box2DSprite Box2DSprites} by their {@link Box2DSprite#z z index} in {@link #draw(Batch, World)} */
 	private static Comparator<Box2DSprite> zComparator = new Comparator<Box2DSprite>() {
-
 		@Override
 		public int compare(Box2DSprite s1, Box2DSprite s2) {
 			return s1.z - s2.z > 0 ? 1 : s1.z - s2.z < 0 ? -1 : 0;
 		}
-
 	};
 
 	/** @see #draw(Batch, World, boolean) */
@@ -130,10 +126,10 @@ public class Box2DSprite extends Sprite {
 			ObjectMap<Box2DSprite, Object> tmpZMap = Pools.obtain(ObjectMap.class);
 			tmpZMap.clear();
 			for(Body body : tmpBodies) {
-				if((tmpBox2DSprite = userDataAccessor.access(body.getUserData())) != null)
+				if((tmpBox2DSprite = userDataAccessor.apply(body.getUserData())) != null)
 					tmpZMap.put(tmpBox2DSprite, body);
 				for(Fixture fixture : body.getFixtureList())
-					if((tmpBox2DSprite = userDataAccessor.access(fixture.getUserData())) != null)
+					if((tmpBox2DSprite = userDataAccessor.apply(fixture.getUserData())) != null)
 						tmpZMap.put(tmpBox2DSprite, fixture);
 			}
 
@@ -157,10 +153,10 @@ public class Box2DSprite extends Sprite {
 			Pools.free(tmpZMap);
 		} else
 			for(Body body : tmpBodies) {
-				if((tmpBox2DSprite = userDataAccessor.access(body.getUserData())) != null)
+				if((tmpBox2DSprite = userDataAccessor.apply(body.getUserData())) != null)
 					tmpBox2DSprite.draw(batch, body);
 				for(Fixture fixture : body.getFixtureList())
-					if((tmpBox2DSprite = userDataAccessor.access(fixture.getUserData())) != null)
+					if((tmpBox2DSprite = userDataAccessor.apply(fixture.getUserData())) != null)
 						tmpBox2DSprite.draw(batch, fixture);
 			}
 
@@ -272,12 +268,12 @@ public class Box2DSprite extends Sprite {
 	}
 
 	/** @return the {@link #userDataAccessor} */
-	public static Accessor<Box2DSprite, ?> getUserDataAccessor() {
+	public static Function<Box2DSprite, ?> getUserDataAccessor() {
 		return userDataAccessor;
 	}
 
 	/** @param userDataAccessor the {@link #userDataAccessor} to set */
-	public static void setUserDataAccessor(Accessor<Box2DSprite, Object> userDataAccessor) {
+	public static void setUserDataAccessor(Function<Box2DSprite, Object> userDataAccessor) {
 		Box2DSprite.userDataAccessor = userDataAccessor != null ? userDataAccessor : defaultUserDataAccessor;
 	}
 
