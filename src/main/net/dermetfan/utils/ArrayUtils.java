@@ -71,6 +71,30 @@ public abstract class ArrayUtils {
 		return false;
 	}
 
+	/** @param array the array to check if it contains the other array's values
+	 *  @param other the array to check if it is contained in the other array
+	 *  @param <T> the type of the containing array
+	 *  @param <T2> the type of the contained array
+	 *  @return if the second given array's values are completely contained in the first array */
+	public static <T, T2 extends T> boolean contains(T[] array, T2[] other, boolean identity) {
+		for(T value : other)
+			if(!contains(array, value, identity))
+				return false;
+		return true;
+	}
+
+	/** @param array the array to check if it contains the other array's values
+	 *  @param other the array to check if any of its values is contained in the other array
+	 *  @param <T> the type of the containing array
+	 *  @param <T2> the type of the contained array
+	 *  @return if any value from the second array is contained in the first array */
+	public static <T, T2 extends T> boolean containsAny(T[] array, T2[] other, boolean identity) {
+		for(T value : other)
+			if(contains(array, value, identity))
+				return true;
+		return false;
+	}
+
 	/** shuffles the given array using {@link Noise#random(float, float)}, so the {@link Noise#setSeed(long) seed} influences the result
 	 *  @param array the array to shuffle */
 	public static void shuffle(Object[] array) {
