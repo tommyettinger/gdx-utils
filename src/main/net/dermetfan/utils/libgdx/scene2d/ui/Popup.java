@@ -16,14 +16,15 @@ package net.dermetfan.utils.libgdx.scene2d.ui;
 
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Event;
+import com.badlogic.gdx.scenes.scene2d.EventListener;
 
-/** Holds a {@link #popup} and implements some basic show and hide actions.
- *  @param <T> the type of the {@link #popup}
+/** Shows {@link #popup} on certain events.
+ *  @param <T> the type of {@link #popup}
  *  @author dermetfan */
-public class Popup<T extends Actor>  {
+public abstract class Popup<T extends Actor> implements EventListener {
 
 	/** the {@code T} to pop up */
-	protected T popup;
+	private T popup;
 
 	/** @param popup the {@link #popup} */
 	public Popup(T popup) {
@@ -43,6 +44,18 @@ public class Popup<T extends Actor>  {
 	public boolean hide(Event event) {
 		popup.setVisible(false);
 		return false;
+	}
+
+	// getters and setters
+
+	/** @return the {@link #popup} */
+	public T getPopup() {
+		return popup;
+	}
+
+	/** @param popup the {@link #popup} to set */
+	public void setPopup(T popup) {
+		this.popup = popup;
 	}
 
 }

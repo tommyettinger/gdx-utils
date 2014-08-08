@@ -63,16 +63,31 @@ public class Scene2DUtils {
 		c.setScrollAmount(e.getScrollAmount());
 	}
 
-	/** @param vec the coordinates
-	 *  @param actor the actor in which coordinate system vec is given
+	/** @param pos the coordinates
+	 *  @param actor the actor in which coordinate system pos is given
 	 *  @param other the actor into which coordinate system to convert the coordinates to
+	 *  @return the given position, converted
 	 *  @throws IllegalArgumentException if the given actors are not in the same hierarchy */
-	public static void localToOtherCoordinates(Vector2 vec, Actor actor, Actor other) {
+	public static Vector2 localToOtherCoordinates(Vector2 pos, Actor actor, Actor other) {
 		Group lastParent = lastParent(actor);
 		if(lastParent == null || lastParent != lastParent(other))
 			throw new IllegalArgumentException(actor + " and " + other + " are not in the same hierarchy");
-		actor.localToAscendantCoordinates(lastParent, vec);
-		lastParent.localToDescendantCoordinates(other, vec);
+		actor.localToAscendantCoordinates(lastParent, pos);
+		lastParent.localToDescendantCoordinates(other, pos);
+		return pos;
+	}
+
+	/** @param pos the position
+	 *  @param actor the actor to which coordinate system to convert */
+	public static Vector2 stageToLocalCoordinates(Vector2 pos, Actor actor) {
+		if(actor == actor.getStage().getRoot())
+			return pos;
+		return actor.getStage().getRoot().localToDescendantCoordinates(actor, pos);
+	}
+
+	/** @see #stageToLocalCoordinates(Vector2, Actor)  */
+	public static Vector2 stageToLocalCoordinates(float x, float y, Actor actor) {
+		return stageToLocalCoordinates(tmp.set(x, y), actor);
 	}
 
 	/** @return the highest parent in the hierarchy tree of the given actor */
