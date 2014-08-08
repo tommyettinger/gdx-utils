@@ -51,7 +51,7 @@ public class Pair<K, V> {
 
 	/** @return if {@link #key} or {@link #value} is not {@code null} */
 	public boolean isEmpty() {
-		return key != null || value != null;
+		return key == null && value == null;
 	}
 
 	/** @return if {@link #key} and {@link #value} are both not {@code null} */
