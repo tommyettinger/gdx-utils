@@ -26,7 +26,7 @@ import net.dermetfan.utils.libgdx.scene2d.Scene2DUtils;
  *  @since 0.4.0 */
 public abstract class PositionedPopup<T extends Actor> extends Popup<T> {
 
-	/** Determines a position based on an event.
+	/** Determines a position (usually in stage coordinates) based on an event.
 	 *  @author dermetfan
 	 *  @since 0.4.0 */
 	public static interface Position extends Function<Vector2, Event> {}

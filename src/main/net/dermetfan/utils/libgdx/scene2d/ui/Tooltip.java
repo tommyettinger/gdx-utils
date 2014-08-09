@@ -36,9 +36,41 @@ import static com.badlogic.gdx.scenes.scene2d.InputEvent.Type.touchUp;
  *  @author dermetfan */
 public class Tooltip<T extends Actor> extends PositionedPopup<T> {
 
+	/** Classically moves the position down by {@link #popup popup's} height, so the upper left corner of the popup lines up with the upper right corner of the actor this listener is attached to.
+	 *  @author dermetfan
+	 *  @since 0.4.0 */
+	public class TooltipPosition implements Position {
+
+		/** the position */
+		private Position position;
+
+		/** @param position the {@link #position} */
+		public TooltipPosition(Position position) {
+			this.position = position;
+		}
+
+		@Override
+		public Vector2 apply(Event event) {
+			return position.apply(event).sub(0, getPopup().getHeight());
+		}
+
+		// getters and setters
+
+		/** @return the {@link #position} */
+		public Position getPosition() {
+			return position;
+		}
+
+		/** @param position the {@link #position} to set */
+		public void setPosition(Position position) {
+			this.position = position;
+		}
+
+	}
+
 	/** calls {@link #show(Event)}
 	 *  @author dermetfan */
-	protected class ShowTask extends Task {
+	private class ShowTask extends Task {
 		private final InputEvent event = new InputEvent();
 
 		@Override
@@ -49,7 +81,7 @@ public class Tooltip<T extends Actor> extends PositionedPopup<T> {
 
 	/** calls {@link #hide(Event)}
 	 *  @author dermetfan */
-	protected class HideTask extends Task {
+	private class HideTask extends Task {
 		private final InputEvent event = new InputEvent();
 
 		@Override
@@ -86,14 +118,15 @@ public class Tooltip<T extends Actor> extends PositionedPopup<T> {
 	private float fadeInDuration = .4f, fadeOutDuration = fadeInDuration;
 
 	/** if not null, {@link #show(Event)} will set the touchability of the {@link #popup} to this */
-	private Touchable showTouchable = Touchable.enabled;
+	private Touchable showTouchable = Touchable.childrenOnly;
 
 	/** if not null, {@link #hide(Event)} will set the touchability of the {@link #popup} to this */
 	private Touchable hideTouchable = Touchable.disabled;
 
 	/** @see Popup#Popup(Actor) */
 	public Tooltip(T popup) {
-		super(popup, new PointerPosition());
+		super(popup, null);
+		setPosition(new TooltipPosition(new PointerPosition()));
 	}
 
 	/** @see PositionedPopup#PositionedPopup(Actor, Position) */
