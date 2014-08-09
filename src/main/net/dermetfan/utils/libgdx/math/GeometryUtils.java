@@ -327,8 +327,8 @@ public abstract class GeometryUtils {
 	 *  @param width the width of the rectangle
 	 *  @param height the height of the rectangle
 	 *  @param radians the angle to rotate the rectangle by
-	 *  @param output The array to store the results in. Will be recreated if it is null or its length is not 8.
-	 *  @return the rotated vertices */
+	 *  @param output The array to store the results in. Will be recreated if it is null or its length is smaller than 8.
+	 *  @return the rotated vertices as in [x1, y1, x2, y2, x3, y3, x4, y4] */
 	public static float[] rotate(float x, float y, float width, float height, float radians, float[] output) {
 		// http://www.monkeycoder.co.nz/Community/posts.php?topic=3935
 		float rad = (float) (Math.sqrt(height * height + width * width) / 2.);
@@ -338,7 +338,7 @@ public abstract class GeometryUtils {
 		float x1 = (float) (rad * Math.cos(-theta + radians));
 		float y1 = (float) (rad * Math.sin(-theta + radians));
 		float offsetX = x + width / 2, offsetY = y + height / 2;
-		if(output == null || output.length != 8)
+		if(output == null || output.length < 8)
 			output = new float[8];
 		output[0] = offsetX + x0;
 		output[1] = offsetY + y0;
@@ -546,6 +546,17 @@ public abstract class GeometryUtils {
 	public static float[] toYUp(float[] vertices) {
 		invertAxes(vertices, false, true);
 		return addY(vertices, height(vertices));
+	}
+
+	/** @param aabb the rectangle to set as AABB of the given vertices
+	 *  @param vertices the vertices */
+	public static Rectangle setToAABB(Rectangle aabb, float[] vertices) {
+		return aabb.set(minX(vertices), minY(vertices), width(vertices), height(vertices));
+	}
+
+	/** @see #setToAABB(Rectangle, float[]) */
+	public static Rectangle setToAABB(Rectangle aabb, Vector2[] vertices) {
+		return aabb.set(minX(vertices), minY(vertices), width(vertices), height(vertices));
 	}
 
 	/** @param vertices the vertices of the polygon to examine for convexity
