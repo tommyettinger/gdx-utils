@@ -19,14 +19,61 @@ import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Event;
+import com.badlogic.gdx.scenes.scene2d.EventListener;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
+import com.badlogic.gdx.utils.Array;
+import net.dermetfan.utils.libgdx.Multiplexer;
 import net.dermetfan.utils.libgdx.scene2d.Scene2DUtils;
 
 /** A classic context menu. Add this to the actor that the user should be able to right-click.
- *  <strong>Note that this can only hide on events of other actors if it receives them, so consider adding all your context menus to one {@link net.dermetfan.utils.libgdx.scene2d.EventMultiplexer EventMultiplexer} high up in the hierarchy (e.g. added to the {@link com.badlogic.gdx.scenes.scene2d.Stage Stage}).</strong>
+ *  <strong>Note that this can only hide on events of other actors if it receives them, so consider adding all your context menus to a {@link HideMultiplexer} high up in the hierarchy (e.g. added to the {@link com.badlogic.gdx.scenes.scene2d.Stage Stage}).</strong>
  *  @author dermetfan
  *  @since 0.4.0 */
 public class ContextMenu<T extends Actor> extends PositionedPopup<T> {
+
+	/** Hides all its {@link #receivers context menus} when escape is pressed or something is touched (except the {@link ContextMenu#popup} and its children).
+	 *  Meant to be added added far up in the hierarchy (e.g. the {@link com.badlogic.gdx.scenes.scene2d.Stage Stage} itself) so it can hide on events on possibly all actors.
+	 *  @author dermetfan
+	 *  @since 0.4.0 */
+	public static class HideMultiplexer extends Multiplexer<ContextMenu> implements EventListener {
+
+		/** @see Multiplexer#Multiplexer(Object[]) */
+		public HideMultiplexer(ContextMenu... receivers) {
+			super(receivers);
+		}
+
+		/** @see Multiplexer#Multiplexer(Array)  */
+		public HideMultiplexer(Array<ContextMenu> receivers) {
+			super(receivers);
+		}
+
+		/** Hides {@link #receivers} on {@link Keys#ESCAPE} and {@link InputEvent.Type#touchDown} events on actors that are not their {@link ContextMenu#popup popups} or its children. */
+		@Override
+		public boolean handle(final Event event) {
+			if(event instanceof InputEvent) {
+				InputEvent ie = (InputEvent) event;
+				switch(ie.getType()) {
+				case keyDown:
+					if(ie.getKeyCode() == Keys.ESCAPE)
+						for(ContextMenu menu : receivers)
+							menu.hide(event);
+					break;
+				case touchDown:
+					boolean hide = true;
+					for(ContextMenu menu : receivers)
+						if(event.getTarget().getListeners().contains(menu, true) || menu.getPopup().isAscendantOf(event.getTarget())) {
+							hide = false;
+							break;
+						}
+					if(hide)
+						for(ContextMenu menu : receivers)
+							menu.hide(event);
+				}
+			}
+			return false;
+		}
+
+	}
 
 	/** classic position of context menus on the right of the actor
 	 *  @author dermetfan
@@ -51,6 +98,25 @@ public class ContextMenu<T extends Actor> extends PositionedPopup<T> {
 		setPosition(new ContextMenuPosition());
 	}
 
+	/** @see PositionedPopup#PositionedPopup(Actor, Position) */
+	public ContextMenu(T popup, Position position) {
+		super(popup, position);
+	}
+
+	/** @param hideMultiplexer the {@link HideMultiplexer} to add this ContextMenu to (may be null) */
+	public ContextMenu(T popup, HideMultiplexer hideMultiplexer) {
+		this(popup);
+		if(hideMultiplexer != null)
+			hideMultiplexer.add(this);
+	}
+
+	/** @param hideMultiplexer the {@link HideMultiplexer} to add this {@code ContextMenu} to (may be null) */
+	public ContextMenu(T popup, Position position, HideMultiplexer hideMultiplexer) {
+		super(popup, position);
+		if(hideMultiplexer != null)
+			hideMultiplexer.add(this);
+	}
+
 	/** {@link #show(Event) Shows} on right click and menu key press. Hides on left click, escape key and back key.
 	 * 	Note that this will not hide on clicks on other actors except the {@link Event#getListenerActor()}'s children. */
 	@Override
@@ -58,21 +124,15 @@ public class ContextMenu<T extends Actor> extends PositionedPopup<T> {
 		if(!(e instanceof InputEvent))
 			return false;
 		InputEvent event = (InputEvent) e;
-
-		boolean onListenerActor = event.getListenerActor().isAscendantOf(event.getTarget());
 		switch(event.getType()) {
 		case touchDown:
-			if(!onListenerActor && !getPopup().isAscendantOf(event.getTarget())) {
-				hide(e);
-				break;
-			}
 			if(event.getButton() == Buttons.RIGHT)
 				return show(event);
 			else if(event.getButton() == Buttons.LEFT)
 				return hide(event);
 			break;
 		case keyDown:
-			if(onListenerActor && event.getKeyCode() == Keys.MENU)
+			if(event.getKeyCode() == Keys.MENU)
 				return show(event);
 			else if(event.getKeyCode() == Keys.ESCAPE || event.getKeyCode() == Keys.BACK)
 				return hide(event);

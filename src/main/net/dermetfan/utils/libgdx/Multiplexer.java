@@ -22,7 +22,7 @@ import com.badlogic.gdx.utils.Array;
 public abstract class Multiplexer<T> {
 
 	/** the receivers */
-	protected Array<T> receivers;
+	protected final Array<T> receivers;
 
 	/** @param receivers the {@link #receivers} to set */
 	@SafeVarargs
@@ -32,7 +32,7 @@ public abstract class Multiplexer<T> {
 
 	/** @param receivers the {@link #receivers} to set */
 	public Multiplexer(Array<T> receivers) {
-		this.receivers = receivers;
+		this.receivers = new Array<>(receivers);
 	}
 
 	/** @param receiver the receiver to add */
@@ -57,7 +57,8 @@ public abstract class Multiplexer<T> {
 
 	/** @param receivers the {@link #receivers} to set */
 	public void setReceivers(Array<T> receivers) {
-		this.receivers = receivers;
+		this.receivers.clear();
+		this.receivers.addAll(receivers);
 	}
 
 	/** @param receivers the {@link #receivers} to set */
