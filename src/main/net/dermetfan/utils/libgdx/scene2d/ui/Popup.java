@@ -31,16 +31,16 @@ public abstract class Popup<T extends Actor> implements EventListener {
 		this.popup = popup;
 	}
 
-	/** Brings the {@link #popup} {@link Actor#toFront() to front} and makes it {@link Actor#setVisible(boolean) visible}. Override this for custom behaviour.
-	 *  @return if the event is handled, true by default */
+	/** Makes the {@link #popup} {@link Actor#setVisible(boolean) visible} and brings it to {@link Actor#toFront() front}. Override this for custom behaviour.
+	 *  @return if the event is handled, true by default (suggestive) */
 	public boolean show(Event event) {
-		popup.toFront();
 		popup.setVisible(true);
+		popup.toFront();
 		return true;
 	}
 
 	/** Makes the {@link #popup} {@link Actor#setVisible(boolean) invisible}. Override this for custom behavior.
-	 *  @return if the event is handled, false by default */
+	 *  @return if the event is handled, false by default (suggestive) */
 	public boolean hide(Event event) {
 		popup.setVisible(false);
 		return false;
