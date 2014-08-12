@@ -57,7 +57,8 @@ import static net.dermetfan.utils.libgdx.maps.MapUtils.toTiledMapTileArray;
  *  		"ordered": "3"
  *  	</li>
  *  </ol>
- * 
+ *
+ * Obsolete for TMX maps since libGDX has proper support: https://github.com/libgdx/libgdx/pull/2077
  * @author dermetfan */
 public abstract class TileAnimator {
 
