@@ -26,24 +26,24 @@ import net.dermetfan.utils.libgdx.Multiplexer;
 import net.dermetfan.utils.libgdx.scene2d.Scene2DUtils;
 
 /** A classic context menu. Add this to the actor that the user should be able to right-click.
- *  <strong>Note that this can only hide on events of other actors if it receives them, so consider adding all your context menus to a {@link HideMultiplexer} high up in the hierarchy (e.g. added to the {@link com.badlogic.gdx.scenes.scene2d.Stage Stage}).</strong>
+ *  <strong>Note that this can only hide on events of other actors if it receives them, so consider adding all your context menus to a {@link Manager} high up in the hierarchy (e.g. added to the {@link com.badlogic.gdx.scenes.scene2d.Stage Stage}).</strong>
  *  @author dermetfan
  *  @since 0.4.0 */
 public class ContextMenu<T extends Actor> extends PositionedPopup<T> {
 
-	/** Hides all its {@link #receivers context menus} when escape is pressed or something is touched (except the {@link ContextMenu#popup} and its children).
+	/** Hides all its {@link #receivers context menus} when escape is pressed or something is touched (except a {@link ContextMenu#popup} or its children).
 	 *  Meant to be added added far up in the hierarchy (e.g. the {@link com.badlogic.gdx.scenes.scene2d.Stage Stage} itself) so it can hide on events on possibly all actors.
 	 *  @author dermetfan
 	 *  @since 0.4.0 */
-	public static class HideMultiplexer extends Multiplexer<ContextMenu> implements EventListener {
+	public static class Manager extends Multiplexer<ContextMenu> implements EventListener {
 
 		/** @see Multiplexer#Multiplexer(Object[]) */
-		public HideMultiplexer(ContextMenu... receivers) {
+		public Manager(ContextMenu... receivers) {
 			super(receivers);
 		}
 
 		/** @see Multiplexer#Multiplexer(Array)  */
-		public HideMultiplexer(Array<ContextMenu> receivers) {
+		public Manager(Array<ContextMenu> receivers) {
 			super(receivers);
 		}
 
@@ -54,20 +54,26 @@ public class ContextMenu<T extends Actor> extends PositionedPopup<T> {
 				InputEvent ie = (InputEvent) event;
 				switch(ie.getType()) {
 				case keyDown:
-					if(ie.getKeyCode() == Keys.ESCAPE)
+					if(ie.getKeyCode() == Keys.ESCAPE) // escape hides all
 						for(ContextMenu menu : receivers)
 							menu.hide(event);
 					break;
 				case touchDown:
-					boolean hide = true;
-					for(ContextMenu menu : receivers)
-						if(event.getTarget().getListeners().contains(menu, true) || menu.getPopup().isAscendantOf(event.getTarget())) {
-							hide = false;
-							break;
-						}
-					if(hide)
+					if(ie.getButton() == Buttons.LEFT) { // ContextMenus probably hid itself, so show again if they had parents
+						for(ContextMenu menu : receivers)
+							if(event.getTarget().isDescendantOf(menu.getPopup())) { // target had parents
+								for(EventListener listener : event.getTarget().getListeners()) // show menus again
+									if(listener instanceof ContextMenu)
+										((ContextMenu) listener).show(event);
+							} else // target didn't have parents or a context menu, so hide
+								menu.hide(event);
+					} else {
+						for(ContextMenu menu : receivers) // don't hide if popup or one of its parents was touched
+							if(event.getTarget().getListeners().contains(menu, true) || menu.getPopup().isAscendantOf(event.getTarget()))
+								return false;
 						for(ContextMenu menu : receivers)
 							menu.hide(event);
+					}
 				}
 			}
 			return false;
@@ -75,7 +81,8 @@ public class ContextMenu<T extends Actor> extends PositionedPopup<T> {
 
 	}
 
-	/** classic position of context menus on the right of the actor
+	/** Classic position of context menus on the right of the actor.<br>
+	 *  Positions the left border of the {@link #popup} at the right border of the {@link Event#getTarget() target} and aligns their top borders.
 	 *  @author dermetfan
 	 *  @since 0.4.0 */
 	public class ContextMenuPosition implements Position {
@@ -92,6 +99,19 @@ public class ContextMenu<T extends Actor> extends PositionedPopup<T> {
 
 	}
 
+	/** Positions the top border of the {@link #popup} at the bottom border of the {@link Event#getTarget() target}.
+	 *  @author dermetfan
+	 *  @since 0.4.0 */
+	public class BelowPosition implements Position {
+
+		/** @return {@link Scene2DUtils#tmp} */
+		@Override
+		public Vector2 apply(Event event) {
+			return Scene2DUtils.positionInStageCoordinates(event.getTarget()).sub(0, getPopup().getHeight());
+		}
+
+	}
+
 	/** creates a new {@code ContextMenu} with {@link ContextMenuPosition} */
 	public ContextMenu(T popup) {
 		super(popup, null);
@@ -103,18 +123,18 @@ public class ContextMenu<T extends Actor> extends PositionedPopup<T> {
 		super(popup, position);
 	}
 
-	/** @param hideMultiplexer the {@link HideMultiplexer} to add this ContextMenu to (may be null) */
-	public ContextMenu(T popup, HideMultiplexer hideMultiplexer) {
+	/** @param manager the {@link Manager} to add this ContextMenu to (may be null) */
+	public ContextMenu(T popup, Manager manager) {
 		this(popup);
-		if(hideMultiplexer != null)
-			hideMultiplexer.add(this);
+		if(manager != null)
+			manager.add(this);
 	}
 
-	/** @param hideMultiplexer the {@link HideMultiplexer} to add this {@code ContextMenu} to (may be null) */
-	public ContextMenu(T popup, Position position, HideMultiplexer hideMultiplexer) {
+	/** @param manager the {@link Manager} to add this {@code ContextMenu} to (may be null) */
+	public ContextMenu(T popup, Position position, Manager manager) {
 		super(popup, position);
-		if(hideMultiplexer != null)
-			hideMultiplexer.add(this);
+		if(manager != null)
+			manager.add(this);
 	}
 
 	/** {@link #show(Event) Shows} on right click and menu key press. Hides on left click, escape key and back key.
@@ -126,15 +146,11 @@ public class ContextMenu<T extends Actor> extends PositionedPopup<T> {
 		InputEvent event = (InputEvent) e;
 		switch(event.getType()) {
 		case touchDown:
-			if(event.getButton() == Buttons.RIGHT)
-				return show(event);
-			else if(event.getButton() == Buttons.LEFT)
-				return hide(event);
-			break;
+			return event.getButton() == Buttons.RIGHT ? show(event) : hide(event); // right shows, left hides
 		case keyDown:
-			if(event.getKeyCode() == Keys.MENU)
+			if(event.getKeyCode() == Keys.MENU) // menu key shows
 				return show(event);
-			else if(event.getKeyCode() == Keys.ESCAPE || event.getKeyCode() == Keys.BACK)
+			else if(event.getKeyCode() == Keys.ESCAPE || event.getKeyCode() == Keys.BACK) // escape and back hide
 				return hide(event);
 		}
 		return false;
