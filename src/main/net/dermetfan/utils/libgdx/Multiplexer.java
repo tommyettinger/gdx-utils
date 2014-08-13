@@ -24,6 +24,16 @@ public abstract class Multiplexer<T> {
 	/** the receivers */
 	protected final Array<T> receivers;
 
+	/** @see Array#Array() */
+	public Multiplexer() {
+		receivers = new Array<>();
+	}
+
+	/** @see Array#Array(int) */
+	public Multiplexer(int size) {
+		receivers = new Array<>(size);
+	}
+
 	/** @param receivers the {@link #receivers} to set */
 	@SafeVarargs
 	public Multiplexer(T... receivers) {
