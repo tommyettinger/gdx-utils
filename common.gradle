@@ -45,15 +45,15 @@ jar {
 	baseName = libName
 	appendix = nameAppendix
 	manifest.attributes += [
-			'Web': 'http://dermetfan.net',
-			'BitBucket': 'http://bitbucket.org/dermetfan/libgdx-utils',
-			'License': 'Apache-2.0',
-			'Group': project.group,
-			'Artifact': nameFull,
-			'Version': project.version,
-			'libGDX-Version': libgdxVersion,
-			'Java-Version': targetCompatibility,
-			'Timestamp': System.currentTimeMillis()
+			'web': 'http://dermetfan.net',
+			'bitbucket': 'http://bitbucket.org/dermetfan/libgdx-utils',
+			'license': 'Apache-2.0',
+			'group': project.group,
+			'artifact': nameFull,
+			'version': project.version,
+			'libGDX': libgdxVersion,
+			'java': targetCompatibility,
+			'timestamp': System.currentTimeMillis()
 	]
 }
 
