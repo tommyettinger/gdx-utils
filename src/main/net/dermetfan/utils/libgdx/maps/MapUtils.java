@@ -216,7 +216,9 @@ public abstract class MapUtils {
 	 *  @param cellHeight the height of the grid cells
 	 *  @return the given point converted to its coordinates on an isometric grid */
 	public static Vector2 toIsometricGridPoint(Vector2 point, float cellWidth, float cellHeight) {
-		point.x = (point.x /= cellWidth) - ((point.y = (point.y - cellHeight / 2) / cellHeight + point.x) - point.x);
+		point.x /= cellWidth;
+		point.y = (point.y - cellHeight / 2) / cellHeight + point.x;
+		point.x -= point.y - point.x;
 		return point;
 	}
 
