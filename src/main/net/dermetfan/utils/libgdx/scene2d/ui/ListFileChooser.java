@@ -63,9 +63,7 @@ public class ListFileChooser extends FileChooser {
 
 	/** the current directory */
 	private FileHandle directory = Gdx.files.absolute(Gdx.files.getExternalStoragePath());
-	{
-		fileHistory.add(directory);
-	}
+	{ fileHistory.add(directory); }
 
 	/** @see #pathFieldListener */
 	private TextField pathField;
