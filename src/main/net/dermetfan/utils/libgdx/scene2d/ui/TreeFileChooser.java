@@ -176,7 +176,7 @@ public class TreeFileChooser extends FileChooser {
 			Selection<Node> selection = tree.getSelection();
 			if(selection.size() < 1)
 				return;
-			if(selection.getMultiple()) {
+			if(selection.getMultiple() && selection.size() > 1) {
 				@SuppressWarnings("unchecked")
 				Array<FileHandle> files = Pools.obtain(Array.class);
 				for(Node node : selection) {
