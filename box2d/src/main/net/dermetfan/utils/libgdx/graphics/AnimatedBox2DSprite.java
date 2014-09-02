@@ -51,6 +51,7 @@ public class AnimatedBox2DSprite extends Box2DSprite {
 	public void update(float delta) {
 		animatedSprite.update(delta);
 		setRegion(animatedSprite);
+		setSize(animatedSprite.getWidth(), animatedSprite.getHeight());
 	}
 
 	/** @return the {@link AnimatedSprite} */
