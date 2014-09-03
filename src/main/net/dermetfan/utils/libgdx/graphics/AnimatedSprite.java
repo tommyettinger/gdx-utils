@@ -25,8 +25,8 @@ import com.badlogic.gdx.graphics.g2d.TextureRegion;
 /** An {@link AnimatedSprite} holds an {@link Animation} and sets the {@link Texture} of its super type {@link Sprite} to the correct one according to the information in the {@link Animation}.<br>
  *  Usage:
  *  <p><code>Animation animation = new Animation(1 / 3f, frame1, frame2, frame3);<br>
- * 	animation.setPlayMode(Animation.LOOP);<br>
- * 	animatedSprite = new AnimatedSprite(animation);</code></p>
+ *  animation.setPlayMode(Animation.LOOP);<br>
+ *  animatedSprite = new AnimatedSprite(animation);</code></p>
  *  You can draw using any of the {@link Sprite Sprite's} draw methods:<br>
  *  <code>animatedSprite.draw(batch);</code>
  *  @author dermetfan */
@@ -44,25 +44,17 @@ public class AnimatedSprite extends Sprite {
 	/** if the animation should be updated every time it's drawn */
 	private boolean autoUpdate = true;
 
-	/** if the size of the previous frame should be kept by the following frames */
-	private boolean keepSize;
+	/** if the size should be set to the each frame's {@link TextureRegion#getRegionWidth() region size} */
+	private boolean useFrameRegionSize;
 
-	/** if a frame should be centered in the previous one */
+	/** if the position should be set to let the each frame's center coincide with the center of the previous frame */
 	private boolean centerFrames;
 
 	/** creates a new {@link AnimatedSprite} with the given {@link Animation}
 	 *  @param animation the {@link #animation} to use */
 	public AnimatedSprite(Animation animation) {
-		this(animation, false);
-	}
-
-	/** creates a new {@link AnimatedSprite} with the given {@link Animation}
-	 *  @param animation the {@link #animation} to use
-	 *  @param keepSize the {@link #keepSize} to use */
-	public AnimatedSprite(Animation animation, boolean keepSize) {
 		super(animation.getKeyFrame(0));
 		this.animation = animation;
-		this.keepSize = keepSize;
 	}
 
 	/** updates the {@link AnimatedSprite} with the delta time fetched from {@link Graphics#getDeltaTime()  Gdx.graphics.getDeltaTime()} */
@@ -81,7 +73,7 @@ public class AnimatedSprite extends Sprite {
 
 		if(playing) {
 			setRegion(animation.getKeyFrame(time += delta));
-			if(!keepSize)
+			if(useFrameRegionSize)
 				setSize(getRegionWidth(), getRegionHeight());
 		}
 	}
@@ -95,7 +87,7 @@ public class AnimatedSprite extends Sprite {
 		if(autoUpdate)
 			update();
 
-		boolean centerFramesEnabled = centerFrames && !keepSize; // if keepSize is true centerFrames has no effect
+		boolean centerFramesEnabled = centerFrames && useFrameRegionSize; // if useFrameRegionSize is false centerFrames has no effect
 
 		if(centerFramesEnabled) {
 			float differenceX = oldWidth - getRegionWidth(), differenceY = oldHeight - getRegionHeight();
@@ -201,14 +193,14 @@ public class AnimatedSprite extends Sprite {
 		this.autoUpdate = autoUpdate;
 	}
 
-	/** @return the {{@link #keepSize} */
-	public boolean isKeepSize() {
-		return keepSize;
+	/** @return the {@link #useFrameRegionSize} */
+	public boolean isUseFrameRegionSize() {
+		return useFrameRegionSize;
 	}
 
-	/** @param keepSize the {@link #keepSize} to set */
-	public void setKeepSize(boolean keepSize) {
-		this.keepSize = keepSize;
+	/** @param useFrameRegionSize the {@link #useFrameRegionSize} to set */
+	public void setUseFrameRegionSize(boolean useFrameRegionSize) {
+		this.useFrameRegionSize = useFrameRegionSize;
 	}
 
 	/** @return the {@link #centerFrames} */
