@@ -43,7 +43,7 @@ import static net.dermetfan.utils.libgdx.box2d.Box2DUtils.width;
 public class Box2DSprite extends Sprite {
 
 	/** the z index for sorted drawing */
-	private float z;
+	private float zIndex;
 
 	/** if the width and height should be adjusted to those of the {@link Body} or {@link Fixture} this {@link Box2DSprite} is attached to (true by default) */
 	private boolean adjustWidth = true, adjustHeight = true;
@@ -100,11 +100,11 @@ public class Box2DSprite extends Sprite {
 	/** the {@link Function} used to get a {@link Box2DSprite} from the user data of a body or fixture */
 	private static Function<Box2DSprite, Object> userDataAccessor = defaultUserDataAccessor;
 
-	/** a {@link Comparator} used to sort {@link Box2DSprite Box2DSprites} by their {@link Box2DSprite#z z index} in {@link #draw(Batch, World)} */
+	/** a {@link Comparator} used to sort {@link Box2DSprite Box2DSprites} by their {@link Box2DSprite#zIndex z index} in {@link #draw(Batch, World)} */
 	private static Comparator<Box2DSprite> zComparator = new Comparator<Box2DSprite>() {
 		@Override
 		public int compare(Box2DSprite s1, Box2DSprite s2) {
-			return s1.z - s2.z > 0 ? 1 : s1.z - s2.z < 0 ? -1 : 0;
+			return s1.zIndex - s2.zIndex > 0 ? 1 : s1.zIndex - s2.zIndex < 0 ? -1 : 0;
 		}
 	};
 
@@ -180,19 +180,27 @@ public class Box2DSprite extends Sprite {
 		draw(batch, vec2.x, vec2.y, width, height, body.getAngle());
 	}
 
-	/** draws this {@code Box2DSprite} on the given area */
-	public void draw(Batch batch, float x, float y, float width, float height, float rotation) {
-		batch.draw(this, x - width / 2 + getX(), y - height / 2 + getY(), isUseOriginX() ? getOriginX() : width / 2, isUseOriginY() ? getOriginY() : height / 2, isAdjustWidth() ? width : getWidth(), isAdjustHeight() ? height : getHeight(), getScaleX(), getScaleY(), rotation * MathUtils.radiansToDegrees + getRotation());
+	/** Used internally. Draws this {@code Box2DSprite} in classic sprite coordinate system fashion with the given Box2D coordinates (combined with its own position, size and rotation).<br>
+	 *  If {@link #useOriginX useOriginX/Y} is enabled, the {@link #originX origin} will be used instead of calculating an appropriate one for the given Box2D coordinates.<br>
+	 *  If {@link #adjustWidth adjustWidth/Height} is disabled, the size of the drawing area of the sprite will be {@link #width} * {@link #height} instead of the given size.<br>
+	 *  The drawing position of the sprite is always the bottom left of the body or fixture.
+	 *  @param box2dX the x coordinate (center) of the body or fixture
+	 *  @param box2dY the y coordinate (center) of the body or fixture
+	 *  @param box2dWidth the width of the body or fixture
+	 *  @param box2dHeight the height of the body or fixture
+	 *  @param box2dRotation the rotation of the body or fixture */
+	public void draw(Batch batch, float box2dX, float box2dY, float box2dWidth, float box2dHeight, float box2dRotation) {
+		batch.draw(this, box2dX - box2dWidth / 2 + getX(), box2dY - box2dHeight / 2 + getY(), isUseOriginX() ? getOriginX() : box2dWidth / 2, isUseOriginY() ? getOriginY() : box2dHeight / 2, isAdjustWidth() ? box2dWidth : getWidth(), isAdjustHeight() ? box2dHeight : getHeight(), getScaleX(), getScaleY(), box2dRotation * MathUtils.radiansToDegrees + getRotation());
 	}
 
-	/** @return the {@link #z} */
-	public float getZ() {
-		return z;
+	/** @return the {@link #zIndex} */
+	public float getZIndex() {
+		return zIndex;
 	}
 
-	/** @param z the {@link #z} to set */
-	public void setZ(float z) {
-		this.z = z;
+	/** @param zIndex the {@link #zIndex} to set */
+	public void setZIndex(float zIndex) {
+		this.zIndex = zIndex;
 	}
 
 	/** @return the {@link #adjustWidth} */

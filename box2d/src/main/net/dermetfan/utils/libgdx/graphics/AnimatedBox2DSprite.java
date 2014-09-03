@@ -35,10 +35,10 @@ public class AnimatedBox2DSprite extends Box2DSprite {
 
 	/** {@link #update() updates} before drawing if {@link #isAutoUpdate()} is true */
 	@Override
-	public void draw(Batch batch, float x, float y, float width, float height, float rotation) {
+	public void draw(Batch batch, float box2dX, float box2dY, float box2dWidth, float box2dHeight, float box2dRotation) {
 		if(animatedSprite.isAutoUpdate())
 			update();
-		super.draw(batch, x, y, width, height, rotation);
+		super.draw(batch, box2dX, box2dY, box2dWidth, box2dHeight, box2dRotation);
 	}
 
 	/** updates with {@link Graphics#getDeltaTime()}
