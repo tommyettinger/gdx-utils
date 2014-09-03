@@ -51,8 +51,11 @@ public class AnimatedBox2DSprite extends Box2DSprite {
 	public void update(float delta) {
 		animatedSprite.update(delta);
 		setRegion(animatedSprite);
-		setSize(animatedSprite.getWidth(), animatedSprite.getHeight());
+		if(animatedSprite.isUseFrameRegionSize())
+			setSize(animatedSprite.getWidth(), animatedSprite.getHeight());
 	}
+
+	// getter and setter
 
 	/** @return the {@link AnimatedSprite} */
 	public AnimatedSprite getAnimatedSprite() {
@@ -61,35 +64,10 @@ public class AnimatedBox2DSprite extends Box2DSprite {
 
 	/** @param animatedSprite the {@link AnimatedSprite} to set */
 	public void setAnimatedSprite(AnimatedSprite animatedSprite) {
-		if(animatedSprite == null)
-			throw new IllegalArgumentException("animatedSprite must not be null");
 		this.animatedSprite = animatedSprite;
 	}
 
-	/** @see AnimatedSprite#play() */
-	public void play() {
-		animatedSprite.play();
-	}
-
-	/** @see AnimatedSprite#pause() */
-	public void pause() {
-		animatedSprite.pause();
-	}
-
-	/** @see AnimatedSprite#stop() */
-	public void stop() {
-		animatedSprite.stop();
-	}
-
-	/** @see AnimatedSprite#setTime(float) */
-	public void setTime(float time) {
-		animatedSprite.setTime(time);
-	}
-
-	/** @see AnimatedSprite#getTime() */
-	public float getTime() {
-		return animatedSprite.getTime();
-	}
+	// delegates
 
 	/** @see AnimatedSprite#getAnimation() */
 	public Animation getAnimation() {
@@ -101,34 +79,29 @@ public class AnimatedBox2DSprite extends Box2DSprite {
 		animatedSprite.setAnimation(animation);
 	}
 
-	/** @see AnimatedSprite#flipFrames(boolean, boolean) */
-	public void flipFrames(boolean flipX, boolean flipY) {
-		animatedSprite.flipFrames(flipX, flipY);
+	/** @see AnimatedSprite#isUseFrameRegionSize() */
+	public boolean isUseFrameRegionSize() {
+		return animatedSprite.isUseFrameRegionSize();
 	}
 
-	/** @see AnimatedSprite#flipFrames(boolean, boolean, boolean) */
-	public void flipFrames(boolean flipX, boolean flipY, boolean invert) {
-		animatedSprite.flipFrames(flipX, flipY, invert);
-	}
-
-	/** @see AnimatedSprite#flipFrames(float, float, boolean, boolean) */
-	public void flipFrames(float startTime, float endTime, boolean flipX, boolean flipY) {
-		animatedSprite.flipFrames(startTime, endTime, flipX, flipY);
+	/** @see AnimatedSprite#setUseFrameRegionSize(boolean) */
+	public void setUseFrameRegionSize(boolean useFrameRegionSize) {
+		animatedSprite.setUseFrameRegionSize(useFrameRegionSize);
 	}
 
 	/** @see AnimatedSprite#flipFrames(float, float, boolean, boolean, boolean) */
-	public void flipFrames(float startTime, float endTime, boolean flipX, boolean flipY, boolean invert) {
-		animatedSprite.flipFrames(startTime, endTime, flipX, flipY, invert);
+	public void flipFrames(float startTime, float endTime, boolean flipX, boolean flipY, boolean set) {
+		animatedSprite.flipFrames(startTime, endTime, flipX, flipY, set);
 	}
 
-	/** @see AnimatedSprite#isPlaying() */
-	public boolean isPlaying() {
-		return animatedSprite.isPlaying();
+	/** @see AnimatedSprite#isAnimationFinished() */
+	public boolean isAnimationFinished() {
+		return animatedSprite.isAnimationFinished();
 	}
 
-	/** @see AnimatedSprite#setPlaying(boolean) */
-	public void setPlaying(boolean playing) {
-		animatedSprite.setPlaying(playing);
+	/** @see AnimatedSprite#stop() */
+	public void stop() {
+		animatedSprite.stop();
 	}
 
 	/** @see AnimatedSprite#isAutoUpdate() */
@@ -141,14 +114,9 @@ public class AnimatedBox2DSprite extends Box2DSprite {
 		animatedSprite.setAutoUpdate(autoUpdate);
 	}
 
-	/** @see AnimatedSprite#isKeepSize() */
-	public boolean isKeepSize() {
-		return animatedSprite.isKeepSize();
-	}
-
-	/** @see AnimatedSprite#setKeepSize(boolean) */
-	public void setKeepSize(boolean keepSize) {
-		animatedSprite.setKeepSize(keepSize);
+	/** @see AnimatedSprite#flipFrames(boolean, boolean) */
+	public void flipFrames(boolean flipX, boolean flipY) {
+		animatedSprite.flipFrames(flipX, flipY);
 	}
 
 	/** @see AnimatedSprite#isCenterFrames() */
@@ -159,6 +127,46 @@ public class AnimatedBox2DSprite extends Box2DSprite {
 	/** @see AnimatedSprite#setCenterFrames(boolean) */
 	public void setCenterFrames(boolean centerFrames) {
 		animatedSprite.setCenterFrames(centerFrames);
+	}
+
+	/** @see AnimatedSprite#flipFrames(float, float, boolean, boolean) */
+	public void flipFrames(float startTime, float endTime, boolean flipX, boolean flipY) {
+		animatedSprite.flipFrames(startTime, endTime, flipX, flipY);
+	}
+
+	/** @see AnimatedSprite#play() */
+	public void play() {
+		animatedSprite.play();
+	}
+
+	/** @see AnimatedSprite#getTime() */
+	public float getTime() {
+		return animatedSprite.getTime();
+	}
+
+	/** @see AnimatedSprite#setTime(float) */
+	public void setTime(float time) {
+		animatedSprite.setTime(time);
+	}
+
+	/** @see AnimatedSprite#flipFrames(boolean, boolean, boolean) */
+	public void flipFrames(boolean flipX, boolean flipY, boolean set) {
+		animatedSprite.flipFrames(flipX, flipY, set);
+	}
+
+	/** @see AnimatedSprite#pause() */
+	public void pause() {
+		animatedSprite.pause();
+	}
+
+	/** @see AnimatedSprite#isPlaying() */
+	public boolean isPlaying() {
+		return animatedSprite.isPlaying();
+	}
+
+	/** @see AnimatedSprite#setPlaying(boolean) */
+	public void setPlaying(boolean playing) {
+		animatedSprite.setPlaying(playing);
 	}
 
 }
