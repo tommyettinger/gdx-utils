@@ -14,16 +14,6 @@
 
 package net.dermetfan.utils.libgdx.box2d;
 
-import static net.dermetfan.utils.libgdx.math.GeometryUtils.filterX;
-import static net.dermetfan.utils.libgdx.math.GeometryUtils.filterY;
-import static net.dermetfan.utils.math.MathUtils.amplitude;
-import static net.dermetfan.utils.math.MathUtils.max;
-import static net.dermetfan.utils.math.MathUtils.min;
-import net.dermetfan.utils.ArrayUtils;
-import net.dermetfan.utils.Pair;
-import net.dermetfan.utils.libgdx.math.GeometryUtils;
-import net.dermetfan.utils.math.MathUtils;
-
 import com.badlogic.gdx.math.Intersector;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Body;
@@ -41,6 +31,16 @@ import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.ObjectMap;
 import com.badlogic.gdx.utils.Pools;
+import net.dermetfan.utils.ArrayUtils;
+import net.dermetfan.utils.Pair;
+import net.dermetfan.utils.libgdx.math.GeometryUtils;
+import net.dermetfan.utils.math.MathUtils;
+
+import static net.dermetfan.utils.libgdx.math.GeometryUtils.filterX;
+import static net.dermetfan.utils.libgdx.math.GeometryUtils.filterY;
+import static net.dermetfan.utils.math.MathUtils.amplitude;
+import static net.dermetfan.utils.math.MathUtils.max;
+import static net.dermetfan.utils.math.MathUtils.min;
 
 /** provides methods for operations with Box2D {@link Body Bodies}, {@link Fixture Fixtures} and {@link Shape Shapes}
  *  @author dermetfan */
@@ -410,7 +410,7 @@ public abstract class Box2DUtils {
 		return shape.getPosition();
 	}
 
-	/** @return the position of the given shape relatively to its Body */
+	/** @return the position of the given shape relative to its Body */
 	public static Vector2 positionRelative(Shape shape, float rotation) {
 		if(shape instanceof CircleShape)
 			return positionRelative((CircleShape) shape); // faster
