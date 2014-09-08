@@ -19,7 +19,6 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
-import java.lang.reflect.Field;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.assets.AssetDescriptor;
@@ -29,13 +28,16 @@ import com.badlogic.gdx.assets.loaders.FileHandleResolver;
 import com.badlogic.gdx.assets.loaders.resolvers.InternalFileHandleResolver;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.utils.reflect.ClassReflection;
+import com.badlogic.gdx.utils.reflect.Field;
+import com.badlogic.gdx.utils.reflect.ReflectionException;
 
 /** An {@link AssetManager} that {@link AssetManager#load(AssetDescriptor) loads} assets from a container class using reflection.<br>
  *  <strong>NOTE: Not supported in the HTML backend! Since the libGDX reflection API does not provide access to annotations, the java reflection API is used here instead.</strong>
  *  @author dermetfan */
 public class AnnotationAssetManager extends AssetManager {
 
-	/** Indicates whether a field should be {@link AnnotationAssetManager#load(Field) loaded} and which {@link AssetDescriptor#type} to use if necessary.
+	/** Indicates whether a field should be {@link AnnotationAssetManager#load(Field) loaded} and which {@link AssetDescriptor#type} to use if necessary.<br>
+	 *  Should only be applied to Strings, {@link FileHandle FileHandles} or {@link AssetDescriptor AssetDescriptors}.
 	 *  @author dermetfan */
 	@Documented
 	@Retention(RetentionPolicy.RUNTIME)
@@ -65,8 +67,8 @@ public class AnnotationAssetManager extends AssetManager {
 	 *  @param container the class containing the fields whose {@link AssetDescriptor AssetDescriptors} to load
 	 *  @param instance the instance of the class containing the given {@code field} (may be null if all fields in the class annotated with {@link Asset} are static) */
 	public <T> void load(Class<? extends T> container, T instance) {
-		for(Field field : container.getFields())
-			if(field.isAnnotationPresent(Asset.class) && field.getAnnotation(Asset.class).load())
+		for(Field field : ClassReflection.getFields(container))
+			if(field.isAnnotationPresent(Asset.class) && field.getDeclaredAnnotation(Asset.class).getAnnotation(Asset.class).load())
 				load(field, instance);
 	}
 
@@ -117,7 +119,7 @@ public class AnnotationAssetManager extends AssetManager {
 				path = (String) content;
 			else if(content instanceof FileHandle)
 				path = ((FileHandle) content).path();
-		} catch(IllegalArgumentException | IllegalAccessException e) {
+		} catch(IllegalArgumentException | ReflectionException e) {
 			Gdx.app.error(ClassReflection.getSimpleName(AnnotationAssetManager.class), "could not access field \"" + field.getName() + "\"", e);
 		}
 		return path;
@@ -128,11 +130,11 @@ public class AnnotationAssetManager extends AssetManager {
 		if(ClassReflection.isAssignableFrom(AssetDescriptor.class, field.getType()))
 			try {
 				return ((AssetDescriptor<?>) field.get(instance)).type;
-			} catch(IllegalArgumentException | IllegalAccessException e) {
+			} catch(IllegalArgumentException | ReflectionException e) {
 				Gdx.app.error(ClassReflection.getSimpleName(AnnotationAssetManager.class), "could not access field \"" + field.getName() + "\"", e);
 			}
 		if(field.isAnnotationPresent(Asset.class))
-			return field.getAnnotation(Asset.class).value();
+			return field.getDeclaredAnnotation(Asset.class).getAnnotation(Asset.class).value();
 		return null;
 	}
 
@@ -142,7 +144,7 @@ public class AnnotationAssetManager extends AssetManager {
 		if(ClassReflection.isAssignableFrom(AssetDescriptor.class, field.getType()))
 			try {
 				return ((AssetDescriptor<T>) field.get(instance)).params;
-			} catch(IllegalArgumentException | IllegalAccessException e) {
+			} catch(IllegalArgumentException | ReflectionException e) {
 				Gdx.app.error(ClassReflection.getSimpleName(AnnotationAssetManager.class), "could not access field\"" + field.getName() + "\"", e);
 			}
 		return null;
@@ -172,8 +174,8 @@ public class AnnotationAssetManager extends AssetManager {
 				if(alreadyExistingDescriptor.type == type)
 					return (AssetDescriptor<T>) alreadyExistingDescriptor;
 				else
-					return new AssetDescriptor<>(alreadyExistingDescriptor.file, (Class<T>) type);
-			} catch(IllegalArgumentException | IllegalAccessException e) {
+					return new AssetDescriptor<>(alreadyExistingDescriptor.file, (Class<T>) type, alreadyExistingDescriptor.params);
+			} catch(IllegalArgumentException | ReflectionException e) {
 				Gdx.app.error(ClassReflection.getSimpleName(getClass()), "couldn't access field \"" + field.getName() + "\"", e);
 			}
 		else
@@ -182,7 +184,7 @@ public class AnnotationAssetManager extends AssetManager {
 					return new AssetDescriptor<>((String) field.get(instance), (Class<T>) type);
 				else
 					return new AssetDescriptor<>((FileHandle) field.get(instance), (Class<T>) type);
-			} catch(IllegalArgumentException | IllegalAccessException e) {
+			} catch(IllegalArgumentException | ReflectionException e) {
 				Gdx.app.error(ClassReflection.getSimpleName(getClass()), "couldn't access field \"" + field.getName() + "\"", e);
 			}
 		return null;
