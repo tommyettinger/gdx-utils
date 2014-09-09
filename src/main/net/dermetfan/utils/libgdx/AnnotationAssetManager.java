@@ -63,40 +63,32 @@ public class AnnotationAssetManager extends AssetManager {
 	}
 
 	/** {@link #load(Field) Loads} all fields in the given {@code container} class if they are annotated with {@link Asset} and {@link Asset#load()} is true.
-	 *  @param container the class containing the fields whose {@link AssetDescriptor AssetDescriptors} to load
-	 *  @param instance the instance of the class containing the given {@code field} (may be null if all fields in the class annotated with {@link Asset} are static) */
-	public <T> void load(Class<? extends T> container, T instance) {
+	 *  @param container the instance of a container class from which to load fields annotated with {@link Asset} */
+	public void load(Object container) {
+		for(Field field : ClassReflection.getFields(container.getClass()))
+			if(field.isAnnotationPresent(Asset.class) && field.getDeclaredAnnotation(Asset.class).getAnnotation(Asset.class).load())
+				load(field, container);
+	}
+
+	/** @param container the class containing the fields whose {@link AssetDescriptor AssetDescriptors} to load */
+	public void load(Class<?> container) {
 		for(Field field : ClassReflection.getFields(container))
 			if(field.isAnnotationPresent(Asset.class) && field.getDeclaredAnnotation(Asset.class).getAnnotation(Asset.class).load())
-				load(field, instance);
-	}
-
-	/** @param instance the instance of a container class from which to load fields annotated with {@link Asset}
-	 *  @see #load(Class, Object) */
-	public void load(Object instance) {
-		load(instance.getClass(), instance);
-	}
-
-	/** @param container the class with the fields annotated with {@link Asset} (must all be static, use {@link #load(Class, Object)} otherwise)
-	 *  @see #load(Class, Object) */
-	public void load(Class<?> container) {
-		load(container, null);
+				load(field);
 	}
 
 	/** {@link AssetManager#load(String, Class) loads} the given field
 	 *  @param field the field to load
-	 *  @param instance the instance of the class containing the given field (may be null if it's static) */
+	 *  @param container the instance of the class containing the given field (may be null if it's static) */
 	@SuppressWarnings("unchecked")
-	public void load(Field field, Object instance) {
-		String path = getAssetPath(field, instance);
-		Class<?> type = getAssetType(field, instance);
+	public void load(Field field, Object container) {
+		String path = getAssetPath(field, container);
+		Class<?> type = getAssetType(field, container);
 		@SuppressWarnings("rawtypes")
-		AssetLoaderParameters params = getAssetLoaderParameters(field, instance);
-		if(path != null && type != null)
-			if(params == null)
-				load(path, type);
-			else
-				load(path, type, params);
+		AssetLoaderParameters params = getAssetLoaderParameters(field, container);
+		if(path == null || type == null)
+			Gdx.app.debug(ClassReflection.getSimpleName(getClass()), '@' + ClassReflection.getSimpleName(Asset.class) + " (" + path + ", " + type + ") " + field.getName());
+		load(path, type, params);
 	}
 
 	/** @param field the static field to load
@@ -106,29 +98,30 @@ public class AnnotationAssetManager extends AssetManager {
 	}
 
 	/** @param field the field to get the asset path from
-	 *  @param instance an instance of the class containing the given field
+	 *  @param container the instance of the class containing the given field (may be null if it's static)
 	 *  @return the asset path stored by the field */
-	public static String getAssetPath(Field field, Object instance) {
+	public static String getAssetPath(Field field, Object container) {
 		String path = null;
 		try {
-			Object content = field.get(instance);
+			Object content = field.get(container);
 			if(content instanceof AssetDescriptor)
 				path = ((AssetDescriptor<?>) content).fileName;
-			else if(content instanceof String)
-				path = (String) content;
 			else if(content instanceof FileHandle)
 				path = ((FileHandle) content).path();
+			else
+				path = content.toString();
 		} catch(IllegalArgumentException | ReflectionException e) {
 			Gdx.app.error(ClassReflection.getSimpleName(AnnotationAssetManager.class), "could not access field \"" + field.getName() + "\"", e);
 		}
 		return path;
 	}
 
-	/** @return the {@link Asset#value()} of the given Field */
-	public static Class<?> getAssetType(Field field, Object instance) {
+	/** @param container the instance of the class containing the given field (may be null if it's static)
+	 *  @return the {@link Asset#value()} of the given Field */
+	public static Class<?> getAssetType(Field field, Object container) {
 		if(ClassReflection.isAssignableFrom(AssetDescriptor.class, field.getType()))
 			try {
-				return ((AssetDescriptor<?>) field.get(instance)).type;
+				return ((AssetDescriptor<?>) field.get(container)).type;
 			} catch(IllegalArgumentException | ReflectionException e) {
 				Gdx.app.error(ClassReflection.getSimpleName(AnnotationAssetManager.class), "could not access field \"" + field.getName() + "\"", e);
 			}
@@ -137,12 +130,13 @@ public class AnnotationAssetManager extends AssetManager {
 		return null;
 	}
 
-	/** @return the {@link AssetDescriptor#params AssetLoaderParameters} of the AssetDescriptor in the given field */
+	/** @param container the instance of the class containing the given field (may be null if it's static)
+	 *  @return the {@link AssetDescriptor#params AssetLoaderParameters} of the AssetDescriptor in the given field */
 	@SuppressWarnings("unchecked")
-	public static <T> AssetLoaderParameters<T> getAssetLoaderParameters(Field field, Object instance) {
+	public static <T> AssetLoaderParameters<T> getAssetLoaderParameters(Field field, Object container) {
 		if(ClassReflection.isAssignableFrom(AssetDescriptor.class, field.getType()))
 			try {
-				return ((AssetDescriptor<T>) field.get(instance)).params;
+				return ((AssetDescriptor<T>) field.get(container)).params;
 			} catch(IllegalArgumentException | ReflectionException e) {
 				Gdx.app.error(ClassReflection.getSimpleName(AnnotationAssetManager.class), "could not access field\"" + field.getName() + "\"", e);
 			}
@@ -151,10 +145,10 @@ public class AnnotationAssetManager extends AssetManager {
 
 	/** Creates an {@link AssetDescriptor} from a field that is annotated with {@link Asset}. The field's type must be {@code String} or {@link FileHandle} and the {@link Asset#value()} must not be primitive.
 	 *  @param field the field annotated with {@link Asset} to create an {@link AssetDescriptor} from
-	 *  @param instance the instance of the class containing the given {@code field}
+	 *  @param container the instance of the class containing the given field (may be null if it's static)
 	 *  @return an {@link AssetDescriptor} created from the given, with {@link Asset} annotated field (may be null if all fields in the class annotated with {@link Asset} are static) */
 	@SuppressWarnings("unchecked")
-	public <T> AssetDescriptor<T> createAssetDescriptor(Field field, Object instance) {
+	public <T> AssetDescriptor<T> createAssetDescriptor(Field field, Object container) {
 		if(!field.isAnnotationPresent(Asset.class))
 			return null;
 		Class<?> fieldType = field.getType();
@@ -162,14 +156,14 @@ public class AnnotationAssetManager extends AssetManager {
 			Gdx.app.error(ClassReflection.getSimpleName(getClass()), "type of @" + ClassReflection.getSimpleName(Asset.class) + " field \"" + field.getName() + "\" must be String or " + ClassReflection.getSimpleName(FileHandle.class) + " to create an " + ClassReflection.getSimpleName(AssetDescriptor.class) + " from it");
 			return null;
 		}
-		Class<?> type = getAssetType(field, instance);
+		Class<?> type = getAssetType(field, container);
 		if(type.isPrimitive()) {
 			Gdx.app.error(ClassReflection.getSimpleName(getClass()), "cannot create an " + ClassReflection.getSimpleName(AssetDescriptor.class) + " of the generic type " + ClassReflection.getSimpleName(type) + " from the @" + ClassReflection.getSimpleName(Asset.class) + " field \"" + field.getName() + "\"");
 			return null;
 		}
 		if(fieldType == AssetDescriptor.class)
 			try {
-				AssetDescriptor<?> alreadyExistingDescriptor = (AssetDescriptor<?>) field.get(instance);
+				AssetDescriptor<?> alreadyExistingDescriptor = (AssetDescriptor<?>) field.get(container);
 				if(alreadyExistingDescriptor.type == type)
 					return (AssetDescriptor<T>) alreadyExistingDescriptor;
 				else
@@ -180,9 +174,9 @@ public class AnnotationAssetManager extends AssetManager {
 		else
 			try {
 				if(fieldType == String.class)
-					return new AssetDescriptor<>((String) field.get(instance), (Class<T>) type);
+					return new AssetDescriptor<>((String) field.get(container), (Class<T>) type);
 				else
-					return new AssetDescriptor<>((FileHandle) field.get(instance), (Class<T>) type);
+					return new AssetDescriptor<>((FileHandle) field.get(container), (Class<T>) type);
 			} catch(IllegalArgumentException | ReflectionException e) {
 				Gdx.app.error(ClassReflection.getSimpleName(getClass()), "couldn't access field \"" + field.getName() + "\"", e);
 			}
