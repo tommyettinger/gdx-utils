@@ -17,10 +17,11 @@ package net.dermetfan.utils.libgdx.graphics;
 import java.util.Comparator;
 import java.util.Iterator;
 
-import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Batch;
+import com.badlogic.gdx.graphics.g2d.PolygonRegion;
+import com.badlogic.gdx.graphics.g2d.PolygonSprite;
+import com.badlogic.gdx.graphics.g2d.PolygonSpriteBatch;
 import com.badlogic.gdx.graphics.g2d.Sprite;
-import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Body;
@@ -37,73 +38,49 @@ import static net.dermetfan.utils.libgdx.box2d.Box2DUtils.minY;
 import static net.dermetfan.utils.libgdx.box2d.Box2DUtils.position;
 import static net.dermetfan.utils.libgdx.box2d.Box2DUtils.width;
 
-/** A {@link Box2DSprite} is a {@link Sprite} with additional drawing information and the ability to draw itself on a given {@link Body} or {@link Fixture}.
+/** A {@link Box2DPolygonSprite} is a {@link PolygonSprite} with additional drawing information and the ability to draw itself on a given {@link Body} or {@link Fixture}.
  *  It is supposed to be put in the user data of {@link Fixture Fixtures} or {@link Body Bodies}. Because geometrical information about bodies cannot be cached, it is faster to put Box2DPolygonSprites in the user data of Fixtures.
+ *  @since 0.5.0
  *  @author dermetfan */
-public class Box2DSprite extends Sprite {
+public class Box2DPolygonSprite extends PolygonSprite {
 
 	/** the z index for sorted drawing */
 	private float zIndex;
 
-	/** if the width and height should be adjusted to those of the {@link Body} or {@link Fixture} this {@link Box2DSprite} is attached to (true by default) */
+	/** if the width and height should be adjusted to those of the {@link Body} or {@link Fixture} this {@link Box2DPolygonSprite} is attached to (true by default) */
 	private boolean adjustWidth = true, adjustHeight = true;
 
-	/** if the origin of this {@link Box2DSprite} should be used when it's drawn (false by default) */
+	/** if the origin of this {@link Box2DPolygonSprite} should be used when it's drawn (false by default) */
 	private boolean useOriginX, useOriginY;
 
 	/** for internal, temporary usage */
 	private static final Vector2 vec2 = new Vector2();
 
-	/** @see Sprite#Sprite() */
-	public Box2DSprite() {
-		super();
-	}
-
-	/** @see Sprite#Sprite(Texture, int, int) */
-	public Box2DSprite(Texture texture, int srcWidth, int srcHeight) {
-		super(texture, srcWidth, srcHeight);
-	}
-
-	/** @see Sprite#Sprite(Texture, int, int, int, int) */
-	public Box2DSprite(Texture texture, int srcX, int srcY, int srcWidth, int srcHeight) {
-		super(texture, srcX, srcY, srcWidth, srcHeight);
-	}
-
-	/** @see Sprite#Sprite(TextureRegion, int, int, int, int) */
-	public Box2DSprite(TextureRegion region, int srcX, int srcY, int srcWidth, int srcHeight) {
-		super(region, srcX, srcY, srcWidth, srcHeight);
-	}
-
-	/** @see Sprite#Sprite(Texture) */
-	public Box2DSprite(Texture texture) {
-		super(texture);
-	}
-
-	/** @see Sprite#Sprite(TextureRegion) */
-	public Box2DSprite(TextureRegion region) {
+	/** @see PolygonSprite#PolygonSprite(PolygonRegion) */
+	public Box2DPolygonSprite(PolygonRegion region) {
 		super(region);
 	}
 
-	/** @see Sprite#Sprite(Sprite) */
-	public Box2DSprite(Sprite sprite) {
+	/** @see PolygonSprite#PolygonSprite(PolygonSprite) */
+	public Box2DPolygonSprite(PolygonSprite sprite) {
 		super(sprite);
 	}
 
 	/** the {@link #userDataAccessor} used by default */
-	public static final Function<Box2DSprite, Object> defaultUserDataAccessor = new Function<Box2DSprite, Object>() {
+	public static final Function<Box2DPolygonSprite, Object> defaultUserDataAccessor = new Function<Box2DPolygonSprite, Object>() {
 		@Override
-		public Box2DSprite apply(Object userData) {
-			return userData instanceof Box2DSprite ? (Box2DSprite) userData : null;
+		public Box2DPolygonSprite apply(Object userData) {
+			return userData instanceof Box2DPolygonSprite ? (Box2DPolygonSprite) userData : null;
 		}
 	};
 
-	/** the {@link Function} used to get a {@link Box2DSprite} from the user data of a body or fixture */
-	private static Function<Box2DSprite, Object> userDataAccessor = defaultUserDataAccessor;
+	/** the {@link Function} used to get a {@link Box2DPolygonSprite} from the user data of a body or fixture */
+	private static Function<Box2DPolygonSprite, Object> userDataAccessor = defaultUserDataAccessor;
 
-	/** a {@link Comparator} used to sort {@link Box2DSprite Box2DSprites} by their {@link Box2DSprite#zIndex z index} in {@link #draw(Batch, World)} */
-	private static Comparator<Box2DSprite> zComparator = new Comparator<Box2DSprite>() {
+	/** a {@link Comparator} used to sort {@link Box2DPolygonSprite Box2DPolygonSprites} by their {@link Box2DPolygonSprite#zIndex z index} in {@link #draw(Batch, World)} */
+	private static Comparator<Box2DPolygonSprite> zComparator = new Comparator<Box2DPolygonSprite>() {
 		@Override
-		public int compare(Box2DSprite s1, Box2DSprite s2) {
+		public int compare(Box2DPolygonSprite s1, Box2DPolygonSprite s2) {
 			return s1.zIndex - s2.zIndex > 0 ? 1 : s1.zIndex - s2.zIndex < 0 ? -1 : 0;
 		}
 	};
@@ -113,7 +90,7 @@ public class Box2DSprite extends Sprite {
 		draw(batch, world, false);
 	}
 
-	/** draws all the {@link Box2DSprite Box2DSprites} on the {@link Body} or {@link Fixture} that hold them in their user data in the given {@link World} */
+	/** draws all the {@link Box2DPolygonSprite Box2DPolygonSprites} on the {@link Body} or {@link Fixture} that hold them in their user data in the given {@link World} */
 	public static void draw(Batch batch, World world, boolean sortByZ) {
 		@SuppressWarnings("unchecked")
 		Array<Body> tmpBodies = Pools.obtain(Array.class);
@@ -122,24 +99,24 @@ public class Box2DSprite extends Sprite {
 
 		if(sortByZ) {
 			@SuppressWarnings("unchecked")
-			ObjectMap<Box2DSprite, Object> tmpZMap = Pools.obtain(ObjectMap.class);
+			ObjectMap<Box2DPolygonSprite, Object> tmpZMap = Pools.obtain(ObjectMap.class);
 			tmpZMap.clear();
 			for(Body body : tmpBodies) {
-				Box2DSprite tmpBox2DSprite;
-				if((tmpBox2DSprite = userDataAccessor.apply(body.getUserData())) != null)
-					tmpZMap.put(tmpBox2DSprite, body);
+				Box2DPolygonSprite tmpBox2DPolygonSprite;
+				if((tmpBox2DPolygonSprite = userDataAccessor.apply(body.getUserData())) != null)
+					tmpZMap.put(tmpBox2DPolygonSprite, body);
 				for(Fixture fixture : body.getFixtureList())
-					if((tmpBox2DSprite = userDataAccessor.apply(fixture.getUserData())) != null)
-						tmpZMap.put(tmpBox2DSprite, fixture);
+					if((tmpBox2DPolygonSprite = userDataAccessor.apply(fixture.getUserData())) != null)
+						tmpZMap.put(tmpBox2DPolygonSprite, fixture);
 			}
 
 			@SuppressWarnings("unchecked")
-			Array<Box2DSprite> tmpKeys = Pools.obtain(Array.class);
-			Iterator<Box2DSprite> keys = tmpZMap.keys();
+			Array<Box2DPolygonSprite> tmpKeys = Pools.obtain(Array.class);
+			Iterator<Box2DPolygonSprite> keys = tmpZMap.keys();
 			while(keys.hasNext())
 				tmpKeys.add(keys.next());
 			tmpKeys.sort(zComparator);
-			for(Box2DSprite key : tmpKeys) {
+			for(Box2DPolygonSprite key : tmpKeys) {
 				Object value = tmpZMap.get(key);
 				if(value instanceof Body)
 					key.draw(batch, (Body) value);
@@ -153,25 +130,25 @@ public class Box2DSprite extends Sprite {
 			Pools.free(tmpZMap);
 		} else
 			for(Body body : tmpBodies) {
-				Box2DSprite tmpBox2DSprite;
-				if((tmpBox2DSprite = userDataAccessor.apply(body.getUserData())) != null)
-					tmpBox2DSprite.draw(batch, body);
+				Box2DPolygonSprite tmpBox2DPolygonSprite;
+				if((tmpBox2DPolygonSprite = userDataAccessor.apply(body.getUserData())) != null)
+					tmpBox2DPolygonSprite.draw(batch, body);
 				for(Fixture fixture : body.getFixtureList())
-					if((tmpBox2DSprite = userDataAccessor.apply(fixture.getUserData())) != null)
-						tmpBox2DSprite.draw(batch, fixture);
+					if((tmpBox2DPolygonSprite = userDataAccessor.apply(fixture.getUserData())) != null)
+						tmpBox2DPolygonSprite.draw(batch, fixture);
 			}
 
 		tmpBodies.clear();
 		Pools.free(tmpBodies);
 	}
 
-	/** draws this {@link Box2DSprite} on the given {@link Fixture} */
+	/** draws this {@link Box2DPolygonSprite} on the given {@link Fixture} */
 	public void draw(Batch batch, Fixture fixture) {
 		vec2.set(position(fixture));
 		draw(batch, vec2.x, vec2.y, width(fixture), height(fixture), fixture.getBody().getAngle());
 	}
 
-	/** draws this {@link Box2DSprite} on the given {@link Body} */
+	/** draws this {@link Box2DPolygonSprite} on the given {@link Body} */
 	public void draw(Batch batch, Body body) {
 		float width = width(body), height = height(body);
 		vec2.set(minX(body) + width / 2, minY(body) + height / 2);
@@ -179,18 +156,29 @@ public class Box2DSprite extends Sprite {
 		draw(batch, vec2.x, vec2.y, width, height, body.getAngle());
 	}
 
-	/** Used internally. Draws this {@code Box2DSprite} in classic sprite coordinate system fashion with the given Box2D coordinates (combined with its own position, size and rotation).<br>
+	/** Used internally. Draws this {@code Box2DPolygonSprite} in classic sprite coordinate system fashion with the given Box2D coordinates (combined with its own position, size and rotation).<br>
 	 *  If {@link #useOriginX useOriginX/Y} is enabled, the {@link #originX origin} will be used instead of calculating an appropriate one for the given Box2D coordinates.<br>
 	 *  If {@link #adjustWidth adjustWidth/Height} is disabled, the size of the drawing area of the sprite will be {@link #width} * {@link #height} instead of the given size.<br>
 	 *  The drawing position of the sprite is always the bottom left of the body or fixture.
+	 *  @param batch The Batch to draw on. Redirects to {@link #draw(PolygonSpriteBatch, float, float, float, float, float)} if this is an instance of {@link PolygonSpriteBatch}.
 	 *  @param box2dX the x coordinate (center) of the body or fixture
 	 *  @param box2dY the y coordinate (center) of the body or fixture
 	 *  @param box2dWidth the width of the body or fixture
 	 *  @param box2dHeight the height of the body or fixture
 	 *  @param box2dRotation the rotation of the body or fixture */
 	public void draw(Batch batch, float box2dX, float box2dY, float box2dWidth, float box2dHeight, float box2dRotation) {
+		if(batch instanceof PolygonSpriteBatch)
+			draw((PolygonSpriteBatch) batch);
+		else {
+			batch.setColor(getColor());
+			batch.draw(getRegion().getRegion(), box2dX - box2dWidth / 2 + getX(), box2dY - box2dHeight / 2 + getY(), isUseOriginX() ? getOriginX() : box2dWidth / 2, isUseOriginY() ? getOriginY() : box2dHeight / 2, isAdjustWidth() ? box2dWidth : getWidth(), isAdjustHeight() ? box2dHeight : getHeight(), getScaleX(), getScaleY(), box2dRotation * MathUtils.radiansToDegrees + getRotation());
+		}
+	}
+
+	/** @see #draw(Batch, float, float, float, float, float) */
+	public void draw(PolygonSpriteBatch batch, float box2dX, float box2dY, float box2dWidth, float box2dHeight, float box2dRotation) {
 		batch.setColor(getColor());
-		batch.draw(this, box2dX - box2dWidth / 2 + getX(), box2dY - box2dHeight / 2 + getY(), isUseOriginX() ? getOriginX() : box2dWidth / 2, isUseOriginY() ? getOriginY() : box2dHeight / 2, isAdjustWidth() ? box2dWidth : getWidth(), isAdjustHeight() ? box2dHeight : getHeight(), getScaleX(), getScaleY(), box2dRotation * MathUtils.radiansToDegrees + getRotation());
+		batch.draw(getRegion(), box2dX - box2dWidth / 2 + getX(), box2dY - box2dHeight / 2 + getY(), isUseOriginX() ? getOriginX() : box2dWidth / 2, isUseOriginY() ? getOriginY() : box2dHeight / 2, isAdjustWidth() ? box2dWidth : getWidth(), isAdjustHeight() ? box2dHeight : getHeight(), getScaleX(), getScaleY(), box2dRotation * MathUtils.radiansToDegrees + getRotation());
 	}
 
 	// getters and setters
@@ -266,25 +254,25 @@ public class Box2DSprite extends Sprite {
 	}
 
 	/** @return the {@link #zComparator} */
-	public static Comparator<Box2DSprite> getZComparator() {
+	public static Comparator<Box2DPolygonSprite> getZComparator() {
 		return zComparator;
 	}
 
 	/** @param zComparator the {@link #zComparator} to set */
-	public static void setZComparator(Comparator<Box2DSprite> zComparator) {
+	public static void setZComparator(Comparator<Box2DPolygonSprite> zComparator) {
 		if(zComparator == null)
 			throw new IllegalArgumentException("zComparator must not be null");
-		Box2DSprite.zComparator = zComparator;
+		Box2DPolygonSprite.zComparator = zComparator;
 	}
 
 	/** @return the {@link #userDataAccessor} */
-	public static Function<Box2DSprite, ?> getUserDataAccessor() {
+	public static Function<Box2DPolygonSprite, ?> getUserDataAccessor() {
 		return userDataAccessor;
 	}
 
 	/** @param userDataAccessor the {@link #userDataAccessor} to set */
-	public static void setUserDataAccessor(Function<Box2DSprite, Object> userDataAccessor) {
-		Box2DSprite.userDataAccessor = userDataAccessor != null ? userDataAccessor : defaultUserDataAccessor;
+	public static void setUserDataAccessor(Function<Box2DPolygonSprite, Object> userDataAccessor) {
+		Box2DPolygonSprite.userDataAccessor = userDataAccessor != null ? userDataAccessor : defaultUserDataAccessor;
 	}
 
 }
