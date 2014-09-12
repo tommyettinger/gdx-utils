@@ -166,14 +166,12 @@ public class Box2DSprite extends Sprite {
 
 	/** draws this {@link Box2DSprite} on the given {@link Fixture} */
 	public void draw(Batch batch, Fixture fixture) {
-		batch.setColor(getColor());
 		vec2.set(position(fixture));
 		draw(batch, vec2.x, vec2.y, width(fixture), height(fixture), fixture.getBody().getAngle());
 	}
 
 	/** draws this {@link Box2DSprite} on the given {@link Body} */
 	public void draw(Batch batch, Body body) {
-		batch.setColor(getColor());
 		float width = width(body), height = height(body);
 		vec2.set(minX(body) + width / 2, minY(body) + height / 2);
 		vec2.set(body.getWorldPoint(vec2));
@@ -190,6 +188,7 @@ public class Box2DSprite extends Sprite {
 	 *  @param box2dHeight the height of the body or fixture
 	 *  @param box2dRotation the rotation of the body or fixture */
 	public void draw(Batch batch, float box2dX, float box2dY, float box2dWidth, float box2dHeight, float box2dRotation) {
+		batch.setColor(getColor());
 		batch.draw(this, box2dX - box2dWidth / 2 + getX(), box2dY - box2dHeight / 2 + getY(), isUseOriginX() ? getOriginX() : box2dWidth / 2, isUseOriginY() ? getOriginY() : box2dHeight / 2, isAdjustWidth() ? box2dWidth : getWidth(), isAdjustHeight() ? box2dHeight : getHeight(), getScaleX(), getScaleY(), box2dRotation * MathUtils.radiansToDegrees + getRotation());
 	}
 
