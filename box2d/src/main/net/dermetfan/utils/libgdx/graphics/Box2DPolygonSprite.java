@@ -168,7 +168,7 @@ public class Box2DPolygonSprite extends PolygonSprite {
 	 *  @param box2dRotation the rotation of the body or fixture */
 	public void draw(Batch batch, float box2dX, float box2dY, float box2dWidth, float box2dHeight, float box2dRotation) {
 		if(batch instanceof PolygonSpriteBatch)
-			draw((PolygonSpriteBatch) batch);
+			draw((PolygonSpriteBatch) batch, box2dX, box2dY, box2dWidth, box2dHeight, box2dRotation);
 		else {
 			batch.setColor(getColor());
 			batch.draw(getRegion().getRegion(), box2dX - box2dWidth / 2 + getX(), box2dY - box2dHeight / 2 + getY(), isUseOriginX() ? getOriginX() : box2dWidth / 2, isUseOriginY() ? getOriginY() : box2dHeight / 2, isAdjustWidth() ? box2dWidth : getWidth(), isAdjustHeight() ? box2dHeight : getHeight(), getScaleX(), getScaleY(), box2dRotation * MathUtils.radiansToDegrees + getRotation());
