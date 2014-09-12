@@ -1,6 +1,6 @@
 buildscript {
 	repositories { jcenter() }
-	dependencies { classpath 'us.carrclan.david.gradle:gradle-site-plugin:0.1.2' }
+	dependencies { classpath 'us.carrclan.david.gradle:gradle-site-plugin:0.2.0' }
 }
 
 ext {
