@@ -45,7 +45,7 @@ public class Box2DSprite extends Sprite {
 	/** the z index for sorted drawing */
 	private float zIndex;
 
-	/** if the width and height should be adjusted to those of the {@link Body} or {@link Fixture} this {@link Box2DSprite} is attached to ({@value} by default) */
+	/** if the width and height should be adjusted to those of the {@link Body} or {@link Fixture} this {@link Box2DSprite} is attached to (true by default) */
 	private boolean adjustWidth = true, adjustHeight = true;
 
 	/** if the origin of this {@link Box2DSprite} should be used when it's drawn (false by default) */
