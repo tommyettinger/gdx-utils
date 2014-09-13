@@ -5,6 +5,7 @@ import org.junit.Test;
 
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 
 public class MathUtilsTest {
@@ -122,6 +123,8 @@ public class MathUtilsTest {
 	public void scale() {
 		float[] values = {-50, -25, 0, 25, 50};
 		assertEquals(1, MathUtils.amplitude(MathUtils.scale(values, 0, 1, false)), 0);
+		assertNotEquals(Float.MAX_VALUE / 2, MathUtils.amplitude(MathUtils.scale(values, 0, Float.MAX_VALUE / 2, false)), 0);
+		assertEquals(Float.MAX_VALUE / 2, MathUtils.amplitude(MathUtils.scale(values, 0, Float.MAX_VALUE / 2, true)), 0);
 	}
 
 	@Test

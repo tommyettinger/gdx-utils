@@ -116,7 +116,7 @@ public class MathUtils {
 	}
 
 	/** @param value the value to mirror
-	 *  @param baseline the max/min value
+	 *  @param baseline the baseline of symmetry
 	 *  @return the value mirrored at baseline */
 	public static float mirror(float value, float baseline) {
 		return baseline * 2 - value;
@@ -125,6 +125,13 @@ public class MathUtils {
 	/** @return value, min or max */
 	public static float clamp(float value, float min, float max) {
 		return value < min ? min : value > max ? max : value;
+	}
+
+	/** @return the given array clamped to min and max */
+	public static float[] clamp(float[] values, float min, float max) {
+		for(int i = 0; i < values.length; i++)
+			values[i] = clamp(values[i], min, max);
+		return values;
 	}
 
 	/** @return {@code replacement} if {@code value} is NaN */
@@ -234,24 +241,31 @@ public class MathUtils {
 	 *  @param values the values to scale
 	 *  @param min the desired minimal value in the array
 	 *  @param max the desired maximal value in the array
-	 *  @param clamp if the values should be clamped to correct floating point inaccuracy
+	 *  @param clamp if the values should be clamped (because of floating point inaccuracy)
 	 *  @return the scaled array */
 	public static float[] scale(float[] values, float min, float max, boolean clamp) {
-		int i;
 		float tmp = amplitude(values) / (max - min);
-		for(i = 0; i < values.length; i++)
+		for(int i = 0; i < values.length; i++)
 			values[i] /= tmp;
 
 		tmp = min - min(values);
-		for(i = 0; i < values.length; i++)
+		for(int i = 0; i < values.length; i++)
 			values[i] += tmp;
 
 		if(clamp)
-			for(i = 0; i < values.length; i++)
+			for(int i = values.length - 1; i >= 0; i--)
 				if(values[i] > max)
 					values[i] = max;
+				else
+					break;
 
 		return values;
+	}
+
+	/** does not clamp
+	 *  @see #scale(float[], float, float, boolean) */
+	public static float[] scale(float[] values, float min, float max) {
+		return scale(values, min, max, false);
 	}
 
 	/** @param sum the sum at which to return the element
