@@ -45,7 +45,7 @@ public class Box2DSprite extends Sprite {
 	/** the z index for sorted drawing */
 	private float zIndex;
 
-	/** if the width and height should be adjusted to those of the {@link Body} or {@link Fixture} this {@link Box2DSprite} is attached to (true by default) */
+	/** if the width and height should be adjusted to those of the {@link Body} or {@link Fixture} this {@link Box2DSprite} is attached to ({@value} by default) */
 	private boolean adjustWidth = true, adjustHeight = true;
 
 	/** if the origin of this {@link Box2DSprite} should be used when it's drawn (false by default) */
@@ -117,7 +117,6 @@ public class Box2DSprite extends Sprite {
 	public static void draw(Batch batch, World world, boolean sortByZ) {
 		@SuppressWarnings("unchecked")
 		Array<Body> tmpBodies = Pools.obtain(Array.class);
-
 		world.getBodies(tmpBodies);
 
 		if(sortByZ) {
@@ -190,7 +189,7 @@ public class Box2DSprite extends Sprite {
 	 *  @param box2dRotation the rotation of the body or fixture */
 	public void draw(Batch batch, float box2dX, float box2dY, float box2dWidth, float box2dHeight, float box2dRotation) {
 		batch.setColor(getColor());
-		batch.draw(this, box2dX - box2dWidth / 2 + getX(), box2dY - box2dHeight / 2 + getY(), isUseOriginX() ? getOriginX() : box2dWidth / 2, isUseOriginY() ? getOriginY() : box2dHeight / 2, isAdjustWidth() ? box2dWidth : getWidth(), isAdjustHeight() ? box2dHeight : getHeight(), getScaleX(), getScaleY(), box2dRotation * MathUtils.radiansToDegrees + getRotation());
+		batch.draw(this, box2dX - box2dWidth / 2 + getX(), box2dY - box2dHeight / 2 + getY(), useOriginX ? getOriginX() : box2dWidth / 2, useOriginY ? getOriginY() : box2dHeight / 2, adjustWidth ? box2dWidth : getWidth(), adjustHeight ? box2dHeight : getHeight(), getScaleX(), getScaleY(), box2dRotation * MathUtils.radDeg + getRotation());
 	}
 
 	// getters and setters
