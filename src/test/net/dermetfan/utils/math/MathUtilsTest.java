@@ -122,9 +122,12 @@ public class MathUtilsTest {
 	@Test
 	public void scale() {
 		float[] values = {-50, -25, 0, 25, 50};
-		assertEquals(1, MathUtils.amplitude(MathUtils.scale(values, 0, 1, false)), 0);
-		assertNotEquals(Float.MAX_VALUE / 2, MathUtils.amplitude(MathUtils.scale(values, 0, Float.MAX_VALUE / 2, false)), 0);
-		assertEquals(Float.MAX_VALUE / 2, MathUtils.amplitude(MathUtils.scale(values, 0, Float.MAX_VALUE / 2, true)), 0);
+		assertEquals(1, MathUtils.amplitude(MathUtils.scale(values, 0, 1)), 0);
+
+		// float rounding error
+		float min = 0, max = Float.MAX_VALUE / 3;
+		assertNotEquals(Math.abs(max - min), MathUtils.amplitude(MathUtils.scale(values, min, max)), com.badlogic.gdx.math.MathUtils.FLOAT_ROUNDING_ERROR);
+		assertEquals(Math.abs(max - min), MathUtils.amplitude(MathUtils.clamp(values, min, max)), 0); // clamped amplitude must be correct
 	}
 
 	@Test

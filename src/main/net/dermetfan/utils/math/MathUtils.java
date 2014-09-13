@@ -241,9 +241,8 @@ public class MathUtils {
 	 *  @param values the values to scale
 	 *  @param min the desired minimal value in the array
 	 *  @param max the desired maximal value in the array
-	 *  @param clamp if the values should be clamped (because of floating point inaccuracy)
 	 *  @return the scaled array */
-	public static float[] scale(float[] values, float min, float max, boolean clamp) {
+	public static float[] scale(float[] values, float min, float max) {
 		float tmp = amplitude(values) / (max - min);
 		for(int i = 0; i < values.length; i++)
 			values[i] /= tmp;
@@ -252,20 +251,7 @@ public class MathUtils {
 		for(int i = 0; i < values.length; i++)
 			values[i] += tmp;
 
-		if(clamp)
-			for(int i = values.length - 1; i >= 0; i--)
-				if(values[i] > max)
-					values[i] = max;
-				else
-					break;
-
 		return values;
-	}
-
-	/** does not clamp
-	 *  @see #scale(float[], float, float, boolean) */
-	public static float[] scale(float[] values, float min, float max) {
-		return scale(values, min, max, false);
 	}
 
 	/** @param sum the sum at which to return the element
