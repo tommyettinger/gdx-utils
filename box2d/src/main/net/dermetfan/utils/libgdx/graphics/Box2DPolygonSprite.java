@@ -24,6 +24,7 @@ import com.badlogic.gdx.graphics.g2d.PolygonSpriteBatch;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.Fixture;
 import com.badlogic.gdx.physics.box2d.World;
@@ -31,6 +32,7 @@ import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.ObjectMap;
 import com.badlogic.gdx.utils.Pools;
 import net.dermetfan.utils.Function;
+import net.dermetfan.utils.libgdx.math.GeometryUtils;
 
 import static net.dermetfan.utils.libgdx.box2d.Box2DUtils.height;
 import static net.dermetfan.utils.libgdx.box2d.Box2DUtils.minX;
@@ -50,11 +52,17 @@ public class Box2DPolygonSprite extends PolygonSprite {
 	/** if the width and height should be adjusted to those of the {@link Body} or {@link Fixture} this {@link Box2DPolygonSprite} is attached to (true by default) */
 	private boolean adjustWidth = true, adjustHeight = true;
 
+	/** if the size should be adjusted to match the polygon onto the body or fixture (true by default) */
+	private boolean adjustToPolygon = true;
+
 	/** if the origin of this {@link Box2DPolygonSprite} should be used when it's drawn (false by default) */
 	private boolean useOriginX, useOriginY;
 
 	/** for internal, temporary usage */
 	private static final Vector2 vec2 = new Vector2();
+
+	/** for internal, temporary usage */
+	private static final Vector3 vec3 = new Vector3();
 
 	/** @see PolygonSprite#PolygonSprite(PolygonRegion) */
 	public Box2DPolygonSprite(PolygonRegion region) {
@@ -94,7 +102,6 @@ public class Box2DPolygonSprite extends PolygonSprite {
 	public static void draw(Batch batch, World world, boolean sortByZ) {
 		@SuppressWarnings("unchecked")
 		Array<Body> tmpBodies = Pools.obtain(Array.class);
-
 		world.getBodies(tmpBodies);
 
 		if(sortByZ) {
@@ -171,14 +178,35 @@ public class Box2DPolygonSprite extends PolygonSprite {
 			draw((PolygonSpriteBatch) batch, box2dX, box2dY, box2dWidth, box2dHeight, box2dRotation);
 		else {
 			batch.setColor(getColor());
-			batch.draw(getRegion().getRegion(), box2dX - box2dWidth / 2 + getX(), box2dY - box2dHeight / 2 + getY(), isUseOriginX() ? getOriginX() : box2dWidth / 2, isUseOriginY() ? getOriginY() : box2dHeight / 2, isAdjustWidth() ? box2dWidth : getWidth(), isAdjustHeight() ? box2dHeight : getHeight(), getScaleX(), getScaleY(), box2dRotation * MathUtils.radiansToDegrees + getRotation());
+			batch.draw(getRegion().getRegion(), box2dX - box2dWidth / 2 + getX(), box2dY - box2dHeight / 2 + getY(), useOriginX ? getOriginX() : box2dWidth / 2, useOriginY ? getOriginY() : box2dHeight / 2, adjustWidth ? box2dWidth : getWidth(), adjustHeight ? box2dHeight : getHeight(), getScaleX(), getScaleY(), box2dRotation * MathUtils.radDeg + getRotation());
 		}
 	}
 
 	/** @see #draw(Batch, float, float, float, float, float) */
 	public void draw(PolygonSpriteBatch batch, float box2dX, float box2dY, float box2dWidth, float box2dHeight, float box2dRotation) {
 		batch.setColor(getColor());
-		batch.draw(getRegion(), box2dX - box2dWidth / 2 + getX(), box2dY - box2dHeight / 2 + getY(), isUseOriginX() ? getOriginX() : box2dWidth / 2, isUseOriginY() ? getOriginY() : box2dHeight / 2, isAdjustWidth() ? box2dWidth : getWidth(), isAdjustHeight() ? box2dHeight : getHeight(), getScaleX(), getScaleY(), box2dRotation * MathUtils.radiansToDegrees + getRotation());
+		float x, y, originX, originY, width, height;
+		if(adjustToPolygon) {
+			float polygonWidth = GeometryUtils.width(getRegion().getVertices()), polygonHeight = GeometryUtils.height(getRegion().getVertices());
+			float polygonWidthRatio = getRegion().getRegion().getRegionWidth() / polygonWidth, polygonHeightRatio = getRegion().getRegion().getRegionHeight() / polygonHeight;
+			width = box2dWidth * polygonWidthRatio;
+			height = box2dHeight * polygonHeightRatio;
+			float polygonX = GeometryUtils.minX(getRegion().getVertices()), polygonY = GeometryUtils.minY(getRegion().getVertices());
+			float polygonXRatio = getRegion().getRegion().getRegionWidth() / polygonX, polygonYRatio = getRegion().getRegion().getRegionHeight() / polygonY;
+			float offsetX = width / polygonXRatio, offsetY = height / polygonYRatio;
+			x = box2dX - offsetX - width / 2 / polygonWidthRatio;
+			y = box2dY - offsetY - height / 2 / polygonHeightRatio;
+			originX = offsetX + box2dWidth / 2;
+			originY = offsetY + box2dHeight / 2;
+		} else {
+			x = box2dX - box2dWidth / 2;
+			y = box2dY - box2dHeight / 2;
+			originX = box2dWidth / 2;
+			originY = box2dHeight / 2;
+			width = box2dWidth;
+			height = box2dHeight;
+		}
+		batch.draw(getRegion(), x + getX(), y + getY(), useOriginX ? getOriginX() : originX, useOriginY ? getOriginY() : originY, adjustWidth ? width : getWidth(), adjustHeight ? height : getHeight(), getScaleX(), getScaleY(), box2dRotation * MathUtils.radDeg + getRotation());
 	}
 
 	// getters and setters
@@ -216,6 +244,16 @@ public class Box2DPolygonSprite extends PolygonSprite {
 	/** @param adjustSize the {@link #adjustWidth} and {@link #adjustHeight} to set */
 	public void setAdjustSize(boolean adjustSize) {
 		adjustWidth = adjustHeight = adjustSize;
+	}
+
+	/** @@return the {@link #adjustToPolygon} */
+	public boolean isAdjustToPolygon() {
+		return adjustToPolygon;
+	}
+
+	/** @@param adjustToPolygon the {@link #adjustToPolygon} to set */
+	public void setAdjustToPolygon(boolean adjustToPolygon) {
+		this.adjustToPolygon = adjustToPolygon;
 	}
 
 	/** @return the {@link #useOriginX} */
