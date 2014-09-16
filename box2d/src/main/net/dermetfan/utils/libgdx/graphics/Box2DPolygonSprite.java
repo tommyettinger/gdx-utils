@@ -246,12 +246,12 @@ public class Box2DPolygonSprite extends PolygonSprite {
 		adjustWidth = adjustHeight = adjustSize;
 	}
 
-	/** @@return the {@link #adjustToPolygon} */
+	/** @return the {@link #adjustToPolygon} */
 	public boolean isAdjustToPolygon() {
 		return adjustToPolygon;
 	}
 
-	/** @@param adjustToPolygon the {@link #adjustToPolygon} to set */
+	/** @param adjustToPolygon the {@link #adjustToPolygon} to set */
 	public void setAdjustToPolygon(boolean adjustToPolygon) {
 		this.adjustToPolygon = adjustToPolygon;
 	}
