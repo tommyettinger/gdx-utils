@@ -14,9 +14,8 @@
 
 package net.dermetfan.utils.libgdx;
 
-import net.dermetfan.utils.Appender;
-
 import com.badlogic.gdx.math.Interpolation;
+import net.dermetfan.utils.Appender;
 
 /** A Typewriter writing a {@code CharSequence}.<br>
  *  Uses a {@link CharSequenceInterpolator} and {@link Appender}, so {@link Interpolation Interpolations} and custom {@link Appender#setAppendices(CharSequence[]) cursors} can be used.

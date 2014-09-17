@@ -83,7 +83,7 @@ public class Appender {
 
 	/** @return a {@code CharSequence} representing the given {@code seq} with the value of {@link #appendices} at {@link #index} appended */
 	public CharSequence append(CharSequence seq) {
-		return append(seq, appendices[(int) MathUtils.clamp(index, 0, appendices.length)]);
+		return append(seq, appendices[com.badlogic.gdx.math.MathUtils.clamp(index, 0, appendices.length)]);
 	}
 
 	/** @return a {@code CharSequence} representing the given {@code seq} with the {@link #appendixAt(float) appendix at} {@link #time} appended */

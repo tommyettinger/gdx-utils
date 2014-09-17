@@ -29,6 +29,7 @@ import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.Fixture;
 import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.utils.Array;
+import com.badlogic.gdx.utils.FloatArray;
 import com.badlogic.gdx.utils.ObjectMap;
 import com.badlogic.gdx.utils.Pools;
 import net.dermetfan.utils.Function;
@@ -187,11 +188,14 @@ public class Box2DPolygonSprite extends PolygonSprite {
 		batch.setColor(getColor());
 		float x, y, originX, originY, width, height;
 		if(adjustToPolygon) {
-			float polygonWidth = GeometryUtils.width(getRegion().getVertices()), polygonHeight = GeometryUtils.height(getRegion().getVertices());
+			FloatArray vertices = Pools.obtain(FloatArray.class);
+			vertices.clear();
+			vertices.addAll(getRegion().getVertices());
+			float polygonWidth = GeometryUtils.width(vertices), polygonHeight = GeometryUtils.height(vertices);
 			float polygonWidthRatio = getRegion().getRegion().getRegionWidth() / polygonWidth, polygonHeightRatio = getRegion().getRegion().getRegionHeight() / polygonHeight;
 			width = box2dWidth * polygonWidthRatio;
 			height = box2dHeight * polygonHeightRatio;
-			float polygonX = GeometryUtils.minX(getRegion().getVertices()), polygonY = GeometryUtils.minY(getRegion().getVertices());
+			float polygonX = GeometryUtils.minX(vertices), polygonY = GeometryUtils.minY(vertices);
 			float polygonXRatio = getRegion().getRegion().getRegionWidth() / polygonX, polygonYRatio = getRegion().getRegion().getRegionHeight() / polygonY;
 			float offsetX = width / polygonXRatio, offsetY = height / polygonYRatio;
 			x = box2dX - offsetX - width / 2 / polygonWidthRatio;

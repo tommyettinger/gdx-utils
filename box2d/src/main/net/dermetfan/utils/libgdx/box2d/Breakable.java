@@ -64,8 +64,7 @@ public class Breakable {
 		private final Array<Joint> tmpJoints = new Array<>(0);
 
 		/** instantiates a new {@link Manager} */
-		public Manager() {
-		}
+		public Manager() {}
 
 		/** instantiates a new {@link Manager} with the given {@link #userDataAccessor} */
 		public Manager(Function<Breakable, Object> userDataAccessor) {

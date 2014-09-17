@@ -14,57 +14,50 @@
 
 package net.dermetfan.utils.libgdx.math;
 
-import java.util.Arrays;
 import java.util.Comparator;
 
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.math.EarClippingTriangulator;
 import com.badlogic.gdx.math.Intersector;
-import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Polygon;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.FloatArray;
+import com.badlogic.gdx.utils.IntArray;
 import com.badlogic.gdx.utils.Pools;
 import com.badlogic.gdx.utils.ShortArray;
-import net.dermetfan.utils.ArrayUtils;
+import net.dermetfan.utils.libgdx.ArrayUtils;
 
 import static net.dermetfan.utils.ArrayUtils.wrapIndex;
-import static net.dermetfan.utils.math.MathUtils.amplitude;
+import static net.dermetfan.utils.libgdx.math.MathUtils.amplitude;
+import static net.dermetfan.utils.libgdx.math.MathUtils.max;
+import static net.dermetfan.utils.libgdx.math.MathUtils.min;
 import static net.dermetfan.utils.math.MathUtils.det;
-import static net.dermetfan.utils.math.MathUtils.max;
-import static net.dermetfan.utils.math.MathUtils.min;
-import static net.dermetfan.utils.math.MathUtils.mirror;
 
 /** Provides some useful methods for geometric calculations. Note that many methods return the same array instance so make a copy for subsequent calls.
  *  @author dermetfan */
-public abstract class GeometryUtils {
+public abstract class GeometryUtils extends net.dermetfan.utils.math.GeometryUtils {
 
 	/** a {@link Vector2} for temporary usage */
 	private static final Vector2 vec2_0 = new Vector2(), vec2_1 = new Vector2();
 
-	/** a temporary array */
-	private static Vector2[] tmpVecArr;
+	/** a temporarily used array, returned by some methods */
+	private static Array<Vector2> tmpVector2Array = new Array<>();
 
-	/** a temporary array */
-	private static float[] tmpFloatArr;
+	/** a temporarily used array, returned by some methods */
+	private static final FloatArray tmpFloatArray = new FloatArray();
 
-	/** @return if the given point is between a and b (exclusive)
-	 *  @see #between(Vector2, Vector2, Vector2, boolean) */
-	public static boolean between(Vector2 point, Vector2 a, Vector2 b) {
-		return between(point, a, b, false);
+
+	/** @see net.dermetfan.utils.math.GeometryUtils#between(float, float, float, float, float, float, boolean) */
+	public static boolean between(Vector2 point, Vector2 a, Vector2 b, boolean inclusive) {
+		return net.dermetfan.utils.math.GeometryUtils.between(point.x, point.y, a.x, a.y, b.x, b.y, inclusive);
 	}
 
-	/** @param point the point to test
-	 *  @param a the first point of the segment
-	 *  @param b the second point of the segment
-	 *  @param inclusive if the given point is allowed to be equal to min or maxs
-	 *  @return if the given point lies on a line with and between the given points
-	 *  @see net.dermetfan.utils.math.MathUtils#between(float, float, float) */
-	public static boolean between(Vector2 point, Vector2 a, Vector2 b, boolean inclusive) {
-		return det(a.x, a.y, point.x, point.y, b.x, b.y) == 0 && net.dermetfan.utils.math.MathUtils.between(point.x, a.x, b.x, inclusive) && net.dermetfan.utils.math.MathUtils.between(point.y, a.y, b.y, inclusive);
+	/** @see net.dermetfan.utils.math.GeometryUtils#between(float, float, float, float, float, float) */
+	public static boolean between(Vector2 point, Vector2 a, Vector2 b) {
+		return net.dermetfan.utils.math.GeometryUtils.between(point.x, point.y, a.x, a.y, b.x, b.y);
 	}
 
 	/** @param vector the {@link Vector2} which components to set to their absolute value
@@ -88,216 +81,220 @@ public abstract class GeometryUtils {
 	 *  @param x the x value to add
 	 *  @param y the y value to add
 	 *  @return the given vertices for chaining */
-	public static Vector2[] add(Vector2[] vertices, float x, float y) {
+	public static Array<Vector2> add(Array<Vector2> vertices, float x, float y) {
 		for(Vector2 vertice : vertices)
 			vertice.add(x, y);
 		return vertices;
 	}
 
-	/** @see #add(Vector2[], float, float) */
-	public static Vector2[] sub(Vector2[] vertices, float x, float y) {
+	/** @see #add(Array, float, float) */
+	public static Array<Vector2> sub(Array<Vector2> vertices, float x, float y) {
 		return add(vertices, -x, -y);
 	}
 
-	/** @see #add(Vector2[], float, float) */
-	public static float[] add(float[] vertices, float x, float y) {
-		for(int i = 1; i < vertices.length; i += 2) {
-			vertices[i - 1] += x;
-			vertices[i] += y;
-		}
+	/** @see #add(Array, float, float) */
+	public static FloatArray add(FloatArray vertices, float x, float y) {
+		net.dermetfan.utils.math.GeometryUtils.add(vertices.items, x, y, 0, vertices.size);
 		return vertices;
 	}
 
-	/** @see #add(Vector2[], float, float) */
-	public static float[] sub(float[] vertices, float x, float y) {
-		return add(vertices, -x, -y);
+	/** @see #add(Array, float, float) */
+	public static FloatArray sub(FloatArray vertices, float x, float y) {
+		net.dermetfan.utils.math.GeometryUtils.sub(vertices.items, x, y, 0, vertices.size);
+		return vertices;
 	}
 
-	/** @see #add(float[], float, float) */
-	public static float[] addX(float[] vertices, float value) {
-		return add(vertices, value, 0);
+	/** @see #add(FloatArray, float, float) */
+	public static FloatArray addX(FloatArray vertices, float value) {
+		net.dermetfan.utils.math.GeometryUtils.addX(vertices.items, value, 0, vertices.size);
+		return vertices;
 	}
 
-	/** @see #sub(float[], float, float) */
-	public static float[] subX(float[] vertices, float value) {
-		return sub(vertices, value, 0);
+	/** @see #sub(FloatArray, float, float) */
+	public static FloatArray subX(FloatArray vertices, float value) {
+		net.dermetfan.utils.math.GeometryUtils.subX(vertices.items, value, 0, vertices.size);
+		return vertices;
 	}
 
-	/** @see #add(float[], float, float) */
-	public static float[] addY(float[] vertices, float value) {
-		return add(vertices, 0, value);
+	/** @see #add(FloatArray, float, float) */
+	public static FloatArray addY(FloatArray vertices, float value) {
+		net.dermetfan.utils.math.GeometryUtils.addY(vertices.items, value, 0, vertices.size);
+		return vertices;
 	}
 
-	/** @see #sub(float[], float, float) */
-	public static float[] subY(float[] vertices, float value) {
-		return sub(vertices, 0, value);
+	/** @see #sub(FloatArray, float, float) */
+	public static FloatArray subY(FloatArray vertices, float value) {
+		net.dermetfan.utils.math.GeometryUtils.subY(vertices.items, value, 0, vertices.size);
+		return vertices;
 	}
 
 	/** @return a Vector2 representing the size of a rectangle containing all given vertices */
-	public static Vector2 size(Vector2[] vertices, Vector2 output) {
+	public static Vector2 size(Array<Vector2> vertices, Vector2 output) {
 		return output.set(width(vertices), height(vertices));
 	}
 
-	/** @see #size(Vector2[], Vector2) */
-	public static Vector2 size(Vector2[] vertices) {
+	/** @see #size(Array, Vector2) */
+	public static Vector2 size(Array<Vector2> vertices) {
 		return size(vertices, vec2_0);
 	}
 
 	/** @return the amplitude from the min x vertice to the max x vertice */
-	public static float width(Vector2[] vertices) {
+	public static float width(Array<Vector2> vertices) {
 		return amplitude(filterX(vertices));
 	}
 
 	/** @return the amplitude from the min y vertice to the max y vertice */
-	public static float height(Vector2[] vertices) {
+	public static float height(Array<Vector2> vertices) {
 		return amplitude(filterY(vertices));
 	}
 
-	/** @see #width(Vector2[]) */
-	public static float width(float[] vertices) {
+	/** @see #width(Array) */
+	public static float width(FloatArray vertices) {
 		return amplitude(filterX(vertices));
 	}
 
-	/** @see #height(Vector2[]) */
-	public static float height(float[] vertices) {
+	/** @see #height(Array) */
+	public static float height(FloatArray vertices) {
 		return amplitude(filterY(vertices));
 	}
 
 	/** @return the amplitude of the min z vertice to the max z vertice */
-	public static float depth(float[] vertices) {
+	public static float depth(FloatArray vertices) {
 		return amplitude(filterZ(vertices));
 	}
 
 	/** @return the x values of the given vertices */
-	public static float[] filterX(Vector2[] vertices, float[] output) {
-		if(output == null || output.length != vertices.length)
-			output = new float[vertices.length];
-		for(int i = 0; i < output.length; i++)
-			output[i] = vertices[i].x;
+	public static FloatArray filterX(Array<Vector2> vertices, FloatArray output) {
+		if(output == null)
+			output = new FloatArray(vertices.size);
+		output.size = vertices.size;
+		for(int i = 0; i < output.size; i++)
+			output.set(i, vertices.get(i).x);
 		return output;
 	}
 
-	/** @see #filterX(Vector2[], float[]) */
-	public static float[] filterX(Vector2[] vertices) {
-		return filterX(vertices, tmpFloatArr);
+	/** @see #filterX(Array, FloatArray) */
+	public static FloatArray filterX(Array<Vector2> vertices) {
+		return filterX(vertices, tmpFloatArray);
 	}
 
 	/** @param vertices the vertices in [x, y, x, y, ...] order
-	 *  @see #filterX(Vector2[]) */
-	public static float[] filterX(float[] vertices, float[] output) {
+	 *  @see #filterX(Array) */
+	public static FloatArray filterX(FloatArray vertices, FloatArray output) {
 		return ArrayUtils.select(vertices, -1, 2, output);
 	}
 
-	/** @see #filterX(float[], float[]) */
-	public static float[] filterX(float[] vertices) {
-		return filterX(vertices, tmpFloatArr);
+	/** @see #filterX(FloatArray, FloatArray) */
+	public static FloatArray filterX(FloatArray vertices) {
+		return filterX(vertices, tmpFloatArray);
 	}
 
 	/** @param vertices the vertices in [x, y, z, x, y, z, ...] order
-	 *  @see #filterX(float[], float[]) */
-	public static float[] filterX3D(float[] vertices, float[] output) {
+	 *  @see #filterX(FloatArray, FloatArray) */
+	public static FloatArray filterX3D(FloatArray vertices, FloatArray output) {
 		return ArrayUtils.select(vertices, -2, 3, output);
 	}
 
-	/** @see #filterX3D(float[], float[]) */
-	public static float[] filterX3D(float[] vertices) {
-		return filterX3D(vertices, tmpFloatArr);
+	/** @see #filterX3D(FloatArray, FloatArray) */
+	public static FloatArray filterX3D(FloatArray vertices) {
+		return filterX3D(vertices, tmpFloatArray);
 	}
 
 	/** @return the y values of the given vertices */
-	public static float[] filterY(Vector2[] vertices, float[] output) {
-		if(output == null || output.length != vertices.length)
-			output = new float[vertices.length];
-		for(int i = 0; i < output.length; i++)
-			output[i] = vertices[i].y;
+	public static FloatArray filterY(Array<Vector2> vertices, FloatArray output) {
+		if(output == null)
+			output = new FloatArray(vertices.size);
+		output.size = vertices.size;
+		for(int i = 0; i < output.size; i++)
+			output.set(i, vertices.get(i).y);
 		return output;
 	}
 
-	/** @see #filterY(Vector2[], float[]) */
-	public static float[] filterY(Vector2[] vertices) {
-		return filterY(vertices, tmpFloatArr);
+	/** @see #filterY(Array, FloatArray) */
+	public static FloatArray filterY(Array<Vector2> vertices) {
+		return filterY(vertices, tmpFloatArray);
 	}
 
-	/** @see #filterY(Vector2[], float[])
-	 *  @see #filterX(float[], float[])*/
-	public static float[] filterY(float[] vertices, float[] output) {
+	/** @see #filterY(Array, FloatArray)
+	 *  @see #filterX(FloatArray, FloatArray)*/
+	public static FloatArray filterY(FloatArray vertices, FloatArray output) {
 		return ArrayUtils.select(vertices, 2, output);
 	}
 
-	/** @see #filterY(float[], float[]) */
-	public static float[] filterY(float[] vertices) {
-		return filterY(vertices, tmpFloatArr);
+	/** @see #filterY(FloatArray, FloatArray) */
+	public static FloatArray filterY(FloatArray vertices) {
+		return filterY(vertices, tmpFloatArray);
 	}
 
-	/** @see #filterY(float[], float[])
-	 *  @see #filterX3D(float[], float[]) */
-	public static float[] filterY3D(float[] vertices, float[] output) {
+	/** @see #filterY(FloatArray, FloatArray)
+	 *  @see #filterX3D(FloatArray, FloatArray) */
+	public static FloatArray filterY3D(FloatArray vertices, FloatArray output) {
 		return ArrayUtils.select(vertices, -4, 3, output);
 	}
 
-	/** @see #filterY3D(float[], float[]) */
-	public static float[] filterY3D(float[] vertices) {
-		return filterY3D(vertices, tmpFloatArr);
+	/** @see #filterY3D(FloatArray, FloatArray) */
+	public static FloatArray filterY3D(FloatArray vertices) {
+		return filterY3D(vertices, tmpFloatArray);
 	}
 
-	/** @see #filterX(Vector2[], float[])
-	 *  @see #filterX3D(float[], float[]) */
-	public static float[] filterZ(float[] vertices, float[] output) {
+	/** @see #filterX(Array, FloatArray)
+	 *  @see #filterX3D(FloatArray, FloatArray) */
+	public static FloatArray filterZ(FloatArray vertices, FloatArray output) {
 		return ArrayUtils.select(vertices, 3, output);
 	}
 
-	/** @see #filterZ(float[], float[]) */
-	public static float[] filterZ(float[] vertices) {
-		return filterZ(vertices, tmpFloatArr);
+	/** @see #filterZ(FloatArray, FloatArray) */
+	public static FloatArray filterZ(FloatArray vertices) {
+		return filterZ(vertices, tmpFloatArray);
 	}
 
-	/** @see #filterX3D(float[]) */
-	public static float[] filterW(float[] vertices, float[] output) {
+	/** @see #filterX3D(FloatArray) */
+	public static FloatArray filterW(FloatArray vertices, FloatArray output) {
 		return ArrayUtils.select(vertices, 4, output);
 	}
 
-	/** @see #filterW(float[], float[]) */
-	public static float[] filterW(float[] vertices) {
-		return filterW(vertices, tmpFloatArr);
+	/** @see #filterW(FloatArray, FloatArray) */
+	public static FloatArray filterW(FloatArray vertices) {
+		return filterW(vertices, tmpFloatArray);
 	}
 
 	/** @return the min x value of the given vertices */
-	public static float minX(Vector2[] vertices) {
+	public static float minX(Array<Vector2> vertices) {
 		return min(filterX(vertices));
 	}
 
 	/** @return the min y value of the given vertices */
-	public static float minY(Vector2[] vertices) {
+	public static float minY(Array<Vector2> vertices) {
 		return min(filterY(vertices));
 	}
 
 	/** @return the max x value of the given vertices */
-	public static float maxX(Vector2[] vertices) {
+	public static float maxX(Array<Vector2> vertices) {
 		return max(filterX(vertices));
 	}
 
 	/** @return the max y value of the given vertices */
-	public static float maxY(Vector2[] vertices) {
+	public static float maxY(Array<Vector2> vertices) {
 		return max(filterY(vertices));
 	}
 
-	/** @see #minX(Vector2[]) */
-	public static float minX(float[] vertices) {
+	/** @see #minX(Array) */
+	public static float minX(FloatArray vertices) {
 		return min(filterX(vertices));
 	}
 
-	/** @see #minY(Vector2[]) */
-	public static float minY(float[] vertices) {
+	/** @see #minY(Array) */
+	public static float minY(FloatArray vertices) {
 		return min(filterY(vertices));
 	}
 
-	/** @see #maxX(Vector2[]) */
-	public static float maxX(float[] vertices) {
+	/** @see #maxX(Array) */
+	public static float maxX(FloatArray vertices) {
 		return max(filterX(vertices));
 	}
 
-	/** @see #maxY(Vector2[]) */
-	public static float maxY(float[] vertices) {
+	/** @see #maxY(Array) */
+	public static float maxY(FloatArray vertices) {
 		return max(filterY(vertices));
 	}
 
@@ -321,114 +318,98 @@ public abstract class GeometryUtils {
 		rotate(b, vec2_0, radians);
 	}
 
-	/** returns the vertices of a rotated rectangle
-	 *  @param x the x of the rectangle
-	 *  @param y the y of the rectangle
-	 *  @param width the width of the rectangle
-	 *  @param height the height of the rectangle
-	 *  @param radians the angle to rotate the rectangle by
-	 *  @param output The array to store the results in. Will be recreated if it is null or its length is smaller than 8.
-	 *  @return the rotated vertices as in [x1, y1, x2, y2, x3, y3, x4, y4] */
-	public static float[] rotate(float x, float y, float width, float height, float radians, float[] output) {
-		// http://www.monkeycoder.co.nz/Community/posts.php?topic=3935
-		float rad = (float) (Math.sqrt(height * height + width * width) / 2.);
-		float theta = MathUtils.atan2(height, width);
-		float x0 = (float) (rad * Math.cos(theta + radians));
-		float y0 = (float) (rad * Math.sin(theta + radians));
-		float x1 = (float) (rad * Math.cos(-theta + radians));
-		float y1 = (float) (rad * Math.sin(-theta + radians));
-		float offsetX = x + width / 2, offsetY = y + height / 2;
-		if(output == null || output.length < 8)
-			output = new float[8];
-		output[0] = offsetX + x0;
-		output[1] = offsetY + y0;
-		output[2] = offsetX + x1;
-		output[3] = offsetY + y1;
-		output[4] = offsetX - x0;
-		output[5] = offsetY - y0;
-		output[6] = offsetX - x1;
-		output[7] = offsetY - y1;
+	/** @see net.dermetfan.utils.math.GeometryUtils#rotate(float, float, float, float, float, float[], int) */
+	public static FloatArray rotate(float x, float y, float width, float height, float radians, FloatArray output) {
+		output.clear();
+		output.ensureCapacity(8);
+		net.dermetfan.utils.math.GeometryUtils.rotate(x, y, width, height, radians, output.items, 0);
 		return output;
 	}
 
-	/** @see #rotate(float, float, float, float, float, float[]) */
-	public static float[] rotate(float x, float y, float width, float height, float radians) {
-		return rotate(x, y, width, height, radians, tmpFloatArr);
+	/** @see #rotate(float, float, float, float, float, FloatArray) */
+	public static FloatArray rotate(float x, float y, float width, float height, float radians) {
+		return rotate(x, y, width, height, radians, tmpFloatArray);
 	}
 
-	/** @see #rotate(float, float, float, float, float, float[]) */
-	public static float[] rotate(Rectangle rectangle, float radians, float[] output) {
+	/** @see #rotate(float, float, float, float, float, FloatArray) */
+	public static FloatArray rotate(Rectangle rectangle, float radians, FloatArray output) {
 		return rotate(rectangle.x, rectangle.y, rectangle.width, rectangle.height, radians, output);
 	}
 
-	/** @see #rotate(Rectangle, float, float[]) */
-	public static float[] rotate(Rectangle rectangle, float radians) {
-		return rotate(rectangle, radians, tmpFloatArr);
+	/** @see #rotate(Rectangle, float, FloatArray) */
+	public static FloatArray rotate(Rectangle rectangle, float radians) {
+		return rotate(rectangle, radians, tmpFloatArray);
 	}
 
-	/** @param vector2s the Vector2[] to convert to a float[]
-	 *  @return the float[] converted from the given Vector2[] */
-	public static float[] toFloatArray(Vector2[] vector2s, float[] output) {
-		if(output == null || output.length != vector2s.length * 2)
-			output = new float[vector2s.length * 2];
+	/** @param vector2s the Vector2s to convert to a FloatArray
+	 *  @return the FloatArray converted from the given Vector2s */
+	public static FloatArray toFloatArray(Array<Vector2> vector2s, FloatArray output) {
+		if(output == null)
+			output = new FloatArray(vector2s.size * 2);
+		output.size = vector2s.size * 2;
 
-		for(int i = 0, vi = -1; i < output.length; i++)
+		for(int i = 0, vi = -1; i < output.size; i++)
 			if(i % 2 == 0)
-				output[i] = vector2s[++vi].x;
+				output.set(i, vector2s.get(++vi).x);
 			else
-				output[i] = vector2s[vi].y;
+				output.set(i, vector2s.get(vi).y);
 
 		return output;
 	}
 
-	/** @see #toFloatArray(Vector2[], float[]) */
-	public static float[] toFloatArray(Vector2[] vector2s) {
-		return toFloatArray(vector2s, tmpFloatArr);
+	/** @see #toFloatArray(Array, FloatArray) */
+	public static FloatArray toFloatArray(Array<Vector2> vector2s) {
+		return toFloatArray(vector2s, tmpFloatArray);
 	}
 
-	/** @param floats the float[] to convert to a Vector2[]
-	 *  @return the Vector2[] converted from the given float[] */
-	public static Vector2[] toVector2Array(float[] floats, Vector2[] output) {
-		if(floats.length % 2 != 0)
-			throw new IllegalArgumentException("the float array's length is not dividable by two, so it won't make up a Vector2 array: " + floats.length);
+	/** @param floats the FloatArray to convert to an Array&lt;Vector2&gt;
+	 *  @return the Array&lt;Vector2&gt; converted from the given FloatArray */
+	public static Array<Vector2> toVector2Array(FloatArray floats, Array<Vector2> output) {
+		if(floats.size % 2 != 0)
+			throw new IllegalArgumentException("the float array's length is not dividable by two, so it won't make up a Vector2 array: " + floats.size);
 
-		if(output == null || output.length != floats.length / 2) {
-			output = new Vector2[floats.length / 2];
-			for(int i = 0; i < output.length; i++)
-				output[i] = new Vector2();
-		}
+		if(output == null)
+			output = new Array<>(floats.size / 2);
+		output.size = floats.size / 2;
 
-		for(int i = 0, fi = -1; i < output.length; i++)
-			output[i].set(floats[++fi], floats[++fi]);
+		for(int i = 0, fi = -1; i < output.size; i++)
+			output.set(i, new Vector2(floats.get(++fi), floats.get(++fi)));
 
 		return output;
 	}
 
-	/** @see #toVector2Array(float[], Vector2[]) */
-	public static Vector2[] toVector2Array(float[] floats) {
-		return toVector2Array(floats, tmpVecArr);
+	/** @see #toVector2Array(FloatArray, Array) */
+	public static Array<Vector2> toVector2Array(FloatArray floats) {
+		return toVector2Array(floats, tmpVector2Array);
 	}
 
 	/** @param vertexCount the number of vertices for each {@link Polygon}
-	 *  @see #toPolygonArray(Vector2[], int[]) */
-	public static Polygon[] toPolygonArray(Vector2[] vertices, int vertexCount) {
-		int[] vertexCounts = new int[vertices.length / vertexCount];
-		for(int i = 0; i < vertexCounts.length; i++)
-			vertexCounts[i] = vertexCount;
-		return toPolygonArray(vertices, vertexCounts);
+	 *  @see #toPolygonArray(Array, IntArray) */
+	public static Polygon[] toPolygonArray(Array<Vector2> vertices, int vertexCount) {
+		IntArray vertexCounts = Pools.obtain(IntArray.class);
+		vertexCounts.clear();
+		vertexCounts.ensureCapacity(vertices.size / vertexCount);
+		for(int i = 0; i < vertices.size / vertexCount; i++)
+			vertexCounts.add(vertexCount);
+		Polygon[] polygons = toPolygonArray(vertices, vertexCounts);
+		vertexCounts.clear();
+		Pools.free(vertexCounts);
+		return polygons;
 	}
 
 	/** @param vertices the vertices which should be split into a {@link Polygon} array
 	 *  @param vertexCounts the number of vertices of each {@link Polygon}
 	 *  @return the {@link Polygon} array extracted from the vertices */
-	public static Polygon[] toPolygonArray(Vector2[] vertices, int[] vertexCounts) {
-		Polygon[] polygons = new Polygon[vertexCounts.length];
+	public static Polygon[] toPolygonArray(Array<Vector2> vertices, IntArray vertexCounts) {
+		Polygon[] polygons = new Polygon[vertexCounts.size];
 
 		for(int i = 0, vertice = -1; i < polygons.length; i++) {
-			tmpVecArr = new Vector2[vertexCounts[i]];
-			for(int i2 = 0; i2 < tmpVecArr.length; i2++)
-				tmpVecArr[i2] = vertices[++vertice];
-			polygons[i] = new Polygon(toFloatArray(tmpVecArr));
+			tmpVector2Array.clear();
+			tmpVector2Array.ensureCapacity(vertexCounts.get(i));
+			tmpVector2Array.size = vertexCounts.get(i);
+			for(int i2 = 0; i2 < tmpVector2Array.size; i2++)
+				tmpVector2Array.set(i2, vertices.get(++vertice));
+			polygons[i] = new Polygon(toFloatArray(tmpVector2Array).toArray());
 		}
 
 		return polygons;
@@ -441,8 +422,18 @@ public abstract class GeometryUtils {
 	}
 
 	/** @see #areVerticesClockwise(Polygon) */
-	public static boolean areVerticesClockwise(float[] vertices) {
-		return vertices.length <= 4 || area(vertices) < 0;
+	public static boolean areVerticesClockwise(FloatArray vertices) {
+		return vertices.size <= 4 || polygonArea(vertices) < 0;
+	}
+
+	/** @see #areVerticesClockwise(FloatArray) */
+	public static boolean areVerticesClockwise(Array<Vector2> vertices) {
+		return vertices.size <= 2 || areVerticesClockwise(toFloatArray(vertices));
+	}
+
+	/** @see com.badlogic.gdx.math.GeometryUtils#polygonArea(float[], int, int) */
+	public static float polygonArea(FloatArray vertices) {
+		return com.badlogic.gdx.math.GeometryUtils.polygonArea(vertices.items, 0, vertices.size);
 	}
 
 	/** used in {@link #arrangeClockwise(Array)} */
@@ -463,12 +454,12 @@ public abstract class GeometryUtils {
 		// http://www.emanueleferonato.com/2011/08/05/slicing-splitting-and-cutting-objects-with-box2d-part-4-using-real-graphics
 		int n = vertices.size, i1 = 1, i2 = vertices.size - 1;
 
-		if(tmpVecArr == null || tmpVecArr.length < n)
-			tmpVecArr = new Vector2[vertices.size];
-		System.arraycopy(vertices.items, 0, tmpVecArr, 0, n);
-		Arrays.sort(tmpVecArr, arrangeClockwiseComparator);
+		if(tmpVector2Array == null)
+			tmpVector2Array = new Array<>(vertices.size);
+		tmpVector2Array.addAll(vertices);
+		tmpVector2Array.sort(arrangeClockwiseComparator);
 
-		tmpVecArr[0] = vertices.get(0);
+		tmpVector2Array.set(0, vertices.get(0));
 		Vector2 C = vertices.get(0);
 		Vector2 D = vertices.get(n - 1);
 
@@ -476,48 +467,15 @@ public abstract class GeometryUtils {
 		for(int i = 1; i < n - 1; i++) {
 			det = det(C.x, C.y, D.x, D.y, vertices.get(i).x, vertices.get(i).y);
 			if(det < 0)
-				tmpVecArr[i1++] = vertices.get(i);
+				tmpVector2Array.set(i1++, vertices.get(i));
 			else
-				tmpVecArr[i2--] = vertices.get(i);
+				tmpVector2Array.set(i2--, vertices.get(i));
 		}
 
-		tmpVecArr[i1] = vertices.get(n - 1);
+		tmpVector2Array.set(i1, vertices.get(n - 1));
 
 		vertices.clear();
-		vertices.addAll(tmpVecArr, 0, n);
-	}
-
-	/** @see #isConvex(Vector2[]) */
-	public static boolean isConvex(float[] vertices) {
-		return isConvex(toVector2Array(vertices));
-	}
-
-	/** @see #isConvex(Vector2[]) */
-	public static boolean isConvex(Polygon polygon) {
-		return isConvex(polygon.getVertices());
-	}
-
-	/** @return the area of the polygon */
-	public static float area(float[] vertices) {
-		// from com.badlogic.gdx.math.Polygon#area()
-		float area = 0;
-		int x1, y1, x2, y2;
-		for(int i = 0; i < vertices.length; i += 2) {
-			x1 = i;
-			y1 = i + 1;
-			x2 = (i + 2) % vertices.length;
-			y2 = (i + 3) % vertices.length;
-			area += vertices[x1] * vertices[y2];
-			area -= vertices[x2] * vertices[y1];
-		}
-		return area / 2;
-	}
-
-	/** @param coord the position of the object
-	 *  @param axisSize the size of the axis
-	 *  @return the position of the object on the axis, inverted from going to positive to negative */
-	public static float invertAxis(float coord, float axisSize) {
-		return mirror(coord, axisSize / 2);
+		vertices.addAll(tmpVector2Array, 0, n);
 	}
 
 	/** Converts the given vertices to their position on inverted axes.
@@ -525,52 +483,64 @@ public abstract class GeometryUtils {
 	 *  @param x if the x-axis should be inverted
 	 *  @param y if the y-axis should be inverted
 	 *  @return the given vertices converted to the inversed axis in their <strong>local</strong> coordinate system */
-	public static float[] invertAxes(float[] vertices, boolean x, boolean y) {
+	public static FloatArray invertAxes(FloatArray vertices, boolean x, boolean y) {
 		if(!x && !y)
 			return vertices;
 		float height = height(vertices), width = width(vertices);
-		for(int i = x ? 0 : 1; i < vertices.length; i += x ^ y ? 2 : 1)
-			vertices[i] = i % 2 == 0 ? invertAxis(vertices[i], width): invertAxis(vertices[i], height);
+		for(int i = x ? 0 : 1; i < vertices.size; i += x ^ y ? 2 : 1)
+			vertices.set(i, i % 2 == 0 ? net.dermetfan.utils.math.GeometryUtils.invertAxis(vertices.get(i), width) : net.dermetfan.utils.math.GeometryUtils.invertAxis(vertices.get(i), height));
 		return vertices;
 	}
 
-	/** inverts the given vertices to a y-down coordinate system and translates them according to their parent coordinate system by their {@link #height(float[]) height}
-	 *  @see #invertAxes(float[], boolean, boolean) */
-	public static float[] toYDown(float[] vertices) {
+	/** inverts the given vertices to a y-down coordinate system and translates them according to their parent coordinate system by their {@link #height(FloatArray) height}
+	 *  @see #invertAxes(FloatArray, boolean, boolean) */
+	public static FloatArray toYDown(FloatArray vertices) {
 		invertAxes(vertices, false, true);
 		return subY(vertices, height(vertices));
 	}
 
-	/** inverts the given vertices to a y-up coordinate system and translates them according to their parent coordinate system by their {@link #height(float[]) height}
-	 *  @see #invertAxes(float[], boolean, boolean) */
-	public static float[] toYUp(float[] vertices) {
+	/** inverts the given vertices to a y-up coordinate system and translates them according to their parent coordinate system by their {@link #height(FloatArray) height}
+	 *  @see #invertAxes(FloatArray, boolean, boolean) */
+	public static FloatArray toYUp(FloatArray vertices) {
 		invertAxes(vertices, false, true);
 		return addY(vertices, height(vertices));
 	}
 
 	/** @param aabb the rectangle to set as AABB of the given vertices
 	 *  @param vertices the vertices */
-	public static Rectangle setToAABB(Rectangle aabb, float[] vertices) {
+	public static Rectangle setToAABB(Rectangle aabb, FloatArray vertices) {
 		return aabb.set(minX(vertices), minY(vertices), width(vertices), height(vertices));
 	}
 
-	/** @see #setToAABB(Rectangle, float[]) */
-	public static Rectangle setToAABB(Rectangle aabb, Vector2[] vertices) {
+	/** @see #setToAABB(Rectangle, FloatArray) */
+	public static Rectangle setToAABB(Rectangle aabb, Array<Vector2> vertices) {
 		return aabb.set(minX(vertices), minY(vertices), width(vertices), height(vertices));
+	}
+
+	/** @see #isConvex(Array) */
+	public static boolean isConvex(FloatArray vertices) {
+		return isConvex(toVector2Array(vertices));
+	}
+
+	/** @see #isConvex(Array) */
+	public static boolean isConvex(Polygon polygon) {
+		tmpFloatArray.clear();
+		tmpFloatArray.addAll(polygon.getVertices());
+		return isConvex(tmpFloatArray);
 	}
 
 	/** @param vertices the vertices of the polygon to examine for convexity
 	 *  @return if the polygon is convex */
-	public static boolean isConvex(Vector2[] vertices) {
+	public static boolean isConvex(Array<Vector2> vertices) {
 		// http://www.sunshine2k.de/coding/java/Polygon/Convex/polygon.htm
 		Vector2 p, v = vec2_1, u;
 		float res = 0;
-		for(int i = 0; i < vertices.length; i++) {
-			p = vertices[i];
-			vec2_0.set(vertices[(i + 1) % vertices.length]);
+		for(int i = 0; i < vertices.size; i++) {
+			p = vertices.get(i);
+			vec2_0.set(vertices.get((i + 1) % vertices.size));
 			v.x = vec2_0.x - p.x;
 			v.y = vec2_0.y - p.y;
-			u = vertices[(i + 2) % vertices.length];
+			u = vertices.get((i + 2) % vertices.size);
 
 			if(i == 0) // in first loop direction is unknown, so save it in res
 				res = u.x * v.y - u.y * v.x + v.x * p.y - v.y * p.x;
@@ -587,22 +557,39 @@ public abstract class GeometryUtils {
 	 *  @return an array of triangles representing the given concave polygon
 	 *  @see EarClippingTriangulator#computeTriangles(float[]) */
 	public static Polygon[] triangulate(Polygon concave) {
-		Vector2[] polygonVertices = toVector2Array(concave.getTransformedVertices());
-		ShortArray indices = new EarClippingTriangulator().computeTriangles(toFloatArray(polygonVertices));
-		Vector2[] vertices = new Vector2[indices.size];
+		@SuppressWarnings("unchecked")
+		Array<Vector2> polygonVertices = Pools.obtain(Array.class);
+		polygonVertices.clear();
+		tmpFloatArray.clear();
+		tmpFloatArray.addAll(concave.getTransformedVertices());
+		polygonVertices.addAll(toVector2Array(tmpFloatArray));
+		ShortArray indices = new EarClippingTriangulator().computeTriangles(tmpFloatArray);
+
+		@SuppressWarnings("unchecked")
+		Array<Vector2> vertices = Pools.obtain(Array.class);
+		vertices.clear();
+		vertices.ensureCapacity(indices.size);
 		for(int i = 0; i < indices.size; i++)
-			vertices[i] = polygonVertices[indices.get(i)];
-		return toPolygonArray(vertices, 3);
+			vertices.set(i, polygonVertices.get(indices.get(i)));
+		Polygon[] polygons = toPolygonArray(vertices, 3);
+
+		polygonVertices.clear();
+		vertices.clear();
+		Pools.free(polygonVertices);
+		Pools.free(vertices);
+		return polygons;
 	}
 
 	/** @param concave the concave polygon to to decompose
 	 *  @return an array of convex polygons representing the given concave polygon
 	 *  @see BayazitDecomposer#convexPartition(Array) */
 	public static Polygon[] decompose(Polygon concave) {
-		Array<Array<Vector2>> convexPolys = BayazitDecomposer.convexPartition(new Array<>(toVector2Array(concave.getTransformedVertices())));
+		tmpFloatArray.clear();
+		tmpFloatArray.addAll(concave.getTransformedVertices());
+		Array<Array<Vector2>> convexPolys = BayazitDecomposer.convexPartition(new Array<>(toVector2Array(tmpFloatArray)));
 		Polygon[] convexPolygons = new Polygon[convexPolys.size];
 		for(int i = 0; i < convexPolygons.length; i++)
-			convexPolygons[i] = new Polygon(toFloatArray((Vector2[]) convexPolys.get(i).toArray(Vector2.class)));
+			convexPolygons[i] = new Polygon(toFloatArray(convexPolys.get(i)).toArray());
 		return convexPolygons;
 	}
 
@@ -657,8 +644,8 @@ public abstract class GeometryUtils {
 	 *  @param intersection1 the first intersection point
 	 *  @param intersection2 the second intersection point
 	 *  @return the number of intersection points
-	 *  @see #intersectSegments(Vector2, Vector2, float[], boolean, Array)*/
-	public static int intersectSegments(Vector2 a, Vector2 b, float[] polygon, Vector2 intersection1, Vector2 intersection2) {
+	 *  @see #intersectSegments(Vector2, Vector2, FloatArray, boolean, Array)*/
+	public static int intersectSegments(Vector2 a, Vector2 b, FloatArray polygon, Vector2 intersection1, Vector2 intersection2) {
 		FloatArray intersections = Pools.obtain(FloatArray.class);
 		intersectSegments(a.x, a.y, b.x, b.y, polygon, true, intersections);
 		int size = intersections.size;
@@ -673,8 +660,8 @@ public abstract class GeometryUtils {
 		return size / 2;
 	}
 
-	/** @see #intersectSegments(float, float, float, float, float[], boolean, FloatArray) */
-	public static void intersectSegments(Vector2 a, Vector2 b, float[] segments, boolean polygon, Array<Vector2> intersections) {
+	/** @see #intersectSegments(float, float, float, float, FloatArray, boolean, FloatArray) */
+	public static void intersectSegments(Vector2 a, Vector2 b, FloatArray segments, boolean polygon, Array<Vector2> intersections) {
 		FloatArray fa = Pools.obtain(FloatArray.class);
 		intersectSegments(a.x, a.y, b.x, b.y, segments, polygon, fa);
 		if(fa.size < 1) {
@@ -694,17 +681,17 @@ public abstract class GeometryUtils {
 	/** @param segments the segments
 	 *  @param polygon if the segments represent a closed polygon
 	 *  @param intersections the array to store the intersections in */
-	public static void intersectSegments(float x1, float y1, float x2, float y2, float[] segments, boolean polygon, FloatArray intersections) {
-		if(polygon && segments.length < 6)
-			throw new IllegalArgumentException("a polygon consists of at least 3 points: " + segments.length);
-		else if(segments.length < 4)
-			throw new IllegalArgumentException("segments does not contain enough vertices to represent at least one segment: " + segments.length);
-		if(segments.length % 2 != 0)
-			throw new IllegalArgumentException("malformed segments; the number of vertices is not dividable by 2: " + segments.length);
+	public static void intersectSegments(float x1, float y1, float x2, float y2, FloatArray segments, boolean polygon, FloatArray intersections) {
+		if(polygon && segments.size < 6)
+			throw new IllegalArgumentException("a polygon consists of at least 3 points: " + segments.size);
+		else if(segments.size < 4)
+			throw new IllegalArgumentException("segments does not contain enough vertices to represent at least one segment: " + segments.size);
+		if(segments.size % 2 != 0)
+			throw new IllegalArgumentException("malformed segments; the number of vertices is not dividable by 2: " + segments.size);
 		intersections.clear();
 		Vector2 tmp = Pools.obtain(Vector2.class);
-		for(int i = 0, n = segments.length - (polygon ? 0 : 2); i < n; i += 2) {
-			float x3 = segments[i], y3 = segments[i + 1], x4 = wrapIndex(i + 2, segments), y4 = wrapIndex(i + 3, segments);
+		for(int i = 0, n = segments.size - (polygon ? 0 : 2); i < n; i += 2) {
+			float x3 = segments.get(i), y3 = segments.get(i + 1), x4 = wrapIndex(i + 2, segments), y4 = wrapIndex(i + 3, segments);
 			if(Intersector.intersectSegments(x1, y1, x2, y2, x3, y3, x4, y4, tmp)) {
 				intersections.add(tmp.x);
 				intersections.add(tmp.y);

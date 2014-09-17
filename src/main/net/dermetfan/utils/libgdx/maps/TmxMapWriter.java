@@ -46,6 +46,7 @@ import com.badlogic.gdx.math.Polyline;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Base64Coder;
+import com.badlogic.gdx.utils.FloatArray;
 import com.badlogic.gdx.utils.Pools;
 import com.badlogic.gdx.utils.StringBuilder;
 import com.badlogic.gdx.utils.XmlWriter;
@@ -358,13 +359,23 @@ public class TmxMapWriter extends XmlWriter {
 			attribute("x", objectX).attribute("y", toYDown(objectY));
 			Polygon polygon = ((PolygonMapObject) object).getPolygon();
 			element("polygon");
-			attribute("points", points(GeometryUtils.toYDown(polygon.getVertices())));
+			FloatArray tmp = Pools.obtain(FloatArray.class);
+			tmp.clear();
+			tmp.addAll(polygon.getVertices());
+			attribute("points", points(GeometryUtils.toYDown(tmp)));
+			tmp.clear();
+			Pools.free(tmp);
 			pop();
 		} else if(object instanceof PolylineMapObject) {
 			attribute("x", objectX).attribute("y", toYDown(objectY));
 			Polyline polyline = ((PolylineMapObject) object).getPolyline();
 			element("polyline");
-			attribute("points", points(GeometryUtils.toYDown(polyline.getVertices())));
+			FloatArray tmp = Pools.obtain(FloatArray.class);
+			tmp.clear();
+			tmp.addAll(polyline.getVertices());
+			attribute("points", points(GeometryUtils.toYDown(tmp)));
+			tmp.clear();
+			Pools.free(tmp);
 			pop();
 		}
 
@@ -397,10 +408,10 @@ public class TmxMapWriter extends XmlWriter {
 
 	/** @param vertices the vertices to arrange in TMX format
 	 *  @return a String of the given vertices ready for use in TMX maps */
-	private String points(float[] vertices) {
+	private String points(FloatArray vertices) {
 		StringBuilder points = new StringBuilder();
-		for(int i = 0; i < vertices.length; i++)
-			points.append(round(vertices[i])).append(i % 2 != 0 ? i + 1 < vertices.length ? " " : "" : ",");
+		for(int i = 0; i < vertices.size; i++)
+			points.append(round(vertices.get(i))).append(i % 2 != 0 ? i + 1 < vertices.size ? " " : "" : ",");
 		return points.toString();
 	}
 
@@ -412,7 +423,7 @@ public class TmxMapWriter extends XmlWriter {
 	/** @param y the y coordinate
 	 *  @return the y coordinate converted from a y-up to a y-down coordinate system */
 	public float toYDown(float y) {
-		return GeometryUtils.invertAxis(y, layerHeight);
+		return net.dermetfan.utils.math.GeometryUtils.invertAxis(y, layerHeight);
 	}
 
 	// getters and setters
