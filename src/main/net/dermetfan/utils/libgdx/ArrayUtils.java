@@ -23,6 +23,11 @@ import com.badlogic.gdx.utils.IntArray;
  *  @author dermetfan */
 public abstract class ArrayUtils extends net.dermetfan.utils.ArrayUtils {
 
+	/** @see #wrapIndex(int, Object[]) */
+	public static <T> T wrapIndex(int index, Array<T> array) {
+		return array.get(wrapIndex(index, array.size));
+	}
+
 	/** @param elements the elements to select from
 	 *  @param start the array index of elements at which to start (may be negative)
 	 *  @param everyXth select every xth of elements
@@ -37,10 +42,13 @@ public abstract class ArrayUtils extends net.dermetfan.utils.ArrayUtils {
 				outputLength++;
 		if(output == null)
 			output = new Array<>(outputLength);
-		output.size = outputLength;
+		output.clear();
+		output.ensureCapacity(outputLength - output.size);
 		for(int oi = 0, i = start - 1; oi < outputLength; i += everyXth)
-			if(i >= 0)
-				output.set(oi++, elements.get(i));
+			if(i >= 0) {
+				output.add(elements.get(i));
+				oi++;
+			}
 		return output;
 	}
 
@@ -68,9 +76,10 @@ public abstract class ArrayUtils extends net.dermetfan.utils.ArrayUtils {
 	public static <T> Array<T> select(Array<T> elements, IntArray indices, Array<T> output) {
 		if(output == null)
 			output = new Array<>(indices.size);
-		output.size = indices.size;
+		output.clear();
+		output.ensureCapacity(indices.size - output.size);
 		for(int i = 0; i < indices.size; i++)
-			output.set(i, elements.get(indices.get(i)));
+			output.add(elements.get(indices.get(i)));
 		return output;
 	}
 
@@ -107,11 +116,13 @@ public abstract class ArrayUtils extends net.dermetfan.utils.ArrayUtils {
 
 		if(output == null)
 			output = new Array<>(length);
-		output.size = length;
+		output.clear();
+		output.ensureCapacity(length - output.size);
 
 		rsi = 0;
 		for(int si = 0, ei = 0; si < length;) {
-			output.set(si++, elements.get(ei++));
+			output.add(elements.get(ei++));
+			si++;
 			if(si >= skips.size)
 				if(repeat)
 					ei += repeatSkips.get(rsi >= repeatSkips.size ? rsi = 0 : rsi++);
@@ -146,10 +157,11 @@ public abstract class ArrayUtils extends net.dermetfan.utils.ArrayUtils {
 
 		if(output == null)
 			output = new Array<>(length);
-		output.size = length;
+		output.clear();
+		output.ensureCapacity(length - output.size);
 
 		for(int si = 0, ei = firstSkip; si < length; si++, ei += skips + 1)
-			output.set(si, elements.get(ei));
+			output.add(elements.get(ei));
 
 		return output;
 	}
@@ -162,6 +174,11 @@ public abstract class ArrayUtils extends net.dermetfan.utils.ArrayUtils {
 	// primitive copies (probably get some generation tool)
 
 	// int
+
+	/** @see #wrapIndex(int, int[]) */
+	public static int wrapIndex(int index, IntArray array) {
+		return array.get(wrapIndex(index, array.size));
+	}
 
 	/** @param elements the elements to select from
 	 *  @param start the array index of elements at which to start (may be negative)
@@ -176,24 +193,27 @@ public abstract class ArrayUtils extends net.dermetfan.utils.ArrayUtils {
 				outputLength++;
 		if(output == null)
 			output = new IntArray(outputLength);
-		output.size = outputLength;
+		output.clear();
+		output.ensureCapacity(outputLength - output.size);
 		for(int oi = 0, i = start - 1; oi < outputLength; i += everyXth)
-			if(i >= 0)
-				output.set(oi++, elements.get(i));
+			if(i >= 0) {
+				output.add(elements.get(i));
+				oi++;
+			}
 		return output;
 	}
 
-	/** @see #select(IntArray, int, int, IntArray) */
+	/** @see #select(Array, int, int, Array) */
 	public static IntArray select(IntArray elements, int everyXth, IntArray output) {
 		return select(elements, 0, everyXth, output);
 	}
 
-	/** @see #select(IntArray, int, int, IntArray) */
+	/** @see #select(Array, int, int, Array) */
 	public static IntArray select(IntArray elements, int start, int everyXth) {
 		return select(elements, start, everyXth, null);
 	}
 
-	/** @see #select(IntArray, int, IntArray) */
+	/** @see #select(Array, int, Array) */
 	public static IntArray select(IntArray elements, int everyXth) {
 		return select(elements, everyXth, null);
 	}
@@ -206,12 +226,14 @@ public abstract class ArrayUtils extends net.dermetfan.utils.ArrayUtils {
 	public static IntArray select(IntArray elements, IntArray indices, IntArray output) {
 		if(output == null)
 			output = new IntArray(indices.size);
+		output.clear();
+		output.ensureCapacity(indices.size - output.size);
 		for(int i = 0; i < indices.size; i++)
 			output.add(elements.get(indices.get(i)));
 		return output;
 	}
 
-	/** @see #select(IntArray, IntArray, IntArray) */
+	/** @see #select(Array, IntArray, Array) */
 	public static IntArray select(IntArray elements, IntArray indices) {
 		return select(elements, indices, null);
 	}
@@ -243,11 +265,13 @@ public abstract class ArrayUtils extends net.dermetfan.utils.ArrayUtils {
 
 		if(output == null)
 			output = new IntArray(length);
-		output.size = length;
+		output.clear();
+		output.ensureCapacity(length - output.size);
 
 		rsi = 0;
 		for(int si = 0, ei = 0; si < length;) {
-			output.set(si++, elements.get(ei++));
+			output.add(elements.get(ei++));
+			si++;
 			if(si >= skips.size)
 				if(repeat)
 					ei += repeatSkips.get(rsi >= repeatSkips.size ? rsi = 0 : rsi++);
@@ -260,7 +284,7 @@ public abstract class ArrayUtils extends net.dermetfan.utils.ArrayUtils {
 		return output;
 	}
 
-	/** @see #skipselect(IntArray, IntArray, IntArray, IntArray) */
+	/** @see #skipselect(Array, IntArray, IntArray, Array) */
 	public static IntArray skipselect(IntArray elements, IntArray skips, IntArray repeatSkips) {
 		return skipselect(elements, skips, repeatSkips, null);
 	}
@@ -281,6 +305,8 @@ public abstract class ArrayUtils extends net.dermetfan.utils.ArrayUtils {
 
 		if(output == null)
 			output = new IntArray(length);
+		output.clear();
+		output.ensureCapacity(length - output.size);
 
 		for(int si = 0, ei = firstSkip; si < length; si++, ei += skips + 1)
 			output.add(elements.get(ei));
@@ -288,12 +314,17 @@ public abstract class ArrayUtils extends net.dermetfan.utils.ArrayUtils {
 		return output;
 	}
 
-	/** @see #skipselect(IntArray, int, int, IntArray) */
+	/** @see #skipselect(Array, int, int, Array) */
 	public static IntArray skipselect(IntArray elements, int firstSkip, int skips) {
 		return skipselect(elements, firstSkip, skips, null);
 	}
 
 	// float
+
+	/** @see #wrapIndex(int, float[]) */
+	public static float wrapIndex(int index, FloatArray array) {
+		return array.get(wrapIndex(index, array.size));
+	}
 
 	/** @param elements the elements to select from
 	 *  @param start the array index of elements at which to start (may be negative)
@@ -309,24 +340,26 @@ public abstract class ArrayUtils extends net.dermetfan.utils.ArrayUtils {
 		if(output == null)
 			output = new FloatArray(outputLength);
 		output.clear();
-		output.ensureCapacity(outputLength);
-		for(int i = start - 1; i < elements.size; i += everyXth)
-			if(i >= 0)
+		output.ensureCapacity(outputLength - output.size);
+		for(int oi = 0, i = start - 1; oi < outputLength; i += everyXth)
+			if(i >= 0) {
 				output.add(elements.get(i));
+				oi++;
+			}
 		return output;
 	}
 
-	/** @see #select(FloatArray, int, int, FloatArray) */
+	/** @see #select(Array, int, int, Array) */
 	public static FloatArray select(FloatArray elements, int everyXth, FloatArray output) {
 		return select(elements, 0, everyXth, output);
 	}
 
-	/** @see #select(FloatArray, int, int, FloatArray) */
+	/** @see #select(Array, int, int, Array) */
 	public static FloatArray select(FloatArray elements, int start, int everyXth) {
 		return select(elements, start, everyXth, null);
 	}
 
-	/** @see #select(FloatArray, int, FloatArray) */
+	/** @see #select(Array, int, Array) */
 	public static FloatArray select(FloatArray elements, int everyXth) {
 		return select(elements, everyXth, null);
 	}
@@ -339,6 +372,8 @@ public abstract class ArrayUtils extends net.dermetfan.utils.ArrayUtils {
 	public static FloatArray select(FloatArray elements, IntArray indices, FloatArray output) {
 		if(output == null)
 			output = new FloatArray(indices.size);
+		output.clear();
+		output.ensureCapacity(indices.size - output.size);
 		for(int i = 0; i < indices.size; i++)
 			output.add(elements.get(indices.get(i)));
 		return output;
@@ -376,11 +411,13 @@ public abstract class ArrayUtils extends net.dermetfan.utils.ArrayUtils {
 
 		if(output == null)
 			output = new FloatArray(length);
-		output.size = length;
+		output.clear();
+		output.ensureCapacity(length - output.size);
 
 		rsi = 0;
 		for(int si = 0, ei = 0; si < length;) {
-			output.set(si++, elements.get(ei++));
+			output.add(elements.get(ei++));
+			si++;
 			if(si >= skips.size)
 				if(repeat)
 					ei += repeatSkips.get(rsi >= repeatSkips.size ? rsi = 0 : rsi++);
@@ -393,7 +430,7 @@ public abstract class ArrayUtils extends net.dermetfan.utils.ArrayUtils {
 		return output;
 	}
 
-	/** @see #skipselect(FloatArray, IntArray, IntArray, FloatArray) */
+	/** @see #skipselect(Array, IntArray, IntArray, Array) */
 	public static FloatArray skipselect(FloatArray elements, IntArray skips, IntArray repeatSkips) {
 		return skipselect(elements, skips, repeatSkips, null);
 	}
@@ -414,6 +451,8 @@ public abstract class ArrayUtils extends net.dermetfan.utils.ArrayUtils {
 
 		if(output == null)
 			output = new FloatArray(length);
+		output.clear();
+		output.ensureCapacity(length - output.size);
 
 		for(int si = 0, ei = firstSkip; si < length; si++, ei += skips + 1)
 			output.add(elements.get(ei));

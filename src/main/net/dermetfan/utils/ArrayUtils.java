@@ -1,8 +1,5 @@
 package net.dermetfan.utils;
 
-import com.badlogic.gdx.utils.Array;
-import com.badlogic.gdx.utils.FloatArray;
-import com.badlogic.gdx.utils.IntArray;
 import net.dermetfan.utils.math.Noise;
 
 /** array utility methods
@@ -17,28 +14,13 @@ public abstract class ArrayUtils {
 	}
 
 	/** @see #wrapIndex(int, Object[]) */
-	public static <T> T wrapIndex(int index, Array<T> array) {
-		return array.get(wrapIndex(index, array.size));
-	}
-
-	/** @see #wrapIndex(int, Object[]) */
 	public static int wrapIndex(int index, int[] array) {
 		return array[wrapIndex(index, array.length)];
-	}
-
-	/** @see #wrapIndex(int, int[]) */
-	public static int wrapIndex(int index, IntArray array) {
-		return array.get(wrapIndex(index, array.size));
 	}
 
 	/** @see #wrapIndex(int, Object[]) */
 	public static float wrapIndex(int index, float[] array) {
 		return array[wrapIndex(index, array.length)];
-	}
-
-	/** @see #wrapIndex(int, float[]) */
-	public static float wrapIndex(int index, FloatArray array) {
-		return array.get(wrapIndex(index, array.size));
 	}
 
 	/** Wraps the given index around the given length (of an array). For example for a length of 10:<br>
