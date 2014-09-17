@@ -854,7 +854,7 @@ public abstract class Box2DUtils {
 
 			if(checkPreconditions) {
 				if(aVertices.size >= 3 && aVertices.size <= maxPolygonVertices && bVertices.size >= 3 && bVertices.size <= maxPolygonVertices) {
-					FloatArray aVerticesFloatArray = GeometryUtils.toFloatArray(aVertices), bVerticesFloatArray = GeometryUtils.toFloatArray(bVertices);
+					FloatArray aVerticesFloatArray = GeometryUtils.toFloatArray(aVertices, new FloatArray(aVertices.size * 2)), bVerticesFloatArray = GeometryUtils.toFloatArray(bVertices, new FloatArray(bVertices.size * 2));
 					if(GeometryUtils.polygonArea(aVerticesFloatArray) > minExclusivePolygonArea && GeometryUtils.polygonArea(bVerticesFloatArray) > minExclusivePolygonArea) {
 						PolygonShape sa = new PolygonShape(), sb = new PolygonShape();
 						sa.set(aVerticesFloatArray.toArray());
