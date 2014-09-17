@@ -29,18 +29,19 @@ import com.badlogic.gdx.physics.box2d.Shape;
 import com.badlogic.gdx.physics.box2d.Shape.Type;
 import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.utils.Array;
+import com.badlogic.gdx.utils.FloatArray;
 import com.badlogic.gdx.utils.ObjectMap;
 import com.badlogic.gdx.utils.Pools;
-import net.dermetfan.utils.ArrayUtils;
 import net.dermetfan.utils.Pair;
+import net.dermetfan.utils.libgdx.ArrayUtils;
 import net.dermetfan.utils.libgdx.math.GeometryUtils;
-import net.dermetfan.utils.math.MathUtils;
+import net.dermetfan.utils.libgdx.math.MathUtils;
 
+import static net.dermetfan.utils.libgdx.math.MathUtils.amplitude;
+import static net.dermetfan.utils.libgdx.math.MathUtils.max;
+import static net.dermetfan.utils.libgdx.math.MathUtils.min;
 import static net.dermetfan.utils.libgdx.math.GeometryUtils.filterX;
 import static net.dermetfan.utils.libgdx.math.GeometryUtils.filterY;
-import static net.dermetfan.utils.math.MathUtils.amplitude;
-import static net.dermetfan.utils.math.MathUtils.max;
-import static net.dermetfan.utils.math.MathUtils.min;
 
 /** provides methods for operations with Box2D {@link Body Bodies}, {@link Fixture Fixtures} and {@link Shape Shapes}
  *  @author dermetfan */
@@ -108,6 +109,9 @@ public abstract class Box2DUtils {
 	/** for internal, temporary usage */
 	private static final Vector2 vec2_0 = new Vector2(), vec2_1 = new Vector2();
 
+	/** for internal, temporary usage */
+	private static final Array<Vector2> tmpVector2Array = new Array<>(8);
+
 	/** @param shape the Shape to create a new {@link ShapeCache} for that will be added to {@link #cache} */
 	public static ShapeCache cache(Shape shape) {
 		if(cache.containsKey(shape))
@@ -168,42 +172,54 @@ public abstract class Box2DUtils {
 	private static float minX0(Shape shape) {
 		if(shape instanceof CircleShape)
 			return ((CircleShape) shape).getPosition().x - shape.getRadius();
-		return min(filterX(vertices0(shape)));
+		tmpVector2Array.clear();
+		tmpVector2Array.addAll(vertices0(shape));
+		return min(filterX(tmpVector2Array));
 	}
 
 	/** @return the minimal y of the vertices of the given Shape */
 	private static float minY0(Shape shape) {
 		if(shape instanceof CircleShape)
 			return ((CircleShape) shape).getPosition().y - shape.getRadius();
-		return min(filterY(vertices0(shape)));
+		tmpVector2Array.clear();
+		tmpVector2Array.addAll(vertices0(shape));
+		return min(filterY(tmpVector2Array));
 	}
 
 	/** @return the maximal x of the vertices of the given Shape */
 	private static float maxX0(Shape shape) {
 		if(shape instanceof CircleShape)
 			return ((CircleShape) shape).getPosition().x + shape.getRadius();
-		return max(filterX(vertices0(shape)));
+		tmpVector2Array.clear();
+		tmpVector2Array.addAll(vertices0(shape));
+		return max(filterX(tmpVector2Array));
 	}
 
 	/** @return the maximal y of the vertices of the given Shape */
 	private static float maxY0(Shape shape) {
 		if(shape instanceof CircleShape)
 			return ((CircleShape) shape).getPosition().y + shape.getRadius();
-		return max(filterY(vertices0(shape)));
+		tmpVector2Array.clear();
+		tmpVector2Array.addAll(vertices0(shape));
+		return max(filterY(tmpVector2Array));
 	}
 
 	/** @return the width of the given Shape */
 	private static float width0(Shape shape) {
 		if(shape.getType() == Type.Circle)
 			return shape.getRadius() * 2;
-		return amplitude(filterX(vertices0(shape)));
+		tmpVector2Array.clear();
+		tmpVector2Array.addAll(vertices0(shape));
+		return amplitude(filterX(tmpVector2Array));
 	}
 
 	/** @return the height of the given Shape */
 	private static float height0(Shape shape) {
 		if(shape.getType() == Type.Circle)
 			return shape.getRadius() * 2;
-		return amplitude(filterY(vertices0(shape)));
+		tmpVector2Array.clear();
+		tmpVector2Array.addAll(vertices0(shape));
+		return amplitude(filterY(tmpVector2Array));
 	}
 
 	/** @return a Vector2 representing the size of the given Shape */
@@ -489,8 +505,7 @@ public abstract class Box2DUtils {
 			circleClone.setPosition(((CircleShape) shape).getPosition());
 			break;
 		case Polygon:
-			PolygonShape polyClone = (PolygonShape) (clone = (T) new PolygonShape()),
-			poly = (PolygonShape) shape;
+			PolygonShape polyClone = (PolygonShape) (clone = (T) new PolygonShape()), poly = (PolygonShape) shape;
 			float[] vertices = new float[poly.getVertexCount()];
 			for(int i = 0; i < vertices.length; i++) {
 				poly.getVertex(i, vec2_0);
@@ -500,15 +515,13 @@ public abstract class Box2DUtils {
 			polyClone.set(vertices);
 			break;
 		case Edge:
-			EdgeShape edgeClone = (EdgeShape) (clone = (T) new EdgeShape()),
-			edge = (EdgeShape) shape;
+			EdgeShape edgeClone = (EdgeShape) (clone = (T) new EdgeShape()), edge = (EdgeShape) shape;
 			edge.getVertex1(vec2_0);
 			edge.getVertex2(vec2_1);
 			edgeClone.set(vec2_0, vec2_1);
 			break;
 		case Chain:
-			ChainShape chainClone = (ChainShape) (clone = (T) new ChainShape()),
-			chain = (ChainShape) shape;
+			ChainShape chainClone = (ChainShape) (clone = (T) new ChainShape()), chain = (ChainShape) shape;
 			vertices = new float[chain.getVertexCount()];
 			for(int i = 0; i < vertices.length; i++) {
 				chain.getVertex(i, vec2_0);
@@ -516,7 +529,7 @@ public abstract class Box2DUtils {
 				vertices[i] = vec2_0.y;
 			}
 			if(chain.isLooped())
-				chainClone.createLoop(GeometryUtils.toVector2Array(vertices));
+				chainClone.createLoop(vertices);
 			else
 				chainClone.createChain(vertices);
 			break;
@@ -811,7 +824,9 @@ public abstract class Box2DUtils {
 			aVertices.add(bb);
 			GeometryUtils.arrangeClockwise(aVertices);
 
-			if(GeometryUtils.intersectSegments(a, b, GeometryUtils.toFloatArray(vertices), aVertices.first(), aVertices.peek()) < 2) {
+			tmpVector2Array.clear();
+			tmpVector2Array.addAll(vertices);
+			if(GeometryUtils.intersectSegments(a, b, GeometryUtils.toFloatArray(tmpVector2Array), aVertices.first(), aVertices.peek()) < 2) {
 				Pools.free(aa);
 				Pools.free(bb);
 				Pools.free(aVertices);
@@ -837,22 +852,20 @@ public abstract class Box2DUtils {
 			GeometryUtils.arrangeClockwise(aVertices);
 			GeometryUtils.arrangeClockwise(bVertices);
 
-			Vector2[] aVerticesArray = aVertices.toArray(Vector2.class), bVerticesArray = bVertices.toArray(Vector2.class);
-
 			if(checkPreconditions) {
 				if(aVertices.size >= 3 && aVertices.size <= maxPolygonVertices && bVertices.size >= 3 && bVertices.size <= maxPolygonVertices) {
-					float[] aVerticesFloatArray = GeometryUtils.toFloatArray(aVerticesArray), bVerticesFloatArray = GeometryUtils.toFloatArray(bVerticesArray);
-					if(GeometryUtils.area(aVerticesFloatArray) > minExclusivePolygonArea && GeometryUtils.area(bVerticesFloatArray) > minExclusivePolygonArea) {
+					FloatArray aVerticesFloatArray = GeometryUtils.toFloatArray(aVertices), bVerticesFloatArray = GeometryUtils.toFloatArray(bVertices);
+					if(GeometryUtils.polygonArea(aVerticesFloatArray) > minExclusivePolygonArea && GeometryUtils.polygonArea(bVerticesFloatArray) > minExclusivePolygonArea) {
 						PolygonShape sa = new PolygonShape(), sb = new PolygonShape();
-						sa.set(aVerticesFloatArray);
-						sb.set(bVerticesFloatArray);
+						sa.set(aVerticesFloatArray.toArray());
+						sb.set(bVerticesFloatArray.toArray());
 						store.set((T) sa, (T) sb);
 					}
 				}
 			} else {
 				PolygonShape sa = new PolygonShape(), sb = new PolygonShape();
-				sa.set(aVerticesArray);
-				sb.set(bVerticesArray);
+				sa.set((Vector2[]) aVertices.toArray(Vector2.class));
+				sb.set((Vector2[]) bVertices.toArray(Vector2.class));
 				store.set((T) sa, (T) sb);
 			}
 		} else if(type == Type.Chain) {
@@ -911,7 +924,7 @@ public abstract class Box2DUtils {
 	 *  @param body the body which fixtures to destroy */
 	public static void destroyFixtures(Body body, Array<Fixture> exclude) {
 		Array<Fixture> fixtures = body.getFixtureList();
-		for(int preserved = 0; preserved < fixtures.size;) {
+		for(int preserved = 0; preserved < fixtures.size; ) {
 			Fixture fixture = fixtures.get(fixtures.size - 1 - preserved);
 			if(!exclude.contains(fixture, true))
 				body.destroyFixture(fixture);
@@ -923,7 +936,7 @@ public abstract class Box2DUtils {
 	/** @see #destroyFixtures(Body, Array) */
 	public static void destroyFixtures(Body body, Fixture... exclude) {
 		Array<Fixture> fixtures = body.getFixtureList();
-		for(int preserved = 0; preserved < fixtures.size;) {
+		for(int preserved = 0; preserved < fixtures.size; ) {
 			Fixture fixture = fixtures.get(fixtures.size - 1 - preserved);
 			if(!ArrayUtils.contains(exclude, fixture, true))
 				body.destroyFixture(fixture);
@@ -935,7 +948,7 @@ public abstract class Box2DUtils {
 	/** @see #destroyFixtures(Body, Array) */
 	public static void destroyFixtures(Body body, Fixture exclude) {
 		Array<Fixture> fixtures = body.getFixtureList();
-		for(int preserved = 0; preserved < fixtures.size;) {
+		for(int preserved = 0; preserved < fixtures.size; ) {
 			Fixture fixture = fixtures.get(fixtures.size - 1 - preserved);
 			if(fixture != exclude)
 				body.destroyFixture(fixture);

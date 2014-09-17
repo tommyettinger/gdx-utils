@@ -14,9 +14,8 @@
 
 package net.dermetfan.utils.libgdx;
 
-import net.dermetfan.utils.math.MathUtils;
-
 import com.badlogic.gdx.math.Interpolation;
+import net.dermetfan.utils.math.MathUtils;
 
 /** Interpolates the {@code endIndex} of a {@link CharSequence#subSequence(int, int) subSequence} of a {@code CharSequence} by {@link #time} and {@link #charsPerSecond}.
  *  @author dermetfan */
@@ -55,7 +54,7 @@ public class CharSequenceInterpolator {
 	 *  @param interpolation the {@code Interpolation} to use
 	 *  @return a {@link CharSequence#subSequence(int, int) subsequence} representing the given {@code seq} from {@code beginIndex} to {@code endIndex} with its {@link CharSequence#length() length} interpolated using the given {@code interpolation} */
 	public static CharSequence interpolate(CharSequence seq, float time, float charsPerSecond, int beginIndex, int endIndex, Interpolation interpolation) {
-		return seq.subSequence(beginIndex, (int) MathUtils.clamp(MathUtils.replaceNaN(interpolation.apply(beginIndex, endIndex, linear(time, charsPerSecond, endIndex - beginIndex)), 0), beginIndex, endIndex));
+		return seq.subSequence(beginIndex, (int) com.badlogic.gdx.math.MathUtils.clamp(MathUtils.replaceNaN(interpolation.apply(beginIndex, endIndex, linear(time, charsPerSecond, endIndex - beginIndex)), 0), beginIndex, endIndex));
 	}
 
 	/** the {@link Interpolation} to use */

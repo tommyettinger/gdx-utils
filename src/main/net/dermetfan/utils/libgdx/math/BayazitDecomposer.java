@@ -1,10 +1,9 @@
 package net.dermetfan.utils.libgdx.math;
 
-import static net.dermetfan.utils.libgdx.math.GeometryUtils.areVerticesClockwise;
-import static net.dermetfan.utils.libgdx.math.GeometryUtils.toFloatArray;
-
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Array;
+
+import static net.dermetfan.utils.libgdx.math.GeometryUtils.areVerticesClockwise;
 
 /** Taken from <a href="http://code.google.com/p/box2d-editor/source/browse/editor/src/aurelienribon/bodyeditor/maths/earclipping/bayazit/BayazitDecomposer.java">Aurelien Ribon's Physics Body Editor</a><br>
  *  <br>
@@ -40,7 +39,7 @@ public abstract class BayazitDecomposer {
 	public static Array<Array<Vector2>> convexPartition(Array<Vector2> vertices) {
 		// We force it to CCW as it is a precondition in this algorithm.
 		// vertices.ForceCounterClockWise();
-		if(areVerticesClockwise(toFloatArray((Vector2[]) vertices.toArray(Vector2.class))))
+		if(areVerticesClockwise(vertices))
 			vertices.reverse();
 		Array<Array<Vector2>> list = new Array<>();
 		float d, lowerDist, upperDist;

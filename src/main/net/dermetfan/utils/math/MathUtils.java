@@ -16,7 +16,7 @@ package net.dermetfan.utils.math;
 
 /** math utility methods
  *  @author dermetfan */
-public class MathUtils {
+public abstract class MathUtils {
 
 	/** @param n the number which cross sum to calculate
 	 *  @return the cross sum (sum of a number's digits) */
@@ -122,105 +122,172 @@ public class MathUtils {
 		return baseline * 2 - value;
 	}
 
-	/** @return value, min or max */
-	public static float clamp(float value, float min, float max) {
-		return value < min ? min : value > max ? max : value;
-	}
-
-	/** @return the given array clamped to min and max */
-	public static float[] clamp(float[] values, float min, float max) {
-		for(int i = 0; i < values.length; i++)
-			values[i] = clamp(values[i], min, max);
-		return values;
-	}
-
 	/** @return {@code replacement} if {@code value} is NaN */
 	public static float replaceNaN(float value, float replacement) {
 		return Float.isNaN(value) ? replacement : value;
 	}
 
+	/** @param sum the sum at which to return the element
+	 *  @param values the values to add together to calculate {@code sum}
+	 *  @param elements the elements from which to return one when {@code sum} is reached
+	 *  @return the element from {@code elements} when {@code sum} was reached by adding the given {@code values} together */
+	public static <T> T elementAtSum(float sum, float[] values, T[] elements, int valuesOffset, int valuesLength, int elementsOffset, int elementsLength) {
+		float total = 0;
+		for(int i = valuesOffset; i < valuesOffset + valuesLength; i++)
+			if((total += values[i]) >= sum)
+				return elements[elementsOffset + i - valuesOffset];
+		return total <= 0 ? elements[elementsOffset] : elements[elementsOffset + elementsLength - 1];
+	}
+
+	/** @see #elementAtSum(float, float[], Object[], int, int, int, int) */
+	public static <T> T elementAtSum(float sum, float[] values, T[] elements) {
+		return elementAtSum(sum, values, elements, 0, values.length, 0, elements.length);
+	}
+
+	/** @return the given array clamped to min and max */
+	public static float[] clamp(float[] items, float min, float max, int offset, int length) {
+		for(int i = offset; i < offset + length; i++)
+			items[i]= com.badlogic.gdx.math.MathUtils.clamp(items[i], min, max);
+		return items;
+	}
+
+	/** @see #clamp(float[], float, float, int, int) */
+	public static float[] clamp(float[] items, float min, float max) {
+		return clamp(items, min, max, 0, items.length);
+	}
+
 	/** @return the given values with each element being the {@link Math#abs(float) absolute} of its value */
-	public static float[] abs(float[] values) {
-		for(int i = 0; i < values.length; i++)
-			values[i] = Math.abs(values[i]);
-		return values;
+	public static float[] abs(float[] items, int offset, int length) {
+		for(int i = offset; i < offset + length; i++)
+			items[i] = Math.abs(items[i]);
+		return items;
 	}
 
-	/** @return the given values with each element multiplied with the given factor */
-	public static float[] mul(float[] values, float factor) {
-		for(int i = 0; i < values.length; i++)
-			values[i] *= factor;
-		return values;
-	}
-
-	/** @return the given values with each element divided by the given divisor */
-	public static float[] div(float[] values, float divisor) {
-		return mul(values, 1 / divisor);
+	/** @see #abs(float[], int, int) */
+	public static float[] abs(float[] items) {
+		return abs(items, 0, items.length);
 	}
 
 	/** @return the given values with the given value added to each element */
-	public static float[] add(float[] values, float value) {
-		for(int i = 0; i < values.length; i++)
-			values[i] += value;
-		return values;
+	public static float[] add(float[] items, float value, int offset, int length) {
+		for(int i = offset; i < offset + length; i++)
+			items[i] += value;
+		return items;
+	}
+
+	/** @see #add(float[], float, int, int) */
+	public static float[] add(float[] items, float value) {
+		return add(items, value, 0, items.length);
 	}
 
 	/** @return the given values with the given value subtracted from each element */
-	public static float[] sub(float[] values, float value) {
-		return add(values, -value);
+	public static float[] sub(float[] items, float value, int offset, int length) {
+		return add(items, -value, offset, length);
+	}
+
+	/** @see #sub(float[], float, int, int) */
+	public static float[] sub(float[] items, float value) {
+		return sub(items, value, 0, items.length);
+	}
+
+	/** @return the given values with each element multiplied with the given factor */
+	public static float[] mul(float[] items, float factor, int offset, int length) {
+		for(int i = offset; i < offset + length; i++)
+			items[i] *= factor;
+		return items;
+	}
+
+	/** @see #mul(float[], float, int, int) */
+	public static float[] mul(float[] items, float factor) {
+		return mul(items, factor, 0, items.length);
+	}
+
+	/** @return the given values with each element divided by the given divisor */
+	public static float[] div(float[] items, float divisor, int offset, int length) {
+		return mul(items, 1 / divisor, offset, length);
+	}
+
+	/** @see #div(float[], float, int, int) */
+	public static float[] div(float[] items, float divisor) {
+		return div(items, divisor, 0, items.length);
 	}
 
 	/** @return the sum of all values in the given array */
-	public static float sum(float[] values) {
+	public static float sum(float[] items, int offset, int length) {
 		float sum = 0;
-		for(float v : values)
-			sum += v;
+		for(int i = offset; i < offset + length; i++)
+			sum += items[i];
 		return sum;
 	}
 
+	/** @see #sum(float[], int, int) */
+	public static float sum(float[] items) {
+		return sum(items, 0, items.length);
+	}
+
 	/** @return the peak-to-peak amplitude of the given array */
-	public static float amplitude(float[] f) {
-		return Math.abs(max(f) - min(f));
+	public static float amplitude(float[] items, int offset, int length) {
+		return max(items, offset, length) - min(items, offset, length);
+	}
+
+	/** @see #amplitude(float[], int, int) */
+	public static float amplitude(float[] items) {
+		return amplitude(items, 0, items.length);
 	}
 
 	/** @return the largest element of the given array */
-	public static float max(float[] floats) {
+	public static float max(float[] items, int offset, int length) {
 		float max = Float.NEGATIVE_INFINITY;
-		for(float f : floats)
+		for(int i = offset; i < offset + length; i++) {
+			float f = items[i];
 			if(f > max)
 				max = f;
+		}
 		return max;
 	}
 
+	/** @see #max(float[], int, int) */
+	public static float max(float[] items) {
+		return max(items, 0, items.length);
+	}
+
 	/** @return the smallest element of the given array */
-	public static float min(float[] floats) {
+	public static float min(float[] items, int offset, int length) {
 		float min = Float.POSITIVE_INFINITY;
-		for(float f : floats)
+		for(int i = offset; i < offset + length; i++) {
+			float f = items[i];
 			if(f < min)
 				min = f;
+		}
 		return min;
 	}
 
+	/** @see #min(float[], int, int) */
+	public static float min(float[] items) {
+		return min(items, 0, items.length);
+	}
+
 	/** @param value the desired value
-	 *  @param values the values to inspect
+	 *  @param items the values to inspect
 	 *  @param range values out of this range will not be returned
 	 *  @return the nearest to value in values, {@code NaN} if none is found */
-	public static float nearest(float value, float[] values, float range) {
+	public static float nearest(float value, float[] items, float range, int offset, int length) {
 		float diff, smallestDiff = Float.POSITIVE_INFINITY, nearest = Float.NaN;
 
 		if(value == Float.POSITIVE_INFINITY) {
-			float max = max(values);
+			float max = max(items, offset, length);
 			if(max - range <= value)
 				return max;
 			return nearest;
 		} else if(value == Float.NEGATIVE_INFINITY) {
-			float min = min(values);
+			float min = min(items, offset, length);
 			if(min + range >= value)
 				return min;
 			return nearest;
 		}
 
-		for(float candidate : values) {
+		for(int i = offset; i < offset + length; i++) {
+			float candidate = items[i];
 			if(candidate == value)
 				return value;
 			if((diff = Math.abs(candidate - value)) < smallestDiff)
@@ -231,39 +298,42 @@ public class MathUtils {
 		return nearest;
 	}
 
+	/** @see #nearest(float, float[], float, int, int) */
+	public static float nearest(float value, float[] items, float range) {
+		return nearest(value, items, range, 0, items.length);
+	}
+
 	/** @return the nearest to value in values
-	 *  @see #nearest(float, float[], float) */
-	public static float nearest(float value, float[] values) {
-		return nearest(value, values, Float.POSITIVE_INFINITY);
+	 *  @see #nearest(float, float[], float, int, int) */
+	public static float nearest(float value, float[] items, int offset, int length) {
+		return nearest(value, items, Float.POSITIVE_INFINITY, offset, length);
+	}
+
+	/** @see #nearest(float, float[], int, int) */
+	public static float nearest(float value, float[] items) {
+		return nearest(value, items, 0, items.length);
 	}
 
 	/** scales the given float array to have the given min and max values
-	 *  @param values the values to scale
+	 *  @param items the values to scale
 	 *  @param min the desired minimal value in the array
 	 *  @param max the desired maximal value in the array
 	 *  @return the scaled array */
-	public static float[] scale(float[] values, float min, float max) {
-		float tmp = amplitude(values) / (max - min);
-		for(int i = 0; i < values.length; i++)
-			values[i] /= tmp;
+	public static float[] scale(float[] items, float min, float max, int offset, int length) {
+		float tmp = amplitude(items, offset, length) / (max - min);
+		for(int i = offset; i < offset + length; i++)
+			items[i] /= tmp;
 
-		tmp = min - min(values);
-		for(int i = 0; i < values.length; i++)
-			values[i] += tmp;
+		tmp = min - min(items, offset, length);
+		for(int i = offset; i < offset + length; i++)
+			items[i] += tmp;
 
-		return values;
+		return items;
 	}
 
-	/** @param sum the sum at which to return the element
-	 *  @param values the values to add together to calculate {@code sum}
-	 *  @param elements the elements from which to return one when {@code sum} is reached
-	 *  @return the element from {@code elements} when {@code sum} was reached by adding the given {@code values} together */
-	public static <T> T elementAtSum(float sum, float[] values, T[] elements) {
-		float total = 0;
-		for(int i = 0; i < values.length; i++)
-			if((total += values[i]) >= sum)
-				return elements[i];
-		return total <= 0 ? elements[0] : elements[elements.length - 1];
+	/** @see #scale(float[], float, float, int, int) */
+	public static float[] scale(float[] items, float min, float max) {
+		return scale(items, min, max, 0, items.length);
 	}
 
 }
