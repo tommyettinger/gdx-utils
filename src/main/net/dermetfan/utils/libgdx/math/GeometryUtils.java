@@ -30,7 +30,7 @@ import com.badlogic.gdx.utils.Pools;
 import com.badlogic.gdx.utils.ShortArray;
 import net.dermetfan.utils.libgdx.ArrayUtils;
 
-import static net.dermetfan.utils.ArrayUtils.wrapIndex;
+import static net.dermetfan.utils.libgdx.ArrayUtils.wrapIndex;
 import static net.dermetfan.utils.libgdx.math.MathUtils.amplitude;
 import static net.dermetfan.utils.libgdx.math.MathUtils.max;
 import static net.dermetfan.utils.libgdx.math.MathUtils.min;
@@ -204,9 +204,9 @@ public abstract class GeometryUtils extends net.dermetfan.utils.math.GeometryUti
 	public static FloatArray filterY(Array<Vector2> vertices, FloatArray output) {
 		if(output == null)
 			output = new FloatArray(vertices.size);
-		output.size = vertices.size;
-		for(int i = 0; i < output.size; i++)
-			output.set(i, vertices.get(i).y);
+		output.clear();
+		for(int i = 0; i < vertices.size; i++)
+			output.add(vertices.get(i).y);
 		return output;
 	}
 
@@ -346,13 +346,13 @@ public abstract class GeometryUtils extends net.dermetfan.utils.math.GeometryUti
 	public static FloatArray toFloatArray(Array<Vector2> vector2s, FloatArray output) {
 		if(output == null)
 			output = new FloatArray(vector2s.size * 2);
-		output.size = vector2s.size * 2;
+		output.clear();
 
-		for(int i = 0, vi = -1; i < output.size; i++)
+		for(int i = 0, vi = -1; i < vector2s.size * 2; i++)
 			if(i % 2 == 0)
-				output.set(i, vector2s.get(++vi).x);
+				output.add(vector2s.get(++vi).x);
 			else
-				output.set(i, vector2s.get(vi).y);
+				output.add(vector2s.get(vi).y);
 
 		return output;
 	}
@@ -370,10 +370,10 @@ public abstract class GeometryUtils extends net.dermetfan.utils.math.GeometryUti
 
 		if(output == null)
 			output = new Array<>(floats.size / 2);
-		output.size = floats.size / 2;
+		output.clear();
 
-		for(int i = 0, fi = -1; i < output.size; i++)
-			output.set(i, new Vector2(floats.get(++fi), floats.get(++fi)));
+		for(int i = 0, fi = -1; i < floats.size / 2; i++)
+			output.add(new Vector2(floats.get(++fi), floats.get(++fi)));
 
 		return output;
 	}
@@ -406,9 +406,8 @@ public abstract class GeometryUtils extends net.dermetfan.utils.math.GeometryUti
 		for(int i = 0, vertice = -1; i < polygons.length; i++) {
 			tmpVector2Array.clear();
 			tmpVector2Array.ensureCapacity(vertexCounts.get(i));
-			tmpVector2Array.size = vertexCounts.get(i);
-			for(int i2 = 0; i2 < tmpVector2Array.size; i2++)
-				tmpVector2Array.set(i2, vertices.get(++vertice));
+			for(int i2 = 0; i2 < vertexCounts.get(i); i2++)
+				tmpVector2Array.add(vertices.get(++vertice));
 			polygons[i] = new Polygon(toFloatArray(tmpVector2Array).toArray());
 		}
 
@@ -456,11 +455,12 @@ public abstract class GeometryUtils extends net.dermetfan.utils.math.GeometryUti
 
 		if(tmpVector2Array == null)
 			tmpVector2Array = new Array<>(vertices.size);
+		tmpVector2Array.clear();
 		tmpVector2Array.addAll(vertices);
 		tmpVector2Array.sort(arrangeClockwiseComparator);
 
-		tmpVector2Array.set(0, vertices.get(0));
-		Vector2 C = vertices.get(0);
+		tmpVector2Array.set(0, vertices.first());
+		Vector2 C = vertices.first();
 		Vector2 D = vertices.get(n - 1);
 
 		float det;
