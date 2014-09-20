@@ -306,7 +306,7 @@ public abstract class GeometryUtils extends net.dermetfan.utils.math.GeometryUti
 	public static Vector2 rotate(Vector2 point, Vector2 origin, float radians) {
 		if(point.equals(origin))
 			return point;
-		return point.add(origin).rotateRad(radians).sub(origin);
+		return point.sub(origin).rotateRad(radians).add(origin);
 	}
 
 	/** rotates the line around its center (same as {@link #rotate(Vector2, Vector2, float)} using the center between both points as origin)
