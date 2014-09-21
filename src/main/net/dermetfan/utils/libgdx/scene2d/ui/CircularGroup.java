@@ -66,7 +66,7 @@ public class CircularGroup extends WidgetGroup {
 
 		/** How long it takes to decelerate {@link #velocity} to zero.
 		 *  Values smaller than 0 indicate no particular duration (instead {@link #deceleration} will be used directly).
-		 *  Default is {@value}. */
+		 *  Default is -1. */
 		private float decelerationDuration = -1;
 
 		// internals
@@ -219,10 +219,10 @@ public class CircularGroup extends WidgetGroup {
 
 	}
 
-	/** The preferred size. Default is {@value}, some arbitrary value. */
+	/** The preferred size. Default is 500, some arbitrary value. */
 	float prefWidth = 500, prefHeight = 500;
 
-	/** The max angle of all children (in degrees). Default is {@value}. */
+	/** The max angle of all children (in degrees). Default is 360. */
 	private float fullAngle = 360;
 
 	/** The angle added to each child's angle (in degrees). Default is 0. */
@@ -237,13 +237,13 @@ public class CircularGroup extends WidgetGroup {
 	/** If an additional, not existent child should be considered in the angle calculation for each child.<br>
 	 *  Since {@link #fullAngle} describes the min and max angle for children of this group, two children will overlap at 360 degrees (because 360 degrees mean the min and max angle coincide).
 	 *  In this case it would make sense to enable the virtual child. It will reserve the angle needed for one child and therefore overlap with another child at the min/max angle instead of two actual children overlapping.<br>
-	 *  Default is {@value}, as appropriate for the default of {@link #fullAngle}. */
+	 *  Default is true, as appropriate for the default of {@link #fullAngle}. */
 	private boolean virtualChild = true;
 
 	/** allows advanced modification of each child's angle */
 	private Modifier modifier;
 
-	/** Even if distanceFromCenter is greater, no child's unrotated bound will escape the group size. {@code distanceFromCenter < 0} means no fixed distance from the group center. Default is {@value}. */
+	/** Even if distanceFromCenter is greater, no child's unrotated bound will escape the group size. {@code distanceFromCenter < 0} means no fixed distance from the group center. Default is -1. */
 	private float distanceFromCenter = -1;
 
 	/** the DragManager used to make this group rotatable by dragging and to apply velocity */
