@@ -274,7 +274,7 @@ public class CircularGroup extends WidgetGroup {
 			int numChildren = children.size - (virtualChild ? 0 : 1);
 			float angle = fullAngle / numChildren * index;
 			if(modifier != null)
-				angle = modifier.angle(angle, index, children.size, this);
+				angle = modifier.angle(angle, index, numChildren, this);
 			angle += angleOffset;
 			child.setRotation(modifier != null ? modifier.rotation(angle, index, numChildren, this) : angle);
 			float width, height;
