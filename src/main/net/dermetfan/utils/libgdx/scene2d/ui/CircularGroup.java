@@ -44,12 +44,32 @@ public class CircularGroup extends WidgetGroup {
 		 *  @return the angle of the child at the given index ({@link #angleOffset} will be added to this) */
 		float angle(float angle, int index, int numChildren, CircularGroup group);
 
-		/** @param angle the angle of the child (may be influenced by {@link #angle(float, int, int, CircularGroup)}
+		/** @param rotation the angle of the child (may be influenced by {@link #angle(float, int, int, CircularGroup)} which by default also is its rotation
 		 *  @param index the index of the child which rotation to calculate
 		 *  @param numChildren the number of children
 		 *  @param group the CircularGroup the child in question belongs to
 		 *  @return the rotation of the child at the given index */
-		float rotation(float angle, int index, int numChildren, CircularGroup group);
+		float rotation(float rotation, int index, int numChildren, CircularGroup group);
+
+		/** Use this if you only want to override some of {@link Modifier}'s methods.
+		 *  All implementations return the default value.
+		 *  @since 0.5.0
+		 *  @author dermetfan */
+		public static abstract class Adapter implements Modifier {
+
+			/** @return the given angle */
+			@Override
+			public float angle(float angle, int index, int numChildren, CircularGroup group) {
+				return angle;
+			}
+
+			/** @return the given rotation */
+			@Override
+			public float rotation(float rotation, int index, int numChildren, CircularGroup group) {
+				return rotation;
+			}
+
+		}
 
 	}
 
@@ -63,13 +83,6 @@ public class CircularGroup extends WidgetGroup {
 
 		/** if dragging should be possible */
 		private boolean draggingActivated = true;
-
-		/** How long it takes to decelerate {@link #velocity} to zero.
-		 *  Values smaller than 0 indicate no particular duration (instead {@link #deceleration} will be used directly).
-		 *  Default is -1. */
-		private float decelerationDuration = -1;
-
-		// internals
 
 		/** the velocity of the rotation */
 		private float velocity;
@@ -120,10 +133,10 @@ public class CircularGroup extends WidgetGroup {
 			if(!draggingActivated)
 				return;
 			dragging = false;
-			if(decelerationDuration >= 0)
-				calculateDeceleration();
 		}
 
+		/** changes {@link #angleOffset} according to {@link #velocity} and reduces {@link #velocity} according to {@link #deceleration}
+		 *  @param delta see {@link com.badlogic.gdx.Graphics#getDeltaTime()} */
 		public void act(float delta) {
 			if(dragging || velocity == 0 || !velocityActivated)
 				return;
@@ -137,6 +150,7 @@ public class CircularGroup extends WidgetGroup {
 				velocity = 0;
 		}
 
+		/** @return the angle of the given x and y to the center of the group */
 		private float angle(float x, float y) {
 			return tmp.set(x, y).sub(getWidth() / 2, getHeight() / 2).angle();
 		}
@@ -144,14 +158,24 @@ public class CircularGroup extends WidgetGroup {
 		/** @param angleOffset the {@link #angleOffset} to set so that if {@link #minAngleOffset} and {@link #maxAngleOffset} coincide on 360 degrees it doesn't get clamped */
 		private void setAngleOffset(float angleOffset) {
 			if(maxAngleOffset - minAngleOffset == 360)
-				CircularGroup.this.angleOffset = angleOffset;
+				CircularGroup.this.angleOffset = net.dermetfan.utils.math.MathUtils.normalize(angleOffset, minAngleOffset, maxAngleOffset);
 			else
 				CircularGroup.this.setAngleOffset(angleOffset);
 		}
 
-		/** calculates ands sets {@link #deceleration} according to {@link #velocity} and {@link #decelerationDuration} */
-		public void calculateDeceleration() {
-			deceleration = velocity / decelerationDuration;
+		/** @param duration the duration to set {@link #deceleration} to take for the current {@link #velocity} */
+		public void setDecelerationForDuration(float duration) {
+			deceleration = velocity / duration;
+		}
+
+		/** @return the duration it would take {@link #deceleration} to stop the given velocity */
+		public float getDecelerationDurationForVelocity(float velocity) {
+			return velocity / deceleration;
+		}
+
+		/** @return the duration it would take the given deceleration to stop {@link #velocity} */
+		public float getDecelerationDurationForDeceleration(float deceleration) {
+			return velocity / deceleration;
 		}
 
 		// getters and setters
@@ -174,17 +198,6 @@ public class CircularGroup extends WidgetGroup {
 		/** @param draggingActivated the {@link #draggingActivated} to set */
 		public void setDraggingActivated(boolean draggingActivated) {
 			this.draggingActivated = draggingActivated;
-		}
-
-		/** @return the {@link #decelerationDuration} */
-		public float getDecelerationDuration() {
-			return decelerationDuration;
-		}
-
-		/** note this has no real effect until {@link #calculateDeceleration()} is called
-		 *  @param decelerationDuration the {@link #decelerationDuration} to set */
-		public void setDecelerationDuration(float decelerationDuration) {
-			this.decelerationDuration = decelerationDuration;
 		}
 
 		/** @return the {@link #velocity} */
@@ -431,7 +444,7 @@ public class CircularGroup extends WidgetGroup {
 	}
 
 	/** @param amount the amount by which to translate {@link #minAngleOffset} and {@link #maxAngleOffset} */
-	public void translateAngleOffsets(float amount) {
+	public void translateAngleOffsetLimits(float amount) {
 		setMinAngleOffset(minAngleOffset + amount);
 		setMaxAngleOffset(maxAngleOffset + amount);
 	}
