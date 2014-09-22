@@ -1,7 +1,5 @@
 package net.dermetfan.utils;
 
-import net.dermetfan.utils.math.Noise;
-
 /** array utility methods
  *  @author dermetfan */
 public abstract class ArrayUtils {
@@ -81,14 +79,36 @@ public abstract class ArrayUtils {
 		return false;
 	}
 
-	/** shuffles the given array using {@link Noise#random(float, float)}, so the {@link Noise#setSeed(long) seed} influences the result
+	/** shuffles the given array
 	 *  @param array the array to shuffle */
 	public static void shuffle(Object[] array) {
-		for(int i = 0; i < array.length; i++) {
-			int ii = (int) Noise.random(0, i + 1);
-			Object temp = array[i];
+		for(int i = array.length - 1; i > 0; i--) {
+			int ii = (int) (Math.random() * (i + 1));
+			Object tmp = array[i];
 			array[i] = array[ii];
-			array[ii] = temp;
+			array[ii] = tmp;
+		}
+	}
+
+	/** shuffles the given array
+	 *  @param array the array to shuffle */
+	public static void shuffle(int[] array) {
+		for(int i = array.length - 1; i > 0; i--) {
+			int ii = (int) (Math.random() * (i + 1));
+			int tmp = array[i];
+			array[i] = array[ii];
+			array[ii] = tmp;
+		}
+	}
+
+	/** shuffles the given array
+	 *  @param array the array to shuffle */
+	public static void shuffle(float[] array) {
+		for(int i = array.length - 1; i > 0; i--) {
+			int ii = (int) (Math.random() * (i + 1));
+			float tmp = array[i];
+			array[i] = array[ii];
+			array[ii] = tmp;
 		}
 	}
 
