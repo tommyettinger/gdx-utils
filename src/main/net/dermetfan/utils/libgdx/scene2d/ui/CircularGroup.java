@@ -277,18 +277,24 @@ public class CircularGroup extends WidgetGroup {
 				angle = modifier.angle(angle, index, numChildren, this);
 			angle += angleOffset;
 			child.setRotation(modifier != null ? modifier.rotation(angle, index, numChildren, this) : angle);
+			float groupWidth = getWidth(), groupHeight = getHeight();
 			float width, height;
 			if(child instanceof Layout) {
 				Layout childLayout = (Layout) child;
-				width = childLayout.getPrefWidth();
-				height = childLayout.getPrefHeight();
+				width = Math.min(childLayout.getPrefWidth(), groupWidth / 2 - MathUtils.clamp(distanceFromCenter, 0, groupWidth / 2));
+				width = Math.max(width, childLayout.getMinWidth());
+				if(childLayout.getMaxWidth() != 0)
+					width = Math.min(width, childLayout.getMaxWidth());
+				height = Math.min(childLayout.getPrefHeight(), groupHeight / 2 - MathUtils.clamp(distanceFromCenter, 0, groupHeight / 2));
+				height = Math.max(height, childLayout.getMinHeight());
+				if(childLayout.getMaxHeight() != 0)
+					height = Math.min(height, childLayout.getMaxHeight());
 				child.setSize(width, height);
 			} else {
 				width = child.getWidth();
 				height = child.getHeight();
 			}
 			child.setOrigin(width / 2, height / 2);
-			float groupWidth = getWidth(), groupHeight = getHeight();
 			float realDistanceFromCenter = distanceFromCenter < 0 ? groupWidth / 2 - width : Math.min(distanceFromCenter, groupWidth / 2 - width);
 			GeometryUtils.rotate(tmp.set(groupWidth / 2 - width / 2 - realDistanceFromCenter, groupHeight / 2), tmp2.set(groupWidth / 2, groupHeight / 2), angle * MathUtils.degRad);
 			child.setPosition(tmp.x - child.getWidth() / 2, tmp.y - child.getHeight() / 2);
@@ -299,7 +305,7 @@ public class CircularGroup extends WidgetGroup {
 	public void drawDebug(ShapeRenderer shapes) {
 		shapes.setColor(Color.CYAN);
 		for(Actor child : getChildren())
-			shapes.line(getX() + getWidth() / 2, getY() + getHeight() / 2, getX() + child.getX() + child.getWidth() / 2, getY() + child.getY() + child.getHeight() / 2);
+			shapes.line(getX() + getWidth() / 2 * getScaleX(), getY() + getHeight() / 2 * getScaleY(), getX() + (child.getX() + child.getWidth() / 2) * getScaleX(), getY() + (child.getY() + child.getHeight() / 2) * getScaleY());
 		super.drawDebug(shapes);
 	}
 
@@ -335,9 +341,7 @@ public class CircularGroup extends WidgetGroup {
 		for(Actor child : children) {
 			if(child == currentSmallest)
 				continue;
-			float childMinWidth = child instanceof Layout ? ((Layout) child).getMinWidth() : child.getWidth();
-			if(childMinWidth < secondMinWidth)
-				secondMinWidth = childMinWidth;
+			secondMinWidth = Math.min(secondMinWidth, child instanceof Layout ? ((Layout) child).getMinWidth() : child.getWidth());
 		}
 		return minWidth * 2 + secondMinWidth * 2 + realDistanceFromCenter * 2;
 	}
@@ -364,9 +368,7 @@ public class CircularGroup extends WidgetGroup {
 		for(Actor child : children) {
 			if(child == currentSmallest)
 				continue;
-			float childMinHeight = child instanceof Layout ? ((Layout) child).getMinHeight() : child.getHeight();
-			if(childMinHeight < secondMinHeight)
-				secondMinHeight = childMinHeight;
+			secondMinHeight = Math.min(secondMinHeight, child instanceof Layout ? ((Layout) child).getMinHeight() : child.getHeight());
 		}
 		return minHeight * 2 + secondMinHeight * 2 + realDistanceFromCenter * 2;
 	}
