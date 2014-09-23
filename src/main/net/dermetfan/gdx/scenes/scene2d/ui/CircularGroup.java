@@ -163,21 +163,6 @@ public class CircularGroup extends WidgetGroup {
 				CircularGroup.this.setAngleOffset(angleOffset);
 		}
 
-		/** @param duration the duration to set {@link #deceleration} to take for the current {@link #velocity} */
-		public void setDecelerationForDuration(float duration) {
-			deceleration = velocity / duration;
-		}
-
-		/** @return the duration it would take {@link #deceleration} to stop the given velocity */
-		public float getDecelerationDurationForVelocity(float velocity) {
-			return velocity / deceleration;
-		}
-
-		/** @return the duration it would take the given deceleration to stop {@link #velocity} */
-		public float getDecelerationDurationForDeceleration(float deceleration) {
-			return velocity / deceleration;
-		}
-
 		// getters and setters
 
 		/** @return the {@link #velocityActivated} */
