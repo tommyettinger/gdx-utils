@@ -27,6 +27,8 @@ import com.badlogic.gdx.scenes.scene2d.utils.Layout;
 import com.badlogic.gdx.utils.SnapshotArray;
 import net.dermetfan.gdx.math.GeometryUtils;
 
+import static net.dermetfan.utils.math.MathUtils.replaceNaN;
+
 /** a group that aligns its children in a circle
  *  @since 0.5.0
  *  @author dermetfan */
@@ -241,8 +243,8 @@ public class CircularGroup extends WidgetGroup {
 	/** allows advanced modification of each child's angle */
 	private Modifier modifier;
 
-	/** Even if distanceFromCenter is greater, no child's unrotated bound will escape the group size. {@code distanceFromCenter < 0} means no fixed distance from the group center. Default is -1. */
-	private float distanceFromCenter = -1;
+	/** Even if distanceFromCenter is greater, no child's unrotated bound will escape the group size. NaN values mean no fixed distance from the group center. Default is {@link Float#NaN}. */
+	private float distanceFromCenter = Float.NaN;
 
 	/** the DragManager used to make this group rotatable by dragging and to apply velocity */
 	private final DragManager dragManager = new DragManager();
@@ -279,11 +281,11 @@ public class CircularGroup extends WidgetGroup {
 			float width, height;
 			if(child instanceof Layout) {
 				Layout childLayout = (Layout) child;
-				width = Math.min(childLayout.getPrefWidth(), groupWidth / 2 - MathUtils.clamp(distanceFromCenter, 0, groupWidth / 2));
+				width = Math.min(childLayout.getPrefWidth(), groupWidth / 2 - replaceNaN(MathUtils.clamp(distanceFromCenter, 0, groupWidth / 2), 0));
 				width = Math.max(width, childLayout.getMinWidth());
 				if(childLayout.getMaxWidth() != 0)
 					width = Math.min(width, childLayout.getMaxWidth());
-				height = Math.min(childLayout.getPrefHeight(), groupHeight / 2 - MathUtils.clamp(distanceFromCenter, 0, groupHeight / 2));
+				height = Math.min(childLayout.getPrefHeight(), groupHeight / 2 - replaceNaN(MathUtils.clamp(distanceFromCenter, 0, groupHeight / 2), 0));
 				height = Math.max(height, childLayout.getMinHeight());
 				if(childLayout.getMaxHeight() != 0)
 					height = Math.min(height, childLayout.getMaxHeight());
@@ -293,7 +295,7 @@ public class CircularGroup extends WidgetGroup {
 				height = child.getHeight();
 			}
 			child.setOrigin(width / 2, height / 2);
-			float realDistanceFromCenter = distanceFromCenter < 0 ? groupWidth / 2 - width : Math.min(distanceFromCenter, groupWidth / 2 - width);
+			float realDistanceFromCenter = Float.isNaN(distanceFromCenter) ? groupWidth / 2 - width : Math.min(distanceFromCenter, groupWidth / 2 - width);
 			GeometryUtils.rotate(tmp.set(groupWidth / 2 - width / 2 - realDistanceFromCenter, groupHeight / 2), tmp2.set(groupWidth / 2, groupHeight / 2), angle * MathUtils.degRad);
 			child.setPosition(tmp.x - child.getWidth() / 2, tmp.y - child.getHeight() / 2);
 		}
@@ -332,7 +334,7 @@ public class CircularGroup extends WidgetGroup {
 				currentSmallest = child;
 			}
 		}
-		float realDistanceFromCenter = Math.max(0, distanceFromCenter);
+		float realDistanceFromCenter = replaceNaN(distanceFromCenter, 0);
 		if(children.size == 1)
 			return minWidth * 2 + realDistanceFromCenter * 2;
 		float secondMinWidth = Float.POSITIVE_INFINITY;
@@ -359,7 +361,7 @@ public class CircularGroup extends WidgetGroup {
 				currentSmallest = child;
 			}
 		}
-		float realDistanceFromCenter = Math.max(0, distanceFromCenter);
+		float realDistanceFromCenter = replaceNaN(distanceFromCenter, 0);
 		if(children.size == 1)
 			return minHeight * 2 + realDistanceFromCenter * 2;
 		float secondMinHeight = Float.POSITIVE_INFINITY;
