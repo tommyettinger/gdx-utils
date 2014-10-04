@@ -397,7 +397,7 @@ public class WorldObserver {
 	public WorldObserver() {}
 
 	public WorldObserver(Listener listener) {
-		this.listener = listener;
+		setListener(listener);
 	}
 
 	public void update(World world) {
