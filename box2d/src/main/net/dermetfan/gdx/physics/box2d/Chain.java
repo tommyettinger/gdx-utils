@@ -24,7 +24,6 @@ import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Disposable;
 import com.badlogic.gdx.utils.SnapshotArray;
-import net.dermetfan.gdx.physics.box2d.utils.Box2DUtils;
 
 /** Holds {@link #segments} and {@link #connections} to simulate a chain. Also provides modification methods that use a {@link Builder}.
  *  @author dermetfan */

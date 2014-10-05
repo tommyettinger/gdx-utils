@@ -12,7 +12,7 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License. */
 
-package net.dermetfan.gdx.physics.box2d.utils;
+package net.dermetfan.gdx.physics.box2d;
 
 import com.badlogic.gdx.maps.Map;
 import com.badlogic.gdx.maps.MapLayer;
@@ -63,7 +63,7 @@ import com.badlogic.gdx.utils.FloatArray;
 import com.badlogic.gdx.utils.ObjectMap;
 import com.badlogic.gdx.utils.Pools;
 import com.badlogic.gdx.utils.reflect.ClassReflection;
-import net.dermetfan.gdx.physics.box2d.utils.Box2DMapObjectParser.Listener.Adapter;
+import net.dermetfan.gdx.physics.box2d.Box2DMapObjectParser.Listener.Adapter;
 
 import static net.dermetfan.gdx.maps.MapUtils.findProperty;
 import static net.dermetfan.gdx.maps.MapUtils.getProperty;
