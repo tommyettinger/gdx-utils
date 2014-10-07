@@ -74,6 +74,9 @@ public class WorldObserver {
 
 	/** @param world Ideally always the same World because its identity is not checked. Passing in another world instance will cause all differences between the two worlds to be processed. */
 	public void update(World world) {
+		if(listener != null)
+			listener.preUpdate(world);
+
 		if(worldChange.update(world) && listener != null)
 			listener.changed(world, worldChange);
 
@@ -160,6 +163,9 @@ public class WorldObserver {
 		}
 		previousJoints.clear();
 		previousJoints.addAll(currentJoints);
+
+		if(listener != null)
+			listener.postUpdate(world);
 	}
 
 	/** @param hash the hash of the Body (computed via {@link com.badlogic.gdx.physics.box2d.Box2DUtils#hashCode(Body) Box2DUtils#hashCode(Body)}) which associated BodyChange to return
@@ -211,6 +217,12 @@ public class WorldObserver {
 
 		/** @param observer the WorldObserver this Listener has just been {@link WorldObserver#setListener(Listener) removed} from */
 		void removedFrom(WorldObserver observer);
+
+		/** called at the very beginning of {@link WorldObserver#update(World)} */
+		void preUpdate(World world);
+
+		/** called at the very end of {@link WorldObserver#update(World)} */
+		void postUpdate(World world);
 
 		/** @param world the World that changed
 		 *  @param change the change */
