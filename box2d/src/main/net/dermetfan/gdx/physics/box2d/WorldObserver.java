@@ -30,16 +30,28 @@ import com.badlogic.gdx.utils.ObjectMap;
 import com.badlogic.gdx.utils.Pool.Poolable;
 import com.badlogic.gdx.utils.Pools;
 
+/** notifies a {@link Listener} of changes in the world
+ *  @since 0.5.1
+ *  @author dermetfan */
 public class WorldObserver {
 
+	/** the changes of an object in a world since the last time {@link #update(Object)} was called
+	 *  @since 0.5.1
+	 *  @author dermetfan */
 	public static interface Change<T> extends Poolable {
 
+		/** @param obj the object to check for changes since the last time this method was called
+		 *  @return if anything changed */
 		boolean update(T obj);
 
+		/** @param obj the object to apply the changes since {@link #update(Object)} to */
 		void apply(T obj);
 
 	}
 
+	/** the changes of a {@link World}
+	 *  @since 0.5.1
+	 *  @author dermetfan */
 	public static class WorldChange implements Change<World> {
 
 		private transient Boolean oldAutoClearForces;
@@ -86,6 +98,9 @@ public class WorldObserver {
 
 	}
 
+	/** the changes of a {@link Body}
+	 *  @since 0.5.1
+	 *  @author dermetfan */
 	public static class BodyChange implements Change<Body> {
 
 		private transient final Transform oldTransform = new Transform();
@@ -106,6 +121,7 @@ public class WorldObserver {
 		MassData massData;
 		Object userData;
 
+		/** if the {@link Body#userData} changed */
 		private boolean userDataChanged;
 
 		@Override
@@ -220,6 +236,7 @@ public class WorldObserver {
 
 	}
 
+	/** the changes of a {@link Fixture} */
 	public static class FixtureChange implements Change<Fixture> {
 
 		private transient Body oldBody;
@@ -237,8 +254,10 @@ public class WorldObserver {
 		Filter filter;
 		Object userData;
 
+		/** if the {@link Fixture#userData} changed */
 		boolean userDataChanged;
 
+		/** this should be called when this FixtureChange is going to be used for a fixture on another body to make {@link #destroyed} work correctly */
 		void created(Body body) {
 			oldBody = body;
 		}
@@ -291,6 +310,7 @@ public class WorldObserver {
 			oldFilter.maskBits = newFilter.maskBits;
 		}
 
+		/** @throws IllegalStateException if the fixture has been {@link #destroyed} */
 		@Override
 		public void apply(Fixture fixture) {
 			if(destroyed)
@@ -329,12 +349,16 @@ public class WorldObserver {
 			userDataChanged = false;
 		}
 
+		/** @return the {@link #destroyed} */
 		public boolean isDestroyed() {
 			return destroyed;
 		}
 
 	}
 
+	/** the changes of a {@link Joint}
+	 *  @since 0.5.1
+	 *  @author dermetfan */
 	public static class JointChange implements Change<Joint> {
 
 		@Override
@@ -343,63 +367,96 @@ public class WorldObserver {
 		}
 
 		@Override
-		public void apply(Joint obj) {
-
-		}
+		public void apply(Joint obj) {}
 
 		@Override
-		public void reset() {
-
-		}
+		public void reset() {}
 
 	}
 
+	/** the listener notified by a {@link WorldObserver}
+	 *  @since 0.5.1
+	 *  @author dermetfan */
 	public static interface Listener {
 
-		void setOn(WorldObserver watcher);
+		/** @param observer the WorldObserver this Listener has just been {@link WorldObserver#setListener(Listener) set} on */
+		void setOn(WorldObserver observer);
 
-		void removedFrom(WorldObserver watcher);
+		/** @param observer the WorldObserver this Listener has just been {@link WorldObserver#setListener(Listener) removed} from */
+		void removedFrom(WorldObserver observer);
 
+		/** @param world the World that changed
+		 *  @param change the change */
 		void changed(World world, WorldChange change);
 
+		/** @param body the Body that changed
+		 *  @param change the change */
 		void changed(Body body, BodyChange change);
 
+		/** @param body the created Body */
 		void created(Body body);
 
+		/** @param body the destroyed Body */
 		void destroyed(Body body);
 
+		/** @param fixture the Fixture that changed
+		 *  @param change the change */
 		void changed(Fixture fixture, FixtureChange change);
 
+		/** @param fixture the created Fixture */
 		void created(Fixture fixture);
 
+		/** @param fixture the destroyed Fixture */
 		void destroyed(Fixture fixture);
 
+		/** @param joint the Joint that changed
+		 *  @param change the change */
 		void changed(Joint joint, JointChange change);
 
+		/** @param joint the created Joint */
 		void created(Joint joint);
 
+		/** @param joint the destroyed Joint */
 		void destroyed(Joint joint);
 
 	}
 
+	/** The Listener to notify. May be null. */
 	private Listener listener;
 
+	/** the WorldChange used to track the World */
 	private final WorldChange worldChange = new WorldChange();
+
+	/** the BodyChanges used to track Bodies, keys are hashes computed by {@link com.badlogic.gdx.physics.box2d.Box2DUtils#hashCode(Body) Box2DUtils#hashCode(Body)} because a World pools its Bodies */
 	private final IntMap<BodyChange> bodyChanges = new IntMap<>();
+
+	/** the FixtureChanges used to track Fixtures, keys are hashes computed by {@link com.badlogic.gdx.physics.box2d.Box2DUtils#hashCode(Fixture) Box2DUtils#hashCode(Fixture)} because a world pools its Fixtures */
 	private final IntMap<FixtureChange> fixtureChanges = new IntMap<>();
+
+	/** the JointChanges used to track Joints */
 	private final ObjectMap<Joint, JointChange> jointChanges = new ObjectMap<>();
 
+	/** temporary array used internally */
 	private final Array<Body> tmpBodies = new Array<>();
+
+	/** the Bodies by {@link com.badlogic.gdx.physics.box2d.Box2DUtils#hashCode(Body) hash} since this/the last time {@link #update(World)} was called */
 	private final IntMap<Body> currentBodies = new IntMap<>(), previousBodies = new IntMap<>();
+
+	/** the Fixtures by {@link com.badlogic.gdx.physics.box2d.Box2DUtils#hashCode(Fixture) hash} since this/the last time {@link #update(World)} was called */
 	private final IntMap<Fixture> currentFixtures = new IntMap<>(), previousFixtures = new IntMap<>();
+
+	/** the Joints since this/the last time {@link #update(World)} was called  */
 	private final Array<Joint> currentJoints = new Array<>(), previousJoints = new Array<>();
 
+	/** creates a new WorldObserver with no {@link #listener} */
 	public WorldObserver() {}
 
+	/** @param listener the {@link #listener} */
 	public WorldObserver(Listener listener) {
 		setListener(listener);
 	}
 
+	/** @param world Ideally always the same World because its identity is not checked. Passing in another world instance will cause all differences between the two worlds to be processed. */
 	public void update(World world) {
 		if(worldChange.update(world) && listener != null)
 			listener.changed(world, worldChange);
@@ -489,28 +546,37 @@ public class WorldObserver {
 		previousJoints.addAll(currentJoints);
 	}
 
+	/** @param hash the hash of the Body (computed via {@link com.badlogic.gdx.physics.box2d.Box2DUtils#hashCode(Body) Box2DUtils#hashCode(Body)}) which associated BodyChange to return
+	 *  @return the BodyChange from {@link #bodyChanges} currently used for the Body with the given hash, or null if not found */
 	public BodyChange getBodyChange(int hash) {
 		return bodyChanges.get(hash);
 	}
 
+	/** @param hash the hash of the Fixture (computed via {@link com.badlogic.gdx.physics.box2d.Box2DUtils#hashCode(Fixture) Box2DUtils#hashCode(Fixture)}) which associated FixtureChange to return
+	 *  @return the FixtureChange from {@link #fixtureChanges} currently used for the Fixture with the given hash, or null if not found */
 	public FixtureChange getFixtureChange(int hash) {
 		return fixtureChanges.get(hash);
 	}
 
+	/** @param joint the joint which associated JointChange to return
+	 *  @return the JointChange from {@link #jointChanges} currently used for the given Joint */
 	public JointChange getJointChange(Joint joint) {
 		return jointChanges.get(joint);
 	}
 
 	// getters and setters
 
+	/** @return the {@link #worldChange} */
 	public WorldChange getWorldChange() {
 		return worldChange;
 	}
 
+	/** @return the {@link #listener} */
 	public Listener getListener() {
 		return listener;
 	}
 
+	/** @param listener the {@link #listener} to set */
 	public void setListener(Listener listener) {
 		if(this.listener != null)
 			this.listener.removedFrom(this);
