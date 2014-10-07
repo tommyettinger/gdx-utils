@@ -30,396 +30,12 @@ import com.badlogic.gdx.utils.ObjectMap;
 import com.badlogic.gdx.utils.Pool.Poolable;
 import com.badlogic.gdx.utils.Pools;
 
+import static net.dermetfan.utils.ObjectUtils.nullEquals;
+
 /** notifies a {@link Listener} of changes in the world
  *  @since 0.5.1
  *  @author dermetfan */
 public class WorldObserver {
-
-	/** the changes of an object in a world since the last time {@link #update(Object)} was called
-	 *  @since 0.5.1
-	 *  @author dermetfan */
-	public static interface Change<T> extends Poolable {
-
-		/** @param obj the object to check for changes since the last time this method was called
-		 *  @return if anything changed */
-		boolean update(T obj);
-
-		/** @param obj the object to apply the changes since {@link #update(Object)} to */
-		void apply(T obj);
-
-	}
-
-	/** the changes of a {@link World}
-	 *  @since 0.5.1
-	 *  @author dermetfan */
-	public static class WorldChange implements Change<World> {
-
-		private transient Boolean oldAutoClearForces;
-		private transient final Vector2 oldGravity = new Vector2();
-
-		Boolean autoClearForces;
-		Vector2 gravity;
-
-		@Override
-		public boolean update(World world) {
-			Boolean newAutoClearForces = world.getAutoClearForces();
-			Vector2 newGravity = world.getGravity();
-
-			boolean changed = false;
-
-			if(newAutoClearForces != oldAutoClearForces) {
-				oldAutoClearForces = autoClearForces = newAutoClearForces;
-				changed = true;
-			}
-			if(!newGravity.equals(oldGravity)) {
-				oldGravity.set(gravity = newGravity);
-				changed = true;
-			}
-
-			return changed;
-		}
-
-		@Override
-		public void apply(World world) {
-			if(autoClearForces != null)
-				world.setAutoClearForces(autoClearForces);
-			if(gravity != null)
-				world.setGravity(gravity);
-		}
-
-		@Override
-		public void reset() {
-			oldAutoClearForces = null;
-			oldGravity.setZero();
-
-			autoClearForces = null;
-			gravity = null;
-		}
-
-	}
-
-	/** the changes of a {@link Body}
-	 *  @since 0.5.1
-	 *  @author dermetfan */
-	public static class BodyChange implements Change<Body> {
-
-		private transient final Transform oldTransform = new Transform();
-		private transient BodyType oldType;
-		private transient Float oldAngularDamping;
-		private transient Float oldAngularVelocity;
-		private transient Float oldGravityScale;
-		private transient final Vector2 oldLinearVelocity = new Vector2();
-		private transient final MassData oldMassData = new MassData();
-		private transient Object oldUserData;
-
-		Transform transform;
-		BodyType type;
-		Float angularDamping;
-		Float angularVelocity;
-		Float gravityScale;
-		Vector2 linearVelocity;
-		MassData massData;
-		Object userData;
-
-		/** if the {@link Body#userData} changed */
-		private boolean userDataChanged;
-
-		@Override
-		public boolean update(Body body) {
-			Transform newTransform = body.getTransform();
-			BodyType newType = body.getType();
-			Float newAngularDamping = body.getAngularDamping();
-			Float newAngularVelocity = body.getAngularVelocity();
-			Float newGravityScale = body.getGravityScale();
-			Vector2 newLinearVelocity = body.getLinearVelocity();
-			MassData newMassData = body.getMassData();
-			Object newUserData = body.getUserData();
-
-			boolean changed = false;
-
-			if(!newTransform.equals(oldTransform)) {
-				updateOldTransform(transform = newTransform);
-				changed = true;
-			}
-			if(!newType.equals(oldType)) {
-				oldType = type = newType;
-				changed = true;
-			}
-			if(!newAngularDamping.equals(oldAngularDamping)) {
-				oldAngularDamping = angularDamping = newAngularDamping;
-				changed = true;
-			}
-			if(!newAngularVelocity.equals(oldAngularVelocity)) {
-				oldAngularVelocity = angularVelocity = newAngularVelocity;
-				changed = true;
-			}
-			if(!newGravityScale.equals(oldGravityScale)) {
-				oldGravityScale = gravityScale = newGravityScale;
-				changed = true;
-			}
-			if(!newLinearVelocity.equals(oldLinearVelocity)) {
-				updateOldLinearVelocity(linearVelocity = newLinearVelocity);
-				changed = true;
-			}
-			if(!newMassData.equals(oldMassData)) {
-				updateOldMassData(massData = newMassData);
-				changed = true;
-			}
-			if(newUserData != null ? !newUserData.equals(oldUserData) : oldUserData != null) {
-				oldUserData = userData = newUserData;
-				changed = userDataChanged = true;
-			}
-
-			return changed;
-		}
-
-		@Override
-		public void apply(Body body) {
-			if(transform != null)
-				body.setTransform(transform.getPosition(), transform.getRotation());
-			if(type != null)
-				body.setType(type);
-			if(angularDamping != null)
-				body.setAngularDamping(angularDamping);
-			if(angularVelocity != null)
-				body.setAngularVelocity(angularVelocity);
-			if(gravityScale != null)
-				body.setGravityScale(gravityScale);
-			if(linearVelocity != null)
-				body.setLinearVelocity(linearVelocity);
-			if(massData != null)
-				body.setMassData(massData);
-			if(userDataChanged)
-				body.setUserData(userData);
-		}
-
-		private void updateOldTransform(Transform transform) {
-			oldTransform.setPosition(transform.getPosition());
-			oldTransform.setRotation(transform.getRotation());
-		}
-
-		private void updateOldLinearVelocity(Vector2 linearVelocity) {
-			oldLinearVelocity.set(linearVelocity);
-		}
-
-		private void updateOldMassData(MassData massData) {
-			oldMassData.center.set(massData.center);
-			oldMassData.mass = massData.mass;
-			oldMassData.I = massData.I;
-		}
-
-		@Override
-		public void reset() {
-			oldTransform.setPosition(Vector2.Zero);
-			oldTransform.setRotation(0);
-			oldType = null;
-			oldAngularDamping = null;
-			oldAngularVelocity = null;
-			oldGravityScale = null;
-			oldLinearVelocity.setZero();
-			oldMassData.mass = 0;
-			oldMassData.I = 0;
-			oldMassData.center.setZero();
-			oldUserData = null;
-
-			transform = null;
-			type = null;
-			angularDamping = null;
-			angularVelocity = null;
-			gravityScale = null;
-			linearVelocity = null;
-			massData = null;
-			userData = null;
-
-			userDataChanged = false;
-		}
-
-	}
-
-	/** the changes of a {@link Fixture} */
-	public static class FixtureChange implements Change<Fixture> {
-
-		private transient Body oldBody;
-		private transient boolean destroyed;
-
-		private transient Float oldDensity;
-		private transient Float oldFriction;
-		private transient Float oldRestitution;
-		private transient final Filter oldFilter = new Filter();
-		private transient Object oldUserData;
-
-		Float density;
-		Float friction;
-		Float restitution;
-		Filter filter;
-		Object userData;
-
-		/** if the {@link Fixture#userData} changed */
-		boolean userDataChanged;
-
-		/** this should be called when this FixtureChange is going to be used for a fixture on another body to make {@link #destroyed} work correctly */
-		void created(Body body) {
-			oldBody = body;
-		}
-
-		@Override
-		public boolean update(Fixture fixture) {
-			Body newBody = fixture.getBody();
-
-			if(newBody != oldBody) {
-				destroyed = true;
-				oldBody = newBody;
-				return false;
-			}
-
-			Float newDensity = fixture.getDensity();
-			Float newFriction = fixture.getFriction();
-			Float newRestitution = fixture.getRestitution();
-			Filter newFilter = fixture.getFilterData();
-			Object newUserData = fixture.getUserData();
-
-			boolean changed = false;
-
-			if(!newDensity.equals(oldDensity)) {
-				oldDensity = density = newDensity;
-				changed = true;
-			}
-			if(!newFriction.equals(oldFriction)) {
-				oldFriction = friction = newFriction;
-				changed = true;
-			}
-			if(!newRestitution.equals(oldRestitution)) {
-				oldRestitution = restitution = newRestitution;
-				changed = true;
-			}
-			if(!newFilter.equals(oldFilter)) {
-				updateOldFilter(filter = newFilter);
-				changed = true;
-			}
-			if(newUserData != null ? !newUserData.equals(oldUserData) : oldUserData != null) {
-				oldUserData = userData = newUserData;
-				changed = userDataChanged = true;
-			}
-
-			return changed;
-		}
-
-		private void updateOldFilter(Filter newFilter) {
-			oldFilter.categoryBits = newFilter.categoryBits;
-			oldFilter.groupIndex = newFilter.groupIndex;
-			oldFilter.maskBits = newFilter.maskBits;
-		}
-
-		/** @throws IllegalStateException if the fixture has been {@link #destroyed} */
-		@Override
-		public void apply(Fixture fixture) {
-			if(destroyed)
-				throw new IllegalStateException("destroyed FixtureChanges may not be applied");
-			if(density != null)
-				fixture.setDensity(density);
-			if(friction != null)
-				fixture.setFriction(friction);
-			if(restitution != null)
-				fixture.setRestitution(restitution);
-			if(filter != null)
-				fixture.setFilterData(filter);
-			if(userDataChanged)
-				fixture.setUserData(userData);
-		}
-
-		@Override
-		public void reset() {
-			oldBody = null;
-			destroyed = false;
-
-			oldDensity = null;
-			oldFriction = null;
-			oldRestitution = null;
-			oldFilter.categoryBits = 0x0001;
-			oldFilter.maskBits = -1;
-			oldFilter.groupIndex = 0;
-			oldUserData = null;
-
-			density = null;
-			friction = null;
-			restitution = null;
-			filter = null;
-			userData = null;
-
-			userDataChanged = false;
-		}
-
-		/** @return the {@link #destroyed} */
-		public boolean isDestroyed() {
-			return destroyed;
-		}
-
-	}
-
-	/** the changes of a {@link Joint}
-	 *  @since 0.5.1
-	 *  @author dermetfan */
-	public static class JointChange implements Change<Joint> {
-
-		@Override
-		public boolean update(Joint obj) {
-			return false;
-		}
-
-		@Override
-		public void apply(Joint obj) {}
-
-		@Override
-		public void reset() {}
-
-	}
-
-	/** the listener notified by a {@link WorldObserver}
-	 *  @since 0.5.1
-	 *  @author dermetfan */
-	public static interface Listener {
-
-		/** @param observer the WorldObserver this Listener has just been {@link WorldObserver#setListener(Listener) set} on */
-		void setOn(WorldObserver observer);
-
-		/** @param observer the WorldObserver this Listener has just been {@link WorldObserver#setListener(Listener) removed} from */
-		void removedFrom(WorldObserver observer);
-
-		/** @param world the World that changed
-		 *  @param change the change */
-		void changed(World world, WorldChange change);
-
-		/** @param body the Body that changed
-		 *  @param change the change */
-		void changed(Body body, BodyChange change);
-
-		/** @param body the created Body */
-		void created(Body body);
-
-		/** @param body the destroyed Body */
-		void destroyed(Body body);
-
-		/** @param fixture the Fixture that changed
-		 *  @param change the change */
-		void changed(Fixture fixture, FixtureChange change);
-
-		/** @param fixture the created Fixture */
-		void created(Fixture fixture);
-
-		/** @param fixture the destroyed Fixture */
-		void destroyed(Fixture fixture);
-
-		/** @param joint the Joint that changed
-		 *  @param change the change */
-		void changed(Joint joint, JointChange change);
-
-		/** @param joint the created Joint */
-		void created(Joint joint);
-
-		/** @param joint the destroyed Joint */
-		void destroyed(Joint joint);
-
-	}
 
 	/** The Listener to notify. May be null. */
 	private Listener listener;
@@ -583,6 +199,439 @@ public class WorldObserver {
 		this.listener = listener;
 		if(listener != null)
 			listener.setOn(this);
+	}
+
+	/** the listener notified by a {@link WorldObserver}
+	 *  @since 0.5.1
+	 *  @author dermetfan */
+	public static interface Listener {
+
+		/** @param observer the WorldObserver this Listener has just been {@link WorldObserver#setListener(Listener) set} on */
+		void setOn(WorldObserver observer);
+
+		/** @param observer the WorldObserver this Listener has just been {@link WorldObserver#setListener(Listener) removed} from */
+		void removedFrom(WorldObserver observer);
+
+		/** @param world the World that changed
+		 *  @param change the change */
+		void changed(World world, WorldChange change);
+
+		/** @param body the Body that changed
+		 *  @param change the change */
+		void changed(Body body, BodyChange change);
+
+		/** @param body the created Body */
+		void created(Body body);
+
+		/** @param body the destroyed Body */
+		void destroyed(Body body);
+
+		/** @param fixture the Fixture that changed
+		 *  @param change the change */
+		void changed(Fixture fixture, FixtureChange change);
+
+		/** @param fixture the created Fixture */
+		void created(Fixture fixture);
+
+		/** @param fixture the destroyed Fixture */
+		void destroyed(Fixture fixture);
+
+		/** @param joint the Joint that changed
+		 *  @param change the change */
+		void changed(Joint joint, JointChange change);
+
+		/** @param joint the created Joint */
+		void created(Joint joint);
+
+		/** @param joint the destroyed Joint */
+		void destroyed(Joint joint);
+
+	}
+
+	/** the changes of an object in a world since the last time {@link #update(Object)} was called
+	 *  @since 0.5.1
+	 *  @author dermetfan */
+	public static interface Change<T> extends Poolable {
+
+		/** @param obj the object to check for changes since the last time this method was called
+		 *  @return if anything changed */
+		boolean update(T obj);
+
+		/** @param obj the object to apply the changes since {@link #update(Object)} to */
+		void apply(T obj);
+
+		/** if the values applied in {@link #apply(Object)} equal */
+		<C extends Change<T>> boolean newValuesEqual(C other);
+
+	}
+
+	/** the changes of a {@link World}
+	 *  @since 0.5.1
+	 *  @author dermetfan */
+	public static class WorldChange implements Change<World> {
+
+		private transient Boolean oldAutoClearForces;
+		private transient final Vector2 oldGravity = new Vector2();
+
+		Boolean autoClearForces;
+		Vector2 gravity;
+
+		@Override
+		public boolean update(World world) {
+			Boolean newAutoClearForces = world.getAutoClearForces();
+			Vector2 newGravity = world.getGravity();
+
+			boolean changed = false;
+
+			if(newAutoClearForces != oldAutoClearForces) {
+				oldAutoClearForces = autoClearForces = newAutoClearForces;
+				changed = true;
+			}
+			if(!newGravity.equals(oldGravity)) {
+				oldGravity.set(gravity = newGravity);
+				changed = true;
+			}
+
+			return changed;
+		}
+
+		@Override
+		public void apply(World world) {
+			if(autoClearForces != null)
+				world.setAutoClearForces(autoClearForces);
+			if(gravity != null)
+				world.setGravity(gravity);
+		}
+
+		@Override
+		public <C extends Change<World>> boolean newValuesEqual(C other) {
+			if(!(other instanceof WorldChange))
+				return false;
+			WorldChange o = (WorldChange) other;
+			boolean diff = !nullEquals(autoClearForces, o.autoClearForces);
+			diff |= !nullEquals(gravity, o.gravity);
+			return diff;
+		}
+
+		@Override
+		public void reset() {
+			oldAutoClearForces = null;
+			oldGravity.setZero();
+
+			autoClearForces = null;
+			gravity = null;
+		}
+
+	}
+
+	/** the changes of a {@link Body}
+	 *  @since 0.5.1
+	 *  @author dermetfan */
+	public static class BodyChange implements Change<Body> {
+
+		private transient final Transform oldTransform = new Transform();
+		private transient BodyType oldType;
+		private transient Float oldAngularDamping;
+		private transient Float oldAngularVelocity;
+		private transient Float oldGravityScale;
+		private transient final Vector2 oldLinearVelocity = new Vector2();
+		private transient final MassData oldMassData = new MassData();
+		private transient Object oldUserData;
+
+		Transform transform;
+		BodyType type;
+		Float angularDamping;
+		Float angularVelocity;
+		Float gravityScale;
+		Vector2 linearVelocity;
+		MassData massData;
+		Object userData;
+
+		/** if the {@link Body#userData} changed */
+		private boolean userDataChanged;
+
+		private void updateOldTransform(Transform transform) {
+			oldTransform.setPosition(transform.getPosition());
+			oldTransform.setRotation(transform.getRotation());
+		}
+
+		@Override
+		public boolean update(Body body) {
+			Transform newTransform = body.getTransform();
+			BodyType newType = body.getType();
+			Float newAngularDamping = body.getAngularDamping();
+			Float newAngularVelocity = body.getAngularVelocity();
+			Float newGravityScale = body.getGravityScale();
+			Vector2 newLinearVelocity = body.getLinearVelocity();
+			MassData newMassData = body.getMassData();
+			Object newUserData = body.getUserData();
+
+			boolean changed = false;
+
+			if(!newTransform.equals(oldTransform)) {
+				updateOldTransform(transform = newTransform);
+				changed = true;
+			}
+			if(!newType.equals(oldType)) {
+				oldType = type = newType;
+				changed = true;
+			}
+			if(!newAngularDamping.equals(oldAngularDamping)) {
+				oldAngularDamping = angularDamping = newAngularDamping;
+				changed = true;
+			}
+			if(!newAngularVelocity.equals(oldAngularVelocity)) {
+				oldAngularVelocity = angularVelocity = newAngularVelocity;
+				changed = true;
+			}
+			if(!newGravityScale.equals(oldGravityScale)) {
+				oldGravityScale = gravityScale = newGravityScale;
+				changed = true;
+			}
+			if(!newLinearVelocity.equals(oldLinearVelocity)) {
+				updateOldLinearVelocity(linearVelocity = newLinearVelocity);
+				changed = true;
+			}
+			if(!newMassData.equals(oldMassData)) {
+				updateOldMassData(massData = newMassData);
+				changed = true;
+			}
+			if(newUserData != null ? !newUserData.equals(oldUserData) : oldUserData != null) {
+				oldUserData = userData = newUserData;
+				changed = userDataChanged = true;
+			}
+
+			return changed;
+		}
+
+		private void updateOldLinearVelocity(Vector2 linearVelocity) {
+			oldLinearVelocity.set(linearVelocity);
+		}
+
+		@Override
+		public void apply(Body body) {
+			if(transform != null)
+				body.setTransform(transform.getPosition(), transform.getRotation());
+			if(type != null)
+				body.setType(type);
+			if(angularDamping != null)
+				body.setAngularDamping(angularDamping);
+			if(angularVelocity != null)
+				body.setAngularVelocity(angularVelocity);
+			if(gravityScale != null)
+				body.setGravityScale(gravityScale);
+			if(linearVelocity != null)
+				body.setLinearVelocity(linearVelocity);
+			if(massData != null)
+				body.setMassData(massData);
+			if(userDataChanged)
+				body.setUserData(userData);
+		}
+
+		private void updateOldMassData(MassData massData) {
+			oldMassData.center.set(massData.center);
+			oldMassData.mass = massData.mass;
+			oldMassData.I = massData.I;
+		}
+
+		@Override
+		public <C extends Change<Body>> boolean newValuesEqual(C other) {
+			if(!(other instanceof BodyChange))
+				return false;
+			BodyChange o = (BodyChange) other;
+			boolean diff = !nullEquals(transform, o.transform);
+			diff |= !nullEquals(type, o.type);
+			diff |= !nullEquals(angularDamping, o.angularDamping);
+			diff |= !nullEquals(angularVelocity, o.angularVelocity);
+			diff |= !nullEquals(gravityScale, o.gravityScale);
+			diff |= !nullEquals(linearVelocity, o.linearVelocity);
+			diff |= !nullEquals(massData, o.massData);
+			diff |= !nullEquals(userData, o.userData);
+			return diff;
+		}
+
+		@Override
+		public void reset() {
+			oldTransform.setPosition(Vector2.Zero);
+			oldTransform.setRotation(0);
+			oldType = null;
+			oldAngularDamping = null;
+			oldAngularVelocity = null;
+			oldGravityScale = null;
+			oldLinearVelocity.setZero();
+			oldMassData.mass = 0;
+			oldMassData.I = 0;
+			oldMassData.center.setZero();
+			oldUserData = null;
+
+			transform = null;
+			type = null;
+			angularDamping = null;
+			angularVelocity = null;
+			gravityScale = null;
+			linearVelocity = null;
+			massData = null;
+			userData = null;
+
+			userDataChanged = false;
+		}
+
+	}
+
+	/** the changes of a {@link Fixture} */
+	public static class FixtureChange implements Change<Fixture> {
+
+		private transient Body oldBody;
+		private transient boolean destroyed;
+
+		private transient Float oldDensity;
+		private transient Float oldFriction;
+		private transient Float oldRestitution;
+		private transient final Filter oldFilter = new Filter();
+		private transient Object oldUserData;
+
+		Float density;
+		Float friction;
+		Float restitution;
+		Filter filter;
+		Object userData;
+
+		/** if the {@link Fixture#userData} changed */
+		boolean userDataChanged;
+
+		/** this should be called when this FixtureChange is going to be used for a fixture on another body to make {@link #destroyed} work correctly */
+		void created(Body body) {
+			oldBody = body;
+		}
+
+		private void updateOldFilter(Filter newFilter) {
+			oldFilter.categoryBits = newFilter.categoryBits;
+			oldFilter.groupIndex = newFilter.groupIndex;
+			oldFilter.maskBits = newFilter.maskBits;
+		}
+
+		@Override
+		public boolean update(Fixture fixture) {
+			Body newBody = fixture.getBody();
+
+			if(newBody != oldBody) {
+				destroyed = true;
+				oldBody = newBody;
+				return false;
+			}
+
+			Float newDensity = fixture.getDensity();
+			Float newFriction = fixture.getFriction();
+			Float newRestitution = fixture.getRestitution();
+			Filter newFilter = fixture.getFilterData();
+			Object newUserData = fixture.getUserData();
+
+			boolean changed = false;
+
+			if(!newDensity.equals(oldDensity)) {
+				oldDensity = density = newDensity;
+				changed = true;
+			}
+			if(!newFriction.equals(oldFriction)) {
+				oldFriction = friction = newFriction;
+				changed = true;
+			}
+			if(!newRestitution.equals(oldRestitution)) {
+				oldRestitution = restitution = newRestitution;
+				changed = true;
+			}
+			if(!newFilter.equals(oldFilter)) {
+				updateOldFilter(filter = newFilter);
+				changed = true;
+			}
+			if(newUserData != null ? !newUserData.equals(oldUserData) : oldUserData != null) {
+				oldUserData = userData = newUserData;
+				changed = userDataChanged = true;
+			}
+
+			return changed;
+		}
+
+		/** @return the {@link #destroyed} */
+		public boolean isDestroyed() {
+			return destroyed;
+		}
+
+		/** @throws IllegalStateException if the fixture has been {@link #destroyed} */
+		@Override
+		public void apply(Fixture fixture) {
+			if(destroyed)
+				throw new IllegalStateException("destroyed FixtureChanges may not be applied");
+			if(density != null)
+				fixture.setDensity(density);
+			if(friction != null)
+				fixture.setFriction(friction);
+			if(restitution != null)
+				fixture.setRestitution(restitution);
+			if(filter != null)
+				fixture.setFilterData(filter);
+			if(userDataChanged)
+				fixture.setUserData(userData);
+		}
+
+		@Override
+		public <C extends Change<Fixture>> boolean newValuesEqual(C other) {
+			if(!(other instanceof FixtureChange))
+				return false;
+			FixtureChange o = (FixtureChange) other;
+			boolean diff = !nullEquals(density, o.density);
+			diff |= !nullEquals(friction, o.friction);
+			diff |= !nullEquals(restitution, o.restitution);
+			diff |= !nullEquals(filter, o.filter);
+			diff |= !nullEquals(userData, o.userData);
+			return diff;
+		}
+
+		@Override
+		public void reset() {
+			oldBody = null;
+			destroyed = false;
+
+			oldDensity = null;
+			oldFriction = null;
+			oldRestitution = null;
+			oldFilter.categoryBits = 0x0001;
+			oldFilter.maskBits = -1;
+			oldFilter.groupIndex = 0;
+			oldUserData = null;
+
+			density = null;
+			friction = null;
+			restitution = null;
+			filter = null;
+			userData = null;
+
+			userDataChanged = false;
+		}
+
+	}
+
+	/** the changes of a {@link Joint}
+	 *  @since 0.5.1
+	 *  @author dermetfan */
+	public static class JointChange implements Change<Joint> { // TODO implement
+
+		@Override
+		public boolean update(Joint obj) {
+			return false;
+		}
+
+		@Override
+		public void apply(Joint obj) {}
+
+		@Override
+		public void reset() {}
+
+		@Override
+		public <C extends Change<Joint>> boolean newValuesEqual(C other) {
+			return true;
+		}
+
 	}
 
 }
