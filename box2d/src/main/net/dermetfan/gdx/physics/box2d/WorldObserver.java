@@ -14,6 +14,8 @@
 
 package net.dermetfan.gdx.physics.box2d;
 
+import java.util.Objects;
+
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.BodyDef.BodyType;
@@ -29,8 +31,6 @@ import com.badlogic.gdx.utils.IntMap.Entry;
 import com.badlogic.gdx.utils.ObjectMap;
 import com.badlogic.gdx.utils.Pool.Poolable;
 import com.badlogic.gdx.utils.Pools;
-
-import static net.dermetfan.utils.ObjectUtils.nullEquals;
 
 /** notifies a {@link Listener} of changes in the world
  *  @since 0.5.1
@@ -320,8 +320,8 @@ public class WorldObserver {
 			if(!(other instanceof WorldChange))
 				return false;
 			WorldChange o = (WorldChange) other;
-			boolean diff = !nullEquals(autoClearForces, o.autoClearForces);
-			diff |= !nullEquals(gravity, o.gravity);
+			boolean diff = !Objects.equals(autoClearForces, o.autoClearForces);
+			diff |= !Objects.equals(gravity, o.gravity);
 			return diff;
 		}
 
@@ -451,14 +451,14 @@ public class WorldObserver {
 			if(!(other instanceof BodyChange))
 				return false;
 			BodyChange o = (BodyChange) other;
-			boolean diff = !nullEquals(transform, o.transform);
-			diff |= !nullEquals(type, o.type);
-			diff |= !nullEquals(angularDamping, o.angularDamping);
-			diff |= !nullEquals(angularVelocity, o.angularVelocity);
-			diff |= !nullEquals(gravityScale, o.gravityScale);
-			diff |= !nullEquals(linearVelocity, o.linearVelocity);
-			diff |= !nullEquals(massData, o.massData);
-			diff |= !nullEquals(userData, o.userData);
+			boolean diff = !Objects.equals(transform, o.transform);
+			diff |= !Objects.equals(type, o.type);
+			diff |= !Objects.equals(angularDamping, o.angularDamping);
+			diff |= !Objects.equals(angularVelocity, o.angularVelocity);
+			diff |= !Objects.equals(gravityScale, o.gravityScale);
+			diff |= !Objects.equals(linearVelocity, o.linearVelocity);
+			diff |= !Objects.equals(massData, o.massData);
+			diff |= !Objects.equals(userData, o.userData);
 			return diff;
 		}
 
@@ -591,11 +591,11 @@ public class WorldObserver {
 			if(!(other instanceof FixtureChange))
 				return false;
 			FixtureChange o = (FixtureChange) other;
-			boolean diff = !nullEquals(density, o.density);
-			diff |= !nullEquals(friction, o.friction);
-			diff |= !nullEquals(restitution, o.restitution);
-			diff |= !nullEquals(filter, o.filter);
-			diff |= !nullEquals(userData, o.userData);
+			boolean diff = !Objects.equals(density, o.density);
+			diff |= !Objects.equals(friction, o.friction);
+			diff |= !Objects.equals(restitution, o.restitution);
+			diff |= !Objects.equals(filter, o.filter);
+			diff |= !Objects.equals(userData, o.userData);
 			return diff;
 		}
 
