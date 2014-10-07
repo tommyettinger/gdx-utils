@@ -17,22 +17,22 @@ package net.dermetfan.gdx.utils;
 import com.badlogic.gdx.utils.IntMap;
 import com.badlogic.gdx.utils.ObjectIntMap;
 
-public class DualIntObjectMap<V> {
+public class DualIntMap<V> {
 
 	private final IntMap<V> keyValue;
 	private final ObjectIntMap<V> valueKey;
 
-	public DualIntObjectMap() {
+	public DualIntMap() {
 		keyValue = new IntMap<>();
 		valueKey = new ObjectIntMap<>();
 	}
 
-	public DualIntObjectMap(int initialCapacity) {
+	public DualIntMap(int initialCapacity) {
 		keyValue = new IntMap<>(initialCapacity);
 		valueKey = new ObjectIntMap<>(initialCapacity);
 	}
 
-	public DualIntObjectMap(int initialCapacity, float loadFactor) {
+	public DualIntMap(int initialCapacity, float loadFactor) {
 		keyValue = new IntMap<>(initialCapacity, loadFactor);
 		valueKey = new ObjectIntMap<>(initialCapacity, loadFactor);
 	}
