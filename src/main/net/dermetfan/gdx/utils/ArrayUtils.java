@@ -171,6 +171,11 @@ public abstract class ArrayUtils extends net.dermetfan.utils.ArrayUtils {
 		return skipselect(elements, firstSkip, skips, null);
 	}
 
+	/** @see #equalsAny(Object, Object[]) */
+	public static <T> boolean equalsAny(T obj, Array<T> array) {
+		return equalsAny(obj, array.items, 0, array.size);
+	}
+
 	// primitive copies (probably get some generation tool)
 
 	// int
