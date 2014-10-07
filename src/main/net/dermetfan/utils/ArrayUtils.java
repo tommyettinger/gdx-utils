@@ -79,6 +79,16 @@ public abstract class ArrayUtils {
 		return false;
 	}
 
+	/** @param obj the object to compare
+	 *  @param array the array which items to compare
+	 *  @return if the given object equals any of the items in the given array */
+	public static boolean equalsAny(Object obj, Object[] array) {
+		for(Object b : array)
+			if(obj.equals(b))
+				return true;
+		return false;
+	}
+
 	/** shuffles the given array
 	 *  @param array the array to shuffle */
 	public static void shuffle(Object[] array) {
