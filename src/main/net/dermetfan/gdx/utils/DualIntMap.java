@@ -17,6 +17,9 @@ package net.dermetfan.gdx.utils;
 import com.badlogic.gdx.utils.IntMap;
 import com.badlogic.gdx.utils.ObjectIntMap;
 
+/** an {@link IntMap} and {@link ObjectIntMap} holding each others contents in reverse for fast retrieval of both keys and values
+ *  @since 0.5.1
+ *  @author dermetfan */
 public class DualIntMap<V> {
 
 	private final IntMap<V> keyValue;
@@ -50,19 +53,19 @@ public class DualIntMap<V> {
 		return keyValue.get(key);
 	}
 
-	public int removeByValue(V value, int defaultKey) {
-		int key = valueKey.remove(value, defaultKey);
-		keyValue.remove(key);
-		return key;
-	}
-
-	public V removeByKey(int key) {
+	public V removeKey(int key) {
 		V value = keyValue.remove(key);
 		if(value != null) {
 			int removed = valueKey.remove(value, key);
 			assert removed == key;
 		}
 		return value;
+	}
+
+	public int removeValue(V value, int defaultKey) {
+		int key = valueKey.remove(value, defaultKey);
+		keyValue.remove(key);
+		return key;
 	}
 
 }

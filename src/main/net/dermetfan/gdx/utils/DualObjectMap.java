@@ -16,6 +16,9 @@ package net.dermetfan.gdx.utils;
 
 import com.badlogic.gdx.utils.ObjectMap;
 
+/** two {@link ObjectMap ObjectMaps} holding each others contents in reverse for fast retrieval of both keys and values
+ *  @since 0.5.1
+ *  @author dermetfan */
 public class DualObjectMap<K, V> {
 
 	private final ObjectMap<K, V> keyValue;
@@ -53,20 +56,20 @@ public class DualObjectMap<K, V> {
 		return value;
 	}
 
-	public K removeByValue(V value) {
-		K key = valueKey.remove(value);
-		assert key != null;
-		V oldObject = keyValue.remove(key);
-		assert oldObject != null;
-		return key;
-	}
-
-	public V removeByKey(K key) {
+	public V removeKey(K key) {
 		V value = keyValue.remove(key);
 		assert value != null;
 		K removed = valueKey.remove(value);
 		assert removed != null;
 		return value;
+	}
+
+	public K removeValue(V value) {
+		K key = valueKey.remove(value);
+		assert key != null;
+		V oldObject = keyValue.remove(key);
+		assert oldObject != null;
+		return key;
 	}
 
 }
