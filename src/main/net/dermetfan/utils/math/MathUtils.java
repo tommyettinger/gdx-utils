@@ -212,6 +212,16 @@ public abstract class MathUtils {
 		return div(items, divisor, 0, items.length);
 	}
 
+	/** @param value the value from which to start
+	 *  @param amount the amount by which to approach zero
+	 *  @return the given value modified into the direction of zero by the given amount */
+	public static float approachZero(float value, float amount) {
+		amount = Math.abs(amount);
+		if(amount > Math.abs(value) || value == 0)
+			return 0;
+		return value - (value > 0 ? amount : -amount);
+	}
+
 	/** @return the sum of all values in the given array */
 	public static float sum(float[] items, int offset, int length) {
 		float sum = 0;
