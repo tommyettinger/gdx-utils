@@ -33,7 +33,7 @@ import com.badlogic.gdx.utils.Pool.Poolable;
 import com.badlogic.gdx.utils.Pools;
 
 /** notifies a {@link Listener} of changes in the world
- *  @since 0.5.1
+ *  @since 0.6.0
  *  @author dermetfan */
 public class WorldObserver {
 
@@ -208,7 +208,7 @@ public class WorldObserver {
 	}
 
 	/** the listener notified by a {@link WorldObserver}
-	 *  @since 0.5.1
+	 *  @since 0.6.0
 	 *  @author dermetfan */
 	public static interface Listener {
 
@@ -261,7 +261,7 @@ public class WorldObserver {
 	}
 
 	/** the changes of an object in a world since the last time {@link #update(Object)} was called
-	 *  @since 0.5.1
+	 *  @since 0.6.0
 	 *  @author dermetfan */
 	public static interface Change<T> extends Poolable {
 
@@ -278,7 +278,7 @@ public class WorldObserver {
 	}
 
 	/** the changes of a {@link World}
-	 *  @since 0.5.1
+	 *  @since 0.6.0
 	 *  @author dermetfan */
 	public static class WorldChange implements Change<World> {
 
@@ -337,7 +337,7 @@ public class WorldObserver {
 	}
 
 	/** the changes of a {@link Body}
-	 *  @since 0.5.1
+	 *  @since 0.6.0
 	 *  @author dermetfan */
 	public static class BodyChange implements Change<Body> {
 
@@ -624,7 +624,7 @@ public class WorldObserver {
 	}
 
 	/** the changes of a {@link Joint}
-	 *  @since 0.5.1
+	 *  @since 0.6.0
 	 *  @author dermetfan */
 	public static class JointChange implements Change<Joint> { // TODO implement
 

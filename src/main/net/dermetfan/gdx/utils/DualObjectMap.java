@@ -18,7 +18,7 @@ import com.badlogic.gdx.utils.ObjectMap;
 
 /** Two {@link ObjectMap ObjectMaps} holding each others contents in reverse for fast retrieval of both keys and values.
  *  This causes null values not to be allowed.
- *  @since 0.5.1
+ *  @since 0.6.0
  *  @author dermetfan */
 public class DualObjectMap<K, V> {
 

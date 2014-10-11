@@ -15,7 +15,7 @@
 package net.dermetfan.utils;
 
 /** utility methods for operations on Strings
- *  @since 0.5.1
+ *  @since 0.6.0
  *  @author dermetfan */
 public abstract class StringUtils {
 

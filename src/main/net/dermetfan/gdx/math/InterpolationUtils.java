@@ -21,7 +21,7 @@ import com.badlogic.gdx.utils.reflect.ReflectionException;
 import net.dermetfan.utils.StringUtils;
 
 /** useful methods regarding {@link Interpolation Interpolations}
- *  @since 0.5.1 */
+ *  @since 0.6.0 */
 public abstract class InterpolationUtils {
 
 	/** Retrieves one of the default {@code Interpolation} objects by name using reflection.
