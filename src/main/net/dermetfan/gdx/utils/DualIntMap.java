@@ -19,7 +19,7 @@ import com.badlogic.gdx.utils.IntMap.Keys;
 import com.badlogic.gdx.utils.ObjectIntMap;
 
 /** an {@link IntMap} and {@link ObjectIntMap} holding each others contents in reverse for fast retrieval of both keys and values
- *  @since 0.5.1
+ *  @since 0.6.0
  *  @author dermetfan */
 public class DualIntMap<V> {
 
