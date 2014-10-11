@@ -6,6 +6,7 @@ import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertFalse;
 
 public class MathUtilsTest {
 
@@ -30,6 +31,28 @@ public class MathUtilsTest {
 		assertEquals(120, MathUtils.factorial(5f), 0);
 		assertEquals(1.25f, MathUtils.factorial(1.25f), 0);
 		assertEquals(9.140625f, MathUtils.factorial(3.25f), 0);
+	}
+
+	@Test
+	public void between() {
+		assertTrue(MathUtils.between(1, 0, 2, false));
+		assertFalse(MathUtils.between(0, 1, 2, false));
+		assertTrue(MathUtils.between(1, 0, 2, true));
+		assertTrue(MathUtils.between(1, 1, 2, true));
+		assertFalse(MathUtils.between(0, 1, 2, true));
+		assertTrue(MathUtils.between(0, 0, 2, true));
+	}
+
+	@Test
+	public void approachZero() {
+		assertEquals(.5f, MathUtils.approachZero(1, .5f), 0);
+		assertEquals(.5f, MathUtils.approachZero(1, -.5f), 0);
+		assertEquals(0, MathUtils.approachZero(0, 1), 0);
+		assertEquals(0, MathUtils.approachZero(0, -1), 0);
+		assertEquals(0, MathUtils.approachZero(1, 2), 0);
+		assertEquals(0, MathUtils.approachZero(1, 2), 0);
+		assertEquals(0, MathUtils.approachZero(-1, 2), 0);
+		assertEquals(0, MathUtils.approachZero(-1, -2), 0);
 	}
 
 	@Test
@@ -127,6 +150,11 @@ public class MathUtilsTest {
 		float min = 0, max = Float.MAX_VALUE / 3;
 		assertNotEquals(Math.abs(max - min), MathUtils.amplitude(MathUtils.scale(values, min, max, 0, values.length), 0, values.length), com.badlogic.gdx.math.MathUtils.FLOAT_ROUNDING_ERROR);
 		assertEquals(Math.abs(max - min), MathUtils.amplitude(MathUtils.clamp(values, min, max, 0, values.length), 0, values.length), 0); // clamped amplitude must be correct
+	}
+
+	@Test
+	public void elementAtSum() {
+		assertEquals("2", MathUtils.elementAtSum(5, new float[] {1, 2, 3, 4, 5}, new String[] {"0", "1", "2", "3", "4", "5"}));
 	}
 
 	@Test
