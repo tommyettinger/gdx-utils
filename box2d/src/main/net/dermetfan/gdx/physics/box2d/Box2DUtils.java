@@ -24,24 +24,48 @@ import com.badlogic.gdx.physics.box2d.EdgeShape;
 import com.badlogic.gdx.physics.box2d.Filter;
 import com.badlogic.gdx.physics.box2d.Fixture;
 import com.badlogic.gdx.physics.box2d.FixtureDef;
+import com.badlogic.gdx.physics.box2d.Joint;
+import com.badlogic.gdx.physics.box2d.JointDef;
 import com.badlogic.gdx.physics.box2d.PolygonShape;
 import com.badlogic.gdx.physics.box2d.Shape;
 import com.badlogic.gdx.physics.box2d.Shape.Type;
 import com.badlogic.gdx.physics.box2d.World;
+import com.badlogic.gdx.physics.box2d.joints.DistanceJoint;
+import com.badlogic.gdx.physics.box2d.joints.DistanceJointDef;
+import com.badlogic.gdx.physics.box2d.joints.FrictionJoint;
+import com.badlogic.gdx.physics.box2d.joints.FrictionJointDef;
+import com.badlogic.gdx.physics.box2d.joints.GearJoint;
+import com.badlogic.gdx.physics.box2d.joints.GearJointDef;
+import com.badlogic.gdx.physics.box2d.joints.MotorJoint;
+import com.badlogic.gdx.physics.box2d.joints.MotorJointDef;
+import com.badlogic.gdx.physics.box2d.joints.MouseJoint;
+import com.badlogic.gdx.physics.box2d.joints.MouseJointDef;
+import com.badlogic.gdx.physics.box2d.joints.PrismaticJoint;
+import com.badlogic.gdx.physics.box2d.joints.PrismaticJointDef;
+import com.badlogic.gdx.physics.box2d.joints.PulleyJoint;
+import com.badlogic.gdx.physics.box2d.joints.PulleyJointDef;
+import com.badlogic.gdx.physics.box2d.joints.RevoluteJoint;
+import com.badlogic.gdx.physics.box2d.joints.RevoluteJointDef;
+import com.badlogic.gdx.physics.box2d.joints.RopeJoint;
+import com.badlogic.gdx.physics.box2d.joints.RopeJointDef;
+import com.badlogic.gdx.physics.box2d.joints.WeldJoint;
+import com.badlogic.gdx.physics.box2d.joints.WeldJointDef;
+import com.badlogic.gdx.physics.box2d.joints.WheelJoint;
+import com.badlogic.gdx.physics.box2d.joints.WheelJointDef;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.FloatArray;
 import com.badlogic.gdx.utils.ObjectMap;
 import com.badlogic.gdx.utils.Pools;
-import net.dermetfan.utils.Pair;
-import net.dermetfan.gdx.utils.ArrayUtils;
 import net.dermetfan.gdx.math.GeometryUtils;
 import net.dermetfan.gdx.math.MathUtils;
+import net.dermetfan.gdx.utils.ArrayUtils;
+import net.dermetfan.utils.Pair;
 
+import static net.dermetfan.gdx.math.GeometryUtils.filterX;
+import static net.dermetfan.gdx.math.GeometryUtils.filterY;
 import static net.dermetfan.gdx.math.MathUtils.amplitude;
 import static net.dermetfan.gdx.math.MathUtils.max;
 import static net.dermetfan.gdx.math.MathUtils.min;
-import static net.dermetfan.gdx.math.GeometryUtils.filterX;
-import static net.dermetfan.gdx.math.GeometryUtils.filterY;
 
 /** provides methods for operations with Box2D {@link Body Bodies}, {@link Fixture Fixtures} and {@link Shape Shapes}
  *  @author dermetfan */
@@ -452,17 +476,17 @@ public abstract class Box2DUtils {
 
 	// clone
 
-	/** clones a {@link Body} (without deep copying the {@link Shape Shapes} of its {@link Fixture Fixtures})<br>
+	/** clones a Body (without deep copying the Shapes of its Fixtures)<br>
 	 *  @return {@link #clone(Body, boolean) copy(body, false)}
 	 *  @see #clone(Body, boolean) */
 	public static Body clone(Body body) {
 		return clone(body, false);
 	}
 
-	/** clones a {@link Body}
-	 *  @param body the {@link Body} to copy
-	 *  @param shapes if the {@link Shape Shapes} of the {@link Fixture Fixures} of the given {@code body} should be {@link #clone(Shape) copied} as well
-	 *  @return a deep copy of the given {@code body} */
+	/** clones a Body
+	 *  @param body the Body to copy
+	 *  @param shapes if the Shapes of the Fixures of the given Body should be {@link #clone(Shape) copied} as well
+	 *  @return a deep copy of the given Body */
 	public static Body clone(Body body, boolean shapes) {
 		Body clone = body.getWorld().createBody(createDef(body));
 		clone.setUserData(body.getUserData());
@@ -471,18 +495,18 @@ public abstract class Box2DUtils {
 		return clone;
 	}
 
-	/** clones a {@link Fixture} (without deep copying its {@link Shape})
+	/** clones a Fixture (without deep copying its Shape)
 	 *  @return {@link #clone(Fixture, Body, boolean) copy(fixture, body, false)}
 	 *  @see #clone(Fixture, Body, boolean) */
 	public static Fixture clone(Fixture fixture, Body body) {
 		return clone(fixture, body, false);
 	}
 
-	/** clones a {@link Fixture}
-	 *  @param fixture the {@link Fixture} to copy
-	 *  @param body the {@link Body} to create a copy of the given {@code fixture} on
-	 *  @param shape if the {@link Fixture#getShape() shape} of the given {@code fixture} should be deep {@link #clone(Shape) copied} as well
-	 *  @return the copied {@link Fixture} */
+	/** clones a Fixture
+	 *  @param fixture the Fixture to copy
+	 *  @param body the Body to create a copy of the given {@code fixture} on
+	 *  @param shape if the {@link Fixture#getShape() shape} of the given Fixture should be deep {@link #clone(Shape) copied} as well
+	 *  @return the copied Fixture */
 	public static Fixture clone(Fixture fixture, Body body, boolean shape) {
 		FixtureDef fixtureDef = createDef(fixture);
 		if(shape)
@@ -492,10 +516,9 @@ public abstract class Box2DUtils {
 		return clone;
 	}
 
-	/** creates a deep copy of a {@link Shape}<br>
-	 *  <strong>Note: The {@link ChainShape#setPrevVertex(float, float) previous} and {@link ChainShape#setNextVertex(float, float) next} vertex of a {@link ChainShape} will not be copied since this is not possible due to the API.</strong>
-	 *  @param shape the {@link Shape} to copy
-	 *  @return a {@link Shape} exactly like the one passed in */
+	/** creates a deep copy of a Shape
+	 *  @param shape the Shape to clone
+	 *  @return a Shape exactly like the one passed in */
 	@SuppressWarnings("unchecked")
 	public static <T extends Shape> T clone(T shape) {
 		T clone;
@@ -540,136 +563,18 @@ public abstract class Box2DUtils {
 		return clone;
 	}
 
-	/* Not implemented because the Box2D API does not provide all necessary information.
-	public static Joint clone(Joint joint, Body bodyA, Body bodyB) {
-		JointDef jointDef;
-		Joint copy;
-		switch(joint.getType()) {
-		case Unknown:
-			jointDef = new JointDef();
-			break;
-		case RevoluteJoint:
-			RevoluteJoint revoluteJoint = (RevoluteJoint) joint;
-			RevoluteJointDef revoluteJointDef = (RevoluteJointDef) (jointDef = new RevoluteJointDef());
-			revoluteJointDef.collideConnected = revoluteJoint.isCollideConnected(); // missing
-			revoluteJointDef.enableLimit = revoluteJoint.isLimitEnabled();
-			revoluteJointDef.enableMotor = revoluteJoint.isMotorEnabled();
-			revoluteJointDef.localAnchorA.set(revoluteJoint.getAnchorA());
-			revoluteJointDef.localAnchorB.set(revoluteJoint.getAnchorB());
-			revoluteJointDef.lowerAngle = revoluteJoint.getLowerLimit();
-			revoluteJointDef.maxMotorTorque = revoluteJoint.getMaxMotorTorque();
-			revoluteJointDef.motorSpeed = revoluteJoint.getMotorSpeed();
-			revoluteJointDef.referenceAngle = revoluteJoint.getReferenceAngle();
-			revoluteJointDef.upperAngle = revoluteJoint.getUpperLimit();
-			break;
-		case PrismaticJoint:
-			PrismaticJoint prismaticJoint = (PrismaticJoint) joint;
-			PrismaticJointDef prismaticJointDef = (PrismaticJointDef) (jointDef = new PrismaticJointDef());
-			prismaticJointDef.collideConnected = prismaticJoint.isCollideConnected(); // missing
-			prismaticJointDef.enableLimit = prismaticJoint.isLimitEnabled();
-			prismaticJointDef.enableMotor = prismaticJoint.isMotorEnabled();
-			prismaticJointDef.localAnchorA.set(prismaticJoint.getAnchorA());
-			prismaticJointDef.localAnchorB.set(prismaticJoint.getAnchorB());
-			prismaticJointDef.localAxisA.set(prismaticJoint.getLocalAxisA()); // missing
-			prismaticJointDef.lowerTranslation = prismaticJoint.getLowerTranslation(); // missing
-			prismaticJointDef.maxMotorForce = prismaticJoint.getMaxMotorForce(); // missing
-			prismaticJointDef.motorSpeed = prismaticJoint.getMotorSpeed();
-			prismaticJointDef.referenceAngle = prismaticJoint.getReferenceAngle(); // missing
-			prismaticJointDef.upperTranslation = prismaticJoint.getUpperTranslation(); // missing
-			break;
-		case DistanceJoint:
-			DistanceJoint distanceJoint = (DistanceJoint) joint;
-			DistanceJointDef distanceJointDef = (DistanceJointDef) (jointDef = new DistanceJointDef());
-			distanceJointDef.collideConnected = distanceJoint.isCollideConnected(); // missing
-			distanceJointDef.dampingRatio = distanceJoint.getDampingRatio();
-			distanceJointDef.frequencyHz = distanceJoint.getFrequency();
-			distanceJointDef.length = distanceJoint.getLength();
-			distanceJointDef.localAnchorA.set(distanceJoint.getAnchorA());
-			distanceJointDef.localAnchorB.set(distanceJoint.getAnchorB());
-			break;
-		case PulleyJoint:
-			PulleyJoint pulleyJoint = (PulleyJoint) joint;
-			PulleyJointDef pulleyJointDef = (PulleyJointDef) (jointDef = new PulleyJointDef());
-			pulleyJointDef.collideConnected = pulleyJoint.isCollideConnected(); // missing
-			pulleyJointDef.groundAnchorA.set(pulleyJoint.getGroundAnchorA());
-			pulleyJointDef.groundAnchorB.set(pulleyJoint.getGroundAnchorB());
-			pulleyJointDef.lengthA = pulleyJoint.getLength1();
-			pulleyJointDef.lengthB = pulleyJoint.getLength2();
-			pulleyJointDef.localAnchorA.set(pulleyJoint.getAnchorA());
-			pulleyJointDef.localAnchorB.set(pulleyJoint.getAnchorB());
-			pulleyJointDef.ratio = pulleyJoint.getRatio();
-			break;
-		case MouseJoint:
-			MouseJoint mouseJoint = (MouseJoint) joint;
-			MouseJointDef mouseJointDef = (MouseJointDef) (jointDef = new MouseJointDef());
-			mouseJointDef.collideConnected = mouseJoint.isCollideConnected(); // missing
-			mouseJointDef.dampingRatio = mouseJoint.getDampingRatio();
-			mouseJointDef.frequencyHz = mouseJoint.getFrequency();
-			mouseJointDef.maxForce = mouseJoint.getMaxForce();
-			mouseJointDef.target.set(mouseJoint.getTarget());
-			break;
-		case GearJoint:
-			GearJoint gearJoint = (GearJoint) joint;
-			GearJointDef gearJointDef = (GearJointDef) (jointDef = new GearJointDef());
-			gearJointDef.collideConnected = gearJoint.isCollideConnected(); // missing
-			gearJointDef.joint1 = gearJoint.getJoint1(); // missing
-			gearJointDef.joint2 = gearJoint.getJoint2(); // missing
-			gearJointDef.ratio = gearJoint.getRatio();
-			break;
-		case WheelJoint:
-			WheelJoint wheelJoint = (WheelJoint) joint;
-			WheelJointDef wheelJointDef = (WheelJointDef) (jointDef = new WheelJointDef());
-			wheelJointDef.collideConnected = wheelJoint.isCollideConnected(); // missing
-			wheelJointDef.dampingRatio = wheelJoint.getSpringDampingRatio();
-			wheelJointDef.enableMotor = wheelJoint.isMotorEnabled(); // missing
-			wheelJointDef.frequencyHz = wheelJoint.getSpringFrequencyHz();
-			wheelJointDef.localAnchorA.set(wheelJoint.getAnchorA());
-			wheelJointDef.localAnchorB.set(wheelJoint.getAnchorB());
-			wheelJointDef.localAxisA.set(wheelJoint.getLocalAxisA()); // missing
-			wheelJointDef.maxMotorTorque = wheelJoint.getMaxMotorTorque();
-			wheelJointDef.motorSpeed = wheelJoint.getMotorSpeed();
-			break;
-		case WeldJoint:
-			WeldJoint weldJoint = (WeldJoint) joint;
-			WeldJointDef weldJointDef = (WeldJointDef) (jointDef = new WeldJointDef());
-			weldJointDef.collideConnected = weldJoint.isCollideConnected(); // missing
-			weldJointDef.localAnchorA.set(weldJoint.getAnchorA());
-			weldJointDef.localAnchorB.set(weldJoint.getAnchorB());
-			weldJointDef.referenceAngle = weldJoint.getReferenceAngle();
-			break;
-		case FrictionJoint:
-			FrictionJoint frictionJoint = (FrictionJoint) joint;
-			FrictionJointDef frictionJointDef = (FrictionJointDef) (jointDef = new FrictionJointDef());
-			frictionJointDef.collideConnected = frictionJointDef.isCollideConnected(); // missing
-			frictionJointDef.localAnchorA.set(frictionJoint.getAnchorA());
-			frictionJointDef.localAnchorB.set(frictionJoint.getAnchorB());
-			frictionJointDef.maxForce = frictionJoint.getMaxForce();
-			frictionJointDef.maxTorque = frictionJoint.getMaxTorque();
-			break;
-		case RopeJoint:
-			RopeJoint ropeJoint = (RopeJoint) joint;
-			RopeJointDef ropeJointDef = (RopeJointDef) (jointDef = new RopeJointDef());
-			ropeJointDef.localAnchorA.set(ropeJoint.getAnchorA());
-			ropeJointDef.localAnchorB.set(ropeJoint.getAnchorB());
-			ropeJointDef.maxLength = ropeJoint.getMaxLength();
-			break;
-		default:
-			return joint;
-		}
-		jointDef.type = joint.getType();
-		jointDef.bodyA = bodyA;
-		jointDef.bodyB = bodyB;
-		copy = bodyA.getWorld().createJoint(jointDef);
-		copy.setUserData(joint.getUserData());
-		return copy;
-	} */
+	/** @param joint the joint to clone */
+	@SuppressWarnings("unchecked")
+	public static <T extends Joint> T clone(T joint) {
+		return (T) joint.getBodyA().getWorld().createJoint(createDef(joint));
+	}
 
-	// createDef
+	// defs
 
-	/** @param body the body for which to setup a new {@link BodyDef}
-	 *  @return a new {@link BodyDef} instance that can be used to clone the given body */
-	public static BodyDef createDef(Body body) {
-		BodyDef bodyDef = new BodyDef();
+	/** @param bodyDef the BodyDef to set according to the given Body
+	 *  @param body the Body to set the given BodyDef accordingly to
+	 *  @return the given BodyDef for chaining */
+	public static BodyDef set(BodyDef bodyDef, Body body) {
 		bodyDef.active = body.isActive();
 		bodyDef.allowSleep = body.isSleepingAllowed();
 		bodyDef.angle = body.getAngle();
@@ -686,10 +591,10 @@ public abstract class Box2DUtils {
 		return bodyDef;
 	}
 
-	/** @param fixture the fixture for which to setup a new {@link FixtureDef}
-	 *  @return a new {@link FixtureDef} instance that can be used to clone the given fixture */
-	public static FixtureDef createDef(Fixture fixture) {
-		FixtureDef fixtureDef = new FixtureDef();
+	/** @param fixtureDef the FixtureDef to set according to the given Fixture
+	 *  @param fixture the Fixture to set the given FixtureDef accordingly to
+	 *  @return the given FixtureDef for chaining */
+	public static FixtureDef set(FixtureDef fixtureDef, Fixture fixture) {
 		fixtureDef.density = fixture.getDensity();
 		Filter filter = fixture.getFilterData();
 		fixtureDef.filter.categoryBits = filter.categoryBits;
@@ -702,10 +607,245 @@ public abstract class Box2DUtils {
 		return fixtureDef;
 	}
 
-	/* Not implemented because the Box2D API does not provide all necessary information.
-	 * public static JointDef createDef(Joint joint) {
-	 * 	return null;
-	 * } */
+	/** @param jointDef the JointDef to set according to the given Joint
+	 *  @param joint the Joint to set the given JointDef accordingly to
+	 *  @return the given JointDef for chaining */
+	public static JointDef set(JointDef jointDef, Joint joint) {
+		jointDef.type = joint.getType();
+		jointDef.collideConnected = joint.getCollideConnected();
+		jointDef.bodyA = joint.getBodyA();
+		jointDef.bodyB = joint.getBodyB();
+		return jointDef;
+	}
+
+	/** @see #set(JointDef, Joint) */
+	public static DistanceJointDef set(DistanceJointDef jointDef, DistanceJoint joint) {
+		set((JointDef) jointDef, joint);
+		jointDef.dampingRatio = joint.getDampingRatio();
+		jointDef.frequencyHz = joint.getFrequency();
+		jointDef.length = joint.getLength();
+		jointDef.localAnchorA.set(joint.getLocalAnchorA());
+		jointDef.localAnchorB.set(joint.getLocalAnchorB());
+		return jointDef;
+	}
+
+	/** @see #set(JointDef, Joint) */
+	public static FrictionJointDef set(FrictionJointDef jointDef, FrictionJoint joint) {
+		set((JointDef) jointDef, joint);
+		jointDef.localAnchorA.set(joint.getLocalAnchorA());
+		jointDef.localAnchorB.set(joint.getLocalAnchorB());
+		jointDef.maxForce = joint.getMaxForce();
+		jointDef.maxTorque = joint.getMaxTorque();
+		return jointDef;
+	}
+
+	/** @see #set(JointDef, Joint) */
+	public static GearJointDef set(GearJointDef jointDef, GearJoint joint) {
+		set((JointDef) jointDef, joint);
+		jointDef.joint1 = joint.getJoint1();
+		jointDef.joint2 = joint.getJoint2();
+		jointDef.ratio = joint.getRatio();
+		return jointDef;
+	}
+
+	/** @see #set(JointDef, Joint) */
+	public static MotorJointDef set(MotorJointDef jointDef, MotorJoint joint) {
+		set((JointDef) jointDef, joint);
+		jointDef.angularOffset = joint.getAngularOffset();
+		jointDef.linearOffset.set(joint.getLinearOffset());
+		jointDef.correctionFactor = joint.getCorrectionFactor();
+		jointDef.maxForce = joint.getMaxForce();
+		jointDef.maxTorque = joint.getMaxTorque();
+		return jointDef;
+	}
+
+	/** @see #set(JointDef, Joint) */
+	public static MouseJointDef set(MouseJointDef jointDef, MouseJoint joint) {
+		set((JointDef) jointDef, joint);
+		jointDef.dampingRatio = joint.getDampingRatio();
+		jointDef.frequencyHz = joint.getFrequency();
+		jointDef.maxForce = joint.getMaxForce();
+		jointDef.target.set(joint.getTarget());
+		return jointDef;
+	}
+
+	/** @see #set(JointDef, Joint) */
+	public static RevoluteJointDef set(RevoluteJointDef jointDef, RevoluteJoint joint) {
+		set((JointDef) jointDef, joint);
+		jointDef.enableLimit = joint.isLimitEnabled();
+		jointDef.enableMotor = joint.isMotorEnabled();
+		jointDef.maxMotorTorque = joint.getMaxMotorTorque();
+		jointDef.motorSpeed = joint.getMotorSpeed();
+		jointDef.localAnchorA.set(joint.getLocalAnchorA());
+		jointDef.localAnchorB.set(joint.getLocalAnchorB());
+		jointDef.lowerAngle = joint.getLowerLimit();
+		jointDef.upperAngle = joint.getUpperLimit();
+		jointDef.referenceAngle = joint.getReferenceAngle();
+		return jointDef;
+	}
+
+	/** @see #set(JointDef, Joint) */
+	public static PrismaticJointDef set(PrismaticJointDef jointDef, PrismaticJoint joint)  {
+		set((JointDef) jointDef, joint);
+		jointDef.enableLimit = joint.isLimitEnabled();
+		jointDef.enableMotor = joint.isMotorEnabled();
+		jointDef.maxMotorForce = joint.getMaxMotorForce();
+		jointDef.motorSpeed = joint.getMotorSpeed();
+		jointDef.localAnchorA.set(joint.getLocalAnchorA());
+		jointDef.localAnchorB.set(joint.getLocalAnchorB());
+		jointDef.localAxisA.set(joint.getLocalAxisA());
+		jointDef.lowerTranslation = joint.getLowerLimit();
+		jointDef.upperTranslation = joint.getUpperLimit();
+		jointDef.referenceAngle = joint.getReferenceAngle();
+		return jointDef;
+	}
+
+	/** @see #set(JointDef, Joint) */
+	public static PulleyJointDef set(PulleyJointDef jointDef, PulleyJoint joint) {
+		set((JointDef) jointDef, joint);
+		jointDef.groundAnchorA.set(joint.getGroundAnchorA());
+		jointDef.groundAnchorB.set(joint.getGroundAnchorB());
+		jointDef.lengthA = joint.getLength1();
+		jointDef.lengthB = joint.getLength2();
+		jointDef.ratio = joint.getRatio();
+		jointDef.localAnchorA.set(joint.getBodyA().getLocalPoint(joint.getAnchorA()));
+		jointDef.localAnchorB.set(joint.getBodyB().getLocalPoint(joint.getAnchorB()));
+		return jointDef;
+	}
+
+	/** @see #set(JointDef, Joint) */
+	public static WheelJointDef set(WheelJointDef jointDef, WheelJoint joint) {
+		set((JointDef) jointDef, joint);
+		jointDef.dampingRatio = joint.getSpringDampingRatio();
+		jointDef.frequencyHz = joint.getSpringFrequencyHz();
+		jointDef.enableMotor = joint.isMotorEnabled();
+		jointDef.maxMotorTorque = joint.getMaxMotorTorque();
+		jointDef.motorSpeed = joint.getMotorSpeed();
+		jointDef.localAnchorA.set(joint.getLocalAnchorA());
+		jointDef.localAnchorB.set(joint.getLocalAnchorB());
+		jointDef.localAxisA.set(joint.getLocalAxisA());
+		return jointDef;
+	}
+
+	/** <strong>Note:</strong> The reference angle cannot be set due to the Box2D API not providing it.
+	 *  @see #set(JointDef, Joint) */
+	public static WeldJointDef set(WeldJointDef jointDef, WeldJoint joint) {
+		set((JointDef) jointDef, joint);
+		jointDef.dampingRatio = joint.getDampingRatio();
+		jointDef.frequencyHz = joint.getFrequency();
+		jointDef.localAnchorA.set(joint.getLocalAnchorA());
+		jointDef.localAnchorB.set(joint.getLocalAnchorB());
+		// jointDef.referenceAngle = joint.getReferenceAngle();
+		return jointDef;
+	}
+
+	/** @see #set(JointDef, Joint) */
+	public static RopeJointDef set(RopeJointDef jointDef, RopeJoint joint) {
+		set((JointDef) jointDef, joint);
+		jointDef.localAnchorA.set(joint.getLocalAnchorA());
+		jointDef.localAnchorB.set(joint.getLocalAnchorB());
+		jointDef.maxLength = joint.getMaxLength();
+		return jointDef;
+	}
+
+	/** @param body the body for which to setup a new {@link BodyDef}
+	 *  @return a new {@link BodyDef} instance that can be used to clone the given body */
+	public static BodyDef createDef(Body body) {
+		return set(new BodyDef(), body);
+	}
+
+	/** @param fixture the fixture for which to setup a new {@link FixtureDef}
+	 *  @return a new {@link FixtureDef} instance that can be used to clone the given fixture */
+	public static FixtureDef createDef(Fixture fixture) {
+		return set(new FixtureDef(), fixture);
+	}
+
+	/** @param joint the joint for which to create a new JointDef
+	 *  @return a new JointDef instance that can be used to clone the given joint */
+	public static JointDef createDef(Joint joint) {
+		switch(joint.getType()) {
+		case RevoluteJoint:
+			return createDef((RevoluteJoint) joint);
+		case PrismaticJoint:
+			return createDef((PrismaticJoint) joint);
+		case DistanceJoint:
+			return createDef((DistanceJoint) joint);
+		case PulleyJoint:
+			return createDef((PulleyJoint) joint);
+		case MouseJoint:
+			return createDef((MouseJoint) joint);
+		case GearJoint:
+			return createDef((GearJoint) joint);
+		case WheelJoint:
+			return createDef((WheelJoint) joint);
+		case WeldJoint:
+			return createDef((WeldJoint) joint);
+		case FrictionJoint:
+			return createDef((FrictionJoint) joint);
+		case RopeJoint:
+			return createDef((RopeJoint) joint);
+		case MotorJoint:
+			return createDef((MotorJoint) joint);
+		case Unknown:
+			return set(new JointDef(), joint);
+		}
+		return null;
+	}
+
+	/** @see #createDef(Joint) */
+	public static DistanceJointDef createDef(DistanceJoint joint) {
+		return set(new DistanceJointDef(), joint);
+	}
+
+	/** @see #createDef(Joint) */
+	public static FrictionJointDef createDef(FrictionJoint joint) {
+		return set(new FrictionJointDef(), joint);
+	}
+
+	/** @see #createDef(Joint) */
+	public static GearJointDef createDef(GearJoint joint) {
+		return set(new GearJointDef(), joint);
+	}
+
+	/** @see #createDef(Joint) */
+	public static MotorJointDef createDef(MotorJoint joint) {
+		return set(new MotorJointDef(), joint);
+	}
+
+	/** @see #createDef(Joint) */
+	public static MouseJointDef createDef(MouseJoint joint) {
+		return set(new MouseJointDef(), joint);
+	}
+
+	/** @see #createDef(Joint) */
+	public static RevoluteJointDef createDef(RevoluteJoint joint) {
+		return set(new RevoluteJointDef(), joint);
+	}
+
+	/** @see #createDef(Joint) */
+	public static PrismaticJointDef createDef(PrismaticJoint joint) {
+		return set(new PrismaticJointDef(), joint);
+	}
+
+	/** @see #createDef(Joint) */
+	public static PulleyJointDef createDef(PulleyJoint joint) {
+		return set(new PulleyJointDef(), joint);
+	}
+
+	/** @see #createDef(Joint) */
+	public static WheelJointDef createDef(WheelJoint joint) {
+		return set(new WheelJointDef(), joint);
+	}
+
+	/** @see #createDef(Joint) */
+	public static WeldJointDef createDef(WeldJoint joint) {
+		return set(new WeldJointDef(), joint);
+	}
+
+	/** @see #createDef(Joint) */
+	public static RopeJointDef createDef(RopeJoint joint) {
+		return set(new RopeJointDef(), joint);
+	}
 
 	// split
 
