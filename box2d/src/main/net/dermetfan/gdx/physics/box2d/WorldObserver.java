@@ -258,6 +258,55 @@ public class WorldObserver {
 		/** @param joint the destroyed Joint */
 		void destroyed(Joint joint);
 
+		/** A class that implements Listener. Does nothing. Subclass this if you only want to override some methods.
+		 *  @since 0.6.1
+		 *  @author dermetfan */
+		public static class Adapter implements Listener {
+
+			@Override
+			public void setOn(WorldObserver observer) {}
+
+			@Override
+			public void removedFrom(WorldObserver observer) {}
+
+			@Override
+			public void preUpdate(World world) {}
+
+			@Override
+			public void postUpdate(World world) {}
+
+			@Override
+			public void changed(World world, WorldChange change) {}
+
+			@Override
+			public void changed(Body body, BodyChange change) {}
+
+			@Override
+			public void created(Body body) {}
+
+			@Override
+			public void destroyed(Body body) {}
+
+			@Override
+			public void changed(Fixture fixture, FixtureChange change) {}
+
+			@Override
+			public void created(Fixture fixture) {}
+
+			@Override
+			public void destroyed(Fixture fixture) {}
+
+			@Override
+			public void changed(Joint joint, JointChange change) {}
+
+			@Override
+			public void created(Joint joint) {}
+
+			@Override
+			public void destroyed(Joint joint) {}
+
+		}
+
 	}
 
 	/** the changes of an object in a world since the last time {@link #update(Object)} was called
