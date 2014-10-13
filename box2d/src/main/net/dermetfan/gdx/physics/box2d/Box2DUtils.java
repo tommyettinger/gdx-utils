@@ -485,7 +485,7 @@ public abstract class Box2DUtils {
 
 	/** clones a Body
 	 *  @param body the Body to copy
-	 *  @param shapes if the Shapes of the Fixures of the given Body should be {@link #clone(Shape) copied} as well
+	 *  @param shapes if the Shapes of the Fixtures of the given Body should be {@link #clone(Shape) copied} as well
 	 *  @return a deep copy of the given Body */
 	public static Body clone(Body body, boolean shapes) {
 		Body clone = body.getWorld().createBody(createDef(body));
@@ -563,7 +563,8 @@ public abstract class Box2DUtils {
 		return clone;
 	}
 
-	/** @param joint the joint to clone */
+	/** @param joint the joint to clone
+	 *  @since 0.6.1 */
 	@SuppressWarnings("unchecked")
 	public static <T extends Joint> T clone(T joint) {
 		return (T) joint.getBodyA().getWorld().createJoint(createDef(joint));
@@ -573,7 +574,8 @@ public abstract class Box2DUtils {
 
 	/** @param bodyDef the BodyDef to set according to the given Body
 	 *  @param body the Body to set the given BodyDef accordingly to
-	 *  @return the given BodyDef for chaining */
+	 *  @return the given BodyDef for chaining
+	 *  @since 0.6.1 */
 	public static BodyDef set(BodyDef bodyDef, Body body) {
 		bodyDef.active = body.isActive();
 		bodyDef.allowSleep = body.isSleepingAllowed();
@@ -593,7 +595,8 @@ public abstract class Box2DUtils {
 
 	/** @param fixtureDef the FixtureDef to set according to the given Fixture
 	 *  @param fixture the Fixture to set the given FixtureDef accordingly to
-	 *  @return the given FixtureDef for chaining */
+	 *  @return the given FixtureDef for chaining
+	 *  @since 0.6.1 */
 	public static FixtureDef set(FixtureDef fixtureDef, Fixture fixture) {
 		fixtureDef.density = fixture.getDensity();
 		Filter filter = fixture.getFilterData();
@@ -609,7 +612,8 @@ public abstract class Box2DUtils {
 
 	/** @param jointDef the JointDef to set according to the given Joint
 	 *  @param joint the Joint to set the given JointDef accordingly to
-	 *  @return the given JointDef for chaining */
+	 *  @return the given JointDef for chaining
+	 *  @since 0.6.1 */
 	public static JointDef set(JointDef jointDef, Joint joint) {
 		jointDef.type = joint.getType();
 		jointDef.collideConnected = joint.getCollideConnected();
@@ -761,7 +765,8 @@ public abstract class Box2DUtils {
 	}
 
 	/** @param joint the joint for which to create a new JointDef
-	 *  @return a new JointDef instance that can be used to clone the given joint */
+	 *  @return a new JointDef instance that can be used to clone the given joint
+	 *  @since 0.6.1 */
 	public static JointDef createDef(Joint joint) {
 		switch(joint.getType()) {
 		case RevoluteJoint:
