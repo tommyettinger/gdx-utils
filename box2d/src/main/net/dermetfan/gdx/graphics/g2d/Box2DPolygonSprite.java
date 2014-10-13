@@ -24,7 +24,6 @@ import com.badlogic.gdx.graphics.g2d.PolygonSpriteBatch;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
-import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.Fixture;
 import com.badlogic.gdx.physics.box2d.World;
@@ -32,8 +31,8 @@ import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.FloatArray;
 import com.badlogic.gdx.utils.ObjectMap;
 import com.badlogic.gdx.utils.Pools;
-import net.dermetfan.utils.Function;
 import net.dermetfan.gdx.math.GeometryUtils;
+import net.dermetfan.utils.Function;
 
 import static net.dermetfan.gdx.physics.box2d.Box2DUtils.height;
 import static net.dermetfan.gdx.physics.box2d.Box2DUtils.minX;
@@ -47,33 +46,8 @@ import static net.dermetfan.gdx.physics.box2d.Box2DUtils.width;
  *  @author dermetfan */
 public class Box2DPolygonSprite extends PolygonSprite {
 
-	/** the z index for sorted drawing */
-	private float zIndex;
-
-	/** if the width and height should be adjusted to those of the {@link Body} or {@link Fixture} this {@link Box2DPolygonSprite} is attached to (true by default) */
-	private boolean adjustWidth = true, adjustHeight = true;
-
-	/** if the size should be adjusted to match the polygon onto the body or fixture (true by default) */
-	private boolean adjustToPolygon = true;
-
-	/** if the origin of this {@link Box2DPolygonSprite} should be used when it's drawn (false by default) */
-	private boolean useOriginX, useOriginY;
-
 	/** for internal, temporary usage */
 	private static final Vector2 vec2 = new Vector2();
-
-	/** for internal, temporary usage */
-	private static final Vector3 vec3 = new Vector3();
-
-	/** @see PolygonSprite#PolygonSprite(PolygonRegion) */
-	public Box2DPolygonSprite(PolygonRegion region) {
-		super(region);
-	}
-
-	/** @see PolygonSprite#PolygonSprite(PolygonSprite) */
-	public Box2DPolygonSprite(PolygonSprite sprite) {
-		super(sprite);
-	}
 
 	/** the {@link #userDataAccessor} used by default */
 	public static final Function<Box2DPolygonSprite, Object> defaultUserDataAccessor = new Function<Box2DPolygonSprite, Object>() {
@@ -85,14 +59,6 @@ public class Box2DPolygonSprite extends PolygonSprite {
 
 	/** the {@link Function} used to get a {@link Box2DPolygonSprite} from the user data of a body or fixture */
 	private static Function<Box2DPolygonSprite, Object> userDataAccessor = defaultUserDataAccessor;
-
-	/** a {@link Comparator} used to sort {@link Box2DPolygonSprite Box2DPolygonSprites} by their {@link Box2DPolygonSprite#zIndex z index} in {@link #draw(Batch, World)} */
-	private static Comparator<Box2DPolygonSprite> zComparator = new Comparator<Box2DPolygonSprite>() {
-		@Override
-		public int compare(Box2DPolygonSprite s1, Box2DPolygonSprite s2) {
-			return s1.zIndex - s2.zIndex > 0 ? 1 : s1.zIndex - s2.zIndex < 0 ? -1 : 0;
-		}
-	};
 
 	/** @see #draw(Batch, World, boolean) */
 	public static void draw(Batch batch, World world) {
@@ -148,6 +114,58 @@ public class Box2DPolygonSprite extends PolygonSprite {
 
 		tmpBodies.clear();
 		Pools.free(tmpBodies);
+	}
+
+	/** @return the {@link #zComparator} */
+	public static Comparator<Box2DPolygonSprite> getZComparator() {
+		return zComparator;
+	}
+
+	/** @param zComparator the {@link #zComparator} to set */
+	public static void setZComparator(Comparator<Box2DPolygonSprite> zComparator) {
+		if(zComparator == null)
+			throw new IllegalArgumentException("zComparator must not be null");
+		Box2DPolygonSprite.zComparator = zComparator;
+	}
+
+	/** @return the {@link #userDataAccessor} */
+	public static Function<Box2DPolygonSprite, ?> getUserDataAccessor() {
+		return userDataAccessor;
+	}
+
+	/** @param userDataAccessor the {@link #userDataAccessor} to set */
+	public static void setUserDataAccessor(Function<Box2DPolygonSprite, Object> userDataAccessor) {
+		Box2DPolygonSprite.userDataAccessor = userDataAccessor != null ? userDataAccessor : defaultUserDataAccessor;
+	}
+
+	/** the z index for sorted drawing */
+	private float zIndex;
+
+	/** a {@link Comparator} used to sort {@link Box2DPolygonSprite Box2DPolygonSprites} by their {@link Box2DPolygonSprite#zIndex z index} in {@link #draw(Batch, World)} */
+	private static Comparator<Box2DPolygonSprite> zComparator = new Comparator<Box2DPolygonSprite>() {
+		@Override
+		public int compare(Box2DPolygonSprite s1, Box2DPolygonSprite s2) {
+			return s1.zIndex - s2.zIndex > 0 ? 1 : s1.zIndex - s2.zIndex < 0 ? -1 : 0;
+		}
+	};
+
+	/** if the width and height should be adjusted to those of the {@link Body} or {@link Fixture} this {@link Box2DPolygonSprite} is attached to (true by default) */
+	private boolean adjustWidth = true, adjustHeight = true;
+
+	/** if the size should be adjusted to match the polygon onto the body or fixture (true by default) */
+	private boolean adjustToPolygon = true;
+
+	/** if the origin of this {@link Box2DPolygonSprite} should be used when it's drawn (false by default) */
+	private boolean useOriginX, useOriginY;
+
+	/** @see PolygonSprite#PolygonSprite(PolygonRegion) */
+	public Box2DPolygonSprite(PolygonRegion region) {
+		super(region);
+	}
+
+	/** @see PolygonSprite#PolygonSprite(PolygonSprite) */
+	public Box2DPolygonSprite(PolygonSprite sprite) {
+		super(sprite);
 	}
 
 	/** draws this {@link Box2DPolygonSprite} on the given {@link Fixture} */
@@ -293,28 +311,6 @@ public class Box2DPolygonSprite extends PolygonSprite {
 	/** @see Sprite#setSize(float, float) */
 	public void setHeight(float height) {
 		setSize(getWidth(), height);
-	}
-
-	/** @return the {@link #zComparator} */
-	public static Comparator<Box2DPolygonSprite> getZComparator() {
-		return zComparator;
-	}
-
-	/** @param zComparator the {@link #zComparator} to set */
-	public static void setZComparator(Comparator<Box2DPolygonSprite> zComparator) {
-		if(zComparator == null)
-			throw new IllegalArgumentException("zComparator must not be null");
-		Box2DPolygonSprite.zComparator = zComparator;
-	}
-
-	/** @return the {@link #userDataAccessor} */
-	public static Function<Box2DPolygonSprite, ?> getUserDataAccessor() {
-		return userDataAccessor;
-	}
-
-	/** @param userDataAccessor the {@link #userDataAccessor} to set */
-	public static void setUserDataAccessor(Function<Box2DPolygonSprite, Object> userDataAccessor) {
-		Box2DPolygonSprite.userDataAccessor = userDataAccessor != null ? userDataAccessor : defaultUserDataAccessor;
 	}
 
 }
