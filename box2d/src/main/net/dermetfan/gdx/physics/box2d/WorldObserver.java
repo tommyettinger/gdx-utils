@@ -260,7 +260,7 @@ public class WorldObserver {
 		void destroyed(Joint joint);
 
 		/** A class that implements Listener. Does nothing. Subclass this if you only want to override some methods.
-		 *  @since 0.6.1
+		 *  @since 0.7.0
 		 *  @author dermetfan */
 		public static class Adapter implements Listener {
 
@@ -312,7 +312,7 @@ public class WorldObserver {
 
 	/** A Listener that calls another Listener on unpredictable/unexpected events.
 	 *  In practice only {@link #changed(Body, BodyChange)} can be predicted and therefore the other methods will be called normally.
-	 *  @since 0.6.1
+	 *  @since 0.7.0
 	 *  @author dermetfan */
 	public static class UnexpectedListener implements Listener {
 
@@ -427,7 +427,7 @@ public class WorldObserver {
 		}
 
 		/** Only for internal use. Stores the last change of predictable data.
-		 *  @since 0.6.1
+		 *  @since 0.7.0
 		 *  @author dermetfan */
 		private static class ExpectationBase implements Poolable {
 
@@ -453,7 +453,7 @@ public class WorldObserver {
 			}
 
 			/** A Pool for ExpectationBases. Singleton.
-			 *  @since 0.6.1
+			 *  @since 0.7.0
 			 *  @author dermetfan */
 			private static class Pool extends com.badlogic.gdx.utils.Pool<ExpectationBase> {
 
