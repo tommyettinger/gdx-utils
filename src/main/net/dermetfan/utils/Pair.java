@@ -22,10 +22,10 @@ import com.badlogic.gdx.utils.reflect.ClassReflection;
 public class Pair<K, V> {
 
 	/** the key */
-	protected K key;
+	private K key;
 
 	/** the value */
-	protected V value;
+	private V value;
 
 	/** creates an empty pair ({@link #key} and {@link #value} are {@code null}) */
 	public Pair() {}
@@ -41,6 +41,23 @@ public class Pair<K, V> {
 	public Pair(Pair<K, V> pair) {
 		key = pair.key;
 		value = pair.value;
+	}
+
+	/** @param pair the Pair which {@link #key} and {@link #value} to use
+	 *  @return this Pair for chaining */
+	public Pair<K, V> set(Pair<K, V> pair) {
+		key = pair.key;
+		value = pair.value;
+		return this;
+	}
+
+	/** @param key the {@link #key} to set
+	 *  @param value the {@link #value} to set
+	 *  @return this Pair for chaining */
+	public Pair<K, V> set(K key, V value) {
+		this.key = key;
+		this.value = value;
+		return this;
 	}
 
 	/** sets {@link #key} and {@link #value} to null */
@@ -73,57 +90,37 @@ public class Pair<K, V> {
 	 *  @throws IllegalStateException if the classes of {@link #key} and {@link #value} are not {@link Class#isAssignableFrom(Class) assignable} from each other */
 	@SuppressWarnings("unchecked")
 	public void swap() throws IllegalStateException {
-		if(!ClassReflection.isAssignableFrom(key.getClass(), value.getClass()) || !ClassReflection.isAssignableFrom(value.getClass(), key.getClass()))
-			throw new IllegalStateException("the types of key and value are not assignable from each other: " + ClassReflection.getSimpleName(key.getClass()) + " - " + ClassReflection.getSimpleName(value.getClass()));
+		if(key.getClass() != value.getClass())
+			throw new IllegalStateException("key and value are not of the same type: " + ClassReflection.getSimpleName(key.getClass()) + " - " + ClassReflection.getSimpleName(value.getClass()));
 		V oldValue = value;
 		value = (V) key;
 		key = (K) oldValue;
 	}
 
-	/** @param pair the Pair which {@link #key} and {@link #value} to use
-	 *  @return this Pair for chaining */
-	public Pair<K, V> set(Pair<K, V> pair) {
-		key = pair.key;
-		value = pair.value;
-		return this;
+	@Override
+	public int hashCode() {
+		int result = key != null ? key.hashCode() : 0;
+		result = 31 * result + (value != null ? value.hashCode() : 0);
+		return result;
 	}
 
-	/** @param key the {@link #key} to set
-	 *  @param value the {@link #value} to set
-	 *  @return this Pair for chaining */
-	public Pair<K, V> set(K key, V value) {
-		this.key = key;
-		this.value = value;
-		return this;
+	/** if the given object is a {@link Pair} instance, {@link Object#equals(Object) equals} comparison will be used on key and value */
+	@Override
+	public boolean equals(Object obj) {
+		if(obj instanceof Pair) {
+			Pair<?, ?> pair = (Pair<?, ?>) obj;
+			return key.equals(pair.key) && value.equals(pair.value);
+		}
+		return super.equals(obj);
 	}
 
-	/** @return the {@link #key} */
-	public K key() {
-		return key;
+	/** @return [{@link #key} &amp; {@link #value}] */
+	@Override
+	public String toString() {
+		return "[" + key + " & " + value + ']';
 	}
 
-	/** @return the old {@link #key}
-	 *  @see #setKey(Object)
-	 *  @see #getKey() */
-	public K key(K key) {
-		K oldKey = this.key;
-		this.key = key;
-		return oldKey;
-	}
-
-	/** @return the {@link #value}*/
-	public V value() {
-		return value;
-	}
-
-	/** @return the old {@link #value}
-	 *  @see #setValue(Object)
-	 *  @see #getKey() */
-	public V value(V value) {
-		V oldValue = this.value;
-		this.value = value;
-		return oldValue;
-	}
+	// getters and setters
 
 	/** @return the {@link #key} */
 	public K getKey() {
@@ -143,22 +140,6 @@ public class Pair<K, V> {
 	/** @param value the {@link #value} to set */
 	public void setValue(V value) {
 		this.value = value;
-	}
-
-	/** if the given object is a {@link Pair} instance, {@link Object#equals(Object) equals} comparison will be used on key and value */
-	@Override
-	public boolean equals(Object obj) {
-		if(obj instanceof Pair) {
-			Pair<?, ?> pair = (Pair<?, ?>) obj;
-			return key.equals(pair.key) && value.equals(pair.value);
-		}
-		return super.equals(obj);
-	}
-
-	/** @return [{@link #key} &amp; {@link #value}] */
-	@Override
-	public String toString() {
-		return "[" + key + " & " + value + "]";
 	}
 
 }
