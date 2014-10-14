@@ -890,7 +890,7 @@ public abstract class Box2DUtils {
 			Pools.free(defs);
 			return false;
 		}
-		Fixture aFixture = aBody.createFixture(defs.key()), bFixture = bBody.createFixture(defs.value());
+		Fixture aFixture = aBody.createFixture(defs.getKey()), bFixture = bBody.createFixture(defs.getValue());
 		if(store != null)
 			store.set(aFixture, bFixture);
 		return true;
@@ -918,8 +918,8 @@ public abstract class Box2DUtils {
 			return false;
 		}
 		FixtureDef aDef = createDef(fixture), bDef = createDef(fixture);
-		aDef.shape = shapes.key();
-		bDef.shape = shapes.value();
+		aDef.shape = shapes.getKey();
+		bDef.shape = shapes.getValue();
 		Pools.free(shapes);
 		store.set(aDef, bDef);
 		return true;
