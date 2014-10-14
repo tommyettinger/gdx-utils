@@ -568,7 +568,7 @@ public abstract class Box2DUtils {
 	}
 
 	/** @param joint the joint to clone
-	 *  @since 0.6.1 */
+	 *  @since 0.7.0 */
 	@SuppressWarnings("unchecked")
 	public static <T extends Joint> T clone(T joint) {
 		return (T) joint.getBodyA().getWorld().createJoint(createDef(joint));
@@ -579,7 +579,7 @@ public abstract class Box2DUtils {
 	/** @param bodyDef the BodyDef to set according to the given Body
 	 *  @param body the Body to set the given BodyDef accordingly to
 	 *  @return the given BodyDef for chaining
-	 *  @since 0.6.1 */
+	 *  @since 0.7.0 */
 	public static BodyDef set(BodyDef bodyDef, Body body) {
 		bodyDef.active = body.isActive();
 		bodyDef.allowSleep = body.isSleepingAllowed();
@@ -600,7 +600,7 @@ public abstract class Box2DUtils {
 	/** @param fixtureDef the FixtureDef to set according to the given Fixture
 	 *  @param fixture the Fixture to set the given FixtureDef accordingly to
 	 *  @return the given FixtureDef for chaining
-	 *  @since 0.6.1 */
+	 *  @since 0.7.0 */
 	public static FixtureDef set(FixtureDef fixtureDef, Fixture fixture) {
 		fixtureDef.density = fixture.getDensity();
 		Filter filter = fixture.getFilterData();
@@ -617,7 +617,7 @@ public abstract class Box2DUtils {
 	/** @param jointDef the JointDef to set according to the given Joint
 	 *  @param joint the Joint to set the given JointDef accordingly to
 	 *  @return the given JointDef for chaining
-	 *  @since 0.6.1 */
+	 *  @since 0.7.0 */
 	public static JointDef set(JointDef jointDef, Joint joint) {
 		jointDef.type = joint.getType();
 		jointDef.collideConnected = joint.getCollideConnected();
@@ -770,7 +770,7 @@ public abstract class Box2DUtils {
 
 	/** @param joint the joint for which to create a new JointDef
 	 *  @return a new JointDef instance that can be used to clone the given joint
-	 *  @since 0.6.1 */
+	 *  @since 0.7.0 */
 	public static JointDef createDef(Joint joint) {
 		switch(joint.getType()) {
 		case RevoluteJoint:
@@ -1051,12 +1051,14 @@ public abstract class Box2DUtils {
 
 	// various
 
-	/** @return if the two given Transform's {@link Transform#vals values} equal */
+	/** @return if the two given Transform's {@link Transform#vals values} equal
+	 *  @since 0.7.0 */
 	public static boolean equals(Transform a, Transform b) {
 		return Arrays.equals(a.vals, b.vals);
 	}
 
-	/** @return if the two MassData's values equal */
+	/** @return if the two MassData's values equal
+	 *  @since 0.7.0 */
 	public static boolean equals(MassData a, MassData b) {
 		return a.center.equals(b.center) && a.mass == b.mass && a.I == b.I;
 	}
