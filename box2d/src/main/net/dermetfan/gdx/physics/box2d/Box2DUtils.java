@@ -14,6 +14,8 @@
 
 package net.dermetfan.gdx.physics.box2d;
 
+import java.util.Arrays;
+
 import com.badlogic.gdx.math.Intersector;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Body;
@@ -26,9 +28,11 @@ import com.badlogic.gdx.physics.box2d.Fixture;
 import com.badlogic.gdx.physics.box2d.FixtureDef;
 import com.badlogic.gdx.physics.box2d.Joint;
 import com.badlogic.gdx.physics.box2d.JointDef;
+import com.badlogic.gdx.physics.box2d.MassData;
 import com.badlogic.gdx.physics.box2d.PolygonShape;
 import com.badlogic.gdx.physics.box2d.Shape;
 import com.badlogic.gdx.physics.box2d.Shape.Type;
+import com.badlogic.gdx.physics.box2d.Transform;
 import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.physics.box2d.joints.DistanceJoint;
 import com.badlogic.gdx.physics.box2d.joints.DistanceJointDef;
@@ -1046,6 +1050,16 @@ public abstract class Box2DUtils {
 	}
 
 	// various
+
+	/** @return if the two given Transform's {@link Transform#vals values} equal */
+	public static boolean equals(Transform a, Transform b) {
+		return Arrays.equals(a.vals, b.vals);
+	}
+
+	/** @return if the two MassData's values equal */
+	public static boolean equals(MassData a, MassData b) {
+		return a.center.equals(b.center) && a.mass == b.mass && a.I == b.I;
+	}
 
 	/** sets the {@link Fixture#isSensor() sensor flag} of all of the given Body's Fixtures
 	 *  @param body the {@link Body} which {@link Fixture Fixtures'} sensor flag to set

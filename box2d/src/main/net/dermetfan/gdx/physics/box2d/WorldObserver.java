@@ -55,13 +55,13 @@ public class WorldObserver {
 	/** temporary array used internally */
 	private final Array<Body> tmpBodies = new Array<>();
 
-	/** the Bodies by {@link com.badlogic.gdx.physics.box2d.Box2DUtils#hashCode(Body) hash} since this/the last time {@link #update(World)} was called */
+	/** the Bodies by {@link com.badlogic.gdx.physics.box2d.Box2DUtils#hashCode(Body) hash} since this/the last time {@link #update(World, float)} was called */
 	private final IntMap<Body> currentBodies = new IntMap<>(), previousBodies = new IntMap<>();
 
-	/** the Fixtures by {@link com.badlogic.gdx.physics.box2d.Box2DUtils#hashCode(Fixture) hash} since this/the last time {@link #update(World)} was called */
+	/** the Fixtures by {@link com.badlogic.gdx.physics.box2d.Box2DUtils#hashCode(Fixture) hash} since this/the last time {@link #update(World, float)} was called */
 	private final IntMap<Fixture> currentFixtures = new IntMap<>(), previousFixtures = new IntMap<>();
 
-	/** the Joints since this/the last time {@link #update(World)} was called  */
+	/** the Joints since this/the last time {@link #update(World, float)} was called  */
 	private final Array<Joint> currentJoints = new Array<>(), previousJoints = new Array<>();
 
 	/** creates a new WorldObserver with no {@link #listener} */
@@ -72,10 +72,11 @@ public class WorldObserver {
 		setListener(listener);
 	}
 
-	/** @param world Ideally always the same World because its identity is not checked. Passing in another world instance will cause all differences between the two worlds to be processed. */
-	public void update(World world) {
+	/** @param world Ideally always the same World because its identity is not checked. Passing in another world instance will cause all differences between the two worlds to be processed.
+	 *  @param step the time the world was last {@link World#step(float, int, int) stepped} with */
+	public void update(World world, float step) {
 		if(listener != null)
-			listener.preUpdate(world);
+			listener.preUpdate(world, step);
 
 		if(worldChange.update(world) && listener != null)
 			listener.changed(world, worldChange);
@@ -165,7 +166,7 @@ public class WorldObserver {
 		previousJoints.addAll(currentJoints);
 
 		if(listener != null)
-			listener.postUpdate(world);
+			listener.postUpdate(world, step);
 	}
 
 	/** @param hash the hash of the Body (computed via {@link com.badlogic.gdx.physics.box2d.Box2DUtils#hashCode(Body) Box2DUtils#hashCode(Body)}) which associated BodyChange to return
@@ -218,11 +219,11 @@ public class WorldObserver {
 		/** @param observer the WorldObserver this Listener has just been {@link WorldObserver#setListener(Listener) removed} from */
 		void removedFrom(WorldObserver observer);
 
-		/** called at the very beginning of {@link WorldObserver#update(World)} */
-		void preUpdate(World world);
+		/** called at the very beginning of {@link WorldObserver#update(World, float)} */
+		void preUpdate(World world, float step);
 
-		/** called at the very end of {@link WorldObserver#update(World)} */
-		void postUpdate(World world);
+		/** called at the very end of {@link WorldObserver#update(World, float)} */
+		void postUpdate(World world, float step);
 
 		/** @param world the World that changed
 		 *  @param change the change */
@@ -270,10 +271,10 @@ public class WorldObserver {
 			public void removedFrom(WorldObserver observer) {}
 
 			@Override
-			public void preUpdate(World world) {}
+			public void preUpdate(World world, float step) {}
 
 			@Override
-			public void postUpdate(World world) {}
+			public void postUpdate(World world, float step) {}
 
 			@Override
 			public void changed(World world, WorldChange change) {}
@@ -304,6 +305,170 @@ public class WorldObserver {
 
 			@Override
 			public void destroyed(Joint joint) {}
+
+		}
+
+	}
+
+	/** A Listener that calls another Listener on unpredictable/unexpected events.
+	 *  In practice only {@link #changed(Body, BodyChange)} can be predicted and therefore the other methods will be called normally.
+	 *  @since 0.6.1
+	 *  @author dermetfan */
+	public static class UnexpectedListener implements Listener {
+
+		/** the Listener to notify */
+		private Listener listener;
+
+		/** the ExpectationBases mapped to their Bodies */
+		private final ObjectMap<Body, ExpectationBase> bases = new ObjectMap<>();
+
+		/** the last time step */
+		private float step;
+
+		/** @param listener the {@link #listener} to set */
+		public UnexpectedListener(Listener listener) {
+			this.listener = listener;
+		}
+
+		@Override
+		public void changed(Body body, BodyChange change) {
+			boolean unexpected = change.type != null || change.angularDamping != null || change.gravityScale != null || change.massData != null || change.userDataChanged;
+			ExpectationBase base = bases.get(body);
+			if(!unexpected && change.linearVelocity != null && !change.linearVelocity.equals(base.linearVelocity.mulAdd(body.getWorld().getGravity(), step).scl(1 / (1 + step * body.getLinearDamping()))))
+				unexpected = true;
+			else if(change.transform != null && !change.transform.getPosition().equals(base.transform.getPosition().mulAdd(base.linearVelocity, step))) // the linear damping of the body must be applied to the linear velocity of the base already
+				unexpected = true;
+			else if(change.angularVelocity != null && change.angularVelocity != base.angularVelocity * (1 / (1 + step * body.getAngularDamping())))
+				unexpected = true;
+			base.set(body);
+			if(unexpected)
+				listener.changed(body, change);
+		}
+
+		// always unexpected
+
+		@Override
+		public void setOn(WorldObserver observer) {
+			listener.setOn(observer);
+		}
+
+		@Override
+		public void removedFrom(WorldObserver observer) {
+			listener.removedFrom(observer);
+		}
+
+		@Override
+		public void preUpdate(World world, float step) {
+			listener.preUpdate(world, this.step = step);
+		}
+
+		@Override
+		public void postUpdate(World world, float step) {
+			listener.postUpdate(world, this.step = step);
+		}
+
+		@Override
+		public void changed(World world, WorldChange change) {
+			listener.changed(world, change);
+		}
+
+		@Override
+		public void created(Body body) {
+			bases.put(body, ExpectationBase.Pool.instance.obtain().set(body));
+			listener.created(body);
+		}
+
+		@Override
+		public void destroyed(Body body) {
+			ExpectationBase.Pool.instance.free(bases.remove(body));
+			listener.destroyed(body);
+		}
+
+		@Override
+		public void changed(Fixture fixture, FixtureChange change) {
+			listener.changed(fixture, change);
+		}
+
+		@Override
+		public void created(Fixture fixture) {
+			listener.created(fixture);
+		}
+
+		@Override
+		public void destroyed(Fixture fixture) {
+			listener.destroyed(fixture);
+		}
+
+		@Override
+		public void changed(Joint joint, JointChange change) {
+			listener.changed(joint, change);
+		}
+
+		@Override
+		public void created(Joint joint) {
+			listener.created(joint);
+		}
+
+		@Override
+		public void destroyed(Joint joint) {
+			listener.destroyed(joint);
+		}
+
+		// getters and setters
+
+		/** @return the {@link #listener} */
+		public Listener getListener() {
+			return listener;
+		}
+
+		/** @param listener the {@link #listener} to set */
+		public void setListener(Listener listener) {
+			this.listener = listener;
+		}
+
+		/** Only for internal use. Stores the last change of predictable data.
+		 *  @since 0.6.1
+		 *  @author dermetfan */
+		private static class ExpectationBase implements Poolable {
+
+			final Transform transform = new Transform();
+			final Vector2 linearVelocity = new Vector2();
+			float angularVelocity;
+
+			public ExpectationBase set(Body body) {
+				Transform bodyTransform = body.getTransform();
+				transform.setPosition(bodyTransform.getPosition());
+				transform.vals[Transform.SIN] = bodyTransform.vals[Transform.SIN];
+				transform.vals[Transform.COS] = bodyTransform.vals[Transform.COS];
+				linearVelocity.set(body.getLinearVelocity());
+				angularVelocity = body.getAngularVelocity();
+				return this;
+			}
+
+			@Override
+			public void reset() {
+				transform.setPosition(linearVelocity.setZero());
+				transform.setRotation(0);
+				angularVelocity = 0;
+			}
+
+			/** A Pool for ExpectationBases. Singleton.
+			 *  @since 0.6.1
+			 *  @author dermetfan */
+			private static class Pool extends com.badlogic.gdx.utils.Pool<ExpectationBase> {
+
+				public static final Pool instance = new Pool();
+
+				private Pool() {
+					super(8, 50);
+				}
+
+				@Override
+				protected ExpectationBase newObject() {
+					return new ExpectationBase();
+				}
+
+			}
 
 		}
 
@@ -416,6 +581,16 @@ public class WorldObserver {
 			oldTransform.setRotation(transform.getRotation());
 		}
 
+		private void updateOldLinearVelocity(Vector2 linearVelocity) {
+			oldLinearVelocity.set(linearVelocity);
+		}
+
+		private void updateOldMassData(MassData massData) {
+			oldMassData.center.set(massData.center);
+			oldMassData.mass = massData.mass;
+			oldMassData.I = massData.I;
+		}
+
 		@Override
 		public boolean update(Body body) {
 			Transform newTransform = body.getTransform();
@@ -429,44 +604,48 @@ public class WorldObserver {
 
 			boolean changed = false;
 
-			if(!newTransform.equals(oldTransform)) {
+			if(!Box2DUtils.equals(newTransform, oldTransform)) {
 				updateOldTransform(transform = newTransform);
 				changed = true;
-			}
+			} else
+				transform = null;
 			if(!newType.equals(oldType)) {
 				oldType = type = newType;
 				changed = true;
-			}
+			} else
+				type = null;
 			if(!newAngularDamping.equals(oldAngularDamping)) {
 				oldAngularDamping = angularDamping = newAngularDamping;
 				changed = true;
-			}
+			} else
+				angularDamping = null;
 			if(!newAngularVelocity.equals(oldAngularVelocity)) {
 				oldAngularVelocity = angularVelocity = newAngularVelocity;
 				changed = true;
-			}
+			} else
+				angularVelocity = null;
 			if(!newGravityScale.equals(oldGravityScale)) {
 				oldGravityScale = gravityScale = newGravityScale;
 				changed = true;
-			}
+			} else
+				gravityScale = null;
 			if(!newLinearVelocity.equals(oldLinearVelocity)) {
 				updateOldLinearVelocity(linearVelocity = newLinearVelocity);
 				changed = true;
-			}
-			if(!newMassData.equals(oldMassData)) {
+			} else
+				linearVelocity = null;
+			if(!Box2DUtils.equals(newMassData, oldMassData)) {
 				updateOldMassData(massData = newMassData);
 				changed = true;
-			}
+			} else
+				massData = null;
 			if(newUserData != null ? !newUserData.equals(oldUserData) : oldUserData != null) {
 				oldUserData = userData = newUserData;
 				changed = userDataChanged = true;
-			}
+			} else
+				userDataChanged = false;
 
 			return changed;
-		}
-
-		private void updateOldLinearVelocity(Vector2 linearVelocity) {
-			oldLinearVelocity.set(linearVelocity);
 		}
 
 		@Override
@@ -487,12 +666,6 @@ public class WorldObserver {
 				body.setMassData(massData);
 			if(userDataChanged)
 				body.setUserData(userData);
-		}
-
-		private void updateOldMassData(MassData massData) {
-			oldMassData.center.set(massData.center);
-			oldMassData.mass = massData.mass;
-			oldMassData.I = massData.I;
 		}
 
 		@Override
@@ -571,6 +744,11 @@ public class WorldObserver {
 			oldFilter.maskBits = newFilter.maskBits;
 		}
 
+		/** @return the {@link #destroyed} */
+		public boolean isDestroyed() {
+			return destroyed;
+		}
+
 		@Override
 		public boolean update(Fixture fixture) {
 			Body newBody = fixture.getBody();
@@ -592,30 +770,30 @@ public class WorldObserver {
 			if(!newDensity.equals(oldDensity)) {
 				oldDensity = density = newDensity;
 				changed = true;
-			}
+			} else
+				density = null;
 			if(!newFriction.equals(oldFriction)) {
 				oldFriction = friction = newFriction;
 				changed = true;
-			}
+			} else
+				friction = null;
 			if(!newRestitution.equals(oldRestitution)) {
 				oldRestitution = restitution = newRestitution;
 				changed = true;
-			}
+			} else
+				restitution = null;
 			if(!newFilter.equals(oldFilter)) {
 				updateOldFilter(filter = newFilter);
 				changed = true;
-			}
+			} else
+				filter = null;
 			if(newUserData != null ? !newUserData.equals(oldUserData) : oldUserData != null) {
 				oldUserData = userData = newUserData;
 				changed = userDataChanged = true;
-			}
+			} else
+				userDataChanged = false;
 
 			return changed;
-		}
-
-		/** @return the {@link #destroyed} */
-		public boolean isDestroyed() {
-			return destroyed;
 		}
 
 		/** @throws IllegalStateException if the fixture has been {@link #destroyed} */
