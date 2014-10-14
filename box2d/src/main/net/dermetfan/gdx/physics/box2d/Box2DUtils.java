@@ -1063,6 +1063,12 @@ public abstract class Box2DUtils {
 		return a.center.equals(b.center) && a.mass == b.mass && a.I == b.I;
 	}
 
+	/** @return if the two Filter's values equal
+	 *  @since 0.7.0 */
+	public static boolean equals(Filter a, Filter b) {
+		return a.categoryBits == b.categoryBits && a.maskBits == b.maskBits && a.groupIndex == b.groupIndex;
+	}
+
 	/** sets the {@link Fixture#isSensor() sensor flag} of all of the given Body's Fixtures
 	 *  @param body the {@link Body} which {@link Fixture Fixtures'} sensor flag to set
 	 *  @param sensor the parameter to pass to {@link Fixture#setSensor(boolean)}
