@@ -66,6 +66,16 @@ public class Pair<K, V> {
 		value = null;
 	}
 
+	/** sets {@link #key} null */
+	public void clearKey() {
+		key = null;
+	}
+
+	/** sets {@link #value} null */
+	public void clearValue() {
+		value = null;
+	}
+
 	/** @return if {@link #key} or {@link #value} is not {@code null} */
 	public boolean isEmpty() {
 		return key == null && value == null;

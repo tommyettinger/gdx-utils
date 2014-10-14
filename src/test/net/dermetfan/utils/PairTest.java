@@ -16,7 +16,7 @@ public class PairTest {
 	public void isFull() {
 		Pair<String, String> pair = new Pair<>("1", "2");
 		assertTrue(pair.isFull());
-		pair.value(null);
+		pair.clearValue();
 		assertFalse(pair.isFull());
 		pair.clear();
 		assertFalse(pair.isFull());
@@ -26,7 +26,7 @@ public class PairTest {
 	public void isEmpty() {
 		Pair<String, String> pair = new Pair<>("1", "2");
 		assertFalse(pair.isEmpty());
-		pair.value(null);
+		pair.clearValue();
 		assertFalse(pair.isEmpty());
 		pair.clear();
 		assertTrue(pair.isEmpty());
