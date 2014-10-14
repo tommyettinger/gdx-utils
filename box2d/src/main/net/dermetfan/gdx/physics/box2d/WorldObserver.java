@@ -789,7 +789,7 @@ public class WorldObserver {
 				changed = true;
 			} else
 				restitution = null;
-			if(!newFilter.equals(oldFilter)) {
+			if(!Box2DUtils.equals(newFilter, oldFilter)) {
 				updateOldFilter(filter = newFilter);
 				changed = true;
 			} else
