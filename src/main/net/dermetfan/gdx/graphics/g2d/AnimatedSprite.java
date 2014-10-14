@@ -115,13 +115,14 @@ public class AnimatedSprite extends Sprite {
 		flipFrames(0, animation.getAnimationDuration(), flipX, flipY, set);
 	}
 
-	/** flips all frames
-	 *  @see #flipFrames(float, float, boolean, boolean, boolean) */
+	/** @see #flipFrames(float, float, boolean, boolean, boolean) */
 	public void flipFrames(float startTime, float endTime, boolean flipX, boolean flipY) {
 		flipFrames(startTime, endTime, flipX, flipY, false);
 	}
 
-	/** flips all frames from {@code startTime} to {@code endTime}
+	/** Flips all frames from {@code startTime} to {@code endTime}.
+	 *  Note the actual TextureRegions are {@link TextureRegion#flip(boolean, boolean) flipped}, so if the {@link #animation} contains a region more than once, those frames cannot be flipped differently at the same time.
+	 *  Also they will be flipped as often as they occur in the given time range.
 	 *  @param startTime the animation state time of the first frame to flip
 	 *  @param endTime the animation state time of the last frame to flip
 	 *  @param set if the frames should be set to {@code flipX} and {@code flipY} instead of actually flipping them */
