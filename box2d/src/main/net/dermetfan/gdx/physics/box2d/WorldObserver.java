@@ -516,14 +516,16 @@ public class WorldObserver {
 
 			boolean changed = false;
 
-			if(newAutoClearForces != oldAutoClearForces) {
+			if(!newAutoClearForces.equals(oldAutoClearForces)) {
 				oldAutoClearForces = autoClearForces = newAutoClearForces;
 				changed = true;
-			}
+			} else
+				autoClearForces = null;
 			if(!newGravity.equals(oldGravity)) {
 				oldGravity.set(gravity = newGravity);
 				changed = true;
-			}
+			} else
+				autoClearForces = null;
 
 			return changed;
 		}
@@ -649,8 +651,10 @@ public class WorldObserver {
 			if(newUserData != null ? !newUserData.equals(oldUserData) : oldUserData != null) {
 				oldUserData = userData = newUserData;
 				changed = userDataChanged = true;
-			} else
+			} else {
+				userData = null;
 				userDataChanged = false;
+			}
 
 			return changed;
 		}
@@ -797,8 +801,10 @@ public class WorldObserver {
 			if(newUserData != null ? !newUserData.equals(oldUserData) : oldUserData != null) {
 				oldUserData = userData = newUserData;
 				changed = userDataChanged = true;
-			} else
+			} else {
+				userData = null;
 				userDataChanged = false;
+			}
 
 			return changed;
 		}
