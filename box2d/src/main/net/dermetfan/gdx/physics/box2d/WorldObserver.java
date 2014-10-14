@@ -322,6 +322,9 @@ public class WorldObserver {
 		/** the ExpectationBases mapped to their Bodies */
 		private final ObjectMap<Body, ExpectationBase> bases = new ObjectMap<>();
 
+		/** the Pool used by this UnexpectedListener */
+		private final ExpectationBase.Pool pool = new ExpectationBase.Pool(5, 25);
+
 		/** the last time step */
 		private float step;
 
@@ -374,13 +377,13 @@ public class WorldObserver {
 
 		@Override
 		public void created(Body body) {
-			bases.put(body, ExpectationBase.Pool.instance.obtain().set(body));
+			bases.put(body, pool.obtain().set(body));
 			listener.created(body);
 		}
 
 		@Override
 		public void destroyed(Body body) {
-			ExpectationBase.Pool.instance.free(bases.remove(body));
+			pool.free(bases.remove(body));
 			listener.destroyed(body);
 		}
 
@@ -452,15 +455,19 @@ public class WorldObserver {
 				angularVelocity = 0;
 			}
 
-			/** A Pool for ExpectationBases. Singleton.
+			/** a Pool for ExpectationBases
 			 *  @since 0.7.0
 			 *  @author dermetfan */
 			private static class Pool extends com.badlogic.gdx.utils.Pool<ExpectationBase> {
 
-				public static final Pool instance = new Pool();
+				public Pool() {}
 
-				private Pool() {
-					super(8, 50);
+				public Pool(int initialCapacity) {
+					super(initialCapacity);
+				}
+
+				public Pool(int initialCapacity, int max) {
+					super(initialCapacity, max);
 				}
 
 				@Override
