@@ -131,6 +131,7 @@ public class WorldObserver {
 					listener.changed(entry.value, fixtureChange);
 			} else {
 				fixtureChange = Pools.obtain(FixtureChange.class);
+				fixtureChange.created(entry.value.getBody());
 				fixtureChange.update(entry.value);
 				fixtureChanges.put(entry.key, fixtureChange);
 				if(listener != null)
