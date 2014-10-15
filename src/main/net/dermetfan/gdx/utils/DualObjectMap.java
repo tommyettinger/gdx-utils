@@ -22,80 +22,94 @@ import com.badlogic.gdx.utils.ObjectMap;
  *  @author dermetfan */
 public class DualObjectMap<K, V> {
 
-	/** the map holding keys as keys */
-	private final ObjectMap<K, V> keyValue;
+	/** The map holding keys as keys. Do not modify this! */
+	private final ObjectMap<K, V> keyToValue;
 
-	/** the map holding values as keys */
-	private final ObjectMap<V, K> valueKey;
+	/** The map holding values as keys. Do not modify this! */
+	private final ObjectMap<V, K> valueToKey;
 
 	/** @see ObjectMap#ObjectMap() */
 	public DualObjectMap() {
-		keyValue = new ObjectMap<>();
-		valueKey = new ObjectMap<>();
+		keyToValue = new ObjectMap<>();
+		valueToKey = new ObjectMap<>();
 	}
 
 	/** @see ObjectMap#ObjectMap(int) */
 	public DualObjectMap(int initialCapacity) {
-		keyValue = new ObjectMap<>(initialCapacity);
-		valueKey = new ObjectMap<>(initialCapacity);
+		keyToValue = new ObjectMap<>(initialCapacity);
+		valueToKey = new ObjectMap<>(initialCapacity);
 	}
 
 	/** @see ObjectMap#ObjectMap(int, float) */
 	public DualObjectMap(int initialCapacity, float loadFactor) {
-		keyValue = new ObjectMap<>(initialCapacity, loadFactor);
-		valueKey = new ObjectMap<>(initialCapacity, loadFactor);
+		keyToValue = new ObjectMap<>(initialCapacity, loadFactor);
+		valueToKey = new ObjectMap<>(initialCapacity, loadFactor);
 	}
 
 	/** @see ObjectMap#ObjectMap(ObjectMap) */
 	public DualObjectMap(ObjectMap<K, V> map) {
-		keyValue = new ObjectMap<>(map);
-		valueKey = new ObjectMap<>(map.size);
+		keyToValue = new ObjectMap<>(map);
+		valueToKey = new ObjectMap<>(map.size);
 		for(K key : map.keys())
-			valueKey.put(map.get(key), key);
+			valueToKey.put(map.get(key), key);
 	}
 
 	/** @param map the map to copy */
 	public DualObjectMap(DualObjectMap<K, V> map) {
-		keyValue = new ObjectMap<>(map.keyValue);
-		valueKey = new ObjectMap<>(map.valueKey);
+		keyToValue = new ObjectMap<>(map.keyToValue);
+		valueToKey = new ObjectMap<>(map.valueToKey);
 	}
 
 	/** @see ObjectMap#put(Object, Object) */
 	public void put(K key, V value) {
-		keyValue.put(key, value);
-		valueKey.put(value, key);
+		keyToValue.put(key, value);
+		valueToKey.put(value, key);
 	}
 
 	/** @return the key of the given value as {@link ObjectMap#findKey(Object, boolean)} would return */
 	public K getKey(V value) {
-		K key = valueKey.get(value);
+		K key = valueToKey.get(value);
 		assert key != null;
 		return key;
 	}
 
 	/** @see ObjectMap#get(Object) */
 	public V getValue(K key) {
-		V value = keyValue.get(key);
+		V value = keyToValue.get(key);
 		assert value != null;
 		return value;
 	}
 
 	/** @see ObjectMap#remove(Object) */
 	public V removeKey(K key) {
-		V value = keyValue.remove(key);
+		V value = keyToValue.remove(key);
 		assert value != null;
-		K removed = valueKey.remove(value);
+		K removed = valueToKey.remove(value);
 		assert removed != null;
 		return value;
 	}
 
 	/** like what {@code objectMap.remove(objectMap.findKey(value))} would do */
 	public K removeValue(V value) {
-		K key = valueKey.remove(value);
+		K key = valueToKey.remove(value);
 		assert key != null;
-		V oldObject = keyValue.remove(key);
+		V oldObject = keyToValue.remove(key);
 		assert oldObject != null;
 		return key;
+	}
+
+	// getters and setters
+
+	/** @return The {@link #keyToValue}. Only use this if you know what you're doing!
+	 *  @since 0.7.0 */
+	public ObjectMap<K, V> getKeyToValue() {
+		return keyToValue;
+	}
+
+	/** @return The {@link #valueToKey}. Only use this if you know what you're doing!
+	 *  @since 0.7.0 */
+	public ObjectMap<V, K> getValueToKey() {
+		return valueToKey;
 	}
 
 }

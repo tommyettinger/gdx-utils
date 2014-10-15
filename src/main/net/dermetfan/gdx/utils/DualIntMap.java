@@ -23,68 +23,68 @@ import com.badlogic.gdx.utils.ObjectIntMap;
  *  @author dermetfan */
 public class DualIntMap<V> {
 
-	/** the map holding keys as keys */
-	private final IntMap<V> keyValue;
+	/** The map holding keys as keys. Do not modify this! */
+	private final IntMap<V> keyToValue;
 
-	/** the map holding values as keys */
-	private final ObjectIntMap<V> valueKey;
+	/** The map holding values as keys. Do not modify this! */
+	private final ObjectIntMap<V> valueToKey;
 
 	/** @see IntMap#IntMap() */
 	public DualIntMap() {
-		keyValue = new IntMap<>();
-		valueKey = new ObjectIntMap<>();
+		keyToValue = new IntMap<>();
+		valueToKey = new ObjectIntMap<>();
 	}
 
 	/** @see IntMap#IntMap(int) */
 	public DualIntMap(int initialCapacity) {
-		keyValue = new IntMap<>(initialCapacity);
-		valueKey = new ObjectIntMap<>(initialCapacity);
+		keyToValue = new IntMap<>(initialCapacity);
+		valueToKey = new ObjectIntMap<>(initialCapacity);
 	}
 
 	/** @see IntMap#IntMap(int, float) */
 	public DualIntMap(int initialCapacity, float loadFactor) {
-		keyValue = new IntMap<>(initialCapacity, loadFactor);
-		valueKey = new ObjectIntMap<>(initialCapacity, loadFactor);
+		keyToValue = new IntMap<>(initialCapacity, loadFactor);
+		valueToKey = new ObjectIntMap<>(initialCapacity, loadFactor);
 	}
 
 	/** @see IntMap#IntMap(IntMap) */
 	public DualIntMap(IntMap<V> map) {
-		keyValue = new IntMap<>(map);
-		valueKey = new ObjectIntMap<>(map.size);
+		keyToValue = new IntMap<>(map);
+		valueToKey = new ObjectIntMap<>(map.size);
 		Keys keys = map.keys();
 		while(keys.hasNext) {
 			int key = keys.next();
-			valueKey.put(map.get(key), key);
+			valueToKey.put(map.get(key), key);
 		}
 	}
 
 	/** @param map the map to copy */
 	public DualIntMap(DualIntMap<V> map) {
-		keyValue = new IntMap<>(map.keyValue);
-		valueKey = new ObjectIntMap<>(map.valueKey);
+		keyToValue = new IntMap<>(map.keyToValue);
+		valueToKey = new ObjectIntMap<>(map.valueToKey);
 	}
 
 	/** @see IntMap#put(int, Object) */
 	public void put(int key, V value) {
-		keyValue.put(key, value);
-		valueKey.put(value, key);
+		keyToValue.put(key, value);
+		valueToKey.put(value, key);
 	}
 
 	/** @return the key of the given value as {@link IntMap#findKey(Object, boolean, int)} would return */
 	public int getKey(V value, int defaultKey) {
-		return valueKey.get(value, defaultKey);
+		return valueToKey.get(value, defaultKey);
 	}
 
 	/** @see IntMap#get(int) */
 	public V getValue(int key) {
-		return keyValue.get(key);
+		return keyToValue.get(key);
 	}
 
 	/** @see IntMap#remove(int) */
 	public V removeKey(int key) {
-		V value = keyValue.remove(key);
+		V value = keyToValue.remove(key);
 		if(value != null) {
-			int removed = valueKey.remove(value, key);
+			int removed = valueToKey.remove(value, key);
 			assert removed == key;
 		}
 		return value;
@@ -92,9 +92,23 @@ public class DualIntMap<V> {
 
 	/** like what {@code intMap.remove(intMap.findKey(value, true, defaultValue))} would do */
 	public int removeValue(V value, int defaultKey) {
-		int key = valueKey.remove(value, defaultKey);
-		keyValue.remove(key);
+		int key = valueToKey.remove(value, defaultKey);
+		keyToValue.remove(key);
 		return key;
+	}
+
+	// getters and setters
+
+	/** @return The {@link #keyToValue}. Only use this if you know what you're doing!
+	 *  @since 0.7.0 */
+	public IntMap<V> getKeyToValue() {
+		return keyToValue;
+	}
+
+	/** @return The {@link #valueToKey}. Only use this if you know what you're doing!
+	 *  @since 0.7.0 */
+	public ObjectIntMap<V> getValueToKey() {
+		return valueToKey;
 	}
 
 }
