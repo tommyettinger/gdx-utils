@@ -22,9 +22,20 @@ import com.badlogic.gdx.physics.box2d.BodyDef.BodyType;
 import com.badlogic.gdx.physics.box2d.Filter;
 import com.badlogic.gdx.physics.box2d.Fixture;
 import com.badlogic.gdx.physics.box2d.Joint;
+import com.badlogic.gdx.physics.box2d.JointDef.JointType;
 import com.badlogic.gdx.physics.box2d.MassData;
 import com.badlogic.gdx.physics.box2d.Transform;
 import com.badlogic.gdx.physics.box2d.World;
+import com.badlogic.gdx.physics.box2d.joints.DistanceJoint;
+import com.badlogic.gdx.physics.box2d.joints.FrictionJoint;
+import com.badlogic.gdx.physics.box2d.joints.GearJoint;
+import com.badlogic.gdx.physics.box2d.joints.MotorJoint;
+import com.badlogic.gdx.physics.box2d.joints.MouseJoint;
+import com.badlogic.gdx.physics.box2d.joints.PrismaticJoint;
+import com.badlogic.gdx.physics.box2d.joints.RevoluteJoint;
+import com.badlogic.gdx.physics.box2d.joints.RopeJoint;
+import com.badlogic.gdx.physics.box2d.joints.WeldJoint;
+import com.badlogic.gdx.physics.box2d.joints.WheelJoint;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.IntMap;
 import com.badlogic.gdx.utils.IntMap.Entry;
@@ -147,7 +158,7 @@ public class WorldObserver {
 				if(jointChange.update(joint) && listener != null)
 					listener.changed(joint, jointChange);
 			} else { // new
-				jointChange = Pools.obtain(JointChange.class);
+				jointChange = JointChange.obtainFor(joint.getType());
 				jointChange.update(joint);
 				jointChanges.put(joint, jointChange);
 				if(listener != null)
@@ -340,7 +351,9 @@ public class WorldObserver {
 			ExpectationBase base = bases.get(body);
 			if(!unexpected && change.linearVelocity != null && !change.linearVelocity.equals(base.linearVelocity.mulAdd(body.getWorld().getGravity(), step).scl(1 / (1 + step * body.getLinearDamping()))))
 				unexpected = true;
-			else if(change.transform != null && !change.transform.getPosition().equals(base.transform.getPosition().mulAdd(base.linearVelocity, step))) // the linear damping of the body must be applied to the linear velocity of the base already
+			else if(change.transform != null && // the linear damping of the body must be applied to the linear velocity of the base already
+					change.transform.vals[Transform.POS_X] != base.transform.vals[Transform.POS_X] + base.linearVelocity.x * step &&
+					change.transform.vals[Transform.POS_Y] != base.transform.vals[Transform.POS_Y] + base.linearVelocity.y * step)
 				unexpected = true;
 			else if(change.angularVelocity != null && change.angularVelocity != base.angularVelocity * (1 / (1 + step * body.getAngularDamping())))
 				unexpected = true;
@@ -441,9 +454,10 @@ public class WorldObserver {
 
 			public ExpectationBase set(Body body) {
 				Transform bodyTransform = body.getTransform();
-				transform.setPosition(bodyTransform.getPosition());
-				transform.vals[Transform.SIN] = bodyTransform.vals[Transform.SIN];
+				transform.vals[Transform.POS_X] = bodyTransform.vals[Transform.POS_X];
+				transform.vals[Transform.POS_Y] = bodyTransform.vals[Transform.POS_Y];
 				transform.vals[Transform.COS] = bodyTransform.vals[Transform.COS];
+				transform.vals[Transform.SIN] = bodyTransform.vals[Transform.SIN];
 				linearVelocity.set(body.getLinearVelocity());
 				angularVelocity = body.getAngularVelocity();
 				return this;
@@ -451,8 +465,7 @@ public class WorldObserver {
 
 			@Override
 			public void reset() {
-				transform.setPosition(linearVelocity.setZero());
-				transform.setRotation(0);
+				transform.vals[Transform.POS_X] = transform.vals[Transform.POS_Y] = transform.vals[Transform.COS] = transform.vals[Transform.SIN] = 0;
 				angularVelocity = 0;
 			}
 
@@ -587,12 +600,10 @@ public class WorldObserver {
 		private boolean userDataChanged;
 
 		private void updateOldTransform(Transform transform) {
-			oldTransform.setPosition(transform.getPosition());
-			oldTransform.setRotation(transform.getRotation());
-		}
-
-		private void updateOldLinearVelocity(Vector2 linearVelocity) {
-			oldLinearVelocity.set(linearVelocity);
+			oldTransform.vals[Transform.POS_X] = transform.vals[Transform.POS_X];
+			oldTransform.vals[Transform.POS_Y] = transform.vals[Transform.POS_Y];
+			oldTransform.vals[Transform.COS] = transform.vals[Transform.COS];
+			oldTransform.vals[Transform.SIN] = transform.vals[Transform.SIN];
 		}
 
 		private void updateOldMassData(MassData massData) {
@@ -640,7 +651,7 @@ public class WorldObserver {
 			} else
 				gravityScale = null;
 			if(!newLinearVelocity.equals(oldLinearVelocity)) {
-				updateOldLinearVelocity(linearVelocity = newLinearVelocity);
+				oldLinearVelocity.set(linearVelocity = newLinearVelocity);
 				changed = true;
 			} else
 				linearVelocity = null;
@@ -663,7 +674,7 @@ public class WorldObserver {
 		@Override
 		public void apply(Body body) {
 			if(transform != null)
-				body.setTransform(transform.getPosition(), transform.getRotation());
+				body.setTransform(transform.vals[Transform.POS_X], transform.vals[Transform.POS_Y], transform.getRotation());
 			if(type != null)
 				body.setType(type);
 			if(angularDamping != null)
@@ -685,21 +696,19 @@ public class WorldObserver {
 			if(!(other instanceof BodyChange))
 				return false;
 			BodyChange o = (BodyChange) other;
-			boolean diff = !Objects.equals(transform, o.transform);
-			diff |= !Objects.equals(type, o.type);
-			diff |= !Objects.equals(angularDamping, o.angularDamping);
-			diff |= !Objects.equals(angularVelocity, o.angularVelocity);
-			diff |= !Objects.equals(gravityScale, o.gravityScale);
-			diff |= !Objects.equals(linearVelocity, o.linearVelocity);
-			diff |= !Objects.equals(massData, o.massData);
-			diff |= !Objects.equals(userData, o.userData);
-			return diff;
+			return Objects.equals(transform, o.transform) &&
+					Objects.equals(type, o.type) &&
+					Objects.equals(angularDamping, o.angularDamping) &&
+					Objects.equals(angularVelocity, o.angularVelocity) &&
+					Objects.equals(gravityScale, o.gravityScale) &&
+					Objects.equals(linearVelocity, o.linearVelocity) &&
+					Objects.equals(massData, o.massData) &&
+					Objects.equals(userData, o.userData);
 		}
 
 		@Override
 		public void reset() {
-			oldTransform.setPosition(Vector2.Zero);
-			oldTransform.setRotation(0);
+			oldTransform.vals[Transform.POS_X] = oldTransform.vals[Transform.POS_Y] = oldTransform.vals[Transform.COS] = oldTransform.vals[Transform.SIN] = 0;
 			oldType = null;
 			oldAngularDamping = null;
 			oldAngularVelocity = null;
@@ -832,12 +841,11 @@ public class WorldObserver {
 			if(!(other instanceof FixtureChange))
 				return false;
 			FixtureChange o = (FixtureChange) other;
-			boolean diff = !Objects.equals(density, o.density);
-			diff |= !Objects.equals(friction, o.friction);
-			diff |= !Objects.equals(restitution, o.restitution);
-			diff |= !Objects.equals(filter, o.filter);
-			diff |= !Objects.equals(userData, o.userData);
-			return diff;
+			return Objects.equals(density, o.density) &&
+					Objects.equals(friction, o.friction) &&
+					Objects.equals(restitution, o.restitution) &&
+					Objects.equals(filter, o.filter) &&
+					Objects.equals(userData, o.userData);
 		}
 
 		@Override
@@ -867,22 +875,843 @@ public class WorldObserver {
 	/** the changes of a {@link Joint}
 	 *  @since 0.6.0
 	 *  @author dermetfan */
-	public static class JointChange implements Change<Joint> { // TODO implement
+	public static class JointChange<T extends Joint> implements Change<T> {
+
+		/** @return a concrete JointChange from {@link Pools#obtain(Class)} */
+		public static JointChange obtainFor(JointType type) {
+			Class<? extends JointChange> changeType;
+			switch(type) {
+			case RevoluteJoint:
+				changeType = RevoluteJointChange.class;
+				break;
+			case PrismaticJoint:
+				changeType = PrismaticJointChange.class;
+				break;
+			case DistanceJoint:
+				changeType = DistanceJointChange.class;
+				break;
+			case PulleyJoint:
+				changeType = JointChange.class; // no named PulleyJointChange needed
+				break;
+			case MouseJoint:
+				changeType = MouseJointChange.class;
+				break;
+			case GearJoint:
+				changeType = GearJointChange.class;
+				break;
+			case WheelJoint:
+				changeType = WheelJointChange.class;
+				break;
+			case WeldJoint:
+				changeType = WeldJointChange.class;
+				break;
+			case FrictionJoint:
+				changeType = FrictionJointChange.class;
+				break;
+			case RopeJoint:
+				changeType = RopeJointChange.class;
+				break;
+			case MotorJoint:
+				changeType = MotorJointChange.class;
+				break;
+			default:
+			case Unknown:
+				changeType = JointChange.class;
+			}
+			return Pools.obtain(changeType);
+		}
+
+		private transient Object oldUserData;
+
+		Object userData;
+
+		boolean userDataChanged;
 
 		@Override
-		public boolean update(Joint obj) {
-			return false;
+		public boolean update(T joint) {
+			Object newUserData = joint.getUserData();
+
+			boolean changed = false;
+
+			if(newUserData != null ? !newUserData.equals(oldUserData) : oldUserData != null) {
+				oldUserData = userData = newUserData;
+				changed = userDataChanged = true;
+			} else {
+				userData = null;
+				userDataChanged = false;
+			}
+
+			return changed;
 		}
 
 		@Override
-		public void apply(Joint obj) {}
+		public void apply(T joint) {
+			if(userDataChanged)
+				joint.setUserData(userData);
+		}
 
 		@Override
-		public void reset() {}
+		public <C extends Change<T>> boolean newValuesEqual(C other) {
+			return other instanceof JointChange && Objects.equals(userData, ((JointChange) other).userData);
+		}
 
 		@Override
-		public <C extends Change<Joint>> boolean newValuesEqual(C other) {
-			return true;
+		public void reset() {
+			oldUserData = null;
+			userData = null;
+			userDataChanged = false;
+		}
+
+	}
+
+	/** the changes of a {@link RevoluteJoint}
+	 *  @since 0.7.0
+	 *  @author dermetfan */
+	public static class RevoluteJointChange extends JointChange<RevoluteJoint> {
+
+		private transient Float oldLowerLimit;
+		private transient Float oldUpperLimit;
+		private transient Float oldMaxMotorTorque;
+		private transient Float oldMotorSpeed;
+
+		Float lowerLimit;
+		Float upperLimit;
+		Float maxMotorTorque;
+		Float motorSpeed;
+
+		@Override
+		public boolean update(RevoluteJoint joint) {
+			Float newLowerLimit = joint.getLowerLimit();
+			Float newUpperLimit = joint.getUpperLimit();
+			Float newMaxMotorTorque = joint.getMaxMotorTorque();
+			Float newMotorSpeed = joint.getMotorSpeed();
+
+			boolean changed = super.update(joint);
+
+			if(!newLowerLimit.equals(oldLowerLimit)) {
+				lowerLimit = oldLowerLimit = newLowerLimit;
+				changed = true;
+			} else
+				lowerLimit = null;
+			if(!newUpperLimit.equals(oldUpperLimit)) {
+				upperLimit = oldUpperLimit = newUpperLimit;
+				changed = true;
+			} else
+				upperLimit = null;
+			if(!newMaxMotorTorque.equals(oldMaxMotorTorque)) {
+				maxMotorTorque = oldMaxMotorTorque = newMaxMotorTorque;
+				changed = true;
+			} else
+				maxMotorTorque = null;
+			if(!newMotorSpeed.equals(oldMotorSpeed)) {
+				motorSpeed = oldMotorSpeed = newMotorSpeed;
+				changed = true;
+			} else
+				motorSpeed = null;
+
+			return changed;
+		}
+
+		@Override
+		public void apply(RevoluteJoint joint) {
+			super.apply(joint);
+			if(lowerLimit != null || upperLimit != null)
+				joint.setLimits(lowerLimit != null ? lowerLimit : joint.getLowerLimit(), upperLimit != null ? upperLimit : joint.getUpperLimit());
+			if(maxMotorTorque != null)
+				joint.setMaxMotorTorque(maxMotorTorque);
+			if(motorSpeed != null)
+				joint.setMotorSpeed(motorSpeed);
+		}
+
+		@Override
+		public <C extends Change<RevoluteJoint>> boolean newValuesEqual(C other) {
+			if(!(other instanceof RevoluteJointChange))
+				return false;
+			RevoluteJointChange o = (RevoluteJointChange) other;
+			return super.newValuesEqual(other) &&
+					Objects.equals(lowerLimit, o.lowerLimit) &&
+					Objects.equals(upperLimit, o.upperLimit) &&
+					Objects.equals(maxMotorTorque, o.maxMotorTorque) &&
+					Objects.equals(motorSpeed, o.motorSpeed);
+		}
+
+		@Override
+		public void reset() {
+			super.reset();
+
+			oldLowerLimit = null;
+			oldUpperLimit = null;
+			oldMaxMotorTorque = null;
+			oldMotorSpeed = null;
+
+			lowerLimit = null;
+			upperLimit = null;
+			maxMotorTorque = null;
+			motorSpeed = null;
+		}
+
+	}
+
+	/** the changes of a {@link PrismaticJoint}
+	 *  @since 0.7.0
+	 *  @author dermetfan */
+	public static class PrismaticJointChange extends JointChange<PrismaticJoint> {
+
+		private transient Float oldLowerLimit;
+		private transient Float oldUpperLimit;
+		private transient Float oldMaxMotorTorque;
+		private transient Float oldMotorSpeed;
+
+		Float lowerLimit;
+		Float upperLimit;
+		Float maxMotorForce;
+		Float motorSpeed;
+
+		@Override
+		public boolean update(PrismaticJoint joint) {
+			Float newLowerLimit = joint.getLowerLimit();
+			Float newUpperLimit = joint.getUpperLimit();
+			Float newMaxMotorTorque = joint.getMaxMotorForce();
+			Float newMotorSpeed = joint.getMotorSpeed();
+
+			boolean changed = super.update(joint);
+
+			if(!newLowerLimit.equals(oldLowerLimit)) {
+				lowerLimit = oldLowerLimit = newLowerLimit;
+				changed = true;
+			} else
+				lowerLimit = null;
+			if(!newUpperLimit.equals(oldUpperLimit)) {
+				upperLimit = oldUpperLimit = newUpperLimit;
+				changed = true;
+			} else
+				upperLimit = null;
+			if(!newMaxMotorTorque.equals(oldMaxMotorTorque)) {
+				maxMotorForce = oldMaxMotorTorque = newMaxMotorTorque;
+				changed = true;
+			} else
+				maxMotorForce = null;
+			if(!newMotorSpeed.equals(oldMotorSpeed)) {
+				motorSpeed = oldMotorSpeed = newMotorSpeed;
+				changed = true;
+			} else
+				motorSpeed = null;
+
+			return changed;
+		}
+
+		@Override
+		public void apply(PrismaticJoint joint) {
+			super.apply(joint);
+			if(lowerLimit != null || upperLimit != null)
+				joint.setLimits(lowerLimit != null ? lowerLimit : joint.getLowerLimit(), upperLimit != null ? upperLimit : joint.getUpperLimit());
+			if(maxMotorForce != null)
+				joint.setMaxMotorForce(maxMotorForce);
+			if(motorSpeed != null)
+				joint.setMotorSpeed(motorSpeed);
+		}
+
+		@Override
+		public <C extends Change<PrismaticJoint>> boolean newValuesEqual(C other) {
+			if(!(other instanceof PrismaticJointChange))
+				return false;
+			PrismaticJointChange o = (PrismaticJointChange) other;
+			return super.newValuesEqual(other) &&
+					Objects.equals(lowerLimit, o.lowerLimit) &&
+					Objects.equals(upperLimit, o.upperLimit) &&
+					Objects.equals(maxMotorForce, o.maxMotorForce) &&
+					Objects.equals(motorSpeed, o.motorSpeed);
+		}
+
+		@Override
+		public void reset() {
+			super.reset();
+
+			oldLowerLimit = null;
+			oldUpperLimit = null;
+			oldMaxMotorTorque = null;
+			oldMotorSpeed = null;
+
+			lowerLimit = null;
+			upperLimit = null;
+			maxMotorForce = null;
+			motorSpeed = null;
+		}
+
+	}
+
+	/** the changes of a {@link DistanceJoint}
+	 *  @since 0.7.0
+	 *  @author dermetfan */
+	public static class DistanceJointChange extends JointChange<DistanceJoint> {
+
+		private transient Float oldDampingRatio;
+		private transient Float oldFrequency;
+		private transient Float oldLength;
+
+		Float dampingRatio;
+		Float frequency;
+		Float length;
+
+		@Override
+		public boolean update(DistanceJoint joint) {
+			Float newDampingRatio = joint.getDampingRatio();
+			Float newFrequency = joint.getFrequency();
+			Float newLength = joint.getLength();
+
+			boolean changed = super.update(joint);
+
+			if(!newDampingRatio.equals(oldDampingRatio)) {
+				dampingRatio = oldDampingRatio = newDampingRatio;
+				changed = true;
+			} else
+				dampingRatio = null;
+			if(!newFrequency.equals(oldFrequency)) {
+				frequency = oldFrequency = newFrequency;
+				changed = true;
+			} else
+				frequency = null;
+			if(!newLength.equals(oldLength)) {
+				length = oldLength = newLength;
+				changed = true;
+			} else
+				length = null;
+
+			return changed;
+		}
+
+		@Override
+		public void apply(DistanceJoint joint) {
+			super.apply(joint);
+			if(dampingRatio != null)
+				joint.setDampingRatio(dampingRatio);
+			if(frequency != null)
+				joint.setFrequency(frequency);
+			if(length != null)
+				joint.setLength(length);
+		}
+
+		@Override
+		public <C extends Change<DistanceJoint>> boolean newValuesEqual(C other) {
+			if(!(other instanceof DistanceJointChange))
+				return false;
+			DistanceJointChange o = (DistanceJointChange) other;
+			return super.newValuesEqual(other) &&
+					Objects.equals(dampingRatio, o.dampingRatio) &&
+					Objects.equals(frequency, o.frequency) &&
+					Objects.equals(length, o.length);
+		}
+
+		@Override
+		public void reset() {
+			super.reset();
+
+			oldDampingRatio = null;
+			oldFrequency = null;
+			oldLength = null;
+
+			dampingRatio = null;
+			frequency = null;
+			length = null;
+		}
+
+	}
+
+	/** the changes of a {@link MouseJoint}
+	 *  @since 0.7.0
+	 *  @author dermetfan */
+	public static class MouseJointChange extends JointChange<MouseJoint> {
+
+		private transient Float oldDampingRatio;
+		private transient Float oldFrequency;
+		private transient Float oldMaxForce;
+		private transient final Vector2 oldTarget = new Vector2();
+
+		Float dampingRatio;
+		Float frequency;
+		Float maxForce;
+		Vector2 target;
+
+		@Override
+		public boolean update(MouseJoint joint) {
+			Float newDampingRatio = joint.getDampingRatio();
+			Float newFrequency = joint.getFrequency();
+			Float newMaxForce = joint.getMaxForce();
+			Vector2 newTarget = joint.getTarget();
+
+			boolean changed = super.update(joint);
+
+			if(!newDampingRatio.equals(oldDampingRatio)) {
+				dampingRatio = oldDampingRatio = newDampingRatio;
+				changed = true;
+			} else
+				dampingRatio = null;
+			if(!newFrequency.equals(oldFrequency)) {
+				frequency = oldFrequency = newFrequency;
+				changed = true;
+			} else
+				frequency = null;
+			if(!newMaxForce.equals(oldMaxForce)) {
+				maxForce = oldMaxForce = newMaxForce;
+				changed = true;
+			} else
+				maxForce = null;
+			if(!newTarget.equals(oldTarget)) {
+				oldTarget.set(target = newTarget);
+				changed = true;
+			} else
+				target = null;
+
+			return changed;
+		}
+
+		@Override
+		public void apply(MouseJoint joint) {
+			super.apply(joint);
+			if(dampingRatio != null)
+				joint.setDampingRatio(dampingRatio);
+			if(frequency != null)
+				joint.setFrequency(frequency);
+			if(maxForce != null)
+				joint.setMaxForce(maxForce);
+			if(target != null)
+				joint.setTarget(target);
+		}
+
+		@Override
+		public <C extends Change<MouseJoint>> boolean newValuesEqual(C other) {
+			if(!(other instanceof MouseJointChange))
+				return false;
+			MouseJointChange o = (MouseJointChange) other;
+			return super.newValuesEqual(other) &&
+					Objects.equals(dampingRatio, o.dampingRatio) &&
+					Objects.equals(frequency, o.frequency) &&
+					Objects.equals(maxForce, o.maxForce);
+		}
+
+		@Override
+		public void reset() {
+			super.reset();
+
+			oldDampingRatio = null;
+			oldFrequency = null;
+			oldMaxForce = null;
+			oldTarget.setZero();
+
+			dampingRatio = null;
+			frequency = null;
+			maxForce = null;
+			target = null;
+		}
+
+	}
+
+	/** the changes of a {@link GearJoint}
+	 *  @since 0.7.0
+	 *  @author dermetfan */
+	public static class GearJointChange extends JointChange<GearJoint> {
+
+		private transient Float oldRatio;
+
+		Float ratio;
+
+		@Override
+		public boolean update(GearJoint joint) {
+			Float newRatio = joint.getRatio();
+
+			boolean changed = super.update(joint);
+
+			if(!newRatio.equals(oldRatio)) {
+				ratio = oldRatio = newRatio;
+				changed = true;
+			} else
+				ratio = null;
+
+			return changed;
+		}
+
+		@Override
+		public void apply(GearJoint joint) {
+			super.apply(joint);
+			if(ratio != null)
+				joint.setRatio(ratio);
+		}
+
+		@Override
+		public <C extends Change<GearJoint>> boolean newValuesEqual(C other) {
+			return other instanceof GearJointChange && super.newValuesEqual(other) && Objects.equals(ratio, ((GearJointChange) other).ratio);
+		}
+
+		@Override
+		public void reset() {
+			super.reset();
+			oldRatio = null;
+			ratio = null;
+		}
+
+	}
+
+	/** the changes of a {@link WheelJoint}
+	 *  @since 0.7.0
+	 *  @author dermetfan */
+	public static class WheelJointChange extends JointChange<WheelJoint> {
+
+		private transient Float oldSpringDampingRatio;
+		private transient Float oldSpringFrequencyHz;
+		private transient Float oldMaxMotorTorque;
+		private transient Float oldMotorSpeed;
+
+		Float springDampingRatio;
+		Float springFrequencyHz;
+		Float maxMotorTorque;
+		Float motorSpeed;
+
+		@Override
+		public boolean update(WheelJoint joint) {
+			Float newSprintDampingRatio = joint.getSpringDampingRatio();
+			Float newSpringFrequencyHz = joint.getSpringFrequencyHz();
+			Float newMaxMotorTorque = joint.getMaxMotorTorque();
+			Float newMotorSpeed = joint.getMotorSpeed();
+
+			boolean changed = super.update(joint);
+
+			if(!newSprintDampingRatio.equals(oldSpringDampingRatio)) {
+				springDampingRatio = oldSpringDampingRatio = newSprintDampingRatio;
+				changed = true;
+			} else
+				springDampingRatio = null;
+			if(!newSpringFrequencyHz.equals(oldSpringFrequencyHz)) {
+				springFrequencyHz = oldSpringFrequencyHz = newSpringFrequencyHz;
+				changed = true;
+			} else
+				springFrequencyHz = null;
+			if(!newMaxMotorTorque.equals(oldMaxMotorTorque)) {
+				maxMotorTorque = oldMaxMotorTorque = newMaxMotorTorque;
+				changed = true;
+			} else
+				maxMotorTorque = null;
+			if(!newMotorSpeed.equals(oldMotorSpeed)) {
+				motorSpeed = oldMotorSpeed = newMotorSpeed;
+				changed = true;
+			} else
+				motorSpeed = null;
+
+			return changed;
+		}
+
+		@Override
+		public void apply(WheelJoint joint) {
+			super.apply(joint);
+			if(springDampingRatio != null)
+				joint.setSpringDampingRatio(springDampingRatio);
+			if(springFrequencyHz != null)
+				joint.setSpringFrequencyHz(springFrequencyHz);
+			if(maxMotorTorque != null)
+				joint.setMaxMotorTorque(maxMotorTorque);
+			if(motorSpeed != null)
+				joint.setMotorSpeed(motorSpeed);
+		}
+
+		@Override
+		public <C extends Change<WheelJoint>> boolean newValuesEqual(C other) {
+			if(!(other instanceof WheelJointChange))
+				return false;
+			WheelJointChange o = (WheelJointChange) other;
+			return super.newValuesEqual(other) &&
+					Objects.equals(springDampingRatio, o.springDampingRatio) &&
+					Objects.equals(springFrequencyHz, o.springFrequencyHz) &&
+					Objects.equals(maxMotorTorque, o.maxMotorTorque) &&
+					Objects.equals(motorSpeed, o.motorSpeed);
+		}
+
+		@Override
+		public void reset() {
+			super.reset();
+
+			oldSpringDampingRatio = null;
+			oldSpringFrequencyHz = null;
+			oldMaxMotorTorque = null;
+			oldMotorSpeed = null;
+
+			springDampingRatio = null;
+			springFrequencyHz = null;
+			maxMotorTorque = null;
+			motorSpeed = null;
+		}
+
+	}
+
+	/** the changes of a {@link WeldJoint}
+	 *  @since 0.7.0
+	 *  @author dermetfan */
+	public static class WeldJointChange extends JointChange<WeldJoint> {
+
+		private transient Float oldDampingRatio;
+		private transient Float oldFrequency;
+
+		Float dampingRatio;
+		Float frequency;
+
+		@Override
+		public boolean update(WeldJoint joint) {
+			Float newDampingRatio = joint.getDampingRatio();
+			Float newFrequency = joint.getFrequency();
+
+			boolean changed = super.update(joint);
+
+			if(!newDampingRatio.equals(oldDampingRatio)) {
+				dampingRatio = oldDampingRatio = newDampingRatio;
+				changed = true;
+			} else
+				dampingRatio = null;
+			if(!newFrequency.equals(oldFrequency)) {
+				frequency = oldFrequency = newFrequency;
+				changed = true;
+			} else
+				frequency = null;
+
+			return changed;
+		}
+
+		@Override
+		public void apply(WeldJoint joint) {
+			super.apply(joint);
+			if(dampingRatio != null)
+				joint.setDampingRatio(dampingRatio);
+			if(frequency != null)
+				joint.setFrequency(frequency);
+		}
+
+		@Override
+		public <C extends Change<WeldJoint>> boolean newValuesEqual(C other) {
+			if(!(other instanceof WeldJointChange))
+				return false;
+			WeldJointChange o = (WeldJointChange) other;
+			return super.newValuesEqual(other) &&
+					Objects.equals(dampingRatio, o.dampingRatio) &&
+					Objects.equals(frequency, o.frequency);
+		}
+
+		@Override
+		public void reset() {
+			super.reset();
+
+			oldDampingRatio = null;
+			oldFrequency = null;
+
+			dampingRatio = null;
+			frequency = null;
+		}
+
+	}
+
+	/** the changes of a {@link FrictionJoint}
+	 *  @since 0.7.0
+	 *  @author dermetfan */
+	public static class FrictionJointChange extends JointChange<FrictionJoint> {
+
+		private transient Float oldMaxForce;
+		private transient Float oldMaxTorque;
+
+		Float maxForce;
+		Float maxTorque;
+
+		@Override
+		public boolean update(FrictionJoint joint) {
+			Float newMaxForce = joint.getMaxForce();
+			Float newMaxTorque = joint.getMaxTorque();
+
+			boolean changed = super.update(joint);
+
+			if(!newMaxForce.equals(oldMaxForce)) {
+				maxForce = oldMaxForce = newMaxForce;
+				changed = true;
+			} else
+				maxForce = null;
+			if(!newMaxTorque.equals(oldMaxTorque)) {
+				maxTorque = oldMaxTorque = newMaxTorque;
+				changed = true;
+			} else
+				maxTorque = null;
+
+			return changed;
+		}
+
+		@Override
+		public void apply(FrictionJoint joint) {
+			super.apply(joint);
+			if(maxForce != null)
+				joint.setMaxForce(maxForce);
+			if(maxTorque != null)
+				joint.setMaxTorque(maxTorque);
+		}
+
+		@Override
+		public <C extends Change<FrictionJoint>> boolean newValuesEqual(C other) {
+			if(!(other instanceof FrictionJointChange))
+				return false;
+			FrictionJointChange o = (FrictionJointChange) other;
+			return super.newValuesEqual(other) &&
+					Objects.equals(maxForce, o.maxForce) &&
+					Objects.equals(maxTorque, o.maxTorque);
+		}
+
+		@Override
+		public void reset() {
+			super.reset();
+
+			oldMaxForce = null;
+			oldMaxTorque = null;
+
+			maxForce = null;
+			maxTorque = null;
+		}
+
+	}
+
+	/** the changes of a {@link RopeJoint}
+	 *  @since 0.7.0
+	 *  @author dermetfan */
+	public static class RopeJointChange extends JointChange<RopeJoint> {
+
+		private transient Float oldMaxLength;
+
+		Float maxLength;
+
+		@Override
+		public boolean update(RopeJoint joint) {
+			Float newMaxLength = joint.getMaxLength();
+
+			boolean changed = super.update(joint);
+
+			if(!newMaxLength.equals(oldMaxLength)) {
+				maxLength = oldMaxLength = newMaxLength;
+				changed = true;
+			} else
+				maxLength = null;
+
+			return changed;
+		}
+
+		@Override
+		public void apply(RopeJoint joint) {
+			super.apply(joint);
+			if(maxLength != null)
+				joint.setMaxLength(maxLength);
+		}
+
+		@Override
+		public <C extends Change<RopeJoint>> boolean newValuesEqual(C other) {
+			return other instanceof RopeJointChange && super.newValuesEqual(other) && Objects.equals(maxLength, ((RopeJointChange) other).maxLength);
+		}
+
+		@Override
+		public void reset() {
+			super.reset();
+			oldMaxLength = null;
+			maxLength = null;
+		}
+
+	}
+
+	/** the changes of a {@link MotorJoint}
+	 *  @since 0.7.0
+	 *  @author dermetfan */
+	public static class MotorJointChange extends JointChange<MotorJoint> {
+
+		private transient Float oldMaxForce;
+		private transient Float oldMaxTorque;
+		private transient Float oldCorrectionFactor;
+		private transient Float oldAngularOffset;
+		private transient final Vector2 oldLinearOffset = new Vector2();
+
+		Float maxForce;
+		Float maxTorque;
+		Float correctionFactor;
+		Float angularOffset;
+		Vector2 linearOffset;
+
+		@Override
+		public boolean update(MotorJoint joint) {
+			Float newMaxForce = joint.getMaxForce();
+			Float newMaxTorque = joint.getMaxTorque();
+			Float newCorrectionFactor = joint.getCorrectionFactor();
+			Float newAngularOffset = joint.getAngularOffset();
+			Vector2 newLinearOffset = joint.getLinearOffset();
+
+			boolean changed = super.update(joint);
+
+			if(!newMaxForce.equals(oldMaxForce)) {
+				maxForce = oldMaxForce = newMaxForce;
+				changed = true;
+			} else
+				maxForce = null;
+			if(!newMaxTorque.equals(oldMaxTorque)) {
+				maxTorque = oldMaxTorque = newMaxTorque;
+				changed = true;
+			} else
+				maxTorque = null;
+			if(!newCorrectionFactor.equals(oldCorrectionFactor)) {
+				correctionFactor = oldCorrectionFactor = newCorrectionFactor;
+				changed = true;
+			} else
+				correctionFactor = null;
+			if(!newAngularOffset.equals(oldAngularOffset)) {
+				angularOffset = oldAngularOffset = newAngularOffset;
+				changed = true;
+			} else
+				angularOffset = null;
+			if(!newLinearOffset.equals(oldLinearOffset)) {
+				oldLinearOffset.set(linearOffset = newLinearOffset);
+				changed = true;
+			} else
+				linearOffset = null;
+
+			return changed;
+		}
+
+		@Override
+		public void apply(MotorJoint joint) {
+			super.apply(joint);
+			if(maxForce != null)
+				joint.setMaxForce(maxForce);
+			if(maxTorque != null)
+				joint.setMaxForce(maxTorque);
+			if(correctionFactor != null)
+				joint.setCorrectionFactor(correctionFactor);
+			if(angularOffset != null)
+				joint.setAngularOffset(angularOffset);
+			if(linearOffset != null)
+				joint.setLinearOffset(linearOffset);
+		}
+
+		@Override
+		public <C extends Change<MotorJoint>> boolean newValuesEqual(C other) {
+			if(!(other instanceof MotorJointChange))
+				return false;
+			MotorJointChange o = (MotorJointChange) other;
+			return super.newValuesEqual(other) &&
+					Objects.equals(angularOffset, o.angularOffset) &&
+					Objects.equals(correctionFactor, o.correctionFactor) &&
+					Objects.equals(linearOffset, o.linearOffset) &&
+					Objects.equals(maxForce, o.maxForce);
+		}
+
+		@Override
+		public void reset() {
+			super.reset();
+
+			oldMaxForce = null;
+			oldMaxTorque = null;
+			oldCorrectionFactor = null;
+			oldAngularOffset = null;
+			oldLinearOffset.setZero();
+
+			maxForce = null;
+			maxTorque = null;
+			correctionFactor = null;
+			angularOffset = null;
+			linearOffset = null;
 		}
 
 	}
