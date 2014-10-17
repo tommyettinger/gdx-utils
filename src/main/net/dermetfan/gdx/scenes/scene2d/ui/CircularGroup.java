@@ -21,12 +21,14 @@ import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
+import com.badlogic.gdx.scenes.scene2d.ui.Value;
 import com.badlogic.gdx.scenes.scene2d.ui.WidgetGroup;
 import com.badlogic.gdx.scenes.scene2d.utils.DragListener;
 import com.badlogic.gdx.scenes.scene2d.utils.Layout;
 import com.badlogic.gdx.utils.SnapshotArray;
 import net.dermetfan.gdx.math.GeometryUtils;
 
+import static net.dermetfan.utils.math.MathUtils.approachZero;
 import static net.dermetfan.utils.math.MathUtils.replaceNaN;
 
 /** a group that aligns its children in a circle
@@ -146,10 +148,7 @@ public class CircularGroup extends WidgetGroup {
 			invalidate();
 			if(deceleration == 0)
 				return;
-			float oldVelocity = velocity;
-			velocity -= (velocity > 0 ? deceleration : -deceleration) * delta;
-			if(oldVelocity > 0 && velocity < 0 || oldVelocity < 0 && velocity > 0)
-				velocity = 0;
+			velocity = approachZero(velocity, deceleration * delta);
 		}
 
 		/** @return the angle of the given x and y to the center of the group */
@@ -219,8 +218,8 @@ public class CircularGroup extends WidgetGroup {
 
 	}
 
-	/** The preferred size. Default is 500, some arbitrary value. */
-	float prefWidth = 500, prefHeight = 500;
+	/** The size of each child to base the {@link #getPrefWidth() preferred size} on. Default is {@link Value#prefWidth}/{@link Value#prefHeight}. */
+	private Value prefWidth = Value.prefWidth, prefHeight = Value.prefHeight;
 
 	/** The max angle of all children (in degrees). Default is 360. */
 	private float fullAngle = 360;
@@ -248,6 +247,15 @@ public class CircularGroup extends WidgetGroup {
 
 	/** the DragManager used to make this group rotatable by dragging and to apply velocity */
 	private final DragManager dragManager = new DragManager();
+
+	/** the current min size (used internally) */
+	private float cachedMinWidth, cachedMinHeight;
+
+	/** the current pref size (used internally) */
+	private float cachedPrefWidth, cachedPrefHeight;
+
+	/** if the current size has to be {@link #computeSize() computed} (used internally) */
+	private boolean sizeInvalid = true;
 
 	/** for internal use */
 	private final Vector2 tmp = new Vector2(), tmp2 = new Vector2();
@@ -290,6 +298,7 @@ public class CircularGroup extends WidgetGroup {
 				if(childLayout.getMaxHeight() != 0)
 					height = Math.min(height, childLayout.getMaxHeight());
 				child.setSize(width, height);
+				childLayout.validate();
 			} else {
 				width = child.getWidth();
 				height = child.getHeight();
@@ -302,6 +311,12 @@ public class CircularGroup extends WidgetGroup {
 	}
 
 	@Override
+	public void invalidate() {
+		super.invalidate();
+		sizeInvalid = true;
+	}
+
+	@Override
 	public void drawDebug(ShapeRenderer shapes) {
 		shapes.setColor(Color.CYAN);
 		for(Actor child : getChildren())
@@ -309,68 +324,68 @@ public class CircularGroup extends WidgetGroup {
 		super.drawDebug(shapes);
 	}
 
+	/** computes {@link #cachedMinWidth}, {@link #cachedMinHeight}, {@link #cachedPrefWidth} and {@link #cachedPrefHeight} */
+	protected void computeSize() {
+		cachedMinWidth = cachedMinHeight = Float.POSITIVE_INFINITY;
+		cachedPrefWidth = cachedPrefHeight = 0;
+		SnapshotArray<Actor> children = getChildren();
+		for(Actor child : children) {
+			float minWidth, minHeight;
+			if(child instanceof Layout) {
+				Layout layout = (Layout) child;
+				minWidth = layout.getMinWidth();
+				minHeight = layout.getMinHeight();
+			} else {
+				minWidth = child.getWidth();
+				minHeight = child.getHeight();
+			}
+			if(minWidth < cachedMinWidth)
+				cachedMinWidth = minWidth;
+			if(minHeight < cachedMinHeight)
+				cachedMinHeight = minHeight;
+
+			float prefWidth = this.prefWidth.get(child), prefHeight = this.prefHeight.get(child);
+			if(prefWidth > cachedPrefWidth)
+				cachedPrefWidth = prefWidth;
+			if(prefHeight > cachedPrefHeight)
+				cachedPrefHeight = prefHeight;
+		}
+		float realDistanceFromCenter2 = replaceNaN(distanceFromCenter, 0) * 2;
+		cachedMinWidth += cachedMinWidth + realDistanceFromCenter2;
+		cachedMinHeight += cachedMinHeight + realDistanceFromCenter2;
+		cachedPrefWidth += cachedPrefWidth + realDistanceFromCenter2;
+		cachedPrefHeight += cachedPrefHeight + realDistanceFromCenter2;
+		sizeInvalid = false;
+	}
+
 	@Override
 	public float getPrefWidth() {
-		return prefWidth;
+		if(sizeInvalid)
+			computeSize();
+		return cachedPrefWidth;
 	}
 
 	@Override
 	public float getPrefHeight() {
-		return prefHeight;
+		if(sizeInvalid)
+			computeSize();
+		return cachedPrefHeight;
 	}
 
 	/** does not take rotation into account */
 	@Override
 	public float getMinWidth() {
-		SnapshotArray<Actor> children = getChildren();
-		if(children.size == 0)
-			return 0;
-		float minWidth = Float.POSITIVE_INFINITY;
-		Actor currentSmallest = null;
-		for(Actor child : children) {
-			float childMinWidth = child instanceof Layout ? ((Layout) child).getMinWidth() : child.getWidth();
-			if(childMinWidth < minWidth) {
-				minWidth = childMinWidth;
-				currentSmallest = child;
-			}
-		}
-		float realDistanceFromCenter = replaceNaN(distanceFromCenter, 0);
-		if(children.size == 1)
-			return minWidth * 2 + realDistanceFromCenter * 2;
-		float secondMinWidth = Float.POSITIVE_INFINITY;
-		for(Actor child : children) {
-			if(child == currentSmallest)
-				continue;
-			secondMinWidth = Math.min(secondMinWidth, child instanceof Layout ? ((Layout) child).getMinWidth() : child.getWidth());
-		}
-		return minWidth * 2 + secondMinWidth * 2 + realDistanceFromCenter * 2;
+		if(sizeInvalid)
+			computeSize();
+		return cachedMinWidth;
 	}
 
 	/** does not take rotation into account */
 	@Override
 	public float getMinHeight() {
-		SnapshotArray<Actor> children = getChildren();
-		if(children.size == 0)
-			return 0;
-		float minHeight = Float.POSITIVE_INFINITY;
-		Actor currentSmallest = null;
-		for(Actor child : children) {
-			float childMinHeight = child instanceof Layout ? ((Layout) child).getMinHeight() : child.getHeight();
-			if(childMinHeight < minHeight) {
-				minHeight = childMinHeight;
-				currentSmallest = child;
-			}
-		}
-		float realDistanceFromCenter = replaceNaN(distanceFromCenter, 0);
-		if(children.size == 1)
-			return minHeight * 2 + realDistanceFromCenter * 2;
-		float secondMinHeight = Float.POSITIVE_INFINITY;
-		for(Actor child : children) {
-			if(child == currentSmallest)
-				continue;
-			secondMinHeight = Math.min(secondMinHeight, child instanceof Layout ? ((Layout) child).getMinHeight() : child.getHeight());
-		}
-		return minHeight * 2 + secondMinHeight * 2 + realDistanceFromCenter * 2;
+		if(sizeInvalid)
+			computeSize();
+		return cachedMinHeight;
 	}
 
 	/** @param draggable if this group should be rotatable by dragging with the pointer */
@@ -475,13 +490,13 @@ public class CircularGroup extends WidgetGroup {
 	}
 
 	/** @param prefWidth the {@link #prefWidth} to set */
-	public void setPrefWidth(float prefWidth) {
+	public void setPrefWidth(Value prefWidth) {
 		this.prefWidth = prefWidth;
 		invalidateHierarchy();
 	}
 
 	/** @param prefHeight the {@link #prefHeight} to set */
-	public void setPrefHeight(float prefHeight) {
+	public void setPrefHeight(Value prefHeight) {
 		this.prefHeight = prefHeight;
 		invalidateHierarchy();
 	}
@@ -504,7 +519,7 @@ public class CircularGroup extends WidgetGroup {
 	/** @param distanceFromCenter the {@link #distanceFromCenter} to set */
 	public void setDistanceFromCenter(float distanceFromCenter) {
 		this.distanceFromCenter = distanceFromCenter;
-		invalidate();
+		invalidateHierarchy();
 	}
 
 	/** @return the {@link #dragManager} */
