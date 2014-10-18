@@ -457,7 +457,7 @@ public class CircularGroup extends WidgetGroup {
 		if(minAngleOffset > maxAngleOffset)
 			throw new IllegalArgumentException("minAngleOffset must not be > maxAngleOffset");
 		this.minAngleOffset = minAngleOffset;
-		this.angleOffset = Math.max(minAngleOffset, angleOffset);
+		angleOffset = Math.max(minAngleOffset, angleOffset);
 	}
 
 	/** @return the {@link #minAngleOffset} */
@@ -471,7 +471,7 @@ public class CircularGroup extends WidgetGroup {
 		if(maxAngleOffset < minAngleOffset)
 			throw new IllegalArgumentException("maxAngleOffset must not be < minAngleOffset");
 		this.maxAngleOffset = maxAngleOffset;
-		this.angleOffset = Math.min(angleOffset, maxAngleOffset);
+		angleOffset = Math.min(angleOffset, maxAngleOffset);
 	}
 
 	/** @return the {@link #maxAngleOffset} */
