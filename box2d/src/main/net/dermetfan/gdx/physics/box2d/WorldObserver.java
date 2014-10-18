@@ -347,15 +347,15 @@ public class WorldObserver {
 
 		@Override
 		public void changed(Body body, BodyChange change) {
-			boolean unexpected = change.type != null || change.angularDamping != null || change.gravityScale != null || change.massData != null || change.userDataChanged;
+			boolean unexpected = change.newType != null || change.newAngularDamping != null || change.newGravityScale != null || change.newMassData != null || change.userDataChanged;
 			ExpectationBase base = bases.get(body);
-			if(!unexpected && change.linearVelocity != null && !change.linearVelocity.equals(base.linearVelocity.mulAdd(body.getWorld().getGravity(), step).scl(1 / (1 + step * body.getLinearDamping()))))
+			if(!unexpected && change.newLinearVelocity != null && !change.newLinearVelocity.equals(base.linearVelocity.mulAdd(body.getWorld().getGravity(), step).scl(1 / (1 + step * body.getLinearDamping()))))
 				unexpected = true;
-			else if(change.transform != null && // the linear damping of the body must be applied to the linear velocity of the base already
-					change.transform.vals[Transform.POS_X] != base.transform.vals[Transform.POS_X] + base.linearVelocity.x * step &&
-					change.transform.vals[Transform.POS_Y] != base.transform.vals[Transform.POS_Y] + base.linearVelocity.y * step)
+			else if(change.newTransform != null && // the linear damping of the body must be applied to the linear velocity of the base already
+					change.newTransform.vals[Transform.POS_X] != base.transform.vals[Transform.POS_X] + base.linearVelocity.x * step &&
+					change.newTransform.vals[Transform.POS_Y] != base.transform.vals[Transform.POS_Y] + base.linearVelocity.y * step)
 				unexpected = true;
-			else if(change.angularVelocity != null && change.angularVelocity != base.angularVelocity * (1 / (1 + step * body.getAngularDamping())))
+			else if(change.newAngularVelocity != null && change.newAngularVelocity != base.angularVelocity * (1 / (1 + step * body.getAngularDamping())))
 				unexpected = true;
 			base.set(body);
 			if(unexpected)
@@ -520,36 +520,36 @@ public class WorldObserver {
 		private transient Boolean oldAutoClearForces;
 		private transient final Vector2 oldGravity = new Vector2();
 
-		Boolean autoClearForces;
-		Vector2 gravity;
+		public Boolean newAutoClearForces;
+		public Vector2 newGravity;
 
 		@Override
 		public boolean update(World world) {
-			Boolean newAutoClearForces = world.getAutoClearForces();
-			Vector2 newGravity = world.getGravity();
+			Boolean autoClearForces = world.getAutoClearForces();
+			Vector2 gravity = world.getGravity();
 
 			boolean changed = false;
 
-			if(!newAutoClearForces.equals(oldAutoClearForces)) {
-				oldAutoClearForces = autoClearForces = newAutoClearForces;
+			if(!autoClearForces.equals(oldAutoClearForces)) {
+				oldAutoClearForces = newAutoClearForces = autoClearForces;
 				changed = true;
 			} else
-				autoClearForces = null;
-			if(!newGravity.equals(oldGravity)) {
-				oldGravity.set(gravity = newGravity);
+				newAutoClearForces = null;
+			if(!gravity.equals(oldGravity)) {
+				oldGravity.set(newGravity = gravity);
 				changed = true;
 			} else
-				autoClearForces = null;
+				newAutoClearForces = null;
 
 			return changed;
 		}
 
 		@Override
 		public void apply(World world) {
-			if(autoClearForces != null)
-				world.setAutoClearForces(autoClearForces);
-			if(gravity != null)
-				world.setGravity(gravity);
+			if(newAutoClearForces != null)
+				world.setAutoClearForces(newAutoClearForces);
+			if(newGravity != null)
+				world.setGravity(newGravity);
 		}
 
 		@Override
@@ -557,8 +557,8 @@ public class WorldObserver {
 			if(!(other instanceof WorldChange))
 				return false;
 			WorldChange o = (WorldChange) other;
-			boolean diff = !Objects.equals(autoClearForces, o.autoClearForces);
-			diff |= !Objects.equals(gravity, o.gravity);
+			boolean diff = !Objects.equals(newAutoClearForces, o.newAutoClearForces);
+			diff |= !Objects.equals(newGravity, o.newGravity);
 			return diff;
 		}
 
@@ -567,8 +567,8 @@ public class WorldObserver {
 			oldAutoClearForces = null;
 			oldGravity.setZero();
 
-			autoClearForces = null;
-			gravity = null;
+			newAutoClearForces = null;
+			newGravity = null;
 		}
 
 	}
@@ -592,19 +592,19 @@ public class WorldObserver {
 		private transient boolean oldSleepingAllowed;
 		private transient Object oldUserData;
 
-		Transform transform;
-		BodyType type;
-		Float angularDamping;
-		Float angularVelocity;
-		Float gravityScale;
-		Vector2 linearVelocity;
-		MassData massData;
-		Boolean fixedRotation;
-		Boolean bullet;
-		Boolean awake;
-		Boolean active;
-		Boolean sleepingAllowed;
-		Object userData;
+		public Transform newTransform;
+		public BodyType newType;
+		public Float newAngularDamping;
+		public Float newAngularVelocity;
+		public Float newGravityScale;
+		public Vector2 newLinearVelocity;
+		public MassData newMassData;
+		public Boolean newFixedRotation;
+		public Boolean newBullet;
+		public Boolean newAwake;
+		public Boolean newActive;
+		public Boolean newSleepingAllowed;
+		public Object newUserData;
 
 		/** if the {@link Body#userData} changed */
 		private boolean userDataChanged;
@@ -624,87 +624,87 @@ public class WorldObserver {
 
 		@Override
 		public boolean update(Body body) {
-			Transform newTransform = body.getTransform();
-			BodyType newType = body.getType();
-			float newAngularDamping = body.getAngularDamping();
-			float newAngularVelocity = body.getAngularVelocity();
-			float newGravityScale = body.getGravityScale();
-			Vector2 newLinearVelocity = body.getLinearVelocity();
-			MassData newMassData = body.getMassData();
-			boolean newFixedRotation = body.isFixedRotation();
-			boolean newBullet = body.isBullet();
-			boolean newAwake = body.isAwake();
-			boolean newActive = body.isActive();
-			boolean newSleepingAllowed = body.isSleepingAllowed();
-			Object newUserData = body.getUserData();
+			Transform transform = body.getTransform();
+			BodyType type = body.getType();
+			float angularDamping = body.getAngularDamping();
+			float angularVelocity = body.getAngularVelocity();
+			float gravityScale = body.getGravityScale();
+			Vector2 linearVelocity = body.getLinearVelocity();
+			MassData massData = body.getMassData();
+			boolean fixedRotation = body.isFixedRotation();
+			boolean bullet = body.isBullet();
+			boolean awake = body.isAwake();
+			boolean active = body.isActive();
+			boolean sleepingAllowed = body.isSleepingAllowed();
+			Object userData = body.getUserData();
 
 			boolean changed = false;
 
-			if(!Box2DUtils.equals(newTransform, oldTransform)) {
-				updateOldTransform(transform = newTransform);
+			if(!Box2DUtils.equals(transform, oldTransform)) {
+				updateOldTransform(newTransform = transform);
 				changed = true;
 			} else
-				transform = null;
-			if(!newType.equals(oldType)) {
-				oldType = type = newType;
+				newTransform = null;
+			if(!type.equals(oldType)) {
+				oldType = newType = type;
 				changed = true;
 			} else
-				type = null;
-			if(newAngularDamping != oldAngularDamping) {
-				oldAngularDamping = angularDamping = newAngularDamping;
+				newType = null;
+			if(angularDamping != oldAngularDamping) {
+				oldAngularDamping = newAngularDamping = angularDamping;
 				changed = true;
 			} else
-				angularDamping = null;
-			if(newAngularVelocity != oldAngularVelocity) {
-				oldAngularVelocity = angularVelocity = newAngularVelocity;
+				newAngularDamping = null;
+			if(angularVelocity != oldAngularVelocity) {
+				oldAngularVelocity = newAngularVelocity = angularVelocity;
 				changed = true;
 			} else
-				angularVelocity = null;
-			if(newGravityScale != oldGravityScale) {
-				oldGravityScale = gravityScale = newGravityScale;
+				newAngularVelocity = null;
+			if(gravityScale != oldGravityScale) {
+				oldGravityScale = newGravityScale = gravityScale;
 				changed = true;
 			} else
-				gravityScale = null;
-			if(!newLinearVelocity.equals(oldLinearVelocity)) {
-				oldLinearVelocity.set(linearVelocity = newLinearVelocity);
+				newGravityScale = null;
+			if(!linearVelocity.equals(oldLinearVelocity)) {
+				oldLinearVelocity.set(newLinearVelocity = linearVelocity);
 				changed = true;
 			} else
-				linearVelocity = null;
-			if(!Box2DUtils.equals(newMassData, oldMassData)) {
-				updateOldMassData(massData = newMassData);
+				newLinearVelocity = null;
+			if(!Box2DUtils.equals(massData, oldMassData)) {
+				updateOldMassData(newMassData = massData);
 				changed = true;
 			} else
-				massData = null;
-			if(newFixedRotation != oldFixedRotation) {
-				fixedRotation = oldFixedRotation = newFixedRotation;
+				newMassData = null;
+			if(fixedRotation != oldFixedRotation) {
+				newFixedRotation = oldFixedRotation = fixedRotation;
 				changed = true;
 			} else
-				fixedRotation = null;
-			if(newBullet != oldBullet) {
-				oldBullet = bullet = newBullet;
+				newFixedRotation = null;
+			if(bullet != oldBullet) {
+				oldBullet = newBullet = bullet;
 				changed = true;
 			} else
-				bullet = null;
-			if(newAwake != oldAwake) {
-				oldAwake = awake = newAwake;
+				newBullet = null;
+			if(awake != oldAwake) {
+				oldAwake = newAwake = awake;
 				changed = true;
 			} else
-				awake = null;
-			if(newActive != oldActive) {
-				active = oldActive = newActive;
+				newAwake = null;
+			if(active != oldActive) {
+				newActive = oldActive = active;
 				changed = true;
 			} else
-				active = null;
-			if(newSleepingAllowed != oldSleepingAllowed) {
-				sleepingAllowed = oldSleepingAllowed = newSleepingAllowed;
+				newActive = null;
+			if(sleepingAllowed != oldSleepingAllowed) {
+				newSleepingAllowed = oldSleepingAllowed = sleepingAllowed;
 				changed = true;
 			} else
-				sleepingAllowed = null;
-			if(newUserData != null ? !newUserData.equals(oldUserData) : oldUserData != null) {
-				oldUserData = userData = newUserData;
+				newSleepingAllowed = null;
+			if(userData != null ? !userData.equals(oldUserData) : oldUserData != null) {
+				oldUserData = newUserData = userData;
 				changed = userDataChanged = true;
 			} else {
-				userData = null;
+				newUserData = null;
 				userDataChanged = false;
 			}
 
@@ -713,32 +713,32 @@ public class WorldObserver {
 
 		@Override
 		public void apply(Body body) {
-			if(transform != null)
-				body.setTransform(transform.vals[Transform.POS_X], transform.vals[Transform.POS_Y], transform.getRotation());
-			if(type != null)
-				body.setType(type);
-			if(angularDamping != null)
-				body.setAngularDamping(angularDamping);
-			if(angularVelocity != null)
-				body.setAngularVelocity(angularVelocity);
-			if(gravityScale != null)
-				body.setGravityScale(gravityScale);
-			if(linearVelocity != null)
-				body.setLinearVelocity(linearVelocity);
-			if(massData != null)
-				body.setMassData(massData);
-			if(fixedRotation != null)
-				body.setFixedRotation(fixedRotation);
-			if(bullet != null)
-				body.setBullet(bullet);
-			if(awake != null)
-				body.setAwake(awake);
-			if(active != null)
-				body.setActive(active);
-			if(sleepingAllowed != null)
-				body.setSleepingAllowed(sleepingAllowed);
+			if(newTransform != null)
+				body.setTransform(newTransform.vals[Transform.POS_X], newTransform.vals[Transform.POS_Y], newTransform.getRotation());
+			if(newType != null)
+				body.setType(newType);
+			if(newAngularDamping != null)
+				body.setAngularDamping(newAngularDamping);
+			if(newAngularVelocity != null)
+				body.setAngularVelocity(newAngularVelocity);
+			if(newGravityScale != null)
+				body.setGravityScale(newGravityScale);
+			if(newLinearVelocity != null)
+				body.setLinearVelocity(newLinearVelocity);
+			if(newMassData != null)
+				body.setMassData(newMassData);
+			if(newFixedRotation != null)
+				body.setFixedRotation(newFixedRotation);
+			if(newBullet != null)
+				body.setBullet(newBullet);
+			if(newAwake != null)
+				body.setAwake(newAwake);
+			if(newActive != null)
+				body.setActive(newActive);
+			if(newSleepingAllowed != null)
+				body.setSleepingAllowed(newSleepingAllowed);
 			if(userDataChanged)
-				body.setUserData(userData);
+				body.setUserData(newUserData);
 		}
 
 		@Override
@@ -746,19 +746,19 @@ public class WorldObserver {
 			if(!(other instanceof BodyChange))
 				return false;
 			BodyChange o = (BodyChange) other;
-			return Objects.equals(transform, o.transform) &&
-					Objects.equals(type, o.type) &&
-					Objects.equals(angularDamping, o.angularDamping) &&
-					Objects.equals(angularVelocity, o.angularVelocity) &&
-					Objects.equals(gravityScale, o.gravityScale) &&
-					Objects.equals(linearVelocity, o.linearVelocity) &&
-					Objects.equals(massData, o.massData) &&
-					Objects.equals(fixedRotation, o.fixedRotation) &&
-					Objects.equals(bullet, o.bullet) &&
-					Objects.equals(awake, o.awake) &&
-					Objects.equals(active, o.active) &&
-					Objects.equals(sleepingAllowed, o.sleepingAllowed) &&
-					Objects.equals(userData, o.userData);
+			return Objects.equals(newTransform, o.newTransform) &&
+					Objects.equals(newType, o.newType) &&
+					Objects.equals(newAngularDamping, o.newAngularDamping) &&
+					Objects.equals(newAngularVelocity, o.newAngularVelocity) &&
+					Objects.equals(newGravityScale, o.newGravityScale) &&
+					Objects.equals(newLinearVelocity, o.newLinearVelocity) &&
+					Objects.equals(newMassData, o.newMassData) &&
+					Objects.equals(newFixedRotation, o.newFixedRotation) &&
+					Objects.equals(newBullet, o.newBullet) &&
+					Objects.equals(newAwake, o.newAwake) &&
+					Objects.equals(newActive, o.newActive) &&
+					Objects.equals(newSleepingAllowed, o.newSleepingAllowed) &&
+					Objects.equals(newUserData, o.newUserData);
 		}
 
 		@Override
@@ -779,19 +779,19 @@ public class WorldObserver {
 			oldSleepingAllowed = false;
 			oldUserData = null;
 
-			transform = null;
-			type = null;
-			angularDamping = null;
-			angularVelocity = null;
-			gravityScale = null;
-			linearVelocity = null;
-			massData = null;
-			fixedRotation = null;
-			bullet = null;
-			awake = null;
-			active = null;
-			sleepingAllowed = null;
-			userData = null;
+			newTransform = null;
+			newType = null;
+			newAngularDamping = null;
+			newAngularVelocity = null;
+			newGravityScale = null;
+			newLinearVelocity = null;
+			newMassData = null;
+			newFixedRotation = null;
+			newBullet = null;
+			newAwake = null;
+			newActive = null;
+			newSleepingAllowed = null;
+			newUserData = null;
 
 			userDataChanged = false;
 		}
@@ -810,11 +810,11 @@ public class WorldObserver {
 		private transient final Filter oldFilter = new Filter();
 		private transient Object oldUserData;
 
-		Float density;
-		Float friction;
-		Float restitution;
-		Filter filter;
-		Object userData;
+		public Float newDensity;
+		public Float newFriction;
+		public Float newRestitution;
+		public Filter newFilter;
+		public Object newUserData;
 
 		/** if the {@link Fixture#userData} changed */
 		boolean userDataChanged;
@@ -837,47 +837,47 @@ public class WorldObserver {
 
 		@Override
 		public boolean update(Fixture fixture) {
-			Body newBody = fixture.getBody();
+			Body body = fixture.getBody();
 
-			if(newBody != oldBody) {
+			if(body != oldBody) {
 				destroyed = true;
-				oldBody = newBody;
+				oldBody = body;
 				return false;
 			}
 
-			float newDensity = fixture.getDensity();
-			float newFriction = fixture.getFriction();
-			float newRestitution = fixture.getRestitution();
-			Filter newFilter = fixture.getFilterData();
-			Object newUserData = fixture.getUserData();
+			float density = fixture.getDensity();
+			float friction = fixture.getFriction();
+			float restitution = fixture.getRestitution();
+			Filter filter = fixture.getFilterData();
+			Object userData = fixture.getUserData();
 
 			boolean changed = false;
 
-			if(newDensity != oldDensity) {
-				oldDensity = density = newDensity;
+			if(density != oldDensity) {
+				oldDensity = newDensity = density;
 				changed = true;
 			} else
-				density = null;
-			if(newFriction != oldFriction) {
-				oldFriction = friction = newFriction;
+				newDensity = null;
+			if(friction != oldFriction) {
+				oldFriction = newFriction = friction;
 				changed = true;
 			} else
-				friction = null;
-			if(newRestitution != oldRestitution) {
-				oldRestitution = restitution = newRestitution;
+				newFriction = null;
+			if(restitution != oldRestitution) {
+				oldRestitution = newRestitution = restitution;
 				changed = true;
 			} else
-				restitution = null;
-			if(!Box2DUtils.equals(newFilter, oldFilter)) {
-				updateOldFilter(filter = newFilter);
+				newRestitution = null;
+			if(!Box2DUtils.equals(filter, oldFilter)) {
+				updateOldFilter(newFilter = filter);
 				changed = true;
 			} else
-				filter = null;
-			if(newUserData != null ? !newUserData.equals(oldUserData) : oldUserData != null) {
-				oldUserData = userData = newUserData;
+				newFilter = null;
+			if(userData != null ? !userData.equals(oldUserData) : oldUserData != null) {
+				oldUserData = newUserData = userData;
 				changed = userDataChanged = true;
 			} else {
-				userData = null;
+				newUserData = null;
 				userDataChanged = false;
 			}
 
@@ -889,16 +889,16 @@ public class WorldObserver {
 		public void apply(Fixture fixture) {
 			if(destroyed)
 				throw new IllegalStateException("destroyed FixtureChanges may not be applied");
-			if(density != null)
-				fixture.setDensity(density);
-			if(friction != null)
-				fixture.setFriction(friction);
-			if(restitution != null)
-				fixture.setRestitution(restitution);
-			if(filter != null)
-				fixture.setFilterData(filter);
+			if(newDensity != null)
+				fixture.setDensity(newDensity);
+			if(newFriction != null)
+				fixture.setFriction(newFriction);
+			if(newRestitution != null)
+				fixture.setRestitution(newRestitution);
+			if(newFilter != null)
+				fixture.setFilterData(newFilter);
 			if(userDataChanged)
-				fixture.setUserData(userData);
+				fixture.setUserData(newUserData);
 		}
 
 		@Override
@@ -906,11 +906,11 @@ public class WorldObserver {
 			if(!(other instanceof FixtureChange))
 				return false;
 			FixtureChange o = (FixtureChange) other;
-			return Objects.equals(density, o.density) &&
-					Objects.equals(friction, o.friction) &&
-					Objects.equals(restitution, o.restitution) &&
-					Objects.equals(filter, o.filter) &&
-					Objects.equals(userData, o.userData);
+			return Objects.equals(newDensity, o.newDensity) &&
+					Objects.equals(newFriction, o.newFriction) &&
+					Objects.equals(newRestitution, o.newRestitution) &&
+					Objects.equals(newFilter, o.newFilter) &&
+					Objects.equals(newUserData, o.newUserData);
 		}
 
 		@Override
@@ -926,11 +926,11 @@ public class WorldObserver {
 			oldFilter.groupIndex = 0;
 			oldUserData = null;
 
-			density = null;
-			friction = null;
-			restitution = null;
-			filter = null;
-			userData = null;
+			newDensity = null;
+			newFriction = null;
+			newRestitution = null;
+			newFilter = null;
+			newUserData = null;
 
 			userDataChanged = false;
 		}
@@ -988,21 +988,21 @@ public class WorldObserver {
 
 		private transient Object oldUserData;
 
-		Object userData;
+		public Object newUserData;
 
 		boolean userDataChanged;
 
 		@Override
 		public boolean update(T joint) {
-			Object newUserData = joint.getUserData();
+			Object userData = joint.getUserData();
 
 			boolean changed = false;
 
-			if(newUserData != null ? !newUserData.equals(oldUserData) : oldUserData != null) {
-				oldUserData = userData = newUserData;
+			if(userData != null ? !userData.equals(oldUserData) : oldUserData != null) {
+				oldUserData = newUserData = userData;
 				changed = userDataChanged = true;
 			} else {
-				userData = null;
+				newUserData = null;
 				userDataChanged = false;
 			}
 
@@ -1012,18 +1012,18 @@ public class WorldObserver {
 		@Override
 		public void apply(T joint) {
 			if(userDataChanged)
-				joint.setUserData(userData);
+				joint.setUserData(newUserData);
 		}
 
 		@Override
 		public <C extends Change<T>> boolean newValuesEqual(C other) {
-			return other instanceof JointChange && Objects.equals(userData, ((JointChange) other).userData);
+			return other instanceof JointChange && Objects.equals(newUserData, ((JointChange) other).newUserData);
 		}
 
 		@Override
 		public void reset() {
 			oldUserData = null;
-			userData = null;
+			newUserData = null;
 			userDataChanged = false;
 		}
 
@@ -1039,40 +1039,40 @@ public class WorldObserver {
 		private transient float oldMaxMotorTorque;
 		private transient float oldMotorSpeed;
 
-		Float lowerLimit;
-		Float upperLimit;
-		Float maxMotorTorque;
-		Float motorSpeed;
+		public Float newLowerLimit;
+		public Float newUpperLimit;
+		public Float newMaxMotorTorque;
+		public Float newMotorSpeed;
 
 		@Override
 		public boolean update(RevoluteJoint joint) {
-			float newLowerLimit = joint.getLowerLimit();
-			float newUpperLimit = joint.getUpperLimit();
-			float newMaxMotorTorque = joint.getMaxMotorTorque();
-			float newMotorSpeed = joint.getMotorSpeed();
+			float lowerLimit = joint.getLowerLimit();
+			float upperLimit = joint.getUpperLimit();
+			float maxMotorTorque = joint.getMaxMotorTorque();
+			float motorSpeed = joint.getMotorSpeed();
 
 			boolean changed = super.update(joint);
 
-			if(newLowerLimit != oldLowerLimit) {
-				lowerLimit = oldLowerLimit = newLowerLimit;
+			if(lowerLimit != oldLowerLimit) {
+				newLowerLimit = oldLowerLimit = lowerLimit;
 				changed = true;
 			} else
-				lowerLimit = null;
-			if(newUpperLimit != oldUpperLimit) {
-				upperLimit = oldUpperLimit = newUpperLimit;
+				newLowerLimit = null;
+			if(upperLimit != oldUpperLimit) {
+				newUpperLimit = oldUpperLimit = upperLimit;
 				changed = true;
 			} else
-				upperLimit = null;
-			if(newMaxMotorTorque != oldMaxMotorTorque) {
-				maxMotorTorque = oldMaxMotorTorque = newMaxMotorTorque;
+				newUpperLimit = null;
+			if(maxMotorTorque != oldMaxMotorTorque) {
+				newMaxMotorTorque = oldMaxMotorTorque = maxMotorTorque;
 				changed = true;
 			} else
-				maxMotorTorque = null;
-			if(newMotorSpeed != oldMotorSpeed) {
-				motorSpeed = oldMotorSpeed = newMotorSpeed;
+				newMaxMotorTorque = null;
+			if(motorSpeed != oldMotorSpeed) {
+				newMotorSpeed = oldMotorSpeed = motorSpeed;
 				changed = true;
 			} else
-				motorSpeed = null;
+				newMotorSpeed = null;
 
 			return changed;
 		}
@@ -1080,12 +1080,12 @@ public class WorldObserver {
 		@Override
 		public void apply(RevoluteJoint joint) {
 			super.apply(joint);
-			if(lowerLimit != null || upperLimit != null)
-				joint.setLimits(lowerLimit != null ? lowerLimit : joint.getLowerLimit(), upperLimit != null ? upperLimit : joint.getUpperLimit());
-			if(maxMotorTorque != null)
-				joint.setMaxMotorTorque(maxMotorTorque);
-			if(motorSpeed != null)
-				joint.setMotorSpeed(motorSpeed);
+			if(newLowerLimit != null || newUpperLimit != null)
+				joint.setLimits(newLowerLimit != null ? newLowerLimit : joint.getLowerLimit(), newUpperLimit != null ? newUpperLimit : joint.getUpperLimit());
+			if(newMaxMotorTorque != null)
+				joint.setMaxMotorTorque(newMaxMotorTorque);
+			if(newMotorSpeed != null)
+				joint.setMotorSpeed(newMotorSpeed);
 		}
 
 		@Override
@@ -1094,10 +1094,10 @@ public class WorldObserver {
 				return false;
 			RevoluteJointChange o = (RevoluteJointChange) other;
 			return super.newValuesEqual(other) &&
-					Objects.equals(lowerLimit, o.lowerLimit) &&
-					Objects.equals(upperLimit, o.upperLimit) &&
-					Objects.equals(maxMotorTorque, o.maxMotorTorque) &&
-					Objects.equals(motorSpeed, o.motorSpeed);
+					Objects.equals(newLowerLimit, o.newLowerLimit) &&
+					Objects.equals(newUpperLimit, o.newUpperLimit) &&
+					Objects.equals(newMaxMotorTorque, o.newMaxMotorTorque) &&
+					Objects.equals(newMotorSpeed, o.newMotorSpeed);
 		}
 
 		@Override
@@ -1109,10 +1109,10 @@ public class WorldObserver {
 			oldMaxMotorTorque = 0;
 			oldMotorSpeed = 0;
 
-			lowerLimit = null;
-			upperLimit = null;
-			maxMotorTorque = null;
-			motorSpeed = null;
+			newLowerLimit = null;
+			newUpperLimit = null;
+			newMaxMotorTorque = null;
+			newMotorSpeed = null;
 		}
 
 	}
@@ -1127,40 +1127,40 @@ public class WorldObserver {
 		private transient float oldMaxMotorTorque;
 		private transient float oldMotorSpeed;
 
-		Float lowerLimit;
-		Float upperLimit;
-		Float maxMotorForce;
-		Float motorSpeed;
+		public Float newLowerLimit;
+		public Float newUpperLimit;
+		public Float newMaxMotorForce;
+		public Float newMotorSpeed;
 
 		@Override
 		public boolean update(PrismaticJoint joint) {
-			float newLowerLimit = joint.getLowerLimit();
-			float newUpperLimit = joint.getUpperLimit();
-			float newMaxMotorTorque = joint.getMaxMotorForce();
-			float newMotorSpeed = joint.getMotorSpeed();
+			float lowerLimit = joint.getLowerLimit();
+			float upperLimit = joint.getUpperLimit();
+			float maxMotorTorque = joint.getMaxMotorForce();
+			float motorSpeed = joint.getMotorSpeed();
 
 			boolean changed = super.update(joint);
 
-			if(newLowerLimit != oldLowerLimit) {
-				lowerLimit = oldLowerLimit = newLowerLimit;
+			if(lowerLimit != oldLowerLimit) {
+				newLowerLimit = oldLowerLimit = lowerLimit;
 				changed = true;
 			} else
-				lowerLimit = null;
-			if(newUpperLimit != oldUpperLimit) {
-				upperLimit = oldUpperLimit = newUpperLimit;
+				newLowerLimit = null;
+			if(upperLimit != oldUpperLimit) {
+				newUpperLimit = oldUpperLimit = upperLimit;
 				changed = true;
 			} else
-				upperLimit = null;
-			if(newMaxMotorTorque != oldMaxMotorTorque) {
-				maxMotorForce = oldMaxMotorTorque = newMaxMotorTorque;
+				newUpperLimit = null;
+			if(maxMotorTorque != oldMaxMotorTorque) {
+				newMaxMotorForce = oldMaxMotorTorque = maxMotorTorque;
 				changed = true;
 			} else
-				maxMotorForce = null;
-			if(newMotorSpeed != oldMotorSpeed) {
-				motorSpeed = oldMotorSpeed = newMotorSpeed;
+				newMaxMotorForce = null;
+			if(motorSpeed != oldMotorSpeed) {
+				newMotorSpeed = oldMotorSpeed = motorSpeed;
 				changed = true;
 			} else
-				motorSpeed = null;
+				newMotorSpeed = null;
 
 			return changed;
 		}
@@ -1168,12 +1168,12 @@ public class WorldObserver {
 		@Override
 		public void apply(PrismaticJoint joint) {
 			super.apply(joint);
-			if(lowerLimit != null || upperLimit != null)
-				joint.setLimits(lowerLimit != null ? lowerLimit : joint.getLowerLimit(), upperLimit != null ? upperLimit : joint.getUpperLimit());
-			if(maxMotorForce != null)
-				joint.setMaxMotorForce(maxMotorForce);
-			if(motorSpeed != null)
-				joint.setMotorSpeed(motorSpeed);
+			if(newLowerLimit != null || newUpperLimit != null)
+				joint.setLimits(newLowerLimit != null ? newLowerLimit : joint.getLowerLimit(), newUpperLimit != null ? newUpperLimit : joint.getUpperLimit());
+			if(newMaxMotorForce != null)
+				joint.setMaxMotorForce(newMaxMotorForce);
+			if(newMotorSpeed != null)
+				joint.setMotorSpeed(newMotorSpeed);
 		}
 
 		@Override
@@ -1182,10 +1182,10 @@ public class WorldObserver {
 				return false;
 			PrismaticJointChange o = (PrismaticJointChange) other;
 			return super.newValuesEqual(other) &&
-					Objects.equals(lowerLimit, o.lowerLimit) &&
-					Objects.equals(upperLimit, o.upperLimit) &&
-					Objects.equals(maxMotorForce, o.maxMotorForce) &&
-					Objects.equals(motorSpeed, o.motorSpeed);
+					Objects.equals(newLowerLimit, o.newLowerLimit) &&
+					Objects.equals(newUpperLimit, o.newUpperLimit) &&
+					Objects.equals(newMaxMotorForce, o.newMaxMotorForce) &&
+					Objects.equals(newMotorSpeed, o.newMotorSpeed);
 		}
 
 		@Override
@@ -1197,10 +1197,10 @@ public class WorldObserver {
 			oldMaxMotorTorque = 0;
 			oldMotorSpeed = 0;
 
-			lowerLimit = null;
-			upperLimit = null;
-			maxMotorForce = null;
-			motorSpeed = null;
+			newLowerLimit = null;
+			newUpperLimit = null;
+			newMaxMotorForce = null;
+			newMotorSpeed = null;
 		}
 
 	}
@@ -1214,33 +1214,33 @@ public class WorldObserver {
 		private transient float oldFrequency;
 		private transient float oldLength;
 
-		Float dampingRatio;
-		Float frequency;
-		Float length;
+		public Float newDampingRatio;
+		public Float newFrequency;
+		public Float newLength;
 
 		@Override
 		public boolean update(DistanceJoint joint) {
-			float newDampingRatio = joint.getDampingRatio();
-			float newFrequency = joint.getFrequency();
-			float newLength = joint.getLength();
+			float dampingRatio = joint.getDampingRatio();
+			float frequency = joint.getFrequency();
+			float length = joint.getLength();
 
 			boolean changed = super.update(joint);
 
-			if(newDampingRatio != oldDampingRatio) {
-				dampingRatio = oldDampingRatio = newDampingRatio;
+			if(dampingRatio != oldDampingRatio) {
+				newDampingRatio = oldDampingRatio = dampingRatio;
 				changed = true;
 			} else
-				dampingRatio = null;
-			if(newFrequency != oldFrequency) {
-				frequency = oldFrequency = newFrequency;
+				newDampingRatio = null;
+			if(frequency != oldFrequency) {
+				newFrequency = oldFrequency = frequency;
 				changed = true;
 			} else
-				frequency = null;
-			if(newLength != oldLength) {
-				length = oldLength = newLength;
+				newFrequency = null;
+			if(length != oldLength) {
+				newLength = oldLength = length;
 				changed = true;
 			} else
-				length = null;
+				newLength = null;
 
 			return changed;
 		}
@@ -1248,12 +1248,12 @@ public class WorldObserver {
 		@Override
 		public void apply(DistanceJoint joint) {
 			super.apply(joint);
-			if(dampingRatio != null)
-				joint.setDampingRatio(dampingRatio);
-			if(frequency != null)
-				joint.setFrequency(frequency);
-			if(length != null)
-				joint.setLength(length);
+			if(newDampingRatio != null)
+				joint.setDampingRatio(newDampingRatio);
+			if(newFrequency != null)
+				joint.setFrequency(newFrequency);
+			if(newLength != null)
+				joint.setLength(newLength);
 		}
 
 		@Override
@@ -1262,9 +1262,9 @@ public class WorldObserver {
 				return false;
 			DistanceJointChange o = (DistanceJointChange) other;
 			return super.newValuesEqual(other) &&
-					Objects.equals(dampingRatio, o.dampingRatio) &&
-					Objects.equals(frequency, o.frequency) &&
-					Objects.equals(length, o.length);
+					Objects.equals(newDampingRatio, o.newDampingRatio) &&
+					Objects.equals(newFrequency, o.newFrequency) &&
+					Objects.equals(newLength, o.newLength);
 		}
 
 		@Override
@@ -1275,9 +1275,9 @@ public class WorldObserver {
 			oldFrequency = 0;
 			oldLength = 0;
 
-			dampingRatio = null;
-			frequency = null;
-			length = null;
+			newDampingRatio = null;
+			newFrequency = null;
+			newLength = null;
 		}
 
 	}
@@ -1292,40 +1292,40 @@ public class WorldObserver {
 		private transient float oldMaxForce;
 		private transient final Vector2 oldTarget = new Vector2();
 
-		Float dampingRatio;
-		Float frequency;
-		Float maxForce;
-		Vector2 target;
+		public Float newDampingRatio;
+		public Float newFrequency;
+		public Float newMaxForce;
+		public Vector2 newTarget;
 
 		@Override
 		public boolean update(MouseJoint joint) {
-			float newDampingRatio = joint.getDampingRatio();
-			float newFrequency = joint.getFrequency();
-			float newMaxForce = joint.getMaxForce();
-			Vector2 newTarget = joint.getTarget();
+			float dampingRatio = joint.getDampingRatio();
+			float frequency = joint.getFrequency();
+			float maxForce = joint.getMaxForce();
+			Vector2 target = joint.getTarget();
 
 			boolean changed = super.update(joint);
 
-			if(newDampingRatio != oldDampingRatio) {
-				dampingRatio = oldDampingRatio = newDampingRatio;
+			if(dampingRatio != oldDampingRatio) {
+				newDampingRatio = oldDampingRatio = dampingRatio;
 				changed = true;
 			} else
-				dampingRatio = null;
-			if(newFrequency != oldFrequency) {
-				frequency = oldFrequency = newFrequency;
+				newDampingRatio = null;
+			if(frequency != oldFrequency) {
+				newFrequency = oldFrequency = frequency;
 				changed = true;
 			} else
-				frequency = null;
-			if(newMaxForce != oldMaxForce) {
-				maxForce = oldMaxForce = newMaxForce;
+				newFrequency = null;
+			if(maxForce != oldMaxForce) {
+				newMaxForce = oldMaxForce = maxForce;
 				changed = true;
 			} else
-				maxForce = null;
-			if(!newTarget.equals(oldTarget)) {
-				oldTarget.set(target = newTarget);
+				newMaxForce = null;
+			if(!target.equals(oldTarget)) {
+				oldTarget.set(newTarget = target);
 				changed = true;
 			} else
-				target = null;
+				newTarget = null;
 
 			return changed;
 		}
@@ -1333,14 +1333,14 @@ public class WorldObserver {
 		@Override
 		public void apply(MouseJoint joint) {
 			super.apply(joint);
-			if(dampingRatio != null)
-				joint.setDampingRatio(dampingRatio);
-			if(frequency != null)
-				joint.setFrequency(frequency);
-			if(maxForce != null)
-				joint.setMaxForce(maxForce);
-			if(target != null)
-				joint.setTarget(target);
+			if(newDampingRatio != null)
+				joint.setDampingRatio(newDampingRatio);
+			if(newFrequency != null)
+				joint.setFrequency(newFrequency);
+			if(newMaxForce != null)
+				joint.setMaxForce(newMaxForce);
+			if(newTarget != null)
+				joint.setTarget(newTarget);
 		}
 
 		@Override
@@ -1349,9 +1349,9 @@ public class WorldObserver {
 				return false;
 			MouseJointChange o = (MouseJointChange) other;
 			return super.newValuesEqual(other) &&
-					Objects.equals(dampingRatio, o.dampingRatio) &&
-					Objects.equals(frequency, o.frequency) &&
-					Objects.equals(maxForce, o.maxForce);
+					Objects.equals(newDampingRatio, o.newDampingRatio) &&
+					Objects.equals(newFrequency, o.newFrequency) &&
+					Objects.equals(newMaxForce, o.newMaxForce);
 		}
 
 		@Override
@@ -1363,10 +1363,10 @@ public class WorldObserver {
 			oldMaxForce = 0;
 			oldTarget.setZero();
 
-			dampingRatio = null;
-			frequency = null;
-			maxForce = null;
-			target = null;
+			newDampingRatio = null;
+			newFrequency = null;
+			newMaxForce = null;
+			newTarget = null;
 		}
 
 	}
@@ -1378,19 +1378,19 @@ public class WorldObserver {
 
 		private transient float oldRatio;
 
-		Float ratio;
+		public Float newRatio;
 
 		@Override
 		public boolean update(GearJoint joint) {
-			float newRatio = joint.getRatio();
+			float ratio = joint.getRatio();
 
 			boolean changed = super.update(joint);
 
-			if(newRatio != oldRatio) {
-				ratio = oldRatio = newRatio;
+			if(ratio != oldRatio) {
+				newRatio = oldRatio = ratio;
 				changed = true;
 			} else
-				ratio = null;
+				newRatio = null;
 
 			return changed;
 		}
@@ -1398,20 +1398,20 @@ public class WorldObserver {
 		@Override
 		public void apply(GearJoint joint) {
 			super.apply(joint);
-			if(ratio != null)
-				joint.setRatio(ratio);
+			if(newRatio != null)
+				joint.setRatio(newRatio);
 		}
 
 		@Override
 		public <C extends Change<GearJoint>> boolean newValuesEqual(C other) {
-			return other instanceof GearJointChange && super.newValuesEqual(other) && Objects.equals(ratio, ((GearJointChange) other).ratio);
+			return other instanceof GearJointChange && super.newValuesEqual(other) && Objects.equals(newRatio, ((GearJointChange) other).newRatio);
 		}
 
 		@Override
 		public void reset() {
 			super.reset();
 			oldRatio = 0;
-			ratio = null;
+			newRatio = null;
 		}
 
 	}
@@ -1426,40 +1426,40 @@ public class WorldObserver {
 		private transient float oldMaxMotorTorque;
 		private transient float oldMotorSpeed;
 
-		Float springDampingRatio;
-		Float springFrequencyHz;
-		Float maxMotorTorque;
-		Float motorSpeed;
+		public Float newSpringDampingRatio;
+		public Float newSpringFrequencyHz;
+		public Float newMaxMotorTorque;
+		public Float newMotorSpeed;
 
 		@Override
 		public boolean update(WheelJoint joint) {
-			float newSprintDampingRatio = joint.getSpringDampingRatio();
-			float newSpringFrequencyHz = joint.getSpringFrequencyHz();
-			float newMaxMotorTorque = joint.getMaxMotorTorque();
-			float newMotorSpeed = joint.getMotorSpeed();
+			float sprintDampingRatio = joint.getSpringDampingRatio();
+			float springFrequencyHz = joint.getSpringFrequencyHz();
+			float maxMotorTorque = joint.getMaxMotorTorque();
+			float motorSpeed = joint.getMotorSpeed();
 
 			boolean changed = super.update(joint);
 
-			if(newSprintDampingRatio != oldSpringDampingRatio) {
-				springDampingRatio = oldSpringDampingRatio = newSprintDampingRatio;
+			if(sprintDampingRatio != oldSpringDampingRatio) {
+				newSpringDampingRatio = oldSpringDampingRatio = sprintDampingRatio;
 				changed = true;
 			} else
-				springDampingRatio = null;
-			if(newSpringFrequencyHz != oldSpringFrequencyHz) {
-				springFrequencyHz = oldSpringFrequencyHz = newSpringFrequencyHz;
+				newSpringDampingRatio = null;
+			if(springFrequencyHz != oldSpringFrequencyHz) {
+				newSpringFrequencyHz = oldSpringFrequencyHz = springFrequencyHz;
 				changed = true;
 			} else
-				springFrequencyHz = null;
-			if(newMaxMotorTorque != oldMaxMotorTorque) {
-				maxMotorTorque = oldMaxMotorTorque = newMaxMotorTorque;
+				newSpringFrequencyHz = null;
+			if(maxMotorTorque != oldMaxMotorTorque) {
+				newMaxMotorTorque = oldMaxMotorTorque = maxMotorTorque;
 				changed = true;
 			} else
-				maxMotorTorque = null;
-			if(newMotorSpeed != oldMotorSpeed) {
-				motorSpeed = oldMotorSpeed = newMotorSpeed;
+				newMaxMotorTorque = null;
+			if(motorSpeed != oldMotorSpeed) {
+				newMotorSpeed = oldMotorSpeed = motorSpeed;
 				changed = true;
 			} else
-				motorSpeed = null;
+				newMotorSpeed = null;
 
 			return changed;
 		}
@@ -1467,14 +1467,14 @@ public class WorldObserver {
 		@Override
 		public void apply(WheelJoint joint) {
 			super.apply(joint);
-			if(springDampingRatio != null)
-				joint.setSpringDampingRatio(springDampingRatio);
-			if(springFrequencyHz != null)
-				joint.setSpringFrequencyHz(springFrequencyHz);
-			if(maxMotorTorque != null)
-				joint.setMaxMotorTorque(maxMotorTorque);
-			if(motorSpeed != null)
-				joint.setMotorSpeed(motorSpeed);
+			if(newSpringDampingRatio != null)
+				joint.setSpringDampingRatio(newSpringDampingRatio);
+			if(newSpringFrequencyHz != null)
+				joint.setSpringFrequencyHz(newSpringFrequencyHz);
+			if(newMaxMotorTorque != null)
+				joint.setMaxMotorTorque(newMaxMotorTorque);
+			if(newMotorSpeed != null)
+				joint.setMotorSpeed(newMotorSpeed);
 		}
 
 		@Override
@@ -1483,10 +1483,10 @@ public class WorldObserver {
 				return false;
 			WheelJointChange o = (WheelJointChange) other;
 			return super.newValuesEqual(other) &&
-					Objects.equals(springDampingRatio, o.springDampingRatio) &&
-					Objects.equals(springFrequencyHz, o.springFrequencyHz) &&
-					Objects.equals(maxMotorTorque, o.maxMotorTorque) &&
-					Objects.equals(motorSpeed, o.motorSpeed);
+					Objects.equals(newSpringDampingRatio, o.newSpringDampingRatio) &&
+					Objects.equals(newSpringFrequencyHz, o.newSpringFrequencyHz) &&
+					Objects.equals(newMaxMotorTorque, o.newMaxMotorTorque) &&
+					Objects.equals(newMotorSpeed, o.newMotorSpeed);
 		}
 
 		@Override
@@ -1498,10 +1498,10 @@ public class WorldObserver {
 			oldMaxMotorTorque = 0;
 			oldMotorSpeed = 0;
 
-			springDampingRatio = null;
-			springFrequencyHz = null;
-			maxMotorTorque = null;
-			motorSpeed = null;
+			newSpringDampingRatio = null;
+			newSpringFrequencyHz = null;
+			newMaxMotorTorque = null;
+			newMotorSpeed = null;
 		}
 
 	}
@@ -1514,26 +1514,26 @@ public class WorldObserver {
 		private transient float oldDampingRatio;
 		private transient float oldFrequency;
 
-		Float dampingRatio;
-		Float frequency;
+		public Float newDampingRatio;
+		public Float newFrequency;
 
 		@Override
 		public boolean update(WeldJoint joint) {
-			float newDampingRatio = joint.getDampingRatio();
-			float newFrequency = joint.getFrequency();
+			float dampingRatio = joint.getDampingRatio();
+			float frequency = joint.getFrequency();
 
 			boolean changed = super.update(joint);
 
-			if(newDampingRatio != oldDampingRatio) {
-				dampingRatio = oldDampingRatio = newDampingRatio;
+			if(dampingRatio != oldDampingRatio) {
+				newDampingRatio = oldDampingRatio = dampingRatio;
 				changed = true;
 			} else
-				dampingRatio = null;
-			if(newFrequency != oldFrequency) {
-				frequency = oldFrequency = newFrequency;
+				newDampingRatio = null;
+			if(frequency != oldFrequency) {
+				newFrequency = oldFrequency = frequency;
 				changed = true;
 			} else
-				frequency = null;
+				newFrequency = null;
 
 			return changed;
 		}
@@ -1541,10 +1541,10 @@ public class WorldObserver {
 		@Override
 		public void apply(WeldJoint joint) {
 			super.apply(joint);
-			if(dampingRatio != null)
-				joint.setDampingRatio(dampingRatio);
-			if(frequency != null)
-				joint.setFrequency(frequency);
+			if(newDampingRatio != null)
+				joint.setDampingRatio(newDampingRatio);
+			if(newFrequency != null)
+				joint.setFrequency(newFrequency);
 		}
 
 		@Override
@@ -1553,8 +1553,8 @@ public class WorldObserver {
 				return false;
 			WeldJointChange o = (WeldJointChange) other;
 			return super.newValuesEqual(other) &&
-					Objects.equals(dampingRatio, o.dampingRatio) &&
-					Objects.equals(frequency, o.frequency);
+					Objects.equals(newDampingRatio, o.newDampingRatio) &&
+					Objects.equals(newFrequency, o.newFrequency);
 		}
 
 		@Override
@@ -1564,8 +1564,8 @@ public class WorldObserver {
 			oldDampingRatio = 0;
 			oldFrequency = 0;
 
-			dampingRatio = null;
-			frequency = null;
+			newDampingRatio = null;
+			newFrequency = null;
 		}
 
 	}
@@ -1578,26 +1578,26 @@ public class WorldObserver {
 		private transient float oldMaxForce;
 		private transient float oldMaxTorque;
 
-		Float maxForce;
-		Float maxTorque;
+		public Float newMaxForce;
+		public Float newMaxTorque;
 
 		@Override
 		public boolean update(FrictionJoint joint) {
-			float newMaxForce = joint.getMaxForce();
-			float newMaxTorque = joint.getMaxTorque();
+			float maxForce = joint.getMaxForce();
+			float maxTorque = joint.getMaxTorque();
 
 			boolean changed = super.update(joint);
 
-			if(newMaxForce != oldMaxForce) {
-				maxForce = oldMaxForce = newMaxForce;
+			if(maxForce != oldMaxForce) {
+				newMaxForce = oldMaxForce = maxForce;
 				changed = true;
 			} else
-				maxForce = null;
-			if(newMaxTorque != oldMaxTorque) {
-				maxTorque = oldMaxTorque = newMaxTorque;
+				newMaxForce = null;
+			if(maxTorque != oldMaxTorque) {
+				newMaxTorque = oldMaxTorque = maxTorque;
 				changed = true;
 			} else
-				maxTorque = null;
+				newMaxTorque = null;
 
 			return changed;
 		}
@@ -1605,10 +1605,10 @@ public class WorldObserver {
 		@Override
 		public void apply(FrictionJoint joint) {
 			super.apply(joint);
-			if(maxForce != null)
-				joint.setMaxForce(maxForce);
-			if(maxTorque != null)
-				joint.setMaxTorque(maxTorque);
+			if(newMaxForce != null)
+				joint.setMaxForce(newMaxForce);
+			if(newMaxTorque != null)
+				joint.setMaxTorque(newMaxTorque);
 		}
 
 		@Override
@@ -1617,8 +1617,8 @@ public class WorldObserver {
 				return false;
 			FrictionJointChange o = (FrictionJointChange) other;
 			return super.newValuesEqual(other) &&
-					Objects.equals(maxForce, o.maxForce) &&
-					Objects.equals(maxTorque, o.maxTorque);
+					Objects.equals(newMaxForce, o.newMaxForce) &&
+					Objects.equals(newMaxTorque, o.newMaxTorque);
 		}
 
 		@Override
@@ -1628,8 +1628,8 @@ public class WorldObserver {
 			oldMaxForce = 0;
 			oldMaxTorque = 0;
 
-			maxForce = null;
-			maxTorque = null;
+			newMaxForce = null;
+			newMaxTorque = null;
 		}
 
 	}
@@ -1641,19 +1641,19 @@ public class WorldObserver {
 
 		private transient float oldMaxLength;
 
-		Float maxLength;
+		public Float newMaxLength;
 
 		@Override
 		public boolean update(RopeJoint joint) {
-			float newMaxLength = joint.getMaxLength();
+			float maxLength = joint.getMaxLength();
 
 			boolean changed = super.update(joint);
 
-			if(newMaxLength != oldMaxLength) {
-				maxLength = oldMaxLength = newMaxLength;
+			if(maxLength != oldMaxLength) {
+				newMaxLength = oldMaxLength = maxLength;
 				changed = true;
 			} else
-				maxLength = null;
+				newMaxLength = null;
 
 			return changed;
 		}
@@ -1661,20 +1661,20 @@ public class WorldObserver {
 		@Override
 		public void apply(RopeJoint joint) {
 			super.apply(joint);
-			if(maxLength != null)
-				joint.setMaxLength(maxLength);
+			if(newMaxLength != null)
+				joint.setMaxLength(newMaxLength);
 		}
 
 		@Override
 		public <C extends Change<RopeJoint>> boolean newValuesEqual(C other) {
-			return other instanceof RopeJointChange && super.newValuesEqual(other) && Objects.equals(maxLength, ((RopeJointChange) other).maxLength);
+			return other instanceof RopeJointChange && super.newValuesEqual(other) && Objects.equals(newMaxLength, ((RopeJointChange) other).newMaxLength);
 		}
 
 		@Override
 		public void reset() {
 			super.reset();
 			oldMaxLength = 0;
-			maxLength = null;
+			newMaxLength = null;
 		}
 
 	}
@@ -1690,47 +1690,47 @@ public class WorldObserver {
 		private transient float oldAngularOffset;
 		private transient final Vector2 oldLinearOffset = new Vector2();
 
-		Float maxForce;
-		Float maxTorque;
-		Float correctionFactor;
-		Float angularOffset;
-		Vector2 linearOffset;
+		public Float newMaxForce;
+		public Float newMaxTorque;
+		public Float newCorrectionFactor;
+		public Float newAngularOffset;
+		public Vector2 newLinearOffset;
 
 		@Override
 		public boolean update(MotorJoint joint) {
-			float newMaxForce = joint.getMaxForce();
-			float newMaxTorque = joint.getMaxTorque();
-			float newCorrectionFactor = joint.getCorrectionFactor();
-			float newAngularOffset = joint.getAngularOffset();
-			Vector2 newLinearOffset = joint.getLinearOffset();
+			float maxForce = joint.getMaxForce();
+			float maxTorque = joint.getMaxTorque();
+			float correctionFactor = joint.getCorrectionFactor();
+			float angularOffset = joint.getAngularOffset();
+			Vector2 linearOffset = joint.getLinearOffset();
 
 			boolean changed = super.update(joint);
 
-			if(newMaxForce != oldMaxForce) {
-				maxForce = oldMaxForce = newMaxForce;
+			if(maxForce != oldMaxForce) {
+				newMaxForce = oldMaxForce = maxForce;
 				changed = true;
 			} else
-				maxForce = null;
-			if(newMaxTorque != oldMaxTorque) {
-				maxTorque = oldMaxTorque = newMaxTorque;
+				newMaxForce = null;
+			if(maxTorque != oldMaxTorque) {
+				newMaxTorque = oldMaxTorque = maxTorque;
 				changed = true;
 			} else
-				maxTorque = null;
-			if(newCorrectionFactor != oldCorrectionFactor) {
-				correctionFactor = oldCorrectionFactor = newCorrectionFactor;
+				newMaxTorque = null;
+			if(correctionFactor != oldCorrectionFactor) {
+				newCorrectionFactor = oldCorrectionFactor = correctionFactor;
 				changed = true;
 			} else
-				correctionFactor = null;
-			if(newAngularOffset != oldAngularOffset) {
-				angularOffset = oldAngularOffset = newAngularOffset;
+				newCorrectionFactor = null;
+			if(angularOffset != oldAngularOffset) {
+				newAngularOffset = oldAngularOffset = angularOffset;
 				changed = true;
 			} else
-				angularOffset = null;
-			if(!newLinearOffset.equals(oldLinearOffset)) {
-				oldLinearOffset.set(linearOffset = newLinearOffset);
+				newAngularOffset = null;
+			if(!linearOffset.equals(oldLinearOffset)) {
+				oldLinearOffset.set(newLinearOffset = linearOffset);
 				changed = true;
 			} else
-				linearOffset = null;
+				newLinearOffset = null;
 
 			return changed;
 		}
@@ -1738,16 +1738,16 @@ public class WorldObserver {
 		@Override
 		public void apply(MotorJoint joint) {
 			super.apply(joint);
-			if(maxForce != null)
-				joint.setMaxForce(maxForce);
-			if(maxTorque != null)
-				joint.setMaxForce(maxTorque);
-			if(correctionFactor != null)
-				joint.setCorrectionFactor(correctionFactor);
-			if(angularOffset != null)
-				joint.setAngularOffset(angularOffset);
-			if(linearOffset != null)
-				joint.setLinearOffset(linearOffset);
+			if(newMaxForce != null)
+				joint.setMaxForce(newMaxForce);
+			if(newMaxTorque != null)
+				joint.setMaxForce(newMaxTorque);
+			if(newCorrectionFactor != null)
+				joint.setCorrectionFactor(newCorrectionFactor);
+			if(newAngularOffset != null)
+				joint.setAngularOffset(newAngularOffset);
+			if(newLinearOffset != null)
+				joint.setLinearOffset(newLinearOffset);
 		}
 
 		@Override
@@ -1756,10 +1756,10 @@ public class WorldObserver {
 				return false;
 			MotorJointChange o = (MotorJointChange) other;
 			return super.newValuesEqual(other) &&
-					Objects.equals(angularOffset, o.angularOffset) &&
-					Objects.equals(correctionFactor, o.correctionFactor) &&
-					Objects.equals(linearOffset, o.linearOffset) &&
-					Objects.equals(maxForce, o.maxForce);
+					Objects.equals(newAngularOffset, o.newAngularOffset) &&
+					Objects.equals(newCorrectionFactor, o.newCorrectionFactor) &&
+					Objects.equals(newLinearOffset, o.newLinearOffset) &&
+					Objects.equals(newMaxForce, o.newMaxForce);
 		}
 
 		@Override
@@ -1772,11 +1772,11 @@ public class WorldObserver {
 			oldAngularOffset = 0;
 			oldLinearOffset.setZero();
 
-			maxForce = null;
-			maxTorque = null;
-			correctionFactor = null;
-			angularOffset = null;
-			linearOffset = null;
+			newMaxForce = null;
+			newMaxTorque = null;
+			newCorrectionFactor = null;
+			newAngularOffset = null;
+			newLinearOffset = null;
 		}
 
 	}
