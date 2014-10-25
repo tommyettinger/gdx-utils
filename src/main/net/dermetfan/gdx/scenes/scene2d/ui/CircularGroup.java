@@ -14,6 +14,8 @@
 
 package net.dermetfan.gdx.scenes.scene2d.ui;
 
+import java.util.Objects;
+
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
@@ -21,7 +23,6 @@ import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
-import com.badlogic.gdx.scenes.scene2d.ui.Value;
 import com.badlogic.gdx.scenes.scene2d.ui.WidgetGroup;
 import com.badlogic.gdx.scenes.scene2d.utils.DragListener;
 import com.badlogic.gdx.scenes.scene2d.utils.Layout;
@@ -29,7 +30,6 @@ import com.badlogic.gdx.utils.SnapshotArray;
 import net.dermetfan.gdx.math.GeometryUtils;
 
 import static net.dermetfan.utils.math.MathUtils.approachZero;
-import static net.dermetfan.utils.math.MathUtils.replaceNaN;
 
 /** a group that aligns its children in a circle
  *  @since 0.5.0
@@ -41,38 +41,53 @@ public class CircularGroup extends WidgetGroup {
 	 *  @see #modifier */
 	public static interface Modifier {
 
-		/** @param angle the linearly calculated angle
+		/** @param defaultAngle the linearly calculated angle
+		 *  @param child the child
 		 *  @param index the index of the child which angle to calculate
 		 *  @param numChildren the number of children
 		 *  @param group the CircularGroup the child in question belongs to
 		 *  @return the angle of the child at the given index ({@link #angleOffset} will be added to this) */
-		float angle(float angle, int index, int numChildren, CircularGroup group);
+		float angle(float defaultAngle, Actor child, int index, int numChildren, CircularGroup group);
 
-		/** @param rotation the angle of the child (may be influenced by {@link #angle(float, int, int, CircularGroup)} which by default also is its rotation
+		/** @param defaultRotation the angle of the child (may be influenced by {@link #angle(float, Actor, int, int, CircularGroup)} which by default also is its rotation
+		 *  @param child the child
 		 *  @param index the index of the child which rotation to calculate
 		 *  @param numChildren the number of children
 		 *  @param group the CircularGroup the child in question belongs to
 		 *  @return the rotation of the child at the given index */
-		float rotation(float rotation, int index, int numChildren, CircularGroup group);
+		float rotation(float defaultRotation, Actor child, int index, int numChildren, CircularGroup group);
+
+		/** @param defaultDistanceFromCenter the default distance from center
+		 *  @param child the child
+		 *  @param index the index of the child which distance from center to calculate
+		 *  @param numChildren the number of children
+		 *  @param group the CircularGroup the child in question belongs to
+		 *  @return the distance from the group center of the child at the given index */
+		float distanceFromCenter(float defaultDistanceFromCenter, Actor child, int index, int numChildren, CircularGroup group);
 
 		/** Use this if you only want to override some of {@link Modifier}'s methods.
 		 *  All implementations return the default value.
 		 *  @since 0.5.0
 		 *  @author dermetfan */
-		public static abstract class Adapter implements Modifier {
+		public static class Adapter implements Modifier {
 
 			/** @return the given angle */
 			@Override
-			public float angle(float angle, int index, int numChildren, CircularGroup group) {
-				return angle;
+			public float angle(float defaultAngle, Actor child, int index, int numChildren, CircularGroup group) {
+				return defaultAngle;
 			}
 
 			/** @return the given rotation */
 			@Override
-			public float rotation(float rotation, int index, int numChildren, CircularGroup group) {
-				return rotation;
+			public float rotation(float defaultRotation, Actor child, int index, int numChildren, CircularGroup group) {
+				return defaultRotation;
 			}
 
+			/** @return the given distance from center */
+			@Override
+			public float distanceFromCenter(float defaultDistanceFromCenter, Actor child, int index, int numChildren, CircularGroup group) {
+				return defaultDistanceFromCenter;
+			}
 		}
 
 	}
@@ -218,9 +233,6 @@ public class CircularGroup extends WidgetGroup {
 
 	}
 
-	/** The size of each child to base the {@link #getPrefWidth() preferred size} on. Default is {@link Value#prefWidth}/{@link Value#prefHeight}. */
-	private Value prefWidth = Value.prefWidth, prefHeight = Value.prefHeight;
-
 	/** The max angle of all children (in degrees). Default is 360. */
 	private float fullAngle = 360;
 
@@ -233,17 +245,8 @@ public class CircularGroup extends WidgetGroup {
 	/** The greatest {@link #angleOffset} allowed. Default is {@link #fullAngle}. */
 	private float maxAngleOffset = fullAngle;
 
-	/** If an additional, not existent child should be considered in the angle calculation for each child.<br>
-	 *  Since {@link #fullAngle} describes the min and max angle for children of this group, two children will overlap at 360 degrees (because 360 degrees mean the min and max angle coincide).
-	 *  In this case it would make sense to enable the virtual child. It will reserve the angle needed for one child and therefore overlap with another child at the min/max angle instead of two actual children overlapping.<br>
-	 *  Default is true, as appropriate for the default of {@link #fullAngle}. */
-	private boolean virtualChild = true;
-
 	/** allows advanced modification of each child's angle */
 	private Modifier modifier;
-
-	/** Even if distanceFromCenter is greater, no child's unrotated bound will escape the group size. NaN values mean no fixed distance from the group center. Default is {@link Float#NaN}. */
-	private float distanceFromCenter = Float.NaN;
 
 	/** the DragManager used to make this group rotatable by dragging and to apply velocity */
 	private final DragManager dragManager = new DragManager();
@@ -279,21 +282,20 @@ public class CircularGroup extends WidgetGroup {
 		SnapshotArray<Actor> children = getChildren();
 		for(int index = 0; index < children.size; index++) {
 			Actor child = children.get(index);
-			int numChildren = children.size - (virtualChild ? 0 : 1);
-			float angle = fullAngle / numChildren * index;
+			float angle = fullAngle / children.size * index;
 			if(modifier != null)
-				angle = modifier.angle(angle, index, numChildren, this);
+				angle = modifier.angle(angle, child, index, children.size, this);
 			angle += angleOffset;
-			child.setRotation(modifier != null ? modifier.rotation(angle, index, numChildren, this) : angle);
+			child.setRotation(modifier != null ? modifier.rotation(angle, child, index, children.size, this) : angle);
 			float groupWidth = getWidth(), groupHeight = getHeight();
 			float width, height;
 			if(child instanceof Layout) {
 				Layout childLayout = (Layout) child;
-				width = Math.min(childLayout.getPrefWidth(), groupWidth / 2 - replaceNaN(MathUtils.clamp(distanceFromCenter, 0, groupWidth / 2), 0));
+				width = childLayout.getPrefWidth();
 				width = Math.max(width, childLayout.getMinWidth());
 				if(childLayout.getMaxWidth() != 0)
 					width = Math.min(width, childLayout.getMaxWidth());
-				height = Math.min(childLayout.getPrefHeight(), groupHeight / 2 - replaceNaN(MathUtils.clamp(distanceFromCenter, 0, groupHeight / 2), 0));
+				height = childLayout.getPrefHeight();
 				height = Math.max(height, childLayout.getMinHeight());
 				if(childLayout.getMaxHeight() != 0)
 					height = Math.min(height, childLayout.getMaxHeight());
@@ -304,7 +306,7 @@ public class CircularGroup extends WidgetGroup {
 				height = child.getHeight();
 			}
 			child.setOrigin(width / 2, height / 2);
-			float realDistanceFromCenter = Float.isNaN(distanceFromCenter) ? groupWidth / 2 - width : Math.min(distanceFromCenter, groupWidth / 2 - width);
+			float realDistanceFromCenter = modifier == null ? groupWidth / 2 - width : modifier.distanceFromCenter(groupWidth / 2 - width, child, index, children.size, this);
 			GeometryUtils.rotate(tmp.set(groupWidth / 2 - width / 2 - realDistanceFromCenter, groupHeight / 2), tmp2.set(groupWidth / 2, groupHeight / 2), angle * MathUtils.degRad);
 			child.setPosition(tmp.x - child.getWidth() / 2, tmp.y - child.getHeight() / 2);
 		}
@@ -330,31 +332,42 @@ public class CircularGroup extends WidgetGroup {
 		cachedPrefWidth = cachedPrefHeight = 0;
 		SnapshotArray<Actor> children = getChildren();
 		for(Actor child : children) {
-			float minWidth, minHeight;
+			float minWidth, minHeight, prefWidth, prefHeight;
 			if(child instanceof Layout) {
 				Layout layout = (Layout) child;
 				minWidth = layout.getMinWidth();
 				minHeight = layout.getMinHeight();
+				prefWidth = layout.getPrefWidth();
+				prefHeight = layout.getPrefHeight();
 			} else {
-				minWidth = child.getWidth();
-				minHeight = child.getHeight();
+				minWidth = prefWidth = child.getWidth();
+				minHeight = prefHeight = child.getHeight();
 			}
 			if(minWidth < cachedMinWidth)
 				cachedMinWidth = minWidth;
 			if(minHeight < cachedMinHeight)
 				cachedMinHeight = minHeight;
 
-			float prefWidth = this.prefWidth.get(child), prefHeight = this.prefHeight.get(child);
 			if(prefWidth > cachedPrefWidth)
 				cachedPrefWidth = prefWidth;
 			if(prefHeight > cachedPrefHeight)
 				cachedPrefHeight = prefHeight;
 		}
-		float realDistanceFromCenter2 = replaceNaN(distanceFromCenter, 0) * 2;
-		cachedMinWidth += cachedMinWidth + realDistanceFromCenter2;
-		cachedMinHeight += cachedMinHeight + realDistanceFromCenter2;
-		cachedPrefWidth += cachedPrefWidth + realDistanceFromCenter2;
-		cachedPrefHeight += cachedPrefHeight + realDistanceFromCenter2;
+		cachedMinWidth *= 2;
+		cachedMinHeight *= 2;
+		cachedPrefWidth *= 2;
+		cachedPrefHeight *= 2;
+		float realDistanceFromCenter2 = Float.NEGATIVE_INFINITY;
+		for(int index = 0; index < children.size; index++) {
+			Actor child = children.get(index);
+			float rdfc2 = modifier != null ? modifier.distanceFromCenter(0, child, index, children.size, this) * 2 : 0;
+			if(rdfc2 > realDistanceFromCenter2)
+				realDistanceFromCenter2 = rdfc2;
+		}
+		cachedMinWidth += realDistanceFromCenter2;
+		cachedMinHeight += realDistanceFromCenter2;
+		cachedPrefWidth += realDistanceFromCenter2;
+		cachedPrefHeight += realDistanceFromCenter2;
 		sizeInvalid = false;
 	}
 
@@ -405,18 +418,9 @@ public class CircularGroup extends WidgetGroup {
 
 	// getters and setters
 
-	/** {@link #setFullAngle(float, boolean)} with automatic estimation if a {@link #virtualChild} would make sense.
-	 *  @param fullAngle the {@link #fullAngle} to set
-	 *  @see #setFullAngle(float, boolean) */
+	/** @param fullAngle the {@link #fullAngle} to set */
 	public void setFullAngle(float fullAngle) {
-		setFullAngle(fullAngle, fullAngle >= 360);
-	}
-
-	/** @param fullAngle the {@link #fullAngle} to set
-	 *  @param virtualChild the {@link #virtualChild} to set */
-	public void setFullAngle(float fullAngle, boolean virtualChild) {
 		this.fullAngle = fullAngle;
-		this.virtualChild = virtualChild;
 		invalidate();
 	}
 
@@ -479,28 +483,6 @@ public class CircularGroup extends WidgetGroup {
 		return maxAngleOffset;
 	}
 
-	/** @return the {@link #virtualChild} */
-	public boolean isVirtualChild() {
-		return virtualChild;
-	}
-
-	/** @param virtualChild the {@link #virtualChild} to set */
-	public void setVirtualChild(boolean virtualChild) {
-		this.virtualChild = virtualChild;
-	}
-
-	/** @param prefWidth the {@link #prefWidth} to set */
-	public void setPrefWidth(Value prefWidth) {
-		this.prefWidth = prefWidth;
-		invalidateHierarchy();
-	}
-
-	/** @param prefHeight the {@link #prefHeight} to set */
-	public void setPrefHeight(Value prefHeight) {
-		this.prefHeight = prefHeight;
-		invalidateHierarchy();
-	}
-
 	/** @return the {@link #modifier} */
 	public Modifier getModifier() {
 		return modifier;
@@ -508,17 +490,7 @@ public class CircularGroup extends WidgetGroup {
 
 	/** @param modifier the {@link #modifier} to set */
 	public void setModifier(Modifier modifier) {
-		this.modifier = modifier;
-	}
-
-	/** @return the {@link #distanceFromCenter} */
-	public float getDistanceFromCenter() {
-		return distanceFromCenter;
-	}
-
-	/** @param distanceFromCenter the {@link #distanceFromCenter} to set */
-	public void setDistanceFromCenter(float distanceFromCenter) {
-		this.distanceFromCenter = distanceFromCenter;
+		this.modifier = Objects.requireNonNull(modifier, "the modifier must not be null");
 		invalidateHierarchy();
 	}
 
