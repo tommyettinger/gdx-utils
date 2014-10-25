@@ -36,6 +36,290 @@ import static net.dermetfan.utils.math.MathUtils.approachZero;
  *  @author dermetfan */
 public class CircularGroup extends WidgetGroup {
 
+	/** The max angle of all children (in degrees). Default is 360. */
+	private float fullAngle = 360;
+
+	/** The angle added to each child's angle (in degrees). Default is 0. */
+	private float angleOffset;
+
+	/** The smallest {@link #angleOffset} allowed. Default is 0. */
+	private float minAngleOffset;
+
+	/** The greatest {@link #angleOffset} allowed. Default is {@link #fullAngle}. */
+	private float maxAngleOffset = fullAngle;
+
+	/** If an additional, not existent child should be considered in the angle calculation for each child.<br>
+	 *  Since {@link #fullAngle} describes the min and max angle for children of this group, two children will overlap at 360 degrees (because 360 degrees mean the min and max angle coincide).
+	 *  In this case it would make sense to enable the virtual child. It will reserve the angle needed for one child and therefore overlap with another child at the min/max angle instead of two actual children overlapping.<br>
+	 *  Default is true, as appropriate for the default of {@link #fullAngle}. */
+	private boolean virtualChildEnabled = true;
+
+	/** allows advanced modification of each child's angle */
+	private Modifier modifier;
+
+	/** the DragManager used to make this group rotatable by dragging and to apply velocity */
+	private final DragManager dragManager = new DragManager();
+
+	/** the current min size (used internally) */
+	private float cachedMinWidth, cachedMinHeight;
+
+	/** the current pref size (used internally) */
+	private float cachedPrefWidth, cachedPrefHeight;
+
+	/** if the current size has to be {@link #computeSize() computed} (used internally) */
+	private boolean sizeInvalid = true;
+
+	/** for internal use */
+	private final Vector2 tmp = new Vector2(), tmp2 = new Vector2();
+
+	/** @see WidgetGroup#WidgetGroup() */
+	public CircularGroup() {}
+
+	/** @param draggable see {@link #setDraggable(boolean)} */
+	public CircularGroup(boolean draggable) {
+		setDraggable(draggable);
+	}
+
+	@Override
+	public void act(float delta) {
+		dragManager.act(delta);
+		super.act(delta);
+	}
+
+	@Override
+	public void drawDebug(ShapeRenderer shapes) {
+		shapes.setColor(Color.CYAN);
+		for(Actor child : getChildren())
+			shapes.line(getX() + getWidth() / 2 * getScaleX(), getY() + getHeight() / 2 * getScaleY(), getX() + (child.getX() + child.getWidth() / 2) * getScaleX(), getY() + (child.getY() + child.getHeight() / 2) * getScaleY());
+		super.drawDebug(shapes);
+	}
+
+	/** computes {@link #cachedMinWidth}, {@link #cachedMinHeight}, {@link #cachedPrefWidth} and {@link #cachedPrefHeight} */
+	protected void computeSize() {
+		cachedMinWidth = cachedMinHeight = Float.POSITIVE_INFINITY;
+		cachedPrefWidth = cachedPrefHeight = 0;
+		SnapshotArray<Actor> children = getChildren();
+		for(Actor child : children) {
+			float minWidth, minHeight, prefWidth, prefHeight;
+			if(child instanceof Layout) {
+				Layout layout = (Layout) child;
+				minWidth = layout.getMinWidth();
+				minHeight = layout.getMinHeight();
+				prefWidth = layout.getPrefWidth();
+				prefHeight = layout.getPrefHeight();
+			} else {
+				minWidth = prefWidth = child.getWidth();
+				minHeight = prefHeight = child.getHeight();
+			}
+			if(minWidth < cachedMinWidth)
+				cachedMinWidth = minWidth;
+			if(minHeight < cachedMinHeight)
+				cachedMinHeight = minHeight;
+
+			if(prefWidth > cachedPrefWidth)
+				cachedPrefWidth = prefWidth;
+			if(prefHeight > cachedPrefHeight)
+				cachedPrefHeight = prefHeight;
+		}
+		cachedMinWidth *= 2;
+		cachedMinHeight *= 2;
+		cachedPrefWidth *= 2;
+		cachedPrefHeight *= 2;
+		float realDistanceFromCenter2 = Float.NEGATIVE_INFINITY;
+		int numChildren = children.size + (virtualChildEnabled ? 1 : 0);
+		for(int index = 0; index < children.size; index++) {
+			Actor child = children.get(index);
+			float rdfc2 = modifier != null ? modifier.distanceFromCenter(0, child, index, numChildren, this) * 2 : 0;
+			if(rdfc2 > realDistanceFromCenter2)
+				realDistanceFromCenter2 = rdfc2;
+		}
+		cachedMinWidth += realDistanceFromCenter2;
+		cachedMinHeight += realDistanceFromCenter2;
+		cachedPrefWidth += realDistanceFromCenter2;
+		cachedPrefHeight += realDistanceFromCenter2;
+		sizeInvalid = false;
+	}
+
+	/** does not take rotation into account */
+	@Override
+	public float getMinWidth() {
+		if(sizeInvalid)
+			computeSize();
+		return cachedMinWidth;
+	}
+
+	/** does not take rotation into account */
+	@Override
+	public float getMinHeight() {
+		if(sizeInvalid)
+			computeSize();
+		return cachedMinHeight;
+	}
+
+	@Override
+	public float getPrefWidth() {
+		if(sizeInvalid)
+			computeSize();
+		return cachedPrefWidth;
+	}
+
+	@Override
+	public float getPrefHeight() {
+		if(sizeInvalid)
+			computeSize();
+		return cachedPrefHeight;
+	}
+
+	@Override
+	public void invalidate() {
+		super.invalidate();
+		sizeInvalid = true;
+	}
+
+	@Override
+	public void layout() {
+		SnapshotArray<Actor> children = getChildren();
+		int numChildren = children.size + (virtualChildEnabled ? 1 : 0);
+		for(int index = 0; index < children.size; index++) {
+			Actor child = children.get(index);
+			float angle = fullAngle / (children.size - (virtualChildEnabled ? 0 : 1)) * index;
+			if(modifier != null)
+				angle = modifier.angle(angle, child, index, numChildren, this);
+			angle += angleOffset;
+			child.setRotation(modifier != null ? modifier.rotation(angle, child, index, numChildren, this) : angle);
+			float groupWidth = getWidth(), groupHeight = getHeight();
+			float width, height;
+			if(child instanceof Layout) {
+				Layout childLayout = (Layout) child;
+				width = childLayout.getPrefWidth();
+				width = Math.max(width, childLayout.getMinWidth());
+				if(childLayout.getMaxWidth() != 0)
+					width = Math.min(width, childLayout.getMaxWidth());
+				height = childLayout.getPrefHeight();
+				height = Math.max(height, childLayout.getMinHeight());
+				if(childLayout.getMaxHeight() != 0)
+					height = Math.min(height, childLayout.getMaxHeight());
+				child.setSize(width, height);
+				childLayout.validate();
+			} else {
+				width = child.getWidth();
+				height = child.getHeight();
+			}
+			child.setOrigin(width / 2, height / 2);
+			float realDistanceFromCenter = modifier == null ? groupWidth / 2 - width : modifier.distanceFromCenter(groupWidth / 2 - width, child, index, numChildren, this);
+			GeometryUtils.rotate(tmp.set(groupWidth / 2 - width / 2 - realDistanceFromCenter, groupHeight / 2), tmp2.set(groupWidth / 2, groupHeight / 2), angle * MathUtils.degRad);
+			child.setPosition(tmp.x - child.getWidth() / 2, tmp.y - child.getHeight() / 2);
+		}
+	}
+
+	/** @return if this group is rotatable by dragging with the pointer */
+	public boolean isDraggable() {
+		return dragManager.isDraggingActivated();
+	}
+
+	/** @param draggable if this group should be rotatable by dragging with the pointer */
+	public void setDraggable(boolean draggable) {
+		dragManager.setDraggingActivated(draggable);
+		// add/remove dragManager for performance
+		if(draggable)
+			addListener(dragManager);
+		else
+			removeListener(dragManager);
+	}
+
+	/** @param amount the amount by which to translate {@link #minAngleOffset} and {@link #maxAngleOffset} */
+	public void translateAngleOffsetLimits(float amount) {
+		setMinAngleOffset(minAngleOffset + amount);
+		setMaxAngleOffset(maxAngleOffset + amount);
+	}
+
+	// getters and setters
+
+	/** @return the {@link #fullAngle} */
+	public float getFullAngle() {
+		return fullAngle;
+	}
+
+	/** {@link #setFullAngle(float, boolean)} with automatic estimation if a {@link #virtualChildEnabled} would make sense.
+	 *  @param fullAngle the {@link #fullAngle} to set
+	 *  @see #setFullAngle(float, boolean) */
+	public void setFullAngle(float fullAngle) {
+		setFullAngle(fullAngle, fullAngle >= 360);
+	}
+
+	/** @param fullAngle the {@link #fullAngle} to set
+	 *  @param virtualChild the {@link #virtualChildEnabled} to set */
+	public void setFullAngle(float fullAngle, boolean virtualChild) {
+		this.fullAngle = fullAngle;
+		this.virtualChildEnabled = virtualChild;
+		invalidate();
+	}
+
+	/** @return the {@link #angleOffset} */
+	public float getAngleOffset() {
+		return angleOffset;
+	}
+
+	/** @param angleOffset The {@link #angleOffset} to set. Will be clamped to {@link #minAngleOffset} and {@link #maxAngleOffset}. */
+	public void setAngleOffset(float angleOffset) {
+		this.angleOffset = MathUtils.clamp(angleOffset, minAngleOffset, maxAngleOffset);
+		invalidate();
+	}
+
+	/** @return the {@link #minAngleOffset} */
+	public float getMinAngleOffset() {
+		return minAngleOffset;
+	}
+
+	/** clamps {@link #angleOffset} to the new bounds
+	 *  @param minAngleOffset the {@link #minAngleOffset} to set */
+	public void setMinAngleOffset(float minAngleOffset) {
+		if(minAngleOffset > maxAngleOffset)
+			throw new IllegalArgumentException("minAngleOffset must not be > maxAngleOffset");
+		this.minAngleOffset = minAngleOffset;
+		angleOffset = Math.max(minAngleOffset, angleOffset);
+	}
+
+	/** @return the {@link #maxAngleOffset} */
+	public float getMaxAngleOffset() {
+		return maxAngleOffset;
+	}
+
+	/** clamps {@link #angleOffset} to the new bounds
+	 *  @param maxAngleOffset the {@link #maxAngleOffset} to set */
+	public void setMaxAngleOffset(float maxAngleOffset) {
+		if(maxAngleOffset < minAngleOffset)
+			throw new IllegalArgumentException("maxAngleOffset must not be < minAngleOffset");
+		this.maxAngleOffset = maxAngleOffset;
+		angleOffset = Math.min(angleOffset, maxAngleOffset);
+	}
+
+	/** @return the {@link #virtualChildEnabled} */
+	public boolean isVirtualChildEnabled() {
+		return virtualChildEnabled;
+	}
+
+	/** @param virtualChildEnabled the {@link #virtualChildEnabled} to set */
+	public void setVirtualChildEnabled(boolean virtualChildEnabled) {
+		this.virtualChildEnabled = virtualChildEnabled;
+	}
+
+	/** @return the {@link #modifier} */
+	public Modifier getModifier() {
+		return modifier;
+	}
+
+	/** @param modifier the {@link #modifier} to set */
+	public void setModifier(Modifier modifier) {
+		this.modifier = Objects.requireNonNull(modifier, "the modifier must not be null");
+		invalidateHierarchy();
+	}
+
+	/** @return the {@link #dragManager} */
+	public DragManager getDragManager() {
+		return dragManager;
+	}
+
 	/** @since 0.5.0
 	 *  @author dermetfan
 	 *  @see #modifier */
@@ -231,290 +515,6 @@ public class CircularGroup extends WidgetGroup {
 			this.maxAbsDelta = maxAbsDelta;
 		}
 
-	}
-
-	/** The max angle of all children (in degrees). Default is 360. */
-	private float fullAngle = 360;
-
-	/** The angle added to each child's angle (in degrees). Default is 0. */
-	private float angleOffset;
-
-	/** The smallest {@link #angleOffset} allowed. Default is 0. */
-	private float minAngleOffset;
-
-	/** The greatest {@link #angleOffset} allowed. Default is {@link #fullAngle}. */
-	private float maxAngleOffset = fullAngle;
-
-	/** If an additional, not existent child should be considered in the angle calculation for each child.<br>
-	 *  Since {@link #fullAngle} describes the min and max angle for children of this group, two children will overlap at 360 degrees (because 360 degrees mean the min and max angle coincide).
-	 *  In this case it would make sense to enable the virtual child. It will reserve the angle needed for one child and therefore overlap with another child at the min/max angle instead of two actual children overlapping.<br>
-	 *  Default is true, as appropriate for the default of {@link #fullAngle}. */
-	private boolean virtualChild = true;
-
-	/** allows advanced modification of each child's angle */
-	private Modifier modifier;
-
-	/** the DragManager used to make this group rotatable by dragging and to apply velocity */
-	private final DragManager dragManager = new DragManager();
-
-	/** the current min size (used internally) */
-	private float cachedMinWidth, cachedMinHeight;
-
-	/** the current pref size (used internally) */
-	private float cachedPrefWidth, cachedPrefHeight;
-
-	/** if the current size has to be {@link #computeSize() computed} (used internally) */
-	private boolean sizeInvalid = true;
-
-	/** for internal use */
-	private final Vector2 tmp = new Vector2(), tmp2 = new Vector2();
-
-	/** @see WidgetGroup#WidgetGroup() */
-	public CircularGroup() {}
-
-	/** @param draggable see {@link #setDraggable(boolean)} */
-	public CircularGroup(boolean draggable) {
-		setDraggable(draggable);
-	}
-
-	@Override
-	public void act(float delta) {
-		dragManager.act(delta);
-		super.act(delta);
-	}
-
-	@Override
-	public void layout() {
-		SnapshotArray<Actor> children = getChildren();
-		int numChildren = children.size + (virtualChild ? 1 : 0);
-		for(int index = 0; index < children.size; index++) {
-			Actor child = children.get(index);
-			float angle = fullAngle / (children.size - (virtualChild ? 0 : 1)) * index;
-			if(modifier != null)
-				angle = modifier.angle(angle, child, index, numChildren, this);
-			angle += angleOffset;
-			child.setRotation(modifier != null ? modifier.rotation(angle, child, index, numChildren, this) : angle);
-			float groupWidth = getWidth(), groupHeight = getHeight();
-			float width, height;
-			if(child instanceof Layout) {
-				Layout childLayout = (Layout) child;
-				width = childLayout.getPrefWidth();
-				width = Math.max(width, childLayout.getMinWidth());
-				if(childLayout.getMaxWidth() != 0)
-					width = Math.min(width, childLayout.getMaxWidth());
-				height = childLayout.getPrefHeight();
-				height = Math.max(height, childLayout.getMinHeight());
-				if(childLayout.getMaxHeight() != 0)
-					height = Math.min(height, childLayout.getMaxHeight());
-				child.setSize(width, height);
-				childLayout.validate();
-			} else {
-				width = child.getWidth();
-				height = child.getHeight();
-			}
-			child.setOrigin(width / 2, height / 2);
-			float realDistanceFromCenter = modifier == null ? groupWidth / 2 - width : modifier.distanceFromCenter(groupWidth / 2 - width, child, index, numChildren, this);
-			GeometryUtils.rotate(tmp.set(groupWidth / 2 - width / 2 - realDistanceFromCenter, groupHeight / 2), tmp2.set(groupWidth / 2, groupHeight / 2), angle * MathUtils.degRad);
-			child.setPosition(tmp.x - child.getWidth() / 2, tmp.y - child.getHeight() / 2);
-		}
-	}
-
-	@Override
-	public void invalidate() {
-		super.invalidate();
-		sizeInvalid = true;
-	}
-
-	@Override
-	public void drawDebug(ShapeRenderer shapes) {
-		shapes.setColor(Color.CYAN);
-		for(Actor child : getChildren())
-			shapes.line(getX() + getWidth() / 2 * getScaleX(), getY() + getHeight() / 2 * getScaleY(), getX() + (child.getX() + child.getWidth() / 2) * getScaleX(), getY() + (child.getY() + child.getHeight() / 2) * getScaleY());
-		super.drawDebug(shapes);
-	}
-
-	/** computes {@link #cachedMinWidth}, {@link #cachedMinHeight}, {@link #cachedPrefWidth} and {@link #cachedPrefHeight} */
-	protected void computeSize() {
-		cachedMinWidth = cachedMinHeight = Float.POSITIVE_INFINITY;
-		cachedPrefWidth = cachedPrefHeight = 0;
-		SnapshotArray<Actor> children = getChildren();
-		for(Actor child : children) {
-			float minWidth, minHeight, prefWidth, prefHeight;
-			if(child instanceof Layout) {
-				Layout layout = (Layout) child;
-				minWidth = layout.getMinWidth();
-				minHeight = layout.getMinHeight();
-				prefWidth = layout.getPrefWidth();
-				prefHeight = layout.getPrefHeight();
-			} else {
-				minWidth = prefWidth = child.getWidth();
-				minHeight = prefHeight = child.getHeight();
-			}
-			if(minWidth < cachedMinWidth)
-				cachedMinWidth = minWidth;
-			if(minHeight < cachedMinHeight)
-				cachedMinHeight = minHeight;
-
-			if(prefWidth > cachedPrefWidth)
-				cachedPrefWidth = prefWidth;
-			if(prefHeight > cachedPrefHeight)
-				cachedPrefHeight = prefHeight;
-		}
-		cachedMinWidth *= 2;
-		cachedMinHeight *= 2;
-		cachedPrefWidth *= 2;
-		cachedPrefHeight *= 2;
-		float realDistanceFromCenter2 = Float.NEGATIVE_INFINITY;
-		int numChildren = children.size + (virtualChild ? 1 : 0);
-		for(int index = 0; index < children.size; index++) {
-			Actor child = children.get(index);
-			float rdfc2 = modifier != null ? modifier.distanceFromCenter(0, child, index, numChildren, this) * 2 : 0;
-			if(rdfc2 > realDistanceFromCenter2)
-				realDistanceFromCenter2 = rdfc2;
-		}
-		cachedMinWidth += realDistanceFromCenter2;
-		cachedMinHeight += realDistanceFromCenter2;
-		cachedPrefWidth += realDistanceFromCenter2;
-		cachedPrefHeight += realDistanceFromCenter2;
-		sizeInvalid = false;
-	}
-
-	@Override
-	public float getPrefWidth() {
-		if(sizeInvalid)
-			computeSize();
-		return cachedPrefWidth;
-	}
-
-	@Override
-	public float getPrefHeight() {
-		if(sizeInvalid)
-			computeSize();
-		return cachedPrefHeight;
-	}
-
-	/** does not take rotation into account */
-	@Override
-	public float getMinWidth() {
-		if(sizeInvalid)
-			computeSize();
-		return cachedMinWidth;
-	}
-
-	/** does not take rotation into account */
-	@Override
-	public float getMinHeight() {
-		if(sizeInvalid)
-			computeSize();
-		return cachedMinHeight;
-	}
-
-	/** @param draggable if this group should be rotatable by dragging with the pointer */
-	public void setDraggable(boolean draggable) {
-		dragManager.setDraggingActivated(draggable);
-		// add/remove dragManager for performance
-		if(draggable)
-			addListener(dragManager);
-		else
-			removeListener(dragManager);
-	}
-
-	/** @return if this group is rotatable by dragging with the pointer */
-	public boolean isDraggable() {
-		return dragManager.isDraggingActivated();
-	}
-
-	/** @param amount the amount by which to translate {@link #minAngleOffset} and {@link #maxAngleOffset} */
-	public void translateAngleOffsetLimits(float amount) {
-		setMinAngleOffset(minAngleOffset + amount);
-		setMaxAngleOffset(maxAngleOffset + amount);
-	}
-
-	// getters and setters
-
-	/** @return the {@link #fullAngle} */
-	public float getFullAngle() {
-		return fullAngle;
-	}
-
-	/** {@link #setFullAngle(float, boolean)} with automatic estimation if a {@link #virtualChild} would make sense.
-	 *  @param fullAngle the {@link #fullAngle} to set
-	 *  @see #setFullAngle(float, boolean) */
-	public void setFullAngle(float fullAngle) {
-		setFullAngle(fullAngle, fullAngle >= 360);
-	}
-
-	/** @param fullAngle the {@link #fullAngle} to set
-	 *  @param virtualChild the {@link #virtualChild} to set */
-	public void setFullAngle(float fullAngle, boolean virtualChild) {
-		this.fullAngle = fullAngle;
-		this.virtualChild = virtualChild;
-		invalidate();
-	}
-
-	/** @return the {@link #angleOffset} */
-	public float getAngleOffset() {
-		return angleOffset;
-	}
-
-	/** @param angleOffset The {@link #angleOffset} to set. Will be clamped to {@link #minAngleOffset} and {@link #maxAngleOffset}. */
-	public void setAngleOffset(float angleOffset) {
-		this.angleOffset = MathUtils.clamp(angleOffset, minAngleOffset, maxAngleOffset);
-		invalidate();
-	}
-
-	/** @return the {@link #minAngleOffset} */
-	public float getMinAngleOffset() {
-		return minAngleOffset;
-	}
-
-	/** clamps {@link #angleOffset} to the new bounds
-	 *  @param minAngleOffset the {@link #minAngleOffset} to set */
-	public void setMinAngleOffset(float minAngleOffset) {
-		if(minAngleOffset > maxAngleOffset)
-			throw new IllegalArgumentException("minAngleOffset must not be > maxAngleOffset");
-		this.minAngleOffset = minAngleOffset;
-		angleOffset = Math.max(minAngleOffset, angleOffset);
-	}
-
-	/** @return the {@link #maxAngleOffset} */
-	public float getMaxAngleOffset() {
-		return maxAngleOffset;
-	}
-
-	/** clamps {@link #angleOffset} to the new bounds
-	 *  @param maxAngleOffset the {@link #maxAngleOffset} to set */
-	public void setMaxAngleOffset(float maxAngleOffset) {
-		if(maxAngleOffset < minAngleOffset)
-			throw new IllegalArgumentException("maxAngleOffset must not be < minAngleOffset");
-		this.maxAngleOffset = maxAngleOffset;
-		angleOffset = Math.min(angleOffset, maxAngleOffset);
-	}
-
-	/** @return the {@link #virtualChild} */
-	public boolean isVirtualChild() {
-		return virtualChild;
-	}
-
-	/** @param virtualChild the {@link #virtualChild} to set */
-	public void setVirtualChild(boolean virtualChild) {
-		this.virtualChild = virtualChild;
-	}
-
-	/** @return the {@link #modifier} */
-	public Modifier getModifier() {
-		return modifier;
-	}
-
-	/** @param modifier the {@link #modifier} to set */
-	public void setModifier(Modifier modifier) {
-		this.modifier = Objects.requireNonNull(modifier, "the modifier must not be null");
-		invalidateHierarchy();
-	}
-
-	/** @return the {@link #dragManager} */
-	public DragManager getDragManager() {
-		return dragManager;
 	}
 
 }
