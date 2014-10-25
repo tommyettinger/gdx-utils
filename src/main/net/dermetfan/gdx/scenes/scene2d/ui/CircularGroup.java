@@ -245,6 +245,12 @@ public class CircularGroup extends WidgetGroup {
 	/** The greatest {@link #angleOffset} allowed. Default is {@link #fullAngle}. */
 	private float maxAngleOffset = fullAngle;
 
+	/** If an additional, not existent child should be considered in the angle calculation for each child.<br>
+	 *  Since {@link #fullAngle} describes the min and max angle for children of this group, two children will overlap at 360 degrees (because 360 degrees mean the min and max angle coincide).
+	 *  In this case it would make sense to enable the virtual child. It will reserve the angle needed for one child and therefore overlap with another child at the min/max angle instead of two actual children overlapping.<br>
+	 *  Default is true, as appropriate for the default of {@link #fullAngle}. */
+	private boolean virtualChild = true;
+
 	/** allows advanced modification of each child's angle */
 	private Modifier modifier;
 
@@ -280,13 +286,14 @@ public class CircularGroup extends WidgetGroup {
 	@Override
 	public void layout() {
 		SnapshotArray<Actor> children = getChildren();
+		int numChildren = children.size + (virtualChild ? 1 : 0);
 		for(int index = 0; index < children.size; index++) {
 			Actor child = children.get(index);
-			float angle = fullAngle / children.size * index;
+			float angle = fullAngle / (children.size - (virtualChild ? 0 : 1)) * index;
 			if(modifier != null)
-				angle = modifier.angle(angle, child, index, children.size, this);
+				angle = modifier.angle(angle, child, index, numChildren, this);
 			angle += angleOffset;
-			child.setRotation(modifier != null ? modifier.rotation(angle, child, index, children.size, this) : angle);
+			child.setRotation(modifier != null ? modifier.rotation(angle, child, index, numChildren, this) : angle);
 			float groupWidth = getWidth(), groupHeight = getHeight();
 			float width, height;
 			if(child instanceof Layout) {
@@ -306,7 +313,7 @@ public class CircularGroup extends WidgetGroup {
 				height = child.getHeight();
 			}
 			child.setOrigin(width / 2, height / 2);
-			float realDistanceFromCenter = modifier == null ? groupWidth / 2 - width : modifier.distanceFromCenter(groupWidth / 2 - width, child, index, children.size, this);
+			float realDistanceFromCenter = modifier == null ? groupWidth / 2 - width : modifier.distanceFromCenter(groupWidth / 2 - width, child, index, numChildren, this);
 			GeometryUtils.rotate(tmp.set(groupWidth / 2 - width / 2 - realDistanceFromCenter, groupHeight / 2), tmp2.set(groupWidth / 2, groupHeight / 2), angle * MathUtils.degRad);
 			child.setPosition(tmp.x - child.getWidth() / 2, tmp.y - child.getHeight() / 2);
 		}
@@ -358,9 +365,10 @@ public class CircularGroup extends WidgetGroup {
 		cachedPrefWidth *= 2;
 		cachedPrefHeight *= 2;
 		float realDistanceFromCenter2 = Float.NEGATIVE_INFINITY;
+		int numChildren = children.size + (virtualChild ? 1 : 0);
 		for(int index = 0; index < children.size; index++) {
 			Actor child = children.get(index);
-			float rdfc2 = modifier != null ? modifier.distanceFromCenter(0, child, index, children.size, this) * 2 : 0;
+			float rdfc2 = modifier != null ? modifier.distanceFromCenter(0, child, index, numChildren, this) * 2 : 0;
 			if(rdfc2 > realDistanceFromCenter2)
 				realDistanceFromCenter2 = rdfc2;
 		}
@@ -416,17 +424,37 @@ public class CircularGroup extends WidgetGroup {
 		return dragManager.isDraggingActivated();
 	}
 
-	// getters and setters
-
-	/** @param fullAngle the {@link #fullAngle} to set */
-	public void setFullAngle(float fullAngle) {
-		this.fullAngle = fullAngle;
-		invalidate();
+	/** @param amount the amount by which to translate {@link #minAngleOffset} and {@link #maxAngleOffset} */
+	public void translateAngleOffsetLimits(float amount) {
+		setMinAngleOffset(minAngleOffset + amount);
+		setMaxAngleOffset(maxAngleOffset + amount);
 	}
+
+	// getters and setters
 
 	/** @return the {@link #fullAngle} */
 	public float getFullAngle() {
 		return fullAngle;
+	}
+
+	/** {@link #setFullAngle(float, boolean)} with automatic estimation if a {@link #virtualChild} would make sense.
+	 *  @param fullAngle the {@link #fullAngle} to set
+	 *  @see #setFullAngle(float, boolean) */
+	public void setFullAngle(float fullAngle) {
+		setFullAngle(fullAngle, fullAngle >= 360);
+	}
+
+	/** @param fullAngle the {@link #fullAngle} to set
+	 *  @param virtualChild the {@link #virtualChild} to set */
+	public void setFullAngle(float fullAngle, boolean virtualChild) {
+		this.fullAngle = fullAngle;
+		this.virtualChild = virtualChild;
+		invalidate();
+	}
+
+	/** @return the {@link #angleOffset} */
+	public float getAngleOffset() {
+		return angleOffset;
 	}
 
 	/** @param angleOffset The {@link #angleOffset} to set. Will be clamped to {@link #minAngleOffset} and {@link #maxAngleOffset}. */
@@ -435,24 +463,9 @@ public class CircularGroup extends WidgetGroup {
 		invalidate();
 	}
 
-	/** @param angleOffset The {@link #angleOffset} to set. Will be clamped to the given min and max.
-	 *  @param minAngleOffset the {@link #minAngleOffset} to set
-	 *  @param maxAngleOffset the {@link #maxAngleOffset} to set */
-	public void setAngleOffset(float angleOffset, float minAngleOffset, float maxAngleOffset) {
-		this.angleOffset = angleOffset;
-		setMinAngleOffset(minAngleOffset);
-		setMaxAngleOffset(maxAngleOffset);
-	}
-
-	/** @return the {@link #angleOffset} */
-	public float getAngleOffset() {
-		return angleOffset;
-	}
-
-	/** @param amount the amount by which to translate {@link #minAngleOffset} and {@link #maxAngleOffset} */
-	public void translateAngleOffsetLimits(float amount) {
-		setMinAngleOffset(minAngleOffset + amount);
-		setMaxAngleOffset(maxAngleOffset + amount);
+	/** @return the {@link #minAngleOffset} */
+	public float getMinAngleOffset() {
+		return minAngleOffset;
 	}
 
 	/** clamps {@link #angleOffset} to the new bounds
@@ -464,9 +477,9 @@ public class CircularGroup extends WidgetGroup {
 		angleOffset = Math.max(minAngleOffset, angleOffset);
 	}
 
-	/** @return the {@link #minAngleOffset} */
-	public float getMinAngleOffset() {
-		return minAngleOffset;
+	/** @return the {@link #maxAngleOffset} */
+	public float getMaxAngleOffset() {
+		return maxAngleOffset;
 	}
 
 	/** clamps {@link #angleOffset} to the new bounds
@@ -478,9 +491,14 @@ public class CircularGroup extends WidgetGroup {
 		angleOffset = Math.min(angleOffset, maxAngleOffset);
 	}
 
-	/** @return the {@link #maxAngleOffset} */
-	public float getMaxAngleOffset() {
-		return maxAngleOffset;
+	/** @return the {@link #virtualChild} */
+	public boolean isVirtualChild() {
+		return virtualChild;
+	}
+
+	/** @param virtualChild the {@link #virtualChild} to set */
+	public void setVirtualChild(boolean virtualChild) {
+		this.virtualChild = virtualChild;
 	}
 
 	/** @return the {@link #modifier} */
