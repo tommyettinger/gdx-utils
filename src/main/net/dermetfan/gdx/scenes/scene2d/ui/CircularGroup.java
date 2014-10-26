@@ -349,37 +349,37 @@ public class CircularGroup extends WidgetGroup {
 	 *  @see #modifier */
 	public static interface Modifier {
 
-		/** @param defaultAngle the linearly calculated angle
+		/** @param defaultValue the linearly calculated angle
 		 *  @param child the child
 		 *  @param index the index of the child which angle to calculate
 		 *  @param numChildren the number of children
 		 *  @param group the CircularGroup the child in question belongs to
 		 *  @return the angle of the give child ({@link #angleOffset} will be added to this) */
-		float angle(float defaultAngle, Actor child, int index, int numChildren, CircularGroup group);
+		float angle(float defaultValue, Actor child, int index, int numChildren, CircularGroup group);
 
-		/** @param defaultRotation the angle of the child (may be influenced by {@link #angle(float, Actor, int, int, CircularGroup)} which by default also is its rotation
+		/** @param defaultValue the angle of the child (may be influenced by {@link #angle(float, Actor, int, int, CircularGroup)} which by default also is its rotation
 		 *  @param child the child
 		 *  @param index the index of the child which rotation to calculate
 		 *  @param numChildren the number of children
 		 *  @param group the CircularGroup the child in question belongs to
 		 *  @return the rotation of the give child */
-		float rotation(float defaultRotation, Actor child, int index, int numChildren, CircularGroup group);
+		float rotation(float defaultValue, Actor child, int index, int numChildren, CircularGroup group);
 
-		/** @param defaultDistanceFromCenter the default distance from center
+		/** @param defaultValue the default distance from center
 		 *  @param child the child
 		 *  @param index the index of the child which distance from center to calculate
 		 *  @param numChildren the number of children
 		 *  @param group the CircularGroup the child in question belongs to
 		 *  @return the distance from the group center of the given child */
-		float distanceFromCenter(float defaultDistanceFromCenter, Actor child, int index, int numChildren, CircularGroup group);
+		float distanceFromCenter(float defaultValue, Actor child, int index, int numChildren, CircularGroup group);
 
-		/** @param defaultLocalAnchor the default local anchor (can be modified and returned)
+		/** @param defaultValue the default local anchor (can be modified and returned)
 		 *  @param child the child
 		 *  @param index the index of the child which local anchor to calculate
 		 *  @param numChildren the number of children
 		 *  @param group the CircularGroup the child in question belongs to
 		 *  @return the local anchor of the given child */
-		Vector2 localAnchor(Vector2 defaultLocalAnchor, Actor child, int index, int numChildren, CircularGroup group);
+		Vector2 localAnchor(Vector2 defaultValue, Actor child, int index, int numChildren, CircularGroup group);
 
 		/** Use this if you only want to override some of {@link Modifier}'s methods.
 		 *  All implementations return the default value.
@@ -389,26 +389,26 @@ public class CircularGroup extends WidgetGroup {
 
 			/** @return the given angle */
 			@Override
-			public float angle(float defaultAngle, Actor child, int index, int numChildren, CircularGroup group) {
-				return defaultAngle;
+			public float angle(float defaultValue, Actor child, int index, int numChildren, CircularGroup group) {
+				return defaultValue;
 			}
 
 			/** @return the given rotation */
 			@Override
-			public float rotation(float defaultRotation, Actor child, int index, int numChildren, CircularGroup group) {
-				return defaultRotation;
+			public float rotation(float defaultValue, Actor child, int index, int numChildren, CircularGroup group) {
+				return defaultValue;
 			}
 
 			/** @return the given distance from center */
 			@Override
-			public float distanceFromCenter(float defaultDistanceFromCenter, Actor child, int index, int numChildren, CircularGroup group) {
-				return defaultDistanceFromCenter;
+			public float distanceFromCenter(float defaultValue, Actor child, int index, int numChildren, CircularGroup group) {
+				return defaultValue;
 			}
 
 			/** @return the given local anchor */
 			@Override
-			public Vector2 localAnchor(Vector2 defaultLocalAnchor, Actor child, int index, int numChildren, CircularGroup group) {
-				return defaultLocalAnchor;
+			public Vector2 localAnchor(Vector2 defaultValue, Actor child, int index, int numChildren, CircularGroup group) {
+				return defaultValue;
 			}
 
 		}
