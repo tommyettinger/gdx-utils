@@ -27,7 +27,6 @@ import com.badlogic.gdx.scenes.scene2d.ui.WidgetGroup;
 import com.badlogic.gdx.scenes.scene2d.utils.DragListener;
 import com.badlogic.gdx.scenes.scene2d.utils.Layout;
 import com.badlogic.gdx.utils.SnapshotArray;
-import net.dermetfan.gdx.math.GeometryUtils;
 
 import static net.dermetfan.utils.math.MathUtils.approachZero;
 
@@ -88,19 +87,25 @@ public class CircularGroup extends WidgetGroup {
 
 	@Override
 	public void drawDebug(ShapeRenderer shapes) {
-		shapes.setColor(Color.CYAN);
-		for(Actor child : getChildren())
-			shapes.line(getX() + getWidth() / 2 * getScaleX(), getY() + getHeight() / 2 * getScaleY(), getX() + (child.getX() + child.getWidth() / 2) * getScaleX(), getY() + (child.getY() + child.getHeight() / 2) * getScaleY());
 		super.drawDebug(shapes);
+		shapes.setColor(Color.CYAN);
+		shapes.ellipse(getX(), getY(), getWidth(), getHeight());
+		SnapshotArray<Actor> children = getChildren();
+		for(int index = 0; index < children.size; index++) {
+			Actor child = children.get(index);
+			tmp.set(modifier.localAnchor(tmp.set(child.getWidth() / 2, child.getHeight() / 2), child, index, children.size, this));
+			shapes.line(getX() + getWidth() / 2 * getScaleX(), getY() + getHeight() / 2 * getScaleY(), getX() + (child.getX() + tmp.x) * getScaleX(), getY() + (child.getY() + tmp.y) * getScaleY());
+		}
 	}
 
 	/** computes {@link #cachedMinWidth}, {@link #cachedMinHeight}, {@link #cachedPrefWidth} and {@link #cachedPrefHeight} */
 	protected void computeSize() {
 		cachedMinWidth = cachedMinHeight = Float.POSITIVE_INFINITY;
 		cachedPrefWidth = cachedPrefHeight = 0;
+		float minLocalAnchorX = Float.NEGATIVE_INFINITY, minLocalAnchorY = Float.NEGATIVE_INFINITY, prefLocalAnchorX = Float.NEGATIVE_INFINITY, prefLocalAnchorY = Float.NEGATIVE_INFINITY;
 		SnapshotArray<Actor> children = getChildren();
 		for(Actor child : children) {
-			float minWidth, minHeight, prefWidth, prefHeight;
+			float minWidth, minHeight, prefWidth, prefHeight, childMinLocalAnchorX, childMinLocalAnchorY, childPrefLocalAnchorX, childPrefLocalAnchorY;
 			if(child instanceof Layout) {
 				Layout layout = (Layout) child;
 				minWidth = layout.getMinWidth();
@@ -120,16 +125,29 @@ public class CircularGroup extends WidgetGroup {
 				cachedPrefWidth = prefWidth;
 			if(prefHeight > cachedPrefHeight)
 				cachedPrefHeight = prefHeight;
+
+			childMinLocalAnchorX = minWidth / 2;
+			childMinLocalAnchorY = minHeight / 2;
+			if(childMinLocalAnchorX > minLocalAnchorX)
+				minLocalAnchorX = childMinLocalAnchorX;
+			if(childMinLocalAnchorY > minLocalAnchorY)
+				minLocalAnchorY = childMinLocalAnchorY;
+
+			childPrefLocalAnchorX = prefWidth / 2;
+			childPrefLocalAnchorY = prefHeight / 2;
+			if(childPrefLocalAnchorX > prefLocalAnchorX)
+				prefLocalAnchorX = childPrefLocalAnchorX;
+			if(childPrefLocalAnchorY > prefLocalAnchorY)
+				prefLocalAnchorY = childPrefLocalAnchorY;
 		}
 		cachedMinWidth *= 2;
 		cachedMinHeight *= 2;
 		cachedPrefWidth *= 2;
 		cachedPrefHeight *= 2;
 		float realDistanceFromCenter2 = Float.NEGATIVE_INFINITY;
-		int numChildren = children.size + (virtualChildEnabled ? 1 : 0);
 		for(int index = 0; index < children.size; index++) {
 			Actor child = children.get(index);
-			float rdfc2 = modifier != null ? modifier.distanceFromCenter(0, child, index, numChildren, this) * 2 : 0;
+			float rdfc2 = modifier != null ? modifier.distanceFromCenter(0, child, index, children.size, this) * 2 : 0;
 			if(rdfc2 > realDistanceFromCenter2)
 				realDistanceFromCenter2 = rdfc2;
 		}
@@ -137,6 +155,10 @@ public class CircularGroup extends WidgetGroup {
 		cachedMinHeight += realDistanceFromCenter2;
 		cachedPrefWidth += realDistanceFromCenter2;
 		cachedPrefHeight += realDistanceFromCenter2;
+		cachedMinWidth -= minLocalAnchorX * 2;
+		cachedMinHeight -= minLocalAnchorY * 2;
+		cachedPrefWidth -= prefLocalAnchorX * 2;
+		cachedPrefHeight -= prefLocalAnchorY * 2;
 		sizeInvalid = false;
 	}
 
@@ -179,14 +201,13 @@ public class CircularGroup extends WidgetGroup {
 	@Override
 	public void layout() {
 		SnapshotArray<Actor> children = getChildren();
-		int numChildren = children.size + (virtualChildEnabled ? 1 : 0);
 		for(int index = 0; index < children.size; index++) {
 			Actor child = children.get(index);
 			float angle = fullAngle / (children.size - (virtualChildEnabled ? 0 : 1)) * index;
 			if(modifier != null)
-				angle = modifier.angle(angle, child, index, numChildren, this);
+				angle = modifier.angle(angle, child, index, children.size, this);
 			angle += angleOffset;
-			child.setRotation(modifier != null ? modifier.rotation(angle, child, index, numChildren, this) : angle);
+			child.setRotation(modifier != null ? modifier.rotation(angle, child, index, children.size, this) : angle);
 			float groupWidth = getWidth(), groupHeight = getHeight();
 			float width, height;
 			if(child instanceof Layout) {
@@ -205,10 +226,13 @@ public class CircularGroup extends WidgetGroup {
 				width = child.getWidth();
 				height = child.getHeight();
 			}
-			child.setOrigin(width / 2, height / 2);
-			float realDistanceFromCenter = modifier == null ? groupWidth / 2 - width : modifier.distanceFromCenter(groupWidth / 2 - width, child, index, numChildren, this);
-			GeometryUtils.rotate(tmp.set(groupWidth / 2 - width / 2 - realDistanceFromCenter, groupHeight / 2), tmp2.set(groupWidth / 2, groupHeight / 2), angle * MathUtils.degRad);
-			child.setPosition(tmp.x - child.getWidth() / 2, tmp.y - child.getHeight() / 2);
+			float realDistanceFromCenter = modifier == null ? 0 : modifier.distanceFromCenter(0, child, index, children.size, this);
+			tmp.set(width / 2, height / 2);
+			if(modifier != null)
+				tmp.set(modifier.localAnchor(tmp, child, index, children.size, this));
+			child.setOrigin(tmp.x, tmp.y);
+			tmp2.set(-realDistanceFromCenter, 0).rotate(angle);
+			child.setPosition(groupWidth / 2 + tmp2.x - tmp.x, groupHeight / 2 + tmp2.y - tmp.y);
 		}
 	}
 
@@ -248,10 +272,10 @@ public class CircularGroup extends WidgetGroup {
 	}
 
 	/** @param fullAngle the {@link #fullAngle} to set
-	 *  @param virtualChild the {@link #virtualChildEnabled} to set */
-	public void setFullAngle(float fullAngle, boolean virtualChild) {
+	 *  @param virtualChildEnabled the {@link #virtualChildEnabled} to set */
+	public void setFullAngle(float fullAngle, boolean virtualChildEnabled) {
 		this.fullAngle = fullAngle;
-		this.virtualChildEnabled = virtualChild;
+		this.virtualChildEnabled = virtualChildEnabled;
 		invalidate();
 	}
 
@@ -330,7 +354,7 @@ public class CircularGroup extends WidgetGroup {
 		 *  @param index the index of the child which angle to calculate
 		 *  @param numChildren the number of children
 		 *  @param group the CircularGroup the child in question belongs to
-		 *  @return the angle of the child at the given index ({@link #angleOffset} will be added to this) */
+		 *  @return the angle of the give child ({@link #angleOffset} will be added to this) */
 		float angle(float defaultAngle, Actor child, int index, int numChildren, CircularGroup group);
 
 		/** @param defaultRotation the angle of the child (may be influenced by {@link #angle(float, Actor, int, int, CircularGroup)} which by default also is its rotation
@@ -338,7 +362,7 @@ public class CircularGroup extends WidgetGroup {
 		 *  @param index the index of the child which rotation to calculate
 		 *  @param numChildren the number of children
 		 *  @param group the CircularGroup the child in question belongs to
-		 *  @return the rotation of the child at the given index */
+		 *  @return the rotation of the give child */
 		float rotation(float defaultRotation, Actor child, int index, int numChildren, CircularGroup group);
 
 		/** @param defaultDistanceFromCenter the default distance from center
@@ -346,8 +370,16 @@ public class CircularGroup extends WidgetGroup {
 		 *  @param index the index of the child which distance from center to calculate
 		 *  @param numChildren the number of children
 		 *  @param group the CircularGroup the child in question belongs to
-		 *  @return the distance from the group center of the child at the given index */
+		 *  @return the distance from the group center of the given child */
 		float distanceFromCenter(float defaultDistanceFromCenter, Actor child, int index, int numChildren, CircularGroup group);
+
+		/** @param defaultLocalAnchor the default local anchor (can be modified and returned)
+		 *  @param child the child
+		 *  @param index the index of the child which local anchor to calculate
+		 *  @param numChildren the number of children
+		 *  @param group the CircularGroup the child in question belongs to
+		 *  @return the local anchor of the given child */
+		Vector2 localAnchor(Vector2 defaultLocalAnchor, Actor child, int index, int numChildren, CircularGroup group);
 
 		/** Use this if you only want to override some of {@link Modifier}'s methods.
 		 *  All implementations return the default value.
@@ -372,6 +404,13 @@ public class CircularGroup extends WidgetGroup {
 			public float distanceFromCenter(float defaultDistanceFromCenter, Actor child, int index, int numChildren, CircularGroup group) {
 				return defaultDistanceFromCenter;
 			}
+
+			/** @return the given local anchor */
+			@Override
+			public Vector2 localAnchor(Vector2 defaultLocalAnchor, Actor child, int index, int numChildren, CircularGroup group) {
+				return defaultLocalAnchor;
+			}
+
 		}
 
 	}
