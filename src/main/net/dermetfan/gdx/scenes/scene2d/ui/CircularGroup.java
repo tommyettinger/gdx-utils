@@ -93,7 +93,9 @@ public class CircularGroup extends WidgetGroup {
 		SnapshotArray<Actor> children = getChildren();
 		for(int index = 0; index < children.size; index++) {
 			Actor child = children.get(index);
-			tmp.set(modifier.localAnchor(tmp.set(child.getWidth() / 2, child.getHeight() / 2), child, index, children.size, this));
+			tmp.set(child.getWidth() / 2, child.getHeight() / 2);
+			if(modifier != null)
+				tmp.set(modifier.localAnchor(tmp.set(child.getWidth() / 2, child.getHeight() / 2), child, index, children.size, this));
 			shapes.line(getX() + getWidth() / 2 * getScaleX(), getY() + getHeight() / 2 * getScaleY(), getX() + (child.getX() + tmp.x) * getScaleX(), getY() + (child.getY() + tmp.y) * getScaleY());
 		}
 	}
