@@ -95,7 +95,7 @@ public class CircularGroup extends WidgetGroup {
 			Actor child = children.get(index);
 			tmp.set(child.getWidth() / 2, child.getHeight() / 2);
 			if(modifier != null)
-				tmp.set(modifier.localAnchor(tmp.set(child.getWidth() / 2, child.getHeight() / 2), child, index, children.size, this));
+				tmp.set(modifier.localAnchor(tmp, child, index, children.size, this));
 			shapes.line(getX() + getWidth() / 2 * getScaleX(), getY() + getHeight() / 2 * getScaleY(), getX() + (child.getX() + tmp.x) * getScaleX(), getY() + (child.getY() + tmp.y) * getScaleY());
 		}
 	}
@@ -104,10 +104,13 @@ public class CircularGroup extends WidgetGroup {
 	protected void computeSize() {
 		cachedMinWidth = cachedMinHeight = Float.POSITIVE_INFINITY;
 		cachedPrefWidth = cachedPrefHeight = 0;
-		float minLocalAnchorX = Float.NEGATIVE_INFINITY, minLocalAnchorY = Float.NEGATIVE_INFINITY, prefLocalAnchorX = Float.NEGATIVE_INFINITY, prefLocalAnchorY = Float.NEGATIVE_INFINITY;
+
+		float minLocalAnchorX = 0, minLocalAnchorY = 0, prefLocalAnchorX = 0, prefLocalAnchorY = 0, minDistanceFromCenter = 0, prefDistanceFromCenter = 0;
 		SnapshotArray<Actor> children = getChildren();
-		for(Actor child : children) {
-			float minWidth, minHeight, prefWidth, prefHeight, childMinLocalAnchorX, childMinLocalAnchorY, childPrefLocalAnchorX, childPrefLocalAnchorY;
+		for(int index = 0; index < children.size; index++) {
+			Actor child = children.get(index);
+
+			float minWidth, minHeight, prefWidth, prefHeight;
 			if(child instanceof Layout) {
 				Layout layout = (Layout) child;
 				minWidth = layout.getMinWidth();
@@ -118,6 +121,7 @@ public class CircularGroup extends WidgetGroup {
 				minWidth = prefWidth = child.getWidth();
 				minHeight = prefHeight = child.getHeight();
 			}
+
 			if(minWidth < cachedMinWidth)
 				cachedMinWidth = minWidth;
 			if(minHeight < cachedMinHeight)
@@ -128,39 +132,60 @@ public class CircularGroup extends WidgetGroup {
 			if(prefHeight > cachedPrefHeight)
 				cachedPrefHeight = prefHeight;
 
-			childMinLocalAnchorX = minWidth / 2;
-			childMinLocalAnchorY = minHeight / 2;
-			if(childMinLocalAnchorX > minLocalAnchorX)
-				minLocalAnchorX = childMinLocalAnchorX;
-			if(childMinLocalAnchorY > minLocalAnchorY)
-				minLocalAnchorY = childMinLocalAnchorY;
+			tmp.set(minWidth / 2, minHeight / 2);
+			if(modifier != null)
+				modifier.localAnchor(tmp, child, index, children.size, this);
+			if(Math.abs(tmp.x) > Math.abs(minLocalAnchorX))
+				minLocalAnchorX = tmp.x;
+			if(Math.abs(tmp.y) > Math.abs(minLocalAnchorY))
+				minLocalAnchorY = tmp.y;
 
-			childPrefLocalAnchorX = prefWidth / 2;
-			childPrefLocalAnchorY = prefHeight / 2;
-			if(childPrefLocalAnchorX > prefLocalAnchorX)
-				prefLocalAnchorX = childPrefLocalAnchorX;
-			if(childPrefLocalAnchorY > prefLocalAnchorY)
-				prefLocalAnchorY = childPrefLocalAnchorY;
+			tmp.set(prefWidth / 2, prefHeight / 2);
+			if(modifier != null)
+				modifier.localAnchor(tmp, child, index, children.size, this);
+			if(Math.abs(tmp.x) > Math.abs(prefLocalAnchorX))
+				prefLocalAnchorX = tmp.x;
+			if(Math.abs(tmp.y) > Math.abs(prefLocalAnchorY))
+				prefLocalAnchorY = tmp.y;
+
+			float childMinDistanceFromCenter = Math.abs(modifier != null ? modifier.distanceFromCenter(minWidth / 2, child, index, children.size, this) : minWidth / 2);
+			if(childMinDistanceFromCenter > minDistanceFromCenter)
+				minDistanceFromCenter = childMinDistanceFromCenter;
+
+			float childPrefDistanceFromCenter = Math.abs(modifier != null ? modifier.distanceFromCenter(prefWidth / 2, child, index, children.size, this) : prefWidth / 2);
+			if(childPrefDistanceFromCenter > prefDistanceFromCenter)
+				prefDistanceFromCenter = childPrefDistanceFromCenter;
 		}
+
+		if(minLocalAnchorX < 0)
+			minLocalAnchorX -= cachedMinWidth;
+		if(minLocalAnchorY < 0)
+			minLocalAnchorY -= cachedMinHeight;
+		if(prefLocalAnchorX < 0)
+			prefLocalAnchorX -= cachedPrefWidth;
+		if(prefLocalAnchorY < 0)
+			prefLocalAnchorY -= cachedPrefHeight;
+		cachedMinWidth += Math.max(minLocalAnchorX, cachedMinWidth) - cachedMinWidth;
+		cachedMinHeight += Math.max(minLocalAnchorY, cachedMinHeight) - cachedMinHeight;
+		cachedPrefWidth += Math.max(prefLocalAnchorX, cachedPrefWidth) - cachedPrefWidth;
+		cachedPrefHeight += Math.max(prefLocalAnchorY, cachedPrefHeight) - cachedPrefHeight;
+		cachedMinWidth = Math.abs(cachedMinWidth);
+		cachedMinHeight = Math.abs(cachedMinHeight);
+		cachedPrefWidth = Math.abs(cachedPrefWidth);
+		cachedPrefHeight = Math.abs(cachedPrefHeight);
+
+		cachedMinWidth += minDistanceFromCenter;
+		cachedPrefWidth += prefDistanceFromCenter;
+
 		cachedMinWidth *= 2;
 		cachedMinHeight *= 2;
 		cachedPrefWidth *= 2;
 		cachedPrefHeight *= 2;
-		float realDistanceFromCenter2 = Float.NEGATIVE_INFINITY;
-		for(int index = 0; index < children.size; index++) {
-			Actor child = children.get(index);
-			float rdfc2 = modifier != null ? modifier.distanceFromCenter(0, child, index, children.size, this) * 2 : 0;
-			if(rdfc2 > realDistanceFromCenter2)
-				realDistanceFromCenter2 = rdfc2;
-		}
-		cachedMinWidth += realDistanceFromCenter2;
-		cachedMinHeight += realDistanceFromCenter2;
-		cachedPrefWidth += realDistanceFromCenter2;
-		cachedPrefHeight += realDistanceFromCenter2;
-		cachedMinWidth -= minLocalAnchorX * 2;
-		cachedMinHeight -= minLocalAnchorY * 2;
-		cachedPrefWidth -= prefLocalAnchorX * 2;
-		cachedPrefHeight -= prefLocalAnchorY * 2;
+
+		// ensure circle
+		cachedMinWidth = cachedMinHeight = Math.max(cachedMinWidth, cachedMinHeight);
+		cachedPrefWidth = cachedPrefHeight = Math.max(cachedPrefWidth, cachedPrefHeight);
+
 		sizeInvalid = false;
 	}
 
@@ -210,7 +235,6 @@ public class CircularGroup extends WidgetGroup {
 				angle = modifier.angle(angle, child, index, children.size, this);
 			angle += angleOffset;
 			child.setRotation(modifier != null ? modifier.rotation(angle, child, index, children.size, this) : angle);
-			float groupWidth = getWidth(), groupHeight = getHeight();
 			float width, height;
 			if(child instanceof Layout) {
 				Layout childLayout = (Layout) child;
@@ -228,13 +252,13 @@ public class CircularGroup extends WidgetGroup {
 				width = child.getWidth();
 				height = child.getHeight();
 			}
-			float realDistanceFromCenter = modifier == null ? 0 : modifier.distanceFromCenter(0, child, index, children.size, this);
+			float distanceFromCenter = modifier == null ? width / 2 : modifier.distanceFromCenter(width / 2, child, index, children.size, this);
 			tmp.set(width / 2, height / 2);
 			if(modifier != null)
 				tmp.set(modifier.localAnchor(tmp, child, index, children.size, this));
 			child.setOrigin(tmp.x, tmp.y);
-			tmp2.set(-realDistanceFromCenter, 0).rotate(angle);
-			child.setPosition(groupWidth / 2 + tmp2.x - tmp.x, groupHeight / 2 + tmp2.y - tmp.y);
+			tmp2.set(-distanceFromCenter, 0).rotate(angle);
+			child.setPosition(getWidth() / 2 + tmp2.x - tmp.x, getHeight() / 2 + tmp2.y - tmp.y);
 		}
 	}
 
