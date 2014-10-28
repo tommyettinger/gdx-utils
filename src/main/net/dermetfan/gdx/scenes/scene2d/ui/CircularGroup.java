@@ -157,18 +157,10 @@ public class CircularGroup extends WidgetGroup {
 				prefDistanceFromCenter = childPrefDistanceFromCenter;
 		}
 
-		if(minLocalAnchorX < 0)
-			minLocalAnchorX -= cachedMinWidth;
-		if(minLocalAnchorY < 0)
-			minLocalAnchorY -= cachedMinHeight;
-		if(prefLocalAnchorX < 0)
-			prefLocalAnchorX -= cachedPrefWidth;
-		if(prefLocalAnchorY < 0)
-			prefLocalAnchorY -= cachedPrefHeight;
-		cachedMinWidth += Math.max(minLocalAnchorX, cachedMinWidth) - cachedMinWidth;
-		cachedMinHeight += Math.max(minLocalAnchorY, cachedMinHeight) - cachedMinHeight;
-		cachedPrefWidth += Math.max(prefLocalAnchorX, cachedPrefWidth) - cachedPrefWidth;
-		cachedPrefHeight += Math.max(prefLocalAnchorY, cachedPrefHeight) - cachedPrefHeight;
+		cachedMinWidth += minLocalAnchorX - cachedMinWidth;
+		cachedMinHeight += minLocalAnchorY;
+		cachedPrefWidth += prefLocalAnchorX - cachedPrefWidth;
+		cachedPrefHeight += prefLocalAnchorY;
 		cachedMinWidth = Math.abs(cachedMinWidth);
 		cachedMinHeight = Math.abs(cachedMinHeight);
 		cachedPrefWidth = Math.abs(cachedPrefWidth);
