@@ -70,7 +70,7 @@ public class CircularGroup extends WidgetGroup {
 	private boolean sizeInvalid = true;
 
 	/** for internal use */
-	private final Vector2 tmp = new Vector2(), tmp2 = new Vector2();
+	private final Vector2 tmp = new Vector2();
 
 	/** @see #CircularGroup(Modifier) */
 	public CircularGroup() {
@@ -163,10 +163,6 @@ public class CircularGroup extends WidgetGroup {
 			else
 				prefHeight += tmp.y - prefHeight;
 
-			// add distance from center
-			minWidth += Math.abs(modifier.distanceFromCenter(child, index, children.size, this));
-			prefWidth += Math.abs(modifier.distanceFromCenter(child, index, children.size, this));
-
 			// update caches
 			if(minWidth < cachedMinWidth)
 				cachedMinWidth = minWidth;
@@ -252,11 +248,9 @@ public class CircularGroup extends WidgetGroup {
 				width = child.getWidth();
 				height = child.getHeight();
 			}
-			float distanceFromCenter = modifier.distanceFromCenter(child, index, children.size, this);
 			tmp.set(modifier.localAnchor(tmp.set(width, height / 2), child, index, children.size, this));
 			child.setOrigin(tmp.x, tmp.y);
-			tmp2.set(-distanceFromCenter, 0).rotate(angle);
-			child.setPosition(getWidth() / 2 + tmp2.x - tmp.x, getHeight() / 2 + tmp2.y - tmp.y);
+			child.setPosition(getWidth() / 2 - tmp.x, getHeight() / 2 - tmp.y);
 		}
 	}
 
@@ -389,13 +383,6 @@ public class CircularGroup extends WidgetGroup {
 		 *  @return the rotation of the give child */
 		float rotation(float defaultValue, Actor child, int index, int numChildren, CircularGroup group);
 
-		/** @param child the child
-		 *  @param index the index of the child which distance from center to calculate
-		 *  @param numChildren the number of children
-		 *  @param group the CircularGroup the child in question belongs to
-		 *  @return the distance from the group center of the given child */
-		float distanceFromCenter(Actor child, int index, int numChildren, CircularGroup group);
-
 		/** @param defaultValue the default local anchor ({@code [childWidth; childHeight / 2]})
 		 *  @param child the child
 		 *  @param index the index of the child which local anchor to calculate
@@ -420,12 +407,6 @@ public class CircularGroup extends WidgetGroup {
 			@Override
 			public float rotation(float defaultValue, Actor child, int index, int numChildren, CircularGroup group) {
 				return defaultValue;
-			}
-
-			/** @return the given distance from center */
-			@Override
-			public float distanceFromCenter(Actor child, int index, int numChildren, CircularGroup group) {
-				return 0;
 			}
 
 			/** @return the given local anchor */
