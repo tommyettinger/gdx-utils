@@ -73,7 +73,7 @@ import static net.dermetfan.gdx.math.MathUtils.min;
 
 /** provides methods for operations with Box2D {@link Body Bodies}, {@link Fixture Fixtures} and {@link Shape Shapes}
  *  @author dermetfan */
-public abstract class Box2DUtils extends com.badlogic.gdx.physics.box2d.Box2DUtils {
+public class Box2DUtils extends com.badlogic.gdx.physics.box2d.Box2DUtils {
 
 	/** cached method results
 	 *  @author dermetfan */

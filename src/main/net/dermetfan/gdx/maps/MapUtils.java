@@ -34,7 +34,7 @@ import com.badlogic.gdx.utils.reflect.ClassReflection;
 
 /** provides useful methods for dealing with maps
  *  @author dermetfan */
-public abstract class MapUtils {
+public class MapUtils {
 
 	/** for internal, temporary usage */
 	private static final Vector2 vec2 = new Vector2();

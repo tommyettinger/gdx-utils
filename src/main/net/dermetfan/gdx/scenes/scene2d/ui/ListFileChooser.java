@@ -45,7 +45,6 @@ import com.badlogic.gdx.utils.Json.Serializable;
 import com.badlogic.gdx.utils.JsonValue;
 import com.badlogic.gdx.utils.Pools;
 import com.badlogic.gdx.utils.reflect.ClassReflection;
-import net.dermetfan.gdx.scenes.scene2d.Scene2DUtils;
 
 /** A {@link TextField} showing the {@link #pathField} of the currently browsed folder with {@link #backButton} and {@link #parentButton} buttons.
  *  There's a {@link #contentsPane scrollable} {@link List} under those showing the contents of the currently browsed folder and {@link #chooseButton} and {@link #cancelButton} buttons.
@@ -91,7 +90,6 @@ public class ListFileChooser extends FileChooser {
 
 	/** if it exists, this open the file at the given {@link FileType#Absolute absolute} path if it is not a folder, {@link #setDirectory(FileHandle) goes into} it otherwise, */
 	public final TextFieldListener pathFieldListener = new TextFieldListener() {
-
 		@Override
 		public void keyTyped(TextField textField, char key) {
 			if(key == '\r' || key == '\n') {
@@ -105,12 +103,10 @@ public class ListFileChooser extends FileChooser {
 				}
 			}
 		}
-
 	};
 
 	/** {@link Listener#choose(FileHandle) chooses} the {@link List#getSelection() selected} file in from the {@link #contents} */
 	public final ClickListener chooseButtonListener = new ClickListener() {
-
 		@Override
 		public void clicked(InputEvent event, float x, float y) {
 			Selection<String> selection = contents.getSelection();
@@ -130,34 +126,28 @@ public class ListFileChooser extends FileChooser {
 				Pools.free(files);
 			}
 		}
-
 	};
 
 	/** goes into the currently marked folder */
 	public final ClickListener openButtonListener = new ClickListener() {
-
 		@Override
 		public void clicked(InputEvent event, float x, float y) {
 			FileHandle child = currentlySelected();
 			if(child.isDirectory())
 				setDirectory(child);
 		}
-
 	};
 
 	/** @see Listener#cancel() */
 	public final ClickListener cancelButtonListener = new ClickListener() {
-
 		@Override
 		public void clicked(InputEvent event, float x, float y) {
 			getListener().cancel();
 		}
-
 	};
 
 	/** goes back to the {@link #fileHistory previous} {@link #directory} */
 	public final ClickListener backButtonListener = new ClickListener() {
-
 		@Override
 		public void clicked(InputEvent event, float x, float y) {
 			if(fileHistory.size > 1) {
@@ -165,33 +155,27 @@ public class ListFileChooser extends FileChooser {
 				setDirectory(directory = fileHistory.peek(), false);
 			}
 		}
-
 	};
 
 	/** {@link #setDirectory(FileHandle) sets} {@link #directory} to its {@link FileHandle#parent() parent} */
 	public final ClickListener parentButtonListener = new ClickListener() {
-
 		@Override
 		public void clicked(InputEvent event, float x, float y) {
 			setDirectory(directory.parent());
 		}
-
 	};
 
 	/** {@link Button#setDisabled(boolean) enables/disables} {@link #chooseButton} and {@link #openButton} */
 	public final ChangeListener contentsListener = new ChangeListener() {
-
 		@Override
 		public void changed(ChangeEvent event, Actor actor) {
 			openButton.setDisabled(!currentlySelected().isDirectory());
 			chooseButton.setDisabled(isDirectoriesChoosable());
 		}
-
 	};
 
 	/** key controls of {@link #contents} */
 	public final InputListener keyControlsListener = new InputListener() {
-
 		@Override
 		public boolean keyTyped(InputEvent event, char c) {
 			if(event.isHandled())
@@ -228,7 +212,6 @@ public class ListFileChooser extends FileChooser {
 			contents.setSelectedIndex(newIndex);
 			return true;
 		}
-
 	};
 
 	public ListFileChooser(Skin skin, Listener listener) {
@@ -258,11 +241,11 @@ public class ListFileChooser extends FileChooser {
 		contents.setItems(directory.name());
 		contents.addListener(contentsListener);
 
-		(chooseButton = Scene2DUtils.newButton(style.chooseButtonStyle, "select")).addListener(chooseButtonListener);
-		(openButton = Scene2DUtils.newButton(style.openButtonStyle, "open")).addListener(openButtonListener);
-		(cancelButton = Scene2DUtils.newButton(style.cancelButtonStyle, "cancel")).addListener(cancelButtonListener);
-		(backButton = Scene2DUtils.newButton(style.backButtonStyle, "back")).addListener(backButtonListener);
-		(parentButton = Scene2DUtils.newButton(style.parentButtonStyle, "up")).addListener(parentButtonListener);
+		(chooseButton = UIUtils.newButton(style.chooseButtonStyle, "select")).addListener(chooseButtonListener);
+		(openButton = UIUtils.newButton(style.openButtonStyle, "open")).addListener(openButtonListener);
+		(cancelButton = UIUtils.newButton(style.cancelButtonStyle, "cancel")).addListener(cancelButtonListener);
+		(backButton = UIUtils.newButton(style.backButtonStyle, "back")).addListener(backButtonListener);
+		(parentButton = UIUtils.newButton(style.parentButtonStyle, "up")).addListener(parentButtonListener);
 
 		contentsPane = style.contentsPaneStyle == null ? new ScrollPane(contents) : new ScrollPane(contents, style.contentsPaneStyle);
 
@@ -526,31 +509,26 @@ public class ListFileChooser extends FileChooser {
 
 		@Override
 		public void read(Json json, JsonValue jsonData) {
-			ButtonStyle tmpBS = Scene2DUtils.readButtonStyle("buttonStyles", json, jsonData);
+			ButtonStyle tmpBS = UIUtils.readButtonStyle("buttonStyles", json, jsonData);
 			setButtonStyles(tmpBS);
-			tmpBS = null;
 
-			tmpBS = Scene2DUtils.readButtonStyle("backButtonStyle", json, jsonData);
+			tmpBS = UIUtils.readButtonStyle("backButtonStyle", json, jsonData);
 			if(tmpBS != null)
 				backButtonStyle = tmpBS;
-			tmpBS = null;
 
-			tmpBS = Scene2DUtils.readButtonStyle("cancelButtonStyle", json, jsonData);
+			tmpBS = UIUtils.readButtonStyle("cancelButtonStyle", json, jsonData);
 			if(tmpBS != null)
 				cancelButtonStyle = tmpBS;
-			tmpBS = null;
 
-			tmpBS = Scene2DUtils.readButtonStyle("chooseButtonStyle", json, jsonData);
+			tmpBS = UIUtils.readButtonStyle("chooseButtonStyle", json, jsonData);
 			if(tmpBS != null)
 				chooseButtonStyle = tmpBS;
-			tmpBS = null;
 
-			tmpBS = Scene2DUtils.readButtonStyle("openButtonStyle", json, jsonData);
+			tmpBS = UIUtils.readButtonStyle("openButtonStyle", json, jsonData);
 			if(tmpBS != null)
 				openButtonStyle = tmpBS;
-			tmpBS = null;
 
-			tmpBS = Scene2DUtils.readButtonStyle("parentButtonStyle", json, jsonData);
+			tmpBS = UIUtils.readButtonStyle("parentButtonStyle", json, jsonData);
 			if(tmpBS != null)
 				parentButtonStyle = tmpBS;
 

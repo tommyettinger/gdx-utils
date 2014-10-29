@@ -17,7 +17,7 @@ package com.badlogic.gdx.physics.box2d;
 /** placed in this package to have access to the package-private {@code addr} fields
  *  @since 0.6.0
  *  @author dermetfan */
-public abstract class Box2DUtils {
+public class Box2DUtils {
 
 	/** @return {@link Body#addr} */
 	public static long getAddr(Body body) {

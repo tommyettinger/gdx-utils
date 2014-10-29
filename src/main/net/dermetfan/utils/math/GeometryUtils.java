@@ -19,7 +19,7 @@ import static net.dermetfan.utils.math.MathUtils.mirror;
 /** geometric calculation utility methods
  *  @since 0.5.0
  *  @author dermetfan */
-public abstract class GeometryUtils {
+public class GeometryUtils {
 
 	/** @param x the x of the point to test
 	 *  @param y the y of the point to test

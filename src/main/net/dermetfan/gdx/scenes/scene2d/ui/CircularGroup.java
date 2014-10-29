@@ -19,6 +19,7 @@ import java.util.Objects;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
+import com.badlogic.gdx.graphics.glutils.ShapeRenderer.ShapeType;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.Actor;
@@ -103,6 +104,7 @@ public class CircularGroup extends WidgetGroup {
 	@Override
 	public void drawDebug(ShapeRenderer shapes) {
 		super.drawDebug(shapes);
+		shapes.set(ShapeType.Line);
 		shapes.setColor(Color.CYAN);
 		shapes.ellipse(getX(), getY(), getWidth(), getHeight());
 		SnapshotArray<Actor> children = getChildren();
@@ -135,8 +137,10 @@ public class CircularGroup extends WidgetGroup {
 				minHeight = prefHeight = child.getHeight();
 			}
 
-			// take local anchor into account
-			tmp.set(modifier.localAnchor(tmp.set(minWidth, minHeight / 2), child, index, children.size, this));
+			// anchor and local anchor
+			tmp.set(modifier.anchor(tmp.setZero(), child, index, children.size, this));
+			float anchorX = tmp.x, anchorY = tmp.y;
+			tmp.set(modifier.localAnchor(tmp.set(minWidth, minHeight / 2), child, index, children.size, this)).sub(anchorX, anchorY);
 			if(tmp.x < 0)
 				minWidth -= tmp.x;
 			else if(tmp.x < minWidth)
@@ -149,7 +153,7 @@ public class CircularGroup extends WidgetGroup {
 				minHeight -= tmp.y;
 			else
 				minHeight += tmp.y - minHeight;
-			tmp.set(modifier.localAnchor(tmp.set(prefWidth, prefHeight / 2), child, index, children.size, this));
+			tmp.set(modifier.localAnchor(tmp.set(prefWidth, prefHeight / 2), child, index, children.size, this)).sub(anchorX, anchorY);
 			if(tmp.x < 0)
 				prefWidth -= tmp.x;
 			else if(tmp.x < prefWidth)
@@ -227,10 +231,8 @@ public class CircularGroup extends WidgetGroup {
 		SnapshotArray<Actor> children = getChildren();
 		for(int index = 0; index < children.size; index++) {
 			Actor child = children.get(index);
-			float angle = fullAngle / (children.size - (virtualChildEnabled ? 0 : 1)) * index;
-			angle = modifier.angle(angle, child, index, children.size, this);
-			angle += angleOffset;
-			child.setRotation(modifier.rotation(angle, child, index, children.size, this));
+
+			// get dimensions and resize
 			float width, height;
 			if(child instanceof Layout) {
 				Layout childLayout = (Layout) child;
@@ -248,9 +250,23 @@ public class CircularGroup extends WidgetGroup {
 				width = child.getWidth();
 				height = child.getHeight();
 			}
+
+			float angle = fullAngle / (children.size - (virtualChildEnabled ? 0 : 1)) * index;
+			angle += angleOffset;
+			angle = modifier.angle(angle, child, index, children.size, this);
+
+			float rotation = modifier.rotation(angle, child, index, children.size, this);
+
+			tmp.set(modifier.anchor(tmp.setZero(), child, index, children.size, this));
+			tmp.rotate(angle);
+			float anchorX = tmp.x, anchorY = tmp.y;
+
 			tmp.set(modifier.localAnchor(tmp.set(width, height / 2), child, index, children.size, this));
-			child.setOrigin(tmp.x, tmp.y);
-			child.setPosition(getWidth() / 2 - tmp.x, getHeight() / 2 - tmp.y);
+			float localAnchorX = tmp.x, localAnchorY = tmp.y;
+
+			child.setOrigin(localAnchorX, localAnchorY);
+			child.setRotation(rotation);
+			child.setPosition(getWidth() / 2 + anchorX - localAnchorX, getHeight() / 2 + anchorY - localAnchorY);
 		}
 	}
 
@@ -367,7 +383,7 @@ public class CircularGroup extends WidgetGroup {
 	 *  @see #modifier */
 	public static interface Modifier {
 
-		/** @param defaultValue the linearly calculated angle
+		/** @param defaultValue the angle of the child in the group circle
 		 *  @param child the child
 		 *  @param index the index of the child which angle to calculate
 		 *  @param numChildren the number of children
@@ -375,7 +391,15 @@ public class CircularGroup extends WidgetGroup {
 		 *  @return the angle of the give child ({@link #angleOffset} will be added to this) */
 		float angle(float defaultValue, Actor child, int index, int numChildren, CircularGroup group);
 
-		/** @param defaultValue the angle of the child (may be influenced by {@link #angle(float, Actor, int, int, CircularGroup)} which by default also is its rotation)
+		/** @param defaultValue the default anchor ({@code [0:0]})
+		 * @param child the child
+		 * @param index the index of the child which anchor to calculate
+		 * @param numChildren the number of children
+		 * @param group the CircularGroup the child in question belongs to
+		 * @return the anchor of the given child */
+		Vector2 anchor(Vector2 defaultValue, Actor child, int index, int numChildren, CircularGroup group);
+
+		/** @param defaultValue the angle of the child
 		 *  @param child the child
 		 *  @param index the index of the child which rotation to calculate
 		 *  @param numChildren the number of children
@@ -383,7 +407,7 @@ public class CircularGroup extends WidgetGroup {
 		 *  @return the rotation of the give child */
 		float rotation(float defaultValue, Actor child, int index, int numChildren, CircularGroup group);
 
-		/** @param defaultValue the default local anchor ({@code [childWidth; childHeight / 2]})
+		/** @param defaultValue the default local anchor ({@code [childWidth:childHeight / 2]})
 		 *  @param child the child
 		 *  @param index the index of the child which local anchor to calculate
 		 *  @param numChildren the number of children
@@ -397,19 +421,21 @@ public class CircularGroup extends WidgetGroup {
 		 *  @author dermetfan */
 		public static class Adapter implements Modifier {
 
-			/** @return the given angle */
 			@Override
 			public float angle(float defaultValue, Actor child, int index, int numChildren, CircularGroup group) {
 				return defaultValue;
 			}
 
-			/** @return the given rotation */
+			@Override
+			public Vector2 anchor(Vector2 defaultValue, Actor child, int index, int numChildren, CircularGroup group) {
+				return defaultValue;
+			}
+
 			@Override
 			public float rotation(float defaultValue, Actor child, int index, int numChildren, CircularGroup group) {
 				return defaultValue;
 			}
 
-			/** @return the given local anchor */
 			@Override
 			public Vector2 localAnchor(Vector2 defaultValue, Actor child, int index, int numChildren, CircularGroup group) {
 				return defaultValue;

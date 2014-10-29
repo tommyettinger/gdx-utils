@@ -16,7 +16,7 @@ package net.dermetfan.utils.math;
 
 /** math utility methods
  *  @author dermetfan */
-public abstract class MathUtils {
+public class MathUtils {
 
 	/** @param n the number which cross sum to calculate
 	 *  @return the cross sum (sum of a number's digits) */
