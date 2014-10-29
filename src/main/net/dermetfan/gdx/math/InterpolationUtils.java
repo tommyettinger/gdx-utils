@@ -22,7 +22,7 @@ import net.dermetfan.utils.StringUtils;
 
 /** useful methods regarding {@link Interpolation Interpolations}
  *  @since 0.6.0 */
-public abstract class InterpolationUtils {
+public class InterpolationUtils {
 
 	/** Retrieves one of the default {@code Interpolation} objects by name using reflection.
 	 *  This is mostly for easy specification in configuration files or similar.

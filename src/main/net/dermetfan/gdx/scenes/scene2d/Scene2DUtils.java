@@ -21,23 +21,13 @@ import com.badlogic.gdx.scenes.scene2d.Event;
 import com.badlogic.gdx.scenes.scene2d.Group;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.Stage;
-import com.badlogic.gdx.scenes.scene2d.ui.Button;
-import com.badlogic.gdx.scenes.scene2d.ui.Button.ButtonStyle;
-import com.badlogic.gdx.scenes.scene2d.ui.ImageButton;
-import com.badlogic.gdx.scenes.scene2d.ui.ImageButton.ImageButtonStyle;
-import com.badlogic.gdx.scenes.scene2d.ui.ImageTextButton;
-import com.badlogic.gdx.scenes.scene2d.ui.ImageTextButton.ImageTextButtonStyle;
-import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
-import com.badlogic.gdx.scenes.scene2d.ui.TextButton.TextButtonStyle;
-import com.badlogic.gdx.utils.Json;
-import com.badlogic.gdx.utils.JsonValue;
 
 /** provides useful methods for scene2d
  *  @author dermetfan */
 public class Scene2DUtils {
 
 	/** Some methods return this, so if you get your hands on it make sure to make a copy! This is used internally so it might change unexpectedly. */
-	private static Vector2 tmp = new Vector2();
+	private static final Vector2 tmp = new Vector2();
 
 	/** @param c the event to copy to
 	 *  @param e the event to copy from */
@@ -133,43 +123,6 @@ public class Scene2DUtils {
 		tmp.set(Gdx.input.getX(pointer), Gdx.input.getY(pointer));
 		stage.screenToStageCoordinates(tmp);
 		return tmp;
-	}
-
-	/** @see #newButton(ButtonStyle, String) */
-	public static Button newButton(ButtonStyle style) {
-		return newButton(style, "");
-	}
-
-	/** creates a {@link Button} according to the given {@link ButtonStyle} instance that may be {@link ButtonStyle}, {@link TextButtonStyle}, {@link ImageButtonStyle} or {@link ImageTextButtonStyle} */
-	public static Button newButton(ButtonStyle style, String textIfAny) {
-		if(style instanceof ImageTextButtonStyle)
-			return new ImageTextButton(textIfAny, (ImageTextButtonStyle) style);
-		if(style instanceof TextButtonStyle)
-			return new TextButton(textIfAny, (TextButtonStyle) style);
-		if(style instanceof ImageButtonStyle)
-			return new ImageButton((ImageButtonStyle) style);
-		return new Button(style);
-	}
-
-	/** Tries to load a {@link TextButtonStyle}, then {@link ImageButtonStyle}, then {@link ImageTextButtonStyle} and then {@link ButtonStyle} using {@link Json#readValue(String, Class, JsonValue)} brutally by catching NPEs. Nasty... */
-	public static ButtonStyle readButtonStyle(String name, Json json, JsonValue jsonValue) {
-		try {
-			return json.readValue(name, TextButtonStyle.class, jsonValue);
-		} catch(NullPointerException e) {
-			try {
-				return json.readValue(name, ImageButtonStyle.class, jsonValue);
-			} catch(NullPointerException e1) {
-				try {
-					return json.readValue(name, ImageTextButtonStyle.class, jsonValue);
-				} catch(NullPointerException e2) {
-					try {
-						return json.readValue(name, ButtonStyle.class, jsonValue);
-					} catch(NullPointerException e3) {
-						return null;
-					}
-				}
-			}
-		}
 	}
 
 }

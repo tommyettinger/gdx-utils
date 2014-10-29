@@ -21,7 +21,7 @@ import com.badlogic.gdx.utils.IntArray;
 /** array utility methods
  *  @since 0.5.0
  *  @author dermetfan */
-public abstract class ArrayUtils extends net.dermetfan.utils.ArrayUtils {
+public class ArrayUtils extends net.dermetfan.utils.ArrayUtils {
 
 	/** @see #wrapIndex(int, Object[]) */
 	public static <T> T wrapIndex(int index, Array<T> array) {

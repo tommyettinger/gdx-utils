@@ -38,7 +38,7 @@ import static net.dermetfan.utils.math.MathUtils.det;
 
 /** Provides some useful methods for geometric calculations. Note that many methods return the same array instance so make a copy for subsequent calls.
  *  @author dermetfan */
-public abstract class GeometryUtils extends net.dermetfan.utils.math.GeometryUtils {
+public class GeometryUtils extends net.dermetfan.utils.math.GeometryUtils {
 
 	/** a {@link Vector2} for temporary usage */
 	private static final Vector2 vec2_0 = new Vector2(), vec2_1 = new Vector2();
@@ -48,7 +48,6 @@ public abstract class GeometryUtils extends net.dermetfan.utils.math.GeometryUti
 
 	/** a temporarily used array, returned by some methods */
 	private static final FloatArray tmpFloatArray = new FloatArray();
-
 
 	/** @see net.dermetfan.utils.math.GeometryUtils#between(float, float, float, float, float, float, boolean) */
 	public static boolean between(Vector2 point, Vector2 a, Vector2 b, boolean inclusive) {
@@ -689,15 +688,15 @@ public abstract class GeometryUtils extends net.dermetfan.utils.math.GeometryUti
 		if(segments.size % 2 != 0)
 			throw new IllegalArgumentException("malformed segments; the number of vertices is not dividable by 2: " + segments.size);
 		intersections.clear();
-		Vector2 tmp = Pools.obtain(Vector2.class);
+		vec2_0.setZero();
 		for(int i = 0, n = segments.size - (polygon ? 0 : 2); i < n; i += 2) {
 			float x3 = segments.get(i), y3 = segments.get(i + 1), x4 = wrapIndex(i + 2, segments), y4 = wrapIndex(i + 3, segments);
-			if(Intersector.intersectSegments(x1, y1, x2, y2, x3, y3, x4, y4, tmp)) {
-				intersections.add(tmp.x);
-				intersections.add(tmp.y);
+			if(Intersector.intersectSegments(x1, y1, x2, y2, x3, y3, x4, y4, vec2_0)) {
+				intersections.add(vec2_0.x);
+				intersections.add(vec2_0.y);
 			}
 		}
-		Pools.free(tmp);
+		Pools.free(vec2_0);
 	}
 
 }

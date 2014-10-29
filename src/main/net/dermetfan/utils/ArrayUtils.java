@@ -2,7 +2,7 @@ package net.dermetfan.utils;
 
 /** array utility methods
  *  @author dermetfan */
-public abstract class ArrayUtils {
+public class ArrayUtils {
 
 	/** @param array the array from which to access a value at the wrapped index
 	 *  @return the value at the wrapped index

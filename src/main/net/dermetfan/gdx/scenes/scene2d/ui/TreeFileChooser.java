@@ -17,15 +17,12 @@ package net.dermetfan.gdx.scenes.scene2d.ui;
 import java.io.File;
 import java.io.FileFilter;
 
-import com.badlogic.gdx.scenes.scene2d.Actor;
-import com.badlogic.gdx.scenes.scene2d.ui.Label;
-import net.dermetfan.utils.Function;
-import net.dermetfan.gdx.scenes.scene2d.Scene2DUtils;
-
 import com.badlogic.gdx.files.FileHandle;
+import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.ui.Button;
 import com.badlogic.gdx.scenes.scene2d.ui.Button.ButtonStyle;
+import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Label.LabelStyle;
 import com.badlogic.gdx.scenes.scene2d.ui.ScrollPane;
 import com.badlogic.gdx.scenes.scene2d.ui.ScrollPane.ScrollPaneStyle;
@@ -41,6 +38,7 @@ import com.badlogic.gdx.utils.Json;
 import com.badlogic.gdx.utils.Json.Serializable;
 import com.badlogic.gdx.utils.JsonValue;
 import com.badlogic.gdx.utils.Pools;
+import net.dermetfan.utils.Function;
 
 /** A {@link FileChooser} that uses a {@link Tree}. <strong>DO NOT FORGET TO {@link #add(FileHandle) ADD ROOTS}!</strong>
  *  @author dermetfan */
@@ -251,9 +249,9 @@ public class TreeFileChooser extends FileChooser {
 			treePane = new ScrollPane(tree, style.scrollPaneStyle);
 		else
 			treePane = new ScrollPane(tree);
-		(chooseButton = Scene2DUtils.newButton(style.selectButtonStyle, "select")).addListener(chooseButtonListener);
+		(chooseButton = UIUtils.newButton(style.selectButtonStyle, "select")).addListener(chooseButtonListener);
 		chooseButton.setDisabled(true);
-		(cancelButton = Scene2DUtils.newButton(style.cancelButtonStyle, "cancel")).addListener(cancelButtonListener);
+		(cancelButton = UIUtils.newButton(style.cancelButtonStyle, "cancel")).addListener(cancelButtonListener);
 	}
 
 	@Override
@@ -323,8 +321,8 @@ public class TreeFileChooser extends FileChooser {
 			if(jsonData.has("scrollPaneStyle"))
 				scrollPaneStyle = json.readValue("scrollPaneStyle", ScrollPaneStyle.class, jsonData);
 			labelStyle = json.readValue("labelStyle", LabelStyle.class, jsonData);
-			selectButtonStyle = Scene2DUtils.readButtonStyle("selectButtonStyle", json, jsonData);
-			cancelButtonStyle = Scene2DUtils.readButtonStyle("cancelButtonStyle", json, jsonData);
+			selectButtonStyle = UIUtils.readButtonStyle("selectButtonStyle", json, jsonData);
+			cancelButtonStyle = UIUtils.readButtonStyle("cancelButtonStyle", json, jsonData);
 			if(jsonData.has("background"))
 				background = json.readValue("background", Drawable.class, jsonData);
 		}
