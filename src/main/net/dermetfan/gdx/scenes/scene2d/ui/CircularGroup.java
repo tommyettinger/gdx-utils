@@ -383,9 +383,9 @@ public class CircularGroup extends WidgetGroup {
 		 *  @return the rotation of the child */
 		float rotation(float angle, Actor child, int index, int numChildren, CircularGroup group);
 
-		/** @param anchor the default anchor offset ({@code [0:0]})
+		/** @param anchorOffset the default anchor offset ({@code [0:0]})
 		 *  @return the anchor offset of the child, relative to the group center */
-		Vector2 anchorOffset(Vector2 anchor, Actor child, int index, int numChildren, CircularGroup group);
+		Vector2 anchorOffset(Vector2 anchorOffset, Actor child, int index, int numChildren, CircularGroup group);
 
 		/** @param localAnchor the default local anchorOffset ({@code [childWidth:childHeight / 2]})
 		 *  @return the local anchorOffset of the child, relative to the child itself */
@@ -408,8 +408,8 @@ public class CircularGroup extends WidgetGroup {
 			}
 
 			@Override
-			public Vector2 anchorOffset(Vector2 anchor, Actor child, int index, int numChildren, CircularGroup group) {
-				return anchor;
+			public Vector2 anchorOffset(Vector2 anchorOffset, Actor child, int index, int numChildren, CircularGroup group) {
+				return anchorOffset;
 			}
 
 			@Override
