@@ -106,7 +106,7 @@ public class CircularGroup extends WidgetGroup {
 		super.drawDebug(shapes);
 		shapes.set(ShapeType.Line);
 		shapes.setColor(Color.CYAN);
-		shapes.ellipse(getX(), getY(), getWidth(), getHeight());
+		shapes.circle(getX() + getWidth() / 2 * getScaleX(), getY() + getHeight() / 2 * getScaleY(), getWidth() / 2 * getScaleX());
 		SnapshotArray<Actor> children = getChildren();
 		for(int index = 0; index < children.size; index++) {
 			Actor child = children.get(index);
@@ -137,32 +137,24 @@ public class CircularGroup extends WidgetGroup {
 				minHeight = prefHeight = child.getHeight();
 			}
 
-			// anchor and local anchor
-			tmp.set(modifier.anchor(tmp.setZero(), child, index, children.size, this));
-			float anchorX = tmp.x, anchorY = tmp.y;
-			tmp.set(modifier.localAnchor(tmp.set(minWidth, minHeight / 2), child, index, children.size, this)).sub(anchorX, anchorY);
-			if(tmp.x < 0)
-				minWidth -= tmp.x;
-			else if(tmp.x < minWidth)
+			// anchor offset and local anchor
+			tmp.set(modifier.anchorOffset(tmp.setZero(), child, index, children.size, this));
+			float offsetX = tmp.x, offsetY = tmp.y;
+			tmp.set(modifier.localAnchor(tmp.set(minWidth, minHeight / 2), child, index, children.size, this)).sub(offsetX, offsetY);
+			if(tmp.x < minWidth || tmp.x < 0)
 				minWidth -= tmp.x;
 			else
 				minWidth += tmp.x - minWidth;
-			if(tmp.y < 0)
-				minHeight -= tmp.y;
-			else if(tmp.y < minHeight)
+			if(tmp.y < minHeight || tmp.y < 0)
 				minHeight -= tmp.y;
 			else
 				minHeight += tmp.y - minHeight;
-			tmp.set(modifier.localAnchor(tmp.set(prefWidth, prefHeight / 2), child, index, children.size, this)).sub(anchorX, anchorY);
-			if(tmp.x < 0)
-				prefWidth -= tmp.x;
-			else if(tmp.x < prefWidth)
+			tmp.set(modifier.localAnchor(tmp.set(prefWidth, prefHeight / 2), child, index, children.size, this)).sub(offsetX, offsetY);
+			if(tmp.x < prefWidth || tmp.x < 0)
 				prefWidth -= tmp.x;
 			else
 				prefWidth += tmp.x - prefWidth;
-			if(tmp.y < 0)
-				prefHeight -= tmp.y;
-			else if(tmp.y < prefHeight)
+			if(tmp.y < prefHeight || tmp.y < 0)
 				prefHeight -= tmp.y;
 			else
 				prefHeight += tmp.y - prefHeight;
@@ -257,16 +249,16 @@ public class CircularGroup extends WidgetGroup {
 
 			float rotation = modifier.rotation(angle, child, index, children.size, this);
 
-			tmp.set(modifier.anchor(tmp.setZero(), child, index, children.size, this));
+			tmp.set(modifier.anchorOffset(tmp.setZero(), child, index, children.size, this));
 			tmp.rotate(angle);
-			float anchorX = tmp.x, anchorY = tmp.y;
+			float offsetX = tmp.x, offsetY = tmp.y;
 
 			tmp.set(modifier.localAnchor(tmp.set(width, height / 2), child, index, children.size, this));
 			float localAnchorX = tmp.x, localAnchorY = tmp.y;
 
 			child.setOrigin(localAnchorX, localAnchorY);
 			child.setRotation(rotation);
-			child.setPosition(getWidth() / 2 + anchorX - localAnchorX, getHeight() / 2 + anchorY - localAnchorY);
+			child.setPosition(getWidth() / 2 + offsetX - localAnchorX, getHeight() / 2 + offsetY - localAnchorY);
 		}
 	}
 
@@ -391,12 +383,12 @@ public class CircularGroup extends WidgetGroup {
 		 *  @return the rotation of the child */
 		float rotation(float angle, Actor child, int index, int numChildren, CircularGroup group);
 
-		/** @param anchor the default anchor ({@code [0:0]})
-		 *  @return the anchor of the child, relative to the group center */
-		Vector2 anchor(Vector2 anchor, Actor child, int index, int numChildren, CircularGroup group);
+		/** @param anchor the default anchor offset ({@code [0:0]})
+		 *  @return the anchor offset of the child, relative to the group center */
+		Vector2 anchorOffset(Vector2 anchor, Actor child, int index, int numChildren, CircularGroup group);
 
-		/** @param localAnchor the default local anchor ({@code [childWidth:childHeight / 2]})
-		 *  @return the local anchor of the child, relative to the child itself */
+		/** @param localAnchor the default local anchorOffset ({@code [childWidth:childHeight / 2]})
+		 *  @return the local anchorOffset of the child, relative to the child itself */
 		Vector2 localAnchor(Vector2 localAnchor, Actor child, int index, int numChildren, CircularGroup group);
 
 		/** Use this if you only want to override some of {@link Modifier}'s methods.
@@ -416,7 +408,7 @@ public class CircularGroup extends WidgetGroup {
 			}
 
 			@Override
-			public Vector2 anchor(Vector2 anchor, Actor child, int index, int numChildren, CircularGroup group) {
+			public Vector2 anchorOffset(Vector2 anchor, Actor child, int index, int numChildren, CircularGroup group) {
 				return anchor;
 			}
 
