@@ -14,8 +14,6 @@
 
 package net.dermetfan.gdx.scenes.scene2d.ui;
 
-import java.util.Objects;
-
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
@@ -361,7 +359,9 @@ public class CircularGroup extends WidgetGroup {
 
 	/** @param modifier the {@link #modifier} to set */
 	public void setModifier(Modifier modifier) {
-		this.modifier = Objects.requireNonNull(modifier, "the modifier must not be null");
+		if(modifier == null)
+			throw new IllegalArgumentException("modifier must not be null");
+		this.modifier = modifier;
 		invalidateHierarchy();
 	}
 
