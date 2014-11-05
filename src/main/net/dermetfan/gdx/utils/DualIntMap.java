@@ -100,13 +100,13 @@ public class DualIntMap<V> {
 	// getters and setters
 
 	/** @return The {@link #keyToValue}. Only use this if you know what you're doing!
-	 *  @since 0.7.0 */
+	 *  @since 0.7.1 */
 	public IntMap<V> getKeyToValue() {
 		return keyToValue;
 	}
 
 	/** @return The {@link #valueToKey}. Only use this if you know what you're doing!
-	 *  @since 0.7.0 */
+	 *  @since 0.7.1 */
 	public ObjectIntMap<V> getValueToKey() {
 		return valueToKey;
 	}

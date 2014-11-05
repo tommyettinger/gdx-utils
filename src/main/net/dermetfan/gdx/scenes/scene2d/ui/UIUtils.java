@@ -29,7 +29,7 @@ import com.badlogic.gdx.utils.JsonValue;
 
 /** Provides useful methods for {@link com.badlogic.gdx.scenes.scene2d.ui scene2d.ui}.
  *  Extends {@link com.badlogic.gdx.scenes.scene2d.utils.UIUtils UIUtils} to avoid name clashes.
- *  @since 0.7.0
+ *  @since 0.7.1
  *  @author dermetfan */
 public class UIUtils extends com.badlogic.gdx.scenes.scene2d.utils.UIUtils {
 
