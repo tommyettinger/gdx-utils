@@ -272,7 +272,7 @@ public class WorldObserver {
 		void destroyed(Joint joint);
 
 		/** A class that implements Listener. Does nothing. Subclass this if you only want to override some methods.
-		 *  @since 0.7.0
+		 *  @since 0.7.1
 		 *  @author dermetfan */
 		public static class Adapter implements Listener {
 
@@ -324,7 +324,7 @@ public class WorldObserver {
 
 	/** A Listener that calls another Listener on unpredictable/unexpected events.
 	 *  In practice only {@link #changed(Body, BodyChange)} can be predicted and therefore the other methods will be called normally.
-	 *  @since 0.7.0
+	 *  @since 0.7.1
 	 *  @author dermetfan */
 	public static class UnexpectedListener implements Listener {
 
@@ -444,7 +444,7 @@ public class WorldObserver {
 		}
 
 		/** Only for internal use. Stores the last change of predictable data.
-		 *  @since 0.7.0
+		 *  @since 0.7.1
 		 *  @author dermetfan */
 		private static class ExpectationBase implements Poolable {
 
@@ -470,7 +470,7 @@ public class WorldObserver {
 			}
 
 			/** a Pool for ExpectationBases
-			 *  @since 0.7.0
+			 *  @since 0.7.1
 			 *  @author dermetfan */
 			private static class Pool extends com.badlogic.gdx.utils.Pool<ExpectationBase> {
 
@@ -1030,7 +1030,7 @@ public class WorldObserver {
 	}
 
 	/** the changes of a {@link RevoluteJoint}
-	 *  @since 0.7.0
+	 *  @since 0.7.1
 	 *  @author dermetfan */
 	public static class RevoluteJointChange extends JointChange<RevoluteJoint> {
 
@@ -1118,7 +1118,7 @@ public class WorldObserver {
 	}
 
 	/** the changes of a {@link PrismaticJoint}
-	 *  @since 0.7.0
+	 *  @since 0.7.1
 	 *  @author dermetfan */
 	public static class PrismaticJointChange extends JointChange<PrismaticJoint> {
 
@@ -1206,7 +1206,7 @@ public class WorldObserver {
 	}
 
 	/** the changes of a {@link DistanceJoint}
-	 *  @since 0.7.0
+	 *  @since 0.7.1
 	 *  @author dermetfan */
 	public static class DistanceJointChange extends JointChange<DistanceJoint> {
 
@@ -1283,7 +1283,7 @@ public class WorldObserver {
 	}
 
 	/** the changes of a {@link MouseJoint}
-	 *  @since 0.7.0
+	 *  @since 0.7.1
 	 *  @author dermetfan */
 	public static class MouseJointChange extends JointChange<MouseJoint> {
 
@@ -1372,7 +1372,7 @@ public class WorldObserver {
 	}
 
 	/** the changes of a {@link GearJoint}
-	 *  @since 0.7.0
+	 *  @since 0.7.1
 	 *  @author dermetfan */
 	public static class GearJointChange extends JointChange<GearJoint> {
 
@@ -1417,7 +1417,7 @@ public class WorldObserver {
 	}
 
 	/** the changes of a {@link WheelJoint}
-	 *  @since 0.7.0
+	 *  @since 0.7.1
 	 *  @author dermetfan */
 	public static class WheelJointChange extends JointChange<WheelJoint> {
 
@@ -1507,7 +1507,7 @@ public class WorldObserver {
 	}
 
 	/** the changes of a {@link WeldJoint}
-	 *  @since 0.7.0
+	 *  @since 0.7.1
 	 *  @author dermetfan */
 	public static class WeldJointChange extends JointChange<WeldJoint> {
 
@@ -1571,7 +1571,7 @@ public class WorldObserver {
 	}
 
 	/** the changes of a {@link FrictionJoint}
-	 *  @since 0.7.0
+	 *  @since 0.7.1
 	 *  @author dermetfan */
 	public static class FrictionJointChange extends JointChange<FrictionJoint> {
 
@@ -1635,7 +1635,7 @@ public class WorldObserver {
 	}
 
 	/** the changes of a {@link RopeJoint}
-	 *  @since 0.7.0
+	 *  @since 0.7.1
 	 *  @author dermetfan */
 	public static class RopeJointChange extends JointChange<RopeJoint> {
 
@@ -1680,7 +1680,7 @@ public class WorldObserver {
 	}
 
 	/** the changes of a {@link MotorJoint}
-	 *  @since 0.7.0
+	 *  @since 0.7.1
 	 *  @author dermetfan */
 	public static class MotorJointChange extends JointChange<MotorJoint> {
 
