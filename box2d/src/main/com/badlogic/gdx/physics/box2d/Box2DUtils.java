@@ -36,10 +36,7 @@ public class Box2DUtils {
 
 	/** @return a hash code of the given long */
 	public static int hashCode(long n) {
-		int c1 = 37;
-		int c2 = 17;
-		int result = (int) (n ^ (n >>> 32));
-		return c1 * result + c2;
+		return 37 * (int) (n ^ n >>> 32) + 17;
 	}
 
 	/** @return a hash code of the given body, constructed from the body's hash code and the hash code of its {@link #getAddr(Body) address} */
@@ -49,12 +46,14 @@ public class Box2DUtils {
 
 	/** @return a hash code of the given fixture, constructed from the fixture's hash code and the hash code of its {@link #getAddr(Fixture) address} */
 	public static int hashCode(Fixture fixture) {
-		return 31 * fixture.hashCode() + hashCode(fixture.getBody());
+		int result = 31 * fixture.hashCode() + hashCode(getAddr(fixture));
+		result = 31 * result + hashCode(fixture.getBody());
+		return result;
 	}
 
 	/** @return a hash code of the given joint, constructed from the joint's hash code and the hash code of its {@link #getAddr(Joint) address} */
 	public static int hashCode(Joint joint) {
-		int result = 31 * joint.hashCode() + hashCode(joint.addr);
+		int result = 31 * joint.hashCode() + hashCode(getAddr(joint));
 		result = 31 * result + hashCode(joint.getBodyA());
 		result = 31 * result + hashCode(joint.getBodyB());
 		return result;
