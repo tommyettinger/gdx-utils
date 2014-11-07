@@ -14,7 +14,7 @@
 
 package com.badlogic.gdx.physics.box2d;
 
-/** placed in this package to have access to the package-private {@code addr} fields
+/** placed in this package to have access to the protected {@code addr} fields
  *  @since 0.6.0
  *  @author dermetfan */
 public class Box2DUtils {
@@ -54,7 +54,7 @@ public class Box2DUtils {
 
 	/** @return a hash code of the given joint, constructed from the joint's hash code and the hash code of its {@link #getAddr(Joint) address} */
 	public static int hashCode(Joint joint) {
-		int result = joint.hashCode();
+		int result = 31 * joint.hashCode() + hashCode(joint.addr);
 		result = 31 * result + hashCode(joint.getBodyA());
 		result = 31 * result + hashCode(joint.getBodyB());
 		return result;
