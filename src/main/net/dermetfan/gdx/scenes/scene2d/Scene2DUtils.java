@@ -22,6 +22,12 @@ import com.badlogic.gdx.scenes.scene2d.Group;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 
+import static com.badlogic.gdx.scenes.scene2d.utils.Align.bottom;
+import static com.badlogic.gdx.scenes.scene2d.utils.Align.left;
+import static com.badlogic.gdx.scenes.scene2d.utils.Align.right;
+import static com.badlogic.gdx.scenes.scene2d.utils.Align.top;
+import static com.badlogic.gdx.scenes.scene2d.utils.Align.center;
+
 /** provides useful methods for scene2d
  *  @author dermetfan */
 public class Scene2DUtils {
@@ -68,14 +74,18 @@ public class Scene2DUtils {
 	}
 
 	/** @param pos the position
-	 *  @param actor the actor to which coordinate system to convert */
+	 *  @param actor the actor to which coordinate system to convert
+	 *  @deprecated use {@link Actor#stageToLocalCoordinates(Vector2)} */
+	@Deprecated
 	public static Vector2 stageToLocalCoordinates(Vector2 pos, Actor actor) {
 		if(actor == actor.getStage().getRoot())
 			return pos;
 		return actor.getStage().getRoot().localToDescendantCoordinates(actor, pos);
 	}
 
-	/** @see #stageToLocalCoordinates(Vector2, Actor)  */
+	/** @see #stageToLocalCoordinates(Vector2, Actor)
+	 *  @deprecated use {@link Actor#stageToLocalCoordinates(Vector2)} */
+	@Deprecated
 	public static Vector2 stageToLocalCoordinates(float x, float y, Actor actor) {
 		return stageToLocalCoordinates(tmp.set(x, y), actor);
 	}
@@ -122,6 +132,26 @@ public class Scene2DUtils {
 	public static Vector2 pointerPosition(Stage stage, int pointer) {
 		tmp.set(Gdx.input.getX(pointer), Gdx.input.getY(pointer));
 		stage.screenToStageCoordinates(tmp);
+		return tmp;
+	}
+
+	/** @param width the width of the area
+	 *  @param height the height of the area
+	 *  @param align the {@link com.badlogic.gdx.scenes.scene2d.utils.Align Align} flag
+	 *  @return the aligned local position
+	 *  @since 0.8.0 */
+	public static Vector2 align(float width, float height, int align) {
+		tmp.setZero();
+		if((align & center) == center)
+			tmp.set(width / 2, height / 2);
+		if((align & right) == right)
+			tmp.x = width;
+		if((align & left) == left)
+			tmp.x = 0;
+		if((align & top) == top)
+			tmp.y = height;
+		if((align & bottom) == bottom)
+			tmp.y = 0;
 		return tmp;
 	}
 
