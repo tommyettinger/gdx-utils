@@ -17,6 +17,8 @@ package net.dermetfan.gdx.scenes.scene2d.ui.popup;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Event;
 import com.badlogic.gdx.scenes.scene2d.EventListener;
+import com.badlogic.gdx.scenes.scene2d.InputEvent;
+import com.badlogic.gdx.utils.Pools;
 import net.dermetfan.gdx.scenes.scene2d.ui.popup.Popup.Behavior.Reaction;
 
 /** Shows {@link #popup} on certain events.
@@ -52,10 +54,26 @@ public class Popup<T extends Actor> implements EventListener {
 		this.behavior = behavior;
 	}
 
+	/** @see #show(Event) */
+	public boolean show() {
+		Event dummy = Pools.obtain(InputEvent.class);
+		boolean result = show(dummy);
+		Pools.free(dummy);
+		return result;
+	}
+
 	/** Makes the {@link #popup} {@link Actor#setVisible(boolean) visible} and brings it to {@link Actor#toFront() front}. Override this for custom behaviour.
 	 *  @return if the event is handled */
 	public boolean show(Event event) {
 		return behavior.show(event, this);
+	}
+
+	/** @see #hide(Event) */
+	public boolean hide() {
+		Event dummy = Pools.obtain(InputEvent.class);
+		boolean result = hide(dummy);
+		Pools.free(dummy);
+		return result;
 	}
 
 	/** Makes the {@link #popup} {@link Actor#setVisible(boolean) invisible}. Override this for custom behavior.

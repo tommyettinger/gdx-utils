@@ -35,9 +35,9 @@ public class Scene2DUtils {
 	/** Some methods return this, so if you get your hands on it make sure to make a copy! This is used internally so it might change unexpectedly. */
 	private static final Vector2 tmp = new Vector2();
 
-	/** @param c the event to copy to
-	 *  @param e the event to copy from */
-	public static void copy(Event c, Event e) {
+	/** @param c the event to copy from
+	 *  @param e the event to copy to */
+	public static void copy(Event e, Event c) {
 		c.setTarget(e.getTarget());
 		c.setStage(e.getStage());
 		c.setCapture(e.isCapture());
@@ -45,8 +45,8 @@ public class Scene2DUtils {
 		c.setListenerActor(e.getListenerActor());
 	}
 
-	/** @see #copy(Event, Event)  */
-	public static void copy(InputEvent c, InputEvent e) {
+	/** @see #copy(Event, Event) */
+	public static void copy(InputEvent e, InputEvent c) {
 		copy((Event) c, e);
 		c.setStageX(e.getStageX());
 		c.setStageY(e.getStageY());
