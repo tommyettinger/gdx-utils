@@ -31,7 +31,7 @@ public class Chain {
 
 	/** used by a {@link Chain} to modify it
 	 *  @author dermetfan */
-	public static interface Builder {
+	public interface Builder {
 
 		/** creates a segment that is going to be added to {@link Chain#segments}
 		 *  @param index the index of the segment to create

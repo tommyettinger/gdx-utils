@@ -239,7 +239,7 @@ public class Breakable {
 
 	/** a callback for a {@link Breakable} if its container (body or fixture) was destroyed (for example to play a sound)
 	 *  @author dermetfan */
-	public static interface Callback {
+	public interface Callback {
 
 		/** called by {@link Manager#strain(Contact, ContactImpulse)}
 		 *  @param fixture the strained fixture

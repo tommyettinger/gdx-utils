@@ -373,7 +373,7 @@ public class CircularGroup extends WidgetGroup {
 	/** @since 0.5.0
 	 *  @author dermetfan
 	 *  @see #modifier */
-	public static interface Modifier {
+	public interface Modifier {
 
 		/** @param defaultAngle the linearly calculated angle of the child for even distribution
 		 *  @return the angle of the child ({@link #angleOffset} will be added to this) */

@@ -98,7 +98,7 @@ public class Box2DMapObjectParser {
 	 *  <strong>Note that the map object given to you is the one directly from the map, so if you modify it, you modify the {@link Map} instance! If you want to avoid that, make a copy.</strong><br>
 	 *  Also listens to Box2D objects that have been created.
 	 *  @author dermetfan */
-	public static interface Listener {
+	public interface Listener {
 
 		/** @param parser the {@link Box2DMapObjectParser} instance that is going to {@link Box2DMapObjectParser#load(World, Map) process} a map */
 		public void init(Box2DMapObjectParser parser);

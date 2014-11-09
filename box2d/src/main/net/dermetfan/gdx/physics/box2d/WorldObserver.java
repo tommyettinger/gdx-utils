@@ -223,7 +223,7 @@ public class WorldObserver {
 	/** the listener notified by a {@link WorldObserver}
 	 *  @since 0.6.0
 	 *  @author dermetfan */
-	public static interface Listener {
+	public interface Listener {
 
 		/** @param observer the WorldObserver this Listener has just been {@link WorldObserver#setListener(Listener) set} on */
 		void setOn(WorldObserver observer);
@@ -498,7 +498,7 @@ public class WorldObserver {
 	/** the changes of an object in a world since the last time {@link #update(Object)} was called
 	 *  @since 0.6.0
 	 *  @author dermetfan */
-	public static interface Change<T> extends Poolable {
+	public interface Change<T> extends Poolable {
 
 		/** @param obj the object to check for changes since the last time this method was called
 		 *  @return if anything changed */

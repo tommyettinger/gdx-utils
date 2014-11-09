@@ -48,7 +48,7 @@ public class CutsceneManager {
 	}
 
 	/** @author dermetfan */
-	public static interface Cutscene {
+	public interface Cutscene {
 
 		/** called by {@link CutsceneManager#start(Cutscene)} */
 		public void init();

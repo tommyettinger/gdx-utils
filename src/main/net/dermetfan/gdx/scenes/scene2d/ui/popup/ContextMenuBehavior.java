@@ -21,7 +21,7 @@ import com.badlogic.gdx.scenes.scene2d.Event;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import net.dermetfan.gdx.scenes.scene2d.EventMultiplexer;
 
-/** The behavior of a classic context menu. Add this to the Popup of the actor that the user should be able to right-click.
+/** The behavior of a classic context menu. Shows and hides but does not position the popup. Add this to the Popup of the actor that the user should be able to right-click.
  *  <strong>Note that this can only hide on events of other actors if it receives them, so consider adding all your context menus to an {@link EventMultiplexer} high up in the hierarchy (e.g. the {@link com.badlogic.gdx.scenes.scene2d.Stage Stage}).</strong>
  *  @author dermetfan
  *  @since 0.8.0 */
@@ -54,7 +54,7 @@ public class ContextMenuBehavior extends BasicBehavior {
 			else if(event.getKeyCode() == Keys.ESCAPE || event.getKeyCode() == Keys.BACK) // escape and back hide
 				return Reaction.HideHandle;
 		}
-		return Reaction.None;
+		return null;
 	}
 
 	// getters and setters
