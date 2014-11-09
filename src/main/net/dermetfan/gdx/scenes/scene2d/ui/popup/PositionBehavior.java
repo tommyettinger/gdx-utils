@@ -225,6 +225,13 @@ public class PositionBehavior extends Behavior.Adapter {
 		/** the offset */
 		private float x, y;
 
+		/** @param x the {@link #x}
+		 *  @param y the {@link #y} */
+		public OffsetPosition(float x, float y) {
+			this.x = x;
+			this.y = y;
+		}
+
 		/** @return the {@link #x} */
 		public float getX() {
 			return x;
@@ -248,6 +255,37 @@ public class PositionBehavior extends Behavior.Adapter {
 		@Override
 		public void apply(Event event, Actor popup) {
 			popup.setPosition(popup.getX() + x, popup.getY() + y);
+		}
+
+	}
+
+	/** offsets the position by aligning it using the popup's size
+	 *  @since 0.8.0
+	 *  @author dermetfan */
+	public static class AlignedOffsetPosition implements Position {
+
+		/** the {@link com.badlogic.gdx.scenes.scene2d.utils.Align Align} flag */
+		private int align;
+
+		/** @param align the {@link #align} */
+		public AlignedOffsetPosition(int align) {
+			this.align = align;
+		}
+
+		/** @return the {@link #align} */
+		public int getAlign() {
+			return align;
+		}
+
+		/** @param align the {@link #align} to set */
+		public void setAlign(int align) {
+			this.align = align;
+		}
+
+		@Override
+		public void apply(Event event, Actor popup) {
+			Vector2 offset = Scene2DUtils.align(popup.getWidth(), popup.getHeight(), align);
+			popup.setPosition(popup.getX() - offset.x, popup.getY() - offset.y);
 		}
 
 	}
