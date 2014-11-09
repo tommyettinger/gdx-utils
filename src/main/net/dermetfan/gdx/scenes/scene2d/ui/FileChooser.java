@@ -30,7 +30,7 @@ public abstract class FileChooser extends Table {
 
 	/** called by a {@link ListFileChooser}
 	 *  @author dermetfan */
-	public static interface Listener {
+	public interface Listener {
 
 		/** called when a single file was chosen */
 		public void choose(FileHandle file);

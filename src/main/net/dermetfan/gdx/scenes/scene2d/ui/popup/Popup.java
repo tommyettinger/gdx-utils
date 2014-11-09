@@ -25,14 +25,14 @@ import net.dermetfan.gdx.scenes.scene2d.ui.popup.Popup.Behavior.Reaction;
 public class Popup<T extends Actor> implements EventListener {
 
 	/** @param popup the possibly ascendant popup
-	 *  @param target the event target
+	 *  @param child the possible popup child
 	 *  @return whether the given Actor is the {@link Popup#popup popup} of the given or Popup or a child {@link Popup} of the given Popup */
-	public static boolean isAscendantOf(Popup popup, Actor target) {
-		if(popup.getPopup() == target)
+	public static boolean isAscendantOf(Popup popup, Actor child) {
+		if(popup.getPopup() == child)
 			return true;
 		for(EventListener listener : popup.getPopup().getListeners()) {
 			if(listener instanceof Popup) {
-				if(isAscendantOf((Popup) listener, target))
+				if(isAscendantOf((Popup) listener, child))
 					return true;
 			}
 		}
@@ -45,9 +45,6 @@ public class Popup<T extends Actor> implements EventListener {
 	/** the Behavior to delegate to */
 	private Behavior behavior;
 
-	/** if the context menu is currently showing */
-	private boolean showing;
-
 	/** @param popup the {@link #popup}
 	 *  @param behavior the {@link #behavior}*/
 	public Popup(T popup, Behavior behavior) {
@@ -56,23 +53,15 @@ public class Popup<T extends Actor> implements EventListener {
 	}
 
 	/** Makes the {@link #popup} {@link Actor#setVisible(boolean) visible} and brings it to {@link Actor#toFront() front}. Override this for custom behaviour.
-	 *  @return if the event is handled, true by default (suggestive) */
+	 *  @return if the event is handled */
 	public boolean show(Event event) {
-		if(!showing) {
-			showing = true;
-			return behavior.show(event, this);
-		}
-		return false;
+		return behavior.show(event, this);
 	}
 
 	/** Makes the {@link #popup} {@link Actor#setVisible(boolean) invisible}. Override this for custom behavior.
-	 *  @return if the event is handled, false by default (suggestive) */
+	 *  @return if the event is handled */
 	public boolean hide(Event event) {
-		if(showing) {
-			showing = false;
-			return behavior.hide(event, this);
-		}
-		return false;
+		return behavior.hide(event, this);
 	}
 
 	/** @see Behavior#handle(Event) */
@@ -120,11 +109,6 @@ public class Popup<T extends Actor> implements EventListener {
 	/** @param behavior the {@link #behavior} to set */
 	public void setBehavior(Behavior behavior) {
 		this.behavior = behavior;
-	}
-
-	/** @return the {@link #showing} */
-	public boolean isShowing() {
-		return showing;
 	}
 
 	/** what to do in the Popup methods

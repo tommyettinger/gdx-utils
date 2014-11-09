@@ -44,7 +44,7 @@ public class PositionBehavior extends Behavior.Adapter {
 
 	/** @since 0.8.0
 	 *  @author dermetfan */
-	public static interface Position {
+	public interface Position {
 
 		/** @param event the event
 		 *  @param popup the popup which position to set */

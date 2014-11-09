@@ -116,7 +116,7 @@ public class MouseJointAdapter extends InputAdapter {
 
 	/** called on {@link MouseJointAdapter#touchDown(int, int, int, int) touchDown}, {@link MouseJointAdapter#touchDragged(int, int, int) touchDragged} and {@link MouseJointAdapter#touchUp(int, int, int, int) touchUp}
 	 *  @author dermetfan */
-	public static interface Listener {
+	public interface Listener {
 
 		/** @return true to cancel the creation of the {@link MouseJointAdapter#joint joint} */
 		public boolean touched(Fixture fixture, Vector2 position);
