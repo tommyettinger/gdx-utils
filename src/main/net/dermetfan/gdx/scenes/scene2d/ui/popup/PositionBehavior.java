@@ -31,6 +31,7 @@ public class PositionBehavior extends Behavior.Adapter {
 	/** the Position to {@link Position#apply(Event, Actor) apply} */
 	private Position position;
 
+	/** @param position the {@link #position} */
 	public PositionBehavior(Position position) {
 		this.position = position;
 	}
@@ -40,6 +41,18 @@ public class PositionBehavior extends Behavior.Adapter {
 	public boolean show(Event event, Popup popup) {
 		position.apply(event, popup.getPopup());
 		return super.show(event, popup);
+	}
+
+	// getters and setters
+
+	/** @return the {@link #position} */
+	public Position getPosition() {
+		return position;
+	}
+
+	/** @param position the {@link #position} to set */
+	public void setPosition(Position position) {
+		this.position = position;
 	}
 
 	/** @since 0.8.0
