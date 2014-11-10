@@ -60,7 +60,8 @@ import static net.dermetfan.gdx.maps.tiled.TmxMapWriter.Format.Base64Zlib;
 import static net.dermetfan.gdx.maps.tiled.TmxMapWriter.Format.CSV;
 import static net.dermetfan.gdx.maps.tiled.TmxMapWriter.Format.XML;
 
-/** an {@link XmlWriter} with additional {@link #tmx(Map, Format) tmx(..)} methods
+/** A {@link XmlWriter} with additional {@link #tmx(Map, Format) tmx(..)} methods.
+ * 	<strong>Note:</strong> Not available in GWT.
  *  @author dermetfan */
 public class TmxMapWriter extends XmlWriter {
 

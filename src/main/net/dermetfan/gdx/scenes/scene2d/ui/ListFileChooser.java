@@ -40,11 +40,11 @@ import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.scenes.scene2d.utils.Drawable;
 import com.badlogic.gdx.scenes.scene2d.utils.Selection;
 import com.badlogic.gdx.utils.Array;
+import com.badlogic.gdx.utils.GdxRuntimeException;
 import com.badlogic.gdx.utils.Json;
 import com.badlogic.gdx.utils.Json.Serializable;
 import com.badlogic.gdx.utils.JsonValue;
 import com.badlogic.gdx.utils.Pools;
-import com.badlogic.gdx.utils.reflect.ClassReflection;
 
 /** A {@link TextField} showing the {@link #pathField} of the currently browsed folder with {@link #backButton} and {@link #parentButton} buttons.
  *  There's a {@link #contentsPane scrollable} {@link List} under those showing the contents of the currently browsed folder and {@link #chooseButton} and {@link #cancelButton} buttons.
@@ -274,15 +274,19 @@ public class ListFileChooser extends FileChooser {
 
 	/** populates {@link #contents} with the children of {@link #directory} */
 	protected void scan(FileHandle dir) {
-		File[] files = dir.file().listFiles(handlingFileFilter);
-		String[] names = new String[files.length];
-		for(int i = 0; i < files.length; i++) {
-			String name = files[i].getName();
-			if(files[i].isDirectory())
-				name += File.separator;
-			names[i] = name;
+		try {
+			FileHandle[] files = dir.list(handlingFileFilter);
+			String[] names = new String[files.length];
+			for(int i = 0; i < files.length; i++) {
+				String name = files[i].name();
+				if(files[i].isDirectory())
+					name += File.separator;
+				names[i] = name;
+			}
+			contents.setItems(names);
+		} catch(GdxRuntimeException ignore) {
+			Gdx.app.error("ListFileChooser", " cannot read " + dir);
 		}
-		contents.setItems(names);
 	}
 
 	/** @return the file currently selected in {@link #contents} */
@@ -299,15 +303,12 @@ public class ListFileChooser extends FileChooser {
 
 	/** sets {@link #directory} and updates all things that need to be udpated */
 	public void setDirectory(FileHandle dir, boolean addToHistory) {
-		if(dir.file().canRead()) {
-			FileHandle loc = dir.isDirectory() ? dir : dir.parent();
-			if(addToHistory)
-				fileHistory.add(Gdx.files.absolute(dir.path()));
-			scan(directory = loc);
-			pathField.setText(loc.path());
-			pathField.setCursorPosition(pathField.getText().length());
-		} else
-			Gdx.app.error(ClassReflection.getSimpleName(ListFileChooser.class), " cannot read " + dir);
+		FileHandle loc = dir.isDirectory() ? dir : dir.parent();
+		if(addToHistory)
+			fileHistory.add(Gdx.files.absolute(dir.path()));
+		scan(directory = loc);
+		pathField.setText(loc.path());
+		pathField.setCursorPosition(pathField.getText().length());
 	}
 
 	/** @return the {@link #backButton} */
