@@ -52,6 +52,7 @@ public class Popup<T extends Actor> implements EventListener {
 	public Popup(T popup, Behavior behavior) {
 		this.popup = popup;
 		this.behavior = behavior;
+		behavior.setOn(this);
 	}
 
 	/** @see #show(Event) */
@@ -126,7 +127,9 @@ public class Popup<T extends Actor> implements EventListener {
 
 	/** @param behavior the {@link #behavior} to set */
 	public void setBehavior(Behavior behavior) {
+		this.behavior.removedFrom(this);
 		this.behavior = behavior;
+		behavior.setOn(this);
 	}
 
 	/** what to do in the Popup methods
@@ -146,6 +149,14 @@ public class Popup<T extends Actor> implements EventListener {
 		 *  @param popup the Popup this Behavior is attached to
 		 *  @return what to do */
 		Reaction handle(Event event, Popup popup);
+
+		/** called from {@link #setBehavior(Behavior)}
+		 *  @param popup the Popup this Behavior was set on */
+		void setOn(Popup popup);
+
+		/** called from {@link #setBehavior(Behavior)}
+		 *  @param popup the Popup this Behavior was removed from */
+		void removedFrom(Popup popup);
 
 		/** @since 0.8.0
 		 *  @author dermetfan
@@ -194,6 +205,12 @@ public class Popup<T extends Actor> implements EventListener {
 			public Reaction handle(Event event, Popup popup) {
 				return null;
 			}
+
+			@Override
+			public void setOn(Popup popup) {}
+
+			@Override
+			public void removedFrom(Popup popup) {}
 
 		}
 

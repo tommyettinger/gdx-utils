@@ -81,4 +81,16 @@ public class BehaviorMultiplexer extends Multiplexer<Behavior> implements Behavi
 		return reaction;
 	}
 
+	@Override
+	public void setOn(Popup popup) {
+		for(Behavior receiver : receivers)
+			receiver.setOn(popup);
+	}
+
+	@Override
+	public void removedFrom(Popup popup) {
+		for(Behavior receiver : receivers)
+			receiver.removedFrom(popup);
+	}
+
 }
