@@ -24,12 +24,12 @@ public class StringUtils {
 		if(string.isEmpty())
 			return string;
 		StringBuilder result = new StringBuilder(string.length());
-		if(Character.isJavaIdentifierStart(string.charAt(0)))
+		if(isJavaIdentifierStart(string.charAt(0)))
 			result.append(string.charAt(0));
 		boolean nextUpperCase = false;
 		for(int i = 1, n = string.length(); i < n; i++) {
 			char c = string.charAt(i);
-			if(Character.isJavaIdentifierPart(c)) {
+			if(isJavaIdentifierPart(c)) {
 				if(nextUpperCase) {
 					c = Character.toUpperCase(c);
 					nextUpperCase = false;
@@ -39,6 +39,30 @@ public class StringUtils {
 				nextUpperCase = true;
 		}
 		return result.toString();
+	}
+
+	/** for GWT compatibility
+	 *  @see Character#isJavaIdentifierStart(char) */
+	public static boolean isJavaIdentifierStart(char c) {
+		return isJavaIdentifierStart((int) c);
+	}
+
+	/** for GWT compatibility
+	 *  @see Character#isJavaIdentifierStart(int) */
+	public static boolean isJavaIdentifierStart(int codePoint) {
+		return codePoint >= 'a' && codePoint <= 'z' || codePoint >= 'A' && codePoint <= 'Z' || codePoint == '$' || codePoint == 'µ' || codePoint >= 'À' && codePoint <= 'Ö' || codePoint >= 'Ø' && codePoint <= 'ö' || codePoint >= 'ø' && codePoint <= 'ÿ';
+	}
+
+	/** for GWT compatibility
+	 *  @see Character#isJavaIdentifierPart(char) */
+	public static boolean isJavaIdentifierPart(char c) {
+		return isJavaIdentifierPart((int) c);
+	}
+
+	/** for GWT compatibility
+	 *  @see Character#isJavaIdentifierPart(int) */
+	public static boolean isJavaIdentifierPart(int codePoint) {
+		return isJavaIdentifierStart(codePoint) || codePoint >= '0' && codePoint <= '9';
 	}
 
 	/** @param index the index of the character to replace

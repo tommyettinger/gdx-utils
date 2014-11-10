@@ -102,8 +102,8 @@ public class TreeFileChooser extends FileChooser {
 
 					if(expanded && !childrenAdded) {
 						if(filter != null)
-							for(File child : file.file().listFiles(filter))
-								add(fileNode(file.child(child.getName()), filter, labelSupplier, nodeConsumer));
+							for(FileHandle child : file.list(filter))
+								add(fileNode(file.child(child.name()), filter, labelSupplier, nodeConsumer));
 						else
 							for(FileHandle child : file.list())
 								add(fileNode(child, filter, labelSupplier, nodeConsumer));

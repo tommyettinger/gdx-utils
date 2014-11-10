@@ -796,7 +796,7 @@ public class Box2DUtils extends com.badlogic.gdx.physics.box2d.Box2DUtils {
 		case MotorJoint:
 			return createDef((MotorJoint) joint);
 		case Unknown:
-			return set(new JointDef(), joint);
+			return null; // set(new JointDef(), joint); // GWT backend JointDef is abstract
 		}
 		return null;
 	}
