@@ -16,7 +16,6 @@ package net.dermetfan.gdx.scenes.scene2d.ui.popup;
 
 import com.badlogic.gdx.Input.Buttons;
 import com.badlogic.gdx.Input.Keys;
-import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Event;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import net.dermetfan.gdx.scenes.scene2d.EventMultiplexer;
@@ -29,12 +28,7 @@ import net.dermetfan.gdx.scenes.scene2d.ui.popup.Popup.Behavior;
 public class ContextMenuBehavior extends Behavior.Adapter {
 
 	/** The Actor this context menu is added to. Needed to hide on events on other Actors. */
-	private Actor target;
-
-	/** @param target the {@link #target} */
-	public ContextMenuBehavior(Actor target) {
-		this.target = target;
-	}
+	private Popup popup;
 
 	/** {@link Reaction#ShowHandle Shows} on right click and menu key press. Hides on left click, escape key and back key.
 	 * 	Note that this will not hide on clicks on other actors except the {@link Event#getListenerActor()}'s children. */
@@ -45,12 +39,12 @@ public class ContextMenuBehavior extends Behavior.Adapter {
 		InputEvent event = (InputEvent) e;
 		switch(event.getType()) {
 		case touchDown:
-			if(event.getButton() == Buttons.RIGHT && event.getTarget() == target)
+			if(event.getButton() == Buttons.RIGHT && event.getTarget().getListeners().contains(this.popup, true))
 				return Reaction.ShowHandle; // right click shows
 			else if(!Popup.isAscendantOf(popup, event.getTarget())) // don't hide on clicks on this or child popups
 				return Reaction.Hide; // other clicks hide
 		case keyDown:
-			if(event.getKeyCode() == Keys.MENU && event.getTarget() == target) // menu key shows
+			if(event.getKeyCode() == Keys.MENU && event.getTarget().getListeners().contains(this.popup, true)) // menu key shows
 				return Reaction.ShowHandle;
 			else if(event.getKeyCode() == Keys.ESCAPE || event.getKeyCode() == Keys.BACK) // escape and back hide
 				return Reaction.HideHandle;
@@ -58,16 +52,9 @@ public class ContextMenuBehavior extends Behavior.Adapter {
 		return null;
 	}
 
-	// getters and setters
-
-	/** @return the {@link #target} */
-	public Actor getTarget() {
-		return target;
-	}
-
-	/** @param target the {@link #target} to set */
-	public void setTarget(Actor target) {
-		this.target = target;
+	@Override
+	public void setOn(Popup popup) {
+		this.popup = popup;
 	}
 
 }
