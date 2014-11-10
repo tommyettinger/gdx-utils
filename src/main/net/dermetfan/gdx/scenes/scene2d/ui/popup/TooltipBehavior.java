@@ -50,7 +50,7 @@ public class TooltipBehavior extends Behavior.Adapter {
 	/** the flags that define when to hide, show or cancel the tooltip */
 	private int showFlags = mask << enter.ordinal(), hideFlags = mask << touchDown.ordinal() | mask << touchUp.ordinal() | mask << exit.ordinal(), cancelFlags = mask << touchDown.ordinal() | mask << exit.ordinal();
 
-	/** the delay before {@link Popup#} */
+	/** the delay before {@link Popup#show(Event)}/{@link Popup#hide(Event)} */
 	private float showDelay = .75f, hideDelay;
 
 	@Override
