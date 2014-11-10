@@ -27,7 +27,7 @@ import net.dermetfan.gdx.scenes.scene2d.ui.popup.Popup.Behavior;
  *  @since 0.8.0 */
 public class ContextMenuBehavior extends Behavior.Adapter {
 
-	/** The Actor this context menu is added to. Needed to hide on events on other Actors. */
+	/** the Popup this context menu is set on */
 	private Popup popup;
 
 	/** {@link Reaction#ShowHandle Shows} on right click and menu key press. Hides on left click, escape key and back key.
