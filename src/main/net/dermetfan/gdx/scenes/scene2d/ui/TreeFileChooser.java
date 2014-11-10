@@ -284,9 +284,9 @@ public class TreeFileChooser extends FileChooser {
 
 	/** @param tree the {@link #tree} to set */
 	public void setTree(Tree tree) {
-		if(tree == null)
-			throw new IllegalArgumentException("tree must not be null");
-		this.tree = tree;
+		this.tree.removeListener(treeListener);
+		(this.tree = tree).addListener(treeListener);
+		treePane.setWidget(tree);
 	}
 
 	/** @return the {@link #treePane} */
@@ -296,6 +296,7 @@ public class TreeFileChooser extends FileChooser {
 
 	/** @param treePane the {@link #treePane} to set */
 	public void setTreePane(ScrollPane treePane) {
+		treePane.setWidget(tree);
 		getCell(this.treePane).setActor(this.treePane = treePane);
 	}
 
@@ -306,6 +307,7 @@ public class TreeFileChooser extends FileChooser {
 
 	/** @param chooseButton the {@link #chooseButton} to set */
 	public void setChooseButton(Button chooseButton) {
+		this.chooseButton.removeListener(chooseButtonListener);
 		chooseButton.addListener(chooseButtonListener);
 		getCell(this.chooseButton).setActor(this.chooseButton = chooseButton);
 	}
@@ -317,6 +319,7 @@ public class TreeFileChooser extends FileChooser {
 
 	/** @param cancelButton the {@link #cancelButton} to set */
 	public void setCancelButton(Button cancelButton) {
+		this.cancelButton.removeListener(cancelButtonListener);
 		cancelButton.addListener(cancelButtonListener);
 		getCell(this.cancelButton).setActor(this.cancelButton = cancelButton);
 	}
