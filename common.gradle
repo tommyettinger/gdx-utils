@@ -5,7 +5,7 @@ buildscript {
 
 ext {
 	libName = 'libgdx-utils'
-	nameAppendix = project != rootProject ? project.name : ''
+	nameAppendix = project == rootProject ? '' : (project.parent != rootProject ? project.parent.nameAppendix + '-' : '') + project.name
 	nameFull = libName + (nameAppendix.empty ? '' : "-$nameAppendix")
 	libgdxVersion = '1.4.1'
 }
