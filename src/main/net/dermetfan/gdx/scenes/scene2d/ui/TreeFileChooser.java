@@ -263,18 +263,6 @@ public class TreeFileChooser extends FileChooser {
 		add(cancelButton).fill();
 	}
 
-	/** @return the {@link #tree} */
-	public Tree getTree() {
-		return tree;
-	}
-
-	/** @param tree the {@link #tree} to set */
-	public void setTree(Tree tree) {
-		if(tree == null)
-			throw new IllegalArgumentException("tree must not be null");
-		this.tree = tree;
-	}
-
 	/** @return the {@link #style} */
 	public Style getStyle() {
 		return style;
@@ -287,6 +275,50 @@ public class TreeFileChooser extends FileChooser {
 		tree.setStyle(style.treeStyle);
 		chooseButton.setStyle(style.selectButtonStyle);
 		cancelButton.setStyle(style.cancelButtonStyle);
+	}
+
+	/** @return the {@link #tree} */
+	public Tree getTree() {
+		return tree;
+	}
+
+	/** @param tree the {@link #tree} to set */
+	public void setTree(Tree tree) {
+		if(tree == null)
+			throw new IllegalArgumentException("tree must not be null");
+		this.tree = tree;
+	}
+
+	/** @return the {@link #treePane} */
+	public ScrollPane getTreePane() {
+		return treePane;
+	}
+
+	/** @param treePane the {@link #treePane} to set */
+	public void setTreePane(ScrollPane treePane) {
+		getCell(this.treePane).setActor(this.treePane = treePane);
+	}
+
+	/** @return the {@link #chooseButton} */
+	public Button getChooseButton() {
+		return chooseButton;
+	}
+
+	/** @param chooseButton the {@link #chooseButton} to set */
+	public void setChooseButton(Button chooseButton) {
+		chooseButton.addListener(chooseButtonListener);
+		getCell(this.chooseButton).setActor(this.chooseButton = chooseButton);
+	}
+
+	/** @return the {@link #cancelButton} */
+	public Button getCancelButton() {
+		return cancelButton;
+	}
+
+	/** @param cancelButton the {@link #cancelButton} to set */
+	public void setCancelButton(Button cancelButton) {
+		cancelButton.addListener(cancelButtonListener);
+		getCell(this.cancelButton).setActor(this.cancelButton = cancelButton);
 	}
 
 	/** defines styles for the widgets of a {@link TreeFileChooser}
