@@ -95,6 +95,11 @@ public abstract class FileChooser extends Table {
 		this.fileFilter = fileFilter;
 	}
 
+	/** @return the {@link #handlingFileFilter} */
+	public FileFilter getHandlingFileFilter() {
+		return handlingFileFilter;
+	}
+
 	/** @return the {@link #showHidden} */
 	public boolean isShowHidden() {
 		return showHidden;
