@@ -20,16 +20,17 @@ import com.badlogic.gdx.scenes.scene2d.InputEvent.Type;
 import com.badlogic.gdx.utils.Timer;
 import com.badlogic.gdx.utils.Timer.Task;
 import net.dermetfan.gdx.scenes.scene2d.Scene2DUtils;
+import net.dermetfan.gdx.scenes.scene2d.ui.popup.Popup.Behavior;
 
 import static com.badlogic.gdx.scenes.scene2d.InputEvent.Type.enter;
 import static com.badlogic.gdx.scenes.scene2d.InputEvent.Type.exit;
 import static com.badlogic.gdx.scenes.scene2d.InputEvent.Type.touchDown;
 import static com.badlogic.gdx.scenes.scene2d.InputEvent.Type.touchUp;
 
-/** the Behavior of a classic tooltip
+/** The Behavior of a classic tooltip. Does nothing in {@link #show(Event, Popup)} and {@link #hide(Event, Popup)}.
  *  @since 0.8.0
  *  @author dermetfan */
-public class TooltipBehavior extends BasicBehavior {
+public class TooltipBehavior extends Behavior.Adapter {
 
 	/** the mask bits */
 	public static final byte mask = 1;
