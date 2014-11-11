@@ -56,6 +56,9 @@ public class CircularGroup extends WidgetGroup {
 	/** allows advanced modification of each child's angle */
 	private Modifier modifier;
 
+	/** whether children shall be shrinked by the difference between preferred and actual size if the actual size is smaller */
+	private boolean shrinkChildren = true;
+
 	/** the DragManager used to make this group rotatable by dragging and to apply velocity */
 	private final DragManager dragManager = new DragManager();
 
@@ -104,7 +107,7 @@ public class CircularGroup extends WidgetGroup {
 		super.drawDebug(shapes);
 		shapes.set(ShapeType.Line);
 		shapes.setColor(Color.CYAN);
-		shapes.circle(getX() + getWidth() / 2 * getScaleX(), getY() + getHeight() / 2 * getScaleY(), getWidth() / 2 * getScaleX());
+		shapes.ellipse(getX(), getY(), getWidth() * getScaleX(), getHeight() * getScaleY());
 		SnapshotArray<Actor> children = getChildren();
 		for(int index = 0; index < children.size; index++) {
 			Actor child = children.get(index);
@@ -218,6 +221,7 @@ public class CircularGroup extends WidgetGroup {
 
 	@Override
 	public void layout() {
+		float prefWidthUnderflow = shrinkChildren ? Math.max(0, getPrefWidth() - getWidth()) / 2 : 0, prefHeightUnderflow = shrinkChildren ? Math.max(0, getPrefHeight() - getHeight()) / 2 : 0;
 		SnapshotArray<Actor> children = getChildren();
 		for(int index = 0; index < children.size; index++) {
 			Actor child = children.get(index);
@@ -226,11 +230,11 @@ public class CircularGroup extends WidgetGroup {
 			float width, height;
 			if(child instanceof Layout) {
 				Layout childLayout = (Layout) child;
-				width = childLayout.getPrefWidth();
+				width = childLayout.getPrefWidth() - prefWidthUnderflow;
 				width = Math.max(width, childLayout.getMinWidth());
 				if(childLayout.getMaxWidth() != 0)
 					width = Math.min(width, childLayout.getMaxWidth());
-				height = childLayout.getPrefHeight();
+				height = childLayout.getPrefHeight() - prefHeightUnderflow;
 				height = Math.max(height, childLayout.getMinHeight());
 				if(childLayout.getMaxHeight() != 0)
 					height = Math.min(height, childLayout.getMaxHeight());
@@ -363,6 +367,16 @@ public class CircularGroup extends WidgetGroup {
 			throw new IllegalArgumentException("modifier must not be null");
 		this.modifier = modifier;
 		invalidateHierarchy();
+	}
+
+	/** @return the {@link #shrinkChildren} */
+	public boolean isShrinkChildren() {
+		return shrinkChildren;
+	}
+
+	/** @param shrinkChildren the {@link #shrinkChildren} to set */
+	public void setShrinkChildren(boolean shrinkChildren) {
+		this.shrinkChildren = shrinkChildren;
 	}
 
 	/** @return the {@link #dragManager} */
