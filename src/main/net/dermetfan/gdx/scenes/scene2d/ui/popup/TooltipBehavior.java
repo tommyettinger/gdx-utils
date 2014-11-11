@@ -14,6 +14,7 @@
 
 package net.dermetfan.gdx.scenes.scene2d.ui.popup;
 
+import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.scenes.scene2d.Event;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.InputEvent.Type;
@@ -24,10 +25,11 @@ import net.dermetfan.gdx.scenes.scene2d.ui.popup.Popup.Behavior;
 
 import static com.badlogic.gdx.scenes.scene2d.InputEvent.Type.enter;
 import static com.badlogic.gdx.scenes.scene2d.InputEvent.Type.exit;
+import static com.badlogic.gdx.scenes.scene2d.InputEvent.Type.mouseMoved;
 import static com.badlogic.gdx.scenes.scene2d.InputEvent.Type.touchDown;
 import static com.badlogic.gdx.scenes.scene2d.InputEvent.Type.touchUp;
 
-/** The Behavior of a classic tooltip. Does nothing in {@link #show(Event, Popup)} and {@link #hide(Event, Popup)}.
+/** The Behavior of a classic tooltip. Does nothing in {@link #show(Event, Popup)} and {@link #hide(Event, Popup)}. Hides on {@link Keys#ESCAPE escape}.
  *  @author dermetfan
  *  @since 0.8.0 */
 public class TooltipBehavior extends Behavior.Adapter {
@@ -45,8 +47,11 @@ public class TooltipBehavior extends Behavior.Adapter {
 		}
 	};
 
-	/** the flags that define when to hide, show or cancel the tooltip */
-	private int showFlags = 1 << enter.ordinal(), hideFlags = 1 << touchDown.ordinal() | 1 << touchUp.ordinal() | 1 << exit.ordinal(), cancelFlags = 1 << touchDown.ordinal() | 1 << exit.ordinal();
+	/** the events that define when to show, hide or cancel the tooltip in the form {@code 1 << type.ordinal()} */
+	private int showEvents = 1 << enter.ordinal(), hideEvents = 1 << touchDown.ordinal() | 1 << touchUp.ordinal() | 1 << exit.ordinal(), cancelEvents = 1 << touchDown.ordinal() | 1 << exit.ordinal();
+
+	/** the events that require the {@link Popup#popup} to be added to the {@link Event#getTarget() event target} */
+	private int targetPopupShowEvents = 1 << enter.ordinal() | 1 << exit.ordinal(), targetPopupHideEvents = 1 << mouseMoved.ordinal(), targetPopupCancelEvents;
 
 	/** the delay before {@link Popup#show(Event)}/{@link Popup#hide(Event)} */
 	private float showDelay = .75f, hideDelay;
@@ -57,15 +62,19 @@ public class TooltipBehavior extends Behavior.Adapter {
 			return super.handle(e, popup);
 		InputEvent event = (InputEvent) e;
 
+		Type type = event.getType();
+		int flag = 1 << type.ordinal();
+
+		if(type == Type.keyDown && event.getKeyCode() == Keys.ESCAPE && ((targetPopupHideEvents & flag) != flag || event.getTarget().getListeners().contains(popup, true)))
+			return Reaction.Hide;
+
 		if(event.getRelatedActor() == popup.getPopup())
 			return super.handle(e, popup);
 
-		int flag = 1 << event.getType().ordinal();
-
-		if((cancelFlags & flag) == flag)
+		if((cancelEvents & flag) == flag && ((targetPopupCancelEvents & flag) != flag || event.getTarget().getListeners().contains(popup, true)))
 			showTask.cancel();
 
-		if((hideFlags & flag) == flag) {
+		if((hideEvents & flag) == flag && ((targetPopupHideEvents & flag) != flag || event.getTarget().getListeners().contains(popup, true))) {
 			if(hideDelay > 0) {
 				hideTask.init(event, popup);
 				if(!hideTask.isScheduled())
@@ -74,7 +83,7 @@ public class TooltipBehavior extends Behavior.Adapter {
 				return Reaction.Hide;
 		}
 
-		if((showFlags & flag) == flag) {
+		if((showEvents & flag) == flag && ((targetPopupShowEvents & flag) != flag || event.getTarget().getListeners().contains(popup, true))) {
 			if(showDelay > 0) {
 				showTask.init(event, popup);
 				if(!showTask.isScheduled())
@@ -85,40 +94,40 @@ public class TooltipBehavior extends Behavior.Adapter {
 		return super.handle(e, popup);
 	}
 
-	/** @param flag the {@link Type} on which to show the tooltip
-	 *  @return the new value of {@link #showFlags} */
-	public int showOn(Type flag) {
-		return showFlags |= 1 << flag.ordinal();
+	/** @param event the {@link Type} on which to show the tooltip
+	 *  @return the new value of {@link #showEvents} */
+	public int showOn(Type event) {
+		return showEvents |= 1 << event.ordinal();
 	}
 
-	/** @param flag the {@link Type} on which not to show the tooltip
-	 *  @return the new value of {@link #showFlags} */
-	public int showNotOn(Type flag) {
-		return showFlags &= ~(1 << flag.ordinal());
+	/** @param event the {@link Type} on which not to show the tooltip
+	 *  @return the new value of {@link #showEvents} */
+	public int showNotOn(Type event) {
+		return showEvents &= ~(1 << event.ordinal());
 	}
 
-	/** @param flag the {@link Type} on which to hide the tooltip
-	 *  @return the new value of {@link #hideFlags} */
-	public int hideOn(Type flag) {
-		return hideFlags |= 1 << flag.ordinal();
+	/** @param event the {@link Type} on which to hide the tooltip
+	 *  @return the new value of {@link #hideEvents} */
+	public int hideOn(Type event) {
+		return hideEvents |= 1 << event.ordinal();
 	}
 
-	/** @param flag the {@link Type} on which not to hide the tooltip
-	 *  @return the new value of {@link #hideFlags} */
-	public int hideNotOn(Type flag) {
-		return hideFlags &= ~(1 << flag.ordinal());
+	/** @param event the {@link Type} on which not to hide the tooltip
+	 *  @return the new value of {@link #hideEvents} */
+	public int hideNotOn(Type event) {
+		return hideEvents &= ~(1 << event.ordinal());
 	}
 
-	/** @param flag the {@link Type} on which to cancel showing the tooltip
-	 *  @return the new value of {@link #cancelFlags} */
-	public int cancelOn(Type flag) {
-		return cancelFlags |= 1 << flag.ordinal();
+	/** @param event the {@link Type} on which to cancel showing the tooltip
+	 *  @return the new value of {@link #cancelEvents} */
+	public int cancelOn(Type event) {
+		return cancelEvents |= 1 << event.ordinal();
 	}
 
-	/** @param flag the {@link Type} on which to not cancel showing the tooltip
-	 *  @return the new value of {@link #cancelFlags} */
-	public int cancelNotOn(Type flag) {
-		return cancelFlags &= ~(1 << flag.ordinal());
+	/** @param event the {@link Type} on which to not cancel showing the tooltip
+	 *  @return the new value of {@link #cancelEvents} */
+	public int cancelNotOn(Type event) {
+		return cancelEvents &= ~(1 << event.ordinal());
 	}
 
 	/** @param delay the {@link #showDelay} and {@link #hideDelay} */
@@ -146,34 +155,64 @@ public class TooltipBehavior extends Behavior.Adapter {
 		this.hideDelay = hideDelay;
 	}
 
-	/** @return the {@link #showFlags} */
-	public int getShowFlags() {
-		return showFlags;
+	/** @return the {@link #showEvents} */
+	public int getShowEvents() {
+		return showEvents;
 	}
 
-	/** @param showFlags the {@link #showFlags} to set */
-	public void setShowFlags(int showFlags) {
-		this.showFlags = showFlags;
+	/** @param showEvents the {@link #showEvents} to set */
+	public void setShowEvents(int showEvents) {
+		this.showEvents = showEvents;
 	}
 
-	/** @return the {@link #hideFlags} */
-	public int getHideFlags() {
-		return hideFlags;
+	/** @return the {@link #hideEvents} */
+	public int getHideEvents() {
+		return hideEvents;
 	}
 
-	/** @param hideFlags the {@link #hideFlags} to set */
-	public void setHideFlags(int hideFlags) {
-		this.hideFlags = hideFlags;
+	/** @param hideEvents the {@link #hideEvents} to set */
+	public void setHideEvents(int hideEvents) {
+		this.hideEvents = hideEvents;
 	}
 
-	/** @return the {@link #cancelFlags} */
-	public int getCancelFlags() {
-		return cancelFlags;
+	/** @return the {@link #cancelEvents} */
+	public int getCancelEvents() {
+		return cancelEvents;
 	}
 
-	/** @param cancelFlags the {@link #cancelFlags} to set */
-	public void setCancelFlags(int cancelFlags) {
-		this.cancelFlags = cancelFlags;
+	/** @param cancelEvents the {@link #cancelEvents} to set */
+	public void setCancelEvents(int cancelEvents) {
+		this.cancelEvents = cancelEvents;
+	}
+
+	/** @return the {@link #targetPopupShowEvents} */
+	public int getTargetPopupShowEvents() {
+		return targetPopupShowEvents;
+	}
+
+	/** @param targetPopupShowEvents the {@link #targetPopupShowEvents} to set */
+	public void setTargetPopupShowEvents(int targetPopupShowEvents) {
+		this.targetPopupShowEvents = targetPopupShowEvents;
+	}
+
+	/** @return the {@link #targetPopupHideEvents} */
+	public int getTargetPopupHideEvents() {
+		return targetPopupHideEvents;
+	}
+
+	/** @param targetPopupHideEvents the {@link #targetPopupHideEvents} to set */
+	public void setTargetPopupHideEvents(int targetPopupHideEvents) {
+		this.targetPopupHideEvents = targetPopupHideEvents;
+	}
+
+	/** @return the {@link #targetPopupCancelEvents} */
+	public int getTargetPopupCancelEvents() {
+		return targetPopupCancelEvents;
+	}
+
+	/** @param targetPopupCancelEvents the {@link #targetPopupCancelEvents} to set */
+	public void setTargetPopupCancelEvents(int targetPopupCancelEvents) {
+		this.targetPopupCancelEvents = targetPopupCancelEvents;
 	}
 
 	/** used internally to call {@link Popup#show(Event)} or {@link Popup#hide(Event)}
