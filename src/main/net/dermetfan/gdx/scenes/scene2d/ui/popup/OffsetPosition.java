@@ -19,8 +19,8 @@ import com.badlogic.gdx.scenes.scene2d.Event;
 import net.dermetfan.gdx.scenes.scene2d.ui.popup.PositionBehavior.Position;
 
 /** offsets the popup by a certain amount
- *  @since 0.8.0
- *  @author dermetfan */
+ *  @author dermetfan
+ *  @since 0.8.0 */
 public class OffsetPosition implements Position {
 
 	/** the offset */

@@ -133,8 +133,8 @@ public class Popup<T extends Actor> implements EventListener {
 	}
 
 	/** what to do in the Popup methods
-	 *  @since 0.8.0
-	 *  @author dermetfan */
+	 *  @author dermetfan
+	 *  @since 0.8.0 */
 	public interface Behavior {
 
 		/** @param event the Event to handle
@@ -158,8 +158,8 @@ public class Popup<T extends Actor> implements EventListener {
 		 *  @param popup the Popup this Behavior was removed from */
 		void removedFrom(Popup popup);
 
-		/** @since 0.8.0
-		 *  @author dermetfan
+		/** @author dermetfan
+		 *  @since 0.8.0
 		 *  @see Behavior#handle(Event) */
 		public enum Reaction {
 
@@ -184,8 +184,8 @@ public class Popup<T extends Actor> implements EventListener {
 		}
 
 		/** Does nothing. Override this if you want to override only some methods.
-		 *  @since 0.8.0
-		 *  @author dermetfan */
+		 *  @author dermetfan
+		 *  @since 0.8.0 */
 		public class Adapter implements Behavior {
 
 			/** @return {@code true} */

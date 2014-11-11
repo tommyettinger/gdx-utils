@@ -15,8 +15,8 @@
 package com.badlogic.gdx.physics.box2d;
 
 /** GWT emulation for Box2DUtils
- *  @since 0.8.0
- *  @author dermetfan */
+ *  @author dermetfan
+ *  @since 0.8.0 */
 public class Box2DUtils {
 
 	/** @return {@code 0} */

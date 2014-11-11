@@ -42,8 +42,8 @@ import static net.dermetfan.gdx.physics.box2d.Box2DUtils.width;
 
 /** A {@link Box2DPolygonSprite} is a {@link PolygonSprite} with additional drawing information and the ability to draw itself on a given {@link Body} or {@link Fixture}.
  *  It is supposed to be put in the user data of {@link Fixture Fixtures} or {@link Body Bodies}. Because geometrical information about bodies cannot be cached, it is faster to put Box2DPolygonSprites in the user data of Fixtures.
- *  @since 0.5.0
- *  @author dermetfan */
+ *  @author dermetfan
+ *  @since 0.5.0 */
 public class Box2DPolygonSprite extends PolygonSprite {
 
 	/** for internal, temporary usage */

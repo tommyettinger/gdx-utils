@@ -20,8 +20,8 @@ import com.badlogic.gdx.scenes.scene2d.actions.Actions;
 import net.dermetfan.gdx.scenes.scene2d.ui.popup.Popup.Behavior;
 
 /** fades in/out in {@link #show(Event, Popup)}/{@link #hide(Event, Popup)}
- *  @since 0.8.0
- *  @author dermetfan */
+ *  @author dermetfan
+ *  @since 0.8.0 */
 public class FadeBehavior extends Behavior.Adapter {
 
 	/** the fade duration */

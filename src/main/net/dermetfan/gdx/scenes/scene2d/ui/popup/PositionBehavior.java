@@ -50,8 +50,8 @@ public class PositionBehavior extends Behavior.Adapter {
 		this.position = position;
 	}
 
-	/** @since 0.8.0
-	 *  @author dermetfan */
+	/** @author dermetfan
+	 *  @since 0.8.0 */
 	public interface Position {
 
 		/** @param event the event

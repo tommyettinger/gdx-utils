@@ -20,8 +20,8 @@ import net.dermetfan.gdx.Multiplexer;
 import net.dermetfan.gdx.scenes.scene2d.ui.popup.Popup.Behavior;
 
 /** a Multiplexer for Behaviors
- *  @since 0.8.0
- *  @author dermetfan */
+ *  @author dermetfan
+ *  @since 0.8.0 */
 public class BehaviorMultiplexer extends Multiplexer<Behavior> implements Behavior {
 
 	public BehaviorMultiplexer() {}

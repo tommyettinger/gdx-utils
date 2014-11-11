@@ -19,8 +19,8 @@ import com.badlogic.gdx.utils.FloatArray;
 import com.badlogic.gdx.utils.IntArray;
 
 /** array utility methods
- *  @since 0.5.0
- *  @author dermetfan */
+ *  @author dermetfan
+ *  @since 0.5.0 */
 public class ArrayUtils extends net.dermetfan.utils.ArrayUtils {
 
 	/** @see #wrapIndex(int, Object[]) */

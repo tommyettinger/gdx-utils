@@ -15,8 +15,8 @@
 package net.dermetfan.utils;
 
 /** utility methods for operations on Strings
- *  @since 0.6.0
- *  @author dermetfan */
+ *  @author dermetfan
+ *  @since 0.6.0 */
 public class StringUtils {
 
 	/** @param string the String to convert to a valid java identifier, as far as possible */
