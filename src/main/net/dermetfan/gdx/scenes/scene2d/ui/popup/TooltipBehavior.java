@@ -20,6 +20,7 @@ import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.InputEvent.Type;
 import com.badlogic.gdx.utils.Timer;
 import com.badlogic.gdx.utils.Timer.Task;
+import net.dermetfan.gdx.scenes.scene2d.EventMultiplexer;
 import net.dermetfan.gdx.scenes.scene2d.Scene2DUtils;
 import net.dermetfan.gdx.scenes.scene2d.ui.popup.Popup.Behavior;
 
@@ -30,6 +31,7 @@ import static com.badlogic.gdx.scenes.scene2d.InputEvent.Type.touchDown;
 import static com.badlogic.gdx.scenes.scene2d.InputEvent.Type.touchUp;
 
 /** The Behavior of a classic tooltip. Does nothing in {@link #show(Event, Popup)} and {@link #hide(Event, Popup)}. Hides on {@link Keys#ESCAPE escape}.
+ *  Add the Popup using this TooltipBehavior to an {@link EventMultiplexer} high in the hierarchy (e.g. on the Stage) to make sure events on other Actors are received so that the TooltipBehavior can hide properly.
  *  @author dermetfan
  *  @since 0.8.0 */
 public class TooltipBehavior extends Behavior.Adapter {
@@ -76,7 +78,8 @@ public class TooltipBehavior extends Behavior.Adapter {
 	/** @param showEvents the {@link #showEvents}
 	 *  @param hideEvents the {@link #hideEvents} */
 	public TooltipBehavior(int showEvents, int hideEvents) {
-
+		this.showEvents = showEvents;
+		this.hideEvents = hideEvents;
 	}
 
 	/** @param showEvents the {@link #showEvents}
