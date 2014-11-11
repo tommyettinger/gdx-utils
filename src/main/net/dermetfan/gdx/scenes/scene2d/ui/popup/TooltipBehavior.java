@@ -56,6 +56,39 @@ public class TooltipBehavior extends Behavior.Adapter {
 	/** the delay before {@link Popup#show(Event)}/{@link Popup#hide(Event)} */
 	private float showDelay = .75f, hideDelay;
 
+	/** @param delay see {@link #setDelay(float)} */
+	public TooltipBehavior(float delay) {
+		setDelay(delay);
+	}
+
+	/** @param showDelay the {@link #showDelay}
+	 *  @param hideDelay the {@link #hideDelay} */
+	public TooltipBehavior(float showDelay, float hideDelay) {
+		this.showDelay = showDelay;
+		this.hideDelay = hideDelay;
+	}
+
+
+	/** @param showEvents the {@link #showEvents} */
+	public TooltipBehavior(int showEvents) {
+		this.showEvents = showEvents;
+	}
+
+	/** @param showEvents the {@link #showEvents}
+	 *  @param hideEvents the {@link #hideEvents} */
+	public TooltipBehavior(int showEvents, int hideEvents) {
+
+	}
+
+	/** @param showEvents the {@link #showEvents}
+	 *  @param hideEvents the {@link #hideEvents}
+	 *  @param cancelEvents the {@link #cancelEvents} */
+	public TooltipBehavior(int showEvents, int hideEvents, int cancelEvents) {
+		this.showEvents = showEvents;
+		this.hideEvents = hideEvents;
+		this.cancelEvents = cancelEvents;
+	}
+
 	@Override
 	public Reaction handle(Event e, Popup popup) {
 		if(!(e instanceof InputEvent))
