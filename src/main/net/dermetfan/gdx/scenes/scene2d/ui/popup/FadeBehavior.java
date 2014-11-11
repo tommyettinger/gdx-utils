@@ -24,11 +24,55 @@ import net.dermetfan.gdx.scenes.scene2d.ui.popup.Popup.Behavior;
  *  @since 0.8.0 */
 public class FadeBehavior extends Behavior.Adapter {
 
-	/** the fade duration */
+	/** the fade duration (default is 0.4) */
 	private float fadeInDuration = .4f, fadeOutDuration = .4f;
 
-	/** the fade interpolation */
+	/** the fade interpolation (default is {@code Interpolation.fade}) */
 	private Interpolation fadeInInterpolation = Interpolation.fade, fadeOutInterpolation = Interpolation.fade;
+
+	/** creates a FadeBehavior with the default values */
+	public FadeBehavior() {}
+
+	/** @param fadeDuration the {@link #fadeInDuration} and {@code #fadeOutDuration} */
+	public FadeBehavior(float fadeDuration) {
+		this(fadeDuration, fadeDuration);
+	}
+
+	/** @param fadeInterpolation the {@link #fadeInInterpolation} and {@link #fadeOutInterpolation} */
+	public FadeBehavior(Interpolation fadeInterpolation) {
+		this(fadeInterpolation, fadeInterpolation);
+	}
+
+	/** @param fadeDuration the {@link #fadeInDuration} and {@link #fadeOutDuration}
+	 *  @param fadeInterpolation the {@link #fadeInInterpolation} and {@link #fadeOutInterpolation} */
+	public FadeBehavior(float fadeDuration, Interpolation fadeInterpolation) {
+		this(fadeDuration, fadeDuration, fadeInterpolation, fadeInterpolation);
+	}
+
+	/** @param fadeInDuration the {@link #fadeInDuration}
+	 *  @param fadeOutDuration the {@link #fadeOutDuration} */
+	public FadeBehavior(float fadeInDuration, float fadeOutDuration) {
+		this.fadeInDuration = fadeInDuration;
+		this.fadeOutDuration = fadeOutDuration;
+	}
+
+	/** @param fadeInInterpolation the {@link #fadeInInterpolation}
+	 *  @param fadeOutInterpolation the {@link #fadeOutInterpolation} */
+	public FadeBehavior(Interpolation fadeInInterpolation, Interpolation fadeOutInterpolation) {
+		this.fadeInInterpolation = fadeInInterpolation;
+		this.fadeOutInterpolation = fadeOutInterpolation;
+	}
+
+	/** @param fadeInDuration the {@link #fadeInDuration}
+	 *  @param fadeOutDuration the {@link #fadeOutDuration}
+	 *  @param fadeInInterpolation the {@link #fadeInInterpolation}
+	 *  @param fadeOutInterpolation the {@link #fadeOutInterpolation} */
+	public FadeBehavior(float fadeInDuration, float fadeOutDuration, Interpolation fadeInInterpolation, Interpolation fadeOutInterpolation) {
+		this.fadeInDuration = fadeInDuration;
+		this.fadeOutDuration = fadeOutDuration;
+		this.fadeInInterpolation = fadeInInterpolation;
+		this.fadeOutInterpolation = fadeOutInterpolation;
+	}
 
 	@Override
 	public boolean show(Event event, Popup popup) {
