@@ -23,33 +23,19 @@ import net.dermetfan.gdx.scenes.scene2d.ui.popup.Popup.Behavior;
  *  @author dermetfan */
 public class BasicBehavior extends Behavior.Adapter {
 
-	/** if the popup is currently being shown */
-	private boolean showing;
-
 	/** calls {@link Actor#setVisible(boolean) setVisible(true)} and {@link Actor#toFront() toFront()} on the {@link Popup#popup} */
 	@Override
 	public boolean show(Event event, Popup popup) {
-		if(!showing) {
-			popup.getPopup().setVisible(true);
-			popup.getPopup().toFront();
-			showing = true;
-		}
+		popup.getPopup().setVisible(true);
+		popup.getPopup().toFront();
 		return true;
 	}
 
 	/** calls {@link Actor#setVisible(boolean) setVisible(false)} on the {@link Popup#popup} */
 	@Override
 	public boolean hide(Event event, Popup popup) {
-		if(showing) {
-			popup.getPopup().setVisible(false);
-			showing = false;
-		}
+		popup.getPopup().setVisible(false);
 		return false;
-	}
-
-	/** @return the {@link #showing} */
-	public boolean isShowing() {
-		return showing;
 	}
 
 }
