@@ -68,7 +68,6 @@ public class TooltipBehavior extends Behavior.Adapter {
 		this.hideDelay = hideDelay;
 	}
 
-
 	/** @param showEvents the {@link #showEvents} */
 	public TooltipBehavior(int showEvents) {
 		this.showEvents = showEvents;
