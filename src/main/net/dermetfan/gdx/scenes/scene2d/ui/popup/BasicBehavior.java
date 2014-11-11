@@ -19,8 +19,8 @@ import com.badlogic.gdx.scenes.scene2d.Event;
 import net.dermetfan.gdx.scenes.scene2d.ui.popup.Popup.Behavior;
 
 /** basic popup behavior that does not react to events
- *  @since 0.8.0
- *  @author dermetfan */
+ *  @author dermetfan
+ *  @since 0.8.0 */
 public class BasicBehavior extends Behavior.Adapter {
 
 	/** calls {@link Actor#setVisible(boolean) setVisible(true)} and {@link Actor#toFront() toFront()} on the {@link Popup#popup} */

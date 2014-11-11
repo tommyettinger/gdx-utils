@@ -28,13 +28,11 @@ import static com.badlogic.gdx.scenes.scene2d.InputEvent.Type.touchDown;
 import static com.badlogic.gdx.scenes.scene2d.InputEvent.Type.touchUp;
 
 /** The Behavior of a classic tooltip. Does nothing in {@link #show(Event, Popup)} and {@link #hide(Event, Popup)}.
- *  @since 0.8.0
- *  @author dermetfan */
+ *  @author dermetfan
+ *  @since 0.8.0 */
 public class TooltipBehavior extends Behavior.Adapter {
 
-	/** the mask bits */
-	public static final byte mask = 1;
-
+	/** the Task calling {@link Popup#show(Event)}/{@link Popup#hide(Event)} */
 	private final PopupTask showTask = new PopupTask() {
 		@Override
 		public void run() {
@@ -48,7 +46,7 @@ public class TooltipBehavior extends Behavior.Adapter {
 	};
 
 	/** the flags that define when to hide, show or cancel the tooltip */
-	private int showFlags = mask << enter.ordinal(), hideFlags = mask << touchDown.ordinal() | mask << touchUp.ordinal() | mask << exit.ordinal(), cancelFlags = mask << touchDown.ordinal() | mask << exit.ordinal();
+	private int showFlags = 1 << enter.ordinal(), hideFlags = 1 << touchDown.ordinal() | 1 << touchUp.ordinal() | 1 << exit.ordinal(), cancelFlags = 1 << touchDown.ordinal() | 1 << exit.ordinal();
 
 	/** the delay before {@link Popup#show(Event)}/{@link Popup#hide(Event)} */
 	private float showDelay = .75f, hideDelay;
@@ -62,7 +60,7 @@ public class TooltipBehavior extends Behavior.Adapter {
 		if(event.getRelatedActor() == popup.getPopup())
 			return super.handle(e, popup);
 
-		int flag = mask << event.getType().ordinal();
+		int flag = 1 << event.getType().ordinal();
 
 		if((cancelFlags & flag) == flag)
 			showTask.cancel();
@@ -87,64 +85,40 @@ public class TooltipBehavior extends Behavior.Adapter {
 		return super.handle(e, popup);
 	}
 
-	/** @param flag the {@link Type} on which to show the tooltip */
-	public void showOn(Type flag) {
-		showFlags |= mask << flag.ordinal();
+	/** @param flag the {@link Type} on which to show the tooltip
+	 *  @return the new value of {@link #showFlags} */
+	public int showOn(Type flag) {
+		return showFlags |= 1 << flag.ordinal();
 	}
 
-	/** @param flag the {@link Type} on which not to show the tooltip */
-	public void showNotOn(Type flag) {
-		showFlags &= ~(mask << flag.ordinal());
+	/** @param flag the {@link Type} on which not to show the tooltip
+	 *  @return the new value of {@link #showFlags} */
+	public int showNotOn(Type flag) {
+		return showFlags &= ~(1 << flag.ordinal());
 	}
 
-	/** @param flag the {@link Type} on which to hide the tooltip */
-	public void hideOn(Type flag) {
-		hideFlags |= mask << flag.ordinal();
+	/** @param flag the {@link Type} on which to hide the tooltip
+	 *  @return the new value of {@link #hideFlags} */
+	public int hideOn(Type flag) {
+		return hideFlags |= 1 << flag.ordinal();
 	}
 
-	/** @param flag the {@link Type} on which not to hide the tooltip */
-	public void hideNotOn(Type flag) {
-		hideFlags &= ~(mask << flag.ordinal());
+	/** @param flag the {@link Type} on which not to hide the tooltip
+	 *  @return the new value of {@link #hideFlags} */
+	public int hideNotOn(Type flag) {
+		return hideFlags &= ~(1 << flag.ordinal());
 	}
 
-	/** @param flag the {@link Type} on which to cancel showing the tooltip */
-	public void cancelOn(Type flag) {
-		cancelFlags |= mask << flag.ordinal();
+	/** @param flag the {@link Type} on which to cancel showing the tooltip
+	 *  @return the new value of {@link #cancelFlags} */
+	public int cancelOn(Type flag) {
+		return cancelFlags |= 1 << flag.ordinal();
 	}
 
-	/** @param flag the {@link Type} on which to not cancel showing the tooltip */
-	public void cancelNotOn(Type flag) {
-		cancelFlags &= ~(mask << flag.ordinal());
-	}
-
-	/** never show the tooltip */
-	public void showNever() {
-		showFlags = 0;
-	}
-
-	/** never hide the tooltip */
-	public void hideNever() {
-		hideFlags = 0;
-	}
-
-	/** never cancel showing the tooltip */
-	public void cancelNever() {
-		cancelFlags = 0;
-	}
-
-	/** show the tooltip on any event */
-	public void showAlways() {
-		showFlags = ~0;
-	}
-
-	/** hide the tooltip on any event */
-	public void hideAlways() {
-		hideFlags = ~0;
-	}
-
-	/** cancel showing the tooltip on any event */
-	public void cancelAlways() {
-		cancelFlags = ~0;
+	/** @param flag the {@link Type} on which to not cancel showing the tooltip
+	 *  @return the new value of {@link #cancelFlags} */
+	public int cancelNotOn(Type flag) {
+		return cancelFlags &= ~(1 << flag.ordinal());
 	}
 
 	/** @param delay the {@link #showDelay} and {@link #hideDelay} */
@@ -203,16 +177,21 @@ public class TooltipBehavior extends Behavior.Adapter {
 	}
 
 	/** used internally to call {@link Popup#show(Event)} or {@link Popup#hide(Event)}
-	 *  @since 0.8.0
 	 *  @author dermetfan
+	 *  @since 0.8.0
 	 *  @see #showTask
 	 *  @see #hideTask */
 	private static abstract class PopupTask extends Task {
 
-		protected final Event event = new Event();
+		/** a copy of the received InputEvent */
+		protected final InputEvent event = new InputEvent();
+
+		/** the Popup that received the Event */
 		protected Popup popup;
 
-		public void init(Event event, Popup popup) {
+		/** @param event the InputEvent to copy to {@link #event}
+		 *  @param popup the {@link #popup} */
+		public void init(InputEvent event, Popup popup) {
 			this.event.reset();
 			Scene2DUtils.copy(event, this.event);
 			this.popup = popup;
@@ -221,8 +200,8 @@ public class TooltipBehavior extends Behavior.Adapter {
 	}
 
 	/** provides {@link #followPointer}
-	 *  @since 0.8.0
-	 *  @author dermetfan */
+	 *  @author dermetfan
+	 *  @since 0.8.0 */
 	public static class TooltipPositionBehavior extends PositionBehavior {
 
 		/** whether {@link Type#mouseMoved mouseMoved} events should apply the position */

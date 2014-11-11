@@ -17,8 +17,8 @@ package net.dermetfan.gdx.math;
 import com.badlogic.gdx.utils.FloatArray;
 
 /** MathUtils libGDX backend
- *  @since 0.5.0
  *  @author dermetfan
+ *  @since 0.5.0
  *  @see net.dermetfan.utils.math.MathUtils */
 public class MathUtils extends net.dermetfan.utils.math.MathUtils {
 

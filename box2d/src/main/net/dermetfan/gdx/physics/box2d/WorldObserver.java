@@ -44,8 +44,8 @@ import com.badlogic.gdx.utils.Pool.Poolable;
 import com.badlogic.gdx.utils.Pools;
 
 /** notifies a {@link Listener} of changes in the world
- *  @since 0.6.0
- *  @author dermetfan */
+ *  @author dermetfan
+ *  @since 0.6.0 */
 public class WorldObserver {
 
 	/** The Listener to notify. May be null. */
@@ -221,8 +221,8 @@ public class WorldObserver {
 	}
 
 	/** the listener notified by a {@link WorldObserver}
-	 *  @since 0.6.0
-	 *  @author dermetfan */
+	 *  @author dermetfan
+	 *  @since 0.6.0 */
 	public interface Listener {
 
 		/** @param observer the WorldObserver this Listener has just been {@link WorldObserver#setListener(Listener) set} on */
@@ -272,8 +272,8 @@ public class WorldObserver {
 		void destroyed(Joint joint);
 
 		/** A class that implements Listener. Does nothing. Subclass this if you only want to override some methods.
-		 *  @since 0.7.1
-		 *  @author dermetfan */
+		 *  @author dermetfan
+		 *  @since 0.7.1 */
 		public static class Adapter implements Listener {
 
 			@Override
@@ -324,8 +324,8 @@ public class WorldObserver {
 
 	/** A Listener that calls another Listener on unpredictable/unexpected events.
 	 *  In practice only {@link #changed(Body, BodyChange)} can be predicted and therefore the other methods will be called normally.
-	 *  @since 0.7.1
-	 *  @author dermetfan */
+	 *  @author dermetfan
+	 *  @since 0.7.1 */
 	public static class UnexpectedListener implements Listener {
 
 		/** the Listener to notify */
@@ -444,8 +444,8 @@ public class WorldObserver {
 		}
 
 		/** Only for internal use. Stores the last change of predictable data.
-		 *  @since 0.7.1
-		 *  @author dermetfan */
+		 *  @author dermetfan
+		 *  @since 0.7.1 */
 		private static class ExpectationBase implements Poolable {
 
 			final Transform transform = new Transform();
@@ -470,8 +470,8 @@ public class WorldObserver {
 			}
 
 			/** a Pool for ExpectationBases
-			 *  @since 0.7.1
-			 *  @author dermetfan */
+			 *  @author dermetfan
+			 *  @since 0.7.1 */
 			private static class Pool extends com.badlogic.gdx.utils.Pool<ExpectationBase> {
 
 				public Pool() {}
@@ -496,8 +496,8 @@ public class WorldObserver {
 	}
 
 	/** the changes of an object in a world since the last time {@link #update(Object)} was called
-	 *  @since 0.6.0
-	 *  @author dermetfan */
+	 *  @author dermetfan
+	 *  @since 0.6.0 */
 	public interface Change<T> extends Poolable {
 
 		/** @param obj the object to check for changes since the last time this method was called
@@ -513,8 +513,8 @@ public class WorldObserver {
 	}
 
 	/** the changes of a {@link World}
-	 *  @since 0.6.0
-	 *  @author dermetfan */
+	 *  @author dermetfan
+	 *  @since 0.6.0 */
 	public static class WorldChange implements Change<World> {
 
 		private transient Boolean oldAutoClearForces;
@@ -574,8 +574,8 @@ public class WorldObserver {
 	}
 
 	/** the changes of a {@link Body}
-	 *  @since 0.6.0
-	 *  @author dermetfan */
+	 *  @author dermetfan
+	 *  @since 0.6.0 */
 	public static class BodyChange implements Change<Body> {
 
 		private transient final Transform oldTransform = new Transform();
@@ -938,8 +938,8 @@ public class WorldObserver {
 	}
 
 	/** the changes of a {@link Joint}
-	 *  @since 0.6.0
-	 *  @author dermetfan */
+	 *  @author dermetfan
+	 *  @since 0.6.0 */
 	public static class JointChange<T extends Joint> implements Change<T> {
 
 		/** @return a concrete JointChange from {@link Pools#obtain(Class)} */
@@ -1030,8 +1030,8 @@ public class WorldObserver {
 	}
 
 	/** the changes of a {@link RevoluteJoint}
-	 *  @since 0.7.1
-	 *  @author dermetfan */
+	 *  @author dermetfan
+	 *  @since 0.7.1 */
 	public static class RevoluteJointChange extends JointChange<RevoluteJoint> {
 
 		private transient float oldLowerLimit;
@@ -1118,8 +1118,8 @@ public class WorldObserver {
 	}
 
 	/** the changes of a {@link PrismaticJoint}
-	 *  @since 0.7.1
-	 *  @author dermetfan */
+	 *  @author dermetfan
+	 *  @since 0.7.1 */
 	public static class PrismaticJointChange extends JointChange<PrismaticJoint> {
 
 		private transient float oldLowerLimit;
@@ -1206,8 +1206,8 @@ public class WorldObserver {
 	}
 
 	/** the changes of a {@link DistanceJoint}
-	 *  @since 0.7.1
-	 *  @author dermetfan */
+	 *  @author dermetfan
+	 *  @since 0.7.1 */
 	public static class DistanceJointChange extends JointChange<DistanceJoint> {
 
 		private transient float oldDampingRatio;
@@ -1283,8 +1283,8 @@ public class WorldObserver {
 	}
 
 	/** the changes of a {@link MouseJoint}
-	 *  @since 0.7.1
-	 *  @author dermetfan */
+	 *  @author dermetfan
+	 *  @since 0.7.1 */
 	public static class MouseJointChange extends JointChange<MouseJoint> {
 
 		private transient float oldDampingRatio;
@@ -1372,8 +1372,8 @@ public class WorldObserver {
 	}
 
 	/** the changes of a {@link GearJoint}
-	 *  @since 0.7.1
-	 *  @author dermetfan */
+	 *  @author dermetfan
+	 *  @since 0.7.1 */
 	public static class GearJointChange extends JointChange<GearJoint> {
 
 		private transient float oldRatio;
@@ -1417,8 +1417,8 @@ public class WorldObserver {
 	}
 
 	/** the changes of a {@link WheelJoint}
-	 *  @since 0.7.1
-	 *  @author dermetfan */
+	 *  @author dermetfan
+	 *  @since 0.7.1 */
 	public static class WheelJointChange extends JointChange<WheelJoint> {
 
 		private transient float oldSpringDampingRatio;
@@ -1507,8 +1507,8 @@ public class WorldObserver {
 	}
 
 	/** the changes of a {@link WeldJoint}
-	 *  @since 0.7.1
-	 *  @author dermetfan */
+	 *  @author dermetfan
+	 *  @since 0.7.1 */
 	public static class WeldJointChange extends JointChange<WeldJoint> {
 
 		private transient float oldDampingRatio;
@@ -1571,8 +1571,8 @@ public class WorldObserver {
 	}
 
 	/** the changes of a {@link FrictionJoint}
-	 *  @since 0.7.1
-	 *  @author dermetfan */
+	 *  @author dermetfan
+	 *  @since 0.7.1 */
 	public static class FrictionJointChange extends JointChange<FrictionJoint> {
 
 		private transient float oldMaxForce;
@@ -1635,8 +1635,8 @@ public class WorldObserver {
 	}
 
 	/** the changes of a {@link RopeJoint}
-	 *  @since 0.7.1
-	 *  @author dermetfan */
+	 *  @author dermetfan
+	 *  @since 0.7.1 */
 	public static class RopeJointChange extends JointChange<RopeJoint> {
 
 		private transient float oldMaxLength;
@@ -1680,8 +1680,8 @@ public class WorldObserver {
 	}
 
 	/** the changes of a {@link MotorJoint}
-	 *  @since 0.7.1
-	 *  @author dermetfan */
+	 *  @author dermetfan
+	 *  @since 0.7.1 */
 	public static class MotorJointChange extends JointChange<MotorJoint> {
 
 		private transient float oldMaxForce;

@@ -31,8 +31,8 @@ import net.dermetfan.gdx.scenes.scene2d.ui.CircularGroup.Modifier.Adapter;
 import static net.dermetfan.utils.math.MathUtils.approachZero;
 
 /** a group that aligns its children in a circle
- *  @since 0.5.0
- *  @author dermetfan */
+ *  @author dermetfan
+ *  @since 0.5.0 */
 public class CircularGroup extends WidgetGroup {
 
 	/** The max angle of all children (in degrees). Default is 360. */
@@ -370,8 +370,8 @@ public class CircularGroup extends WidgetGroup {
 		return dragManager;
 	}
 
-	/** @since 0.5.0
-	 *  @author dermetfan
+	/** @author dermetfan
+	 *  @since 0.5.0
 	 *  @see #modifier */
 	public interface Modifier {
 
@@ -393,8 +393,8 @@ public class CircularGroup extends WidgetGroup {
 
 		/** Use this if you only want to override some of {@link Modifier}'s methods.
 		 *  All method implementations return the default value.
-		 *  @since 0.5.0
-		 *  @author dermetfan */
+		 *  @author dermetfan
+		 *  @since 0.5.0 */
 		public static class Adapter implements Modifier {
 
 			@Override
@@ -422,8 +422,8 @@ public class CircularGroup extends WidgetGroup {
 	}
 
 	/** manages dragging and velocity of its enclosing CircularGroup instance
-	 *  @since 0.5.0
-	 *  @author dermetfan */
+	 *  @author dermetfan
+	 *  @since 0.5.0 */
 	public class DragManager extends DragListener {
 
 		/** if the velocity should be applied */

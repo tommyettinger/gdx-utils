@@ -21,8 +21,8 @@ import net.dermetfan.gdx.scenes.scene2d.Scene2DUtils;
 import net.dermetfan.gdx.scenes.scene2d.ui.popup.PositionBehavior.Position;
 
 /** offsets the position by aligning it using the popup's size
- *  @since 0.8.0
- *  @author dermetfan */
+ *  @author dermetfan
+ *  @since 0.8.0 */
 public class AlignedOffsetPosition implements Position {
 
 	/** the {@link com.badlogic.gdx.scenes.scene2d.utils.Align Align} flag */

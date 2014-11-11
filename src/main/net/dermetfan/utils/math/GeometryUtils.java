@@ -17,8 +17,8 @@ package net.dermetfan.utils.math;
 import static net.dermetfan.utils.math.MathUtils.mirror;
 
 /** geometric calculation utility methods
- *  @since 0.5.0
- *  @author dermetfan */
+ *  @author dermetfan
+ *  @since 0.5.0 */
 public class GeometryUtils {
 
 	/** @param x the x of the point to test

@@ -21,8 +21,8 @@ import net.dermetfan.gdx.Multiplexer;
 import net.dermetfan.gdx.scenes.scene2d.ui.popup.PositionBehavior.Position;
 
 /** a Multiplexer for Positions
- *  @since 0.8.0
- *  @author dermetfan */
+ *  @author dermetfan
+ *  @since 0.8.0 */
 public class PositionMultiplexer extends Multiplexer<Position> implements Position {
 
 	public PositionMultiplexer() {}

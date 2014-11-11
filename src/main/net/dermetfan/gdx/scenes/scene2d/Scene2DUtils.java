@@ -47,7 +47,7 @@ public class Scene2DUtils {
 
 	/** @see #copy(Event, Event) */
 	public static void copy(InputEvent e, InputEvent c) {
-		copy((Event) c, e);
+		copy((Event) e, c);
 		c.setStageX(e.getStageX());
 		c.setStageY(e.getStageY());
 		c.setButton(e.getButton());
