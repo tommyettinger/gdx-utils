@@ -30,9 +30,6 @@ public class MenuBehavior extends Behavior.Adapter {
 	/** Bit mask of {@link Buttons} that trigger {@link Reaction#ShowHandle}. Default is {@code 1 << Buttons.LEFT}. */
 	private int showButtons = 1 << Buttons.LEFT;
 
-	/** the Popup this menu is set on */
-	private Popup popup;
-
 	public MenuBehavior() {}
 
 	/** @param showButtons the {@link #showButtons} */
@@ -55,22 +52,17 @@ public class MenuBehavior extends Behavior.Adapter {
 		InputEvent event = (InputEvent) e;
 		switch(event.getType()) {
 		case touchDown:
-			if((1 << event.getButton() & showButtons) == showButtons && event.getTarget().getListeners().contains(this.popup, true))
+			if((1 << event.getButton() & showButtons) == showButtons && event.getTarget().getListeners().contains(popup, true))
 				return Reaction.ShowHandle;
 			else if(!Popup.isAscendantOf(popup, event.getTarget())) // don't hide on clicks on this or child popups
 				return Reaction.Hide;
 		case keyDown:
-			if(event.getKeyCode() == Keys.MENU && event.getTarget().getListeners().contains(this.popup, true)) // menu key shows
+			if(event.getKeyCode() == Keys.MENU && event.getTarget().getListeners().contains(popup, true)) // menu key shows
 				return Reaction.ShowHandle;
 			else if(event.getKeyCode() == Keys.ESCAPE || event.getKeyCode() == Keys.BACK) // escape and back hide
 				return Reaction.HideHandle;
 		}
 		return null;
-	}
-
-	@Override
-	public void setOn(Popup popup) {
-		this.popup = popup;
 	}
 
 	/** @param button the {@link Buttons button} on which {@link InputEvent.Type#touchDown click} to {@link #show(Event, Popup) show}
