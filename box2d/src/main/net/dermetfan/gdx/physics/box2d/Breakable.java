@@ -151,7 +151,7 @@ public class Breakable {
 				return;
 
 			Breakable breakable = userDataAccessor.apply(fixture.getUserData());
-			if(breakable == null || breakable != null && (breakable.callback == null || !breakable.callback.destroyed(fixture, breakable)))
+			if(breakable == null || (breakable.callback == null || !breakable.callback.destroyed(fixture, breakable)))
 				brokenFixtures.add(fixture);
 
 			if(breakable != null) {
@@ -175,7 +175,7 @@ public class Breakable {
 				return;
 
 			Breakable breakable = userDataAccessor.apply(body.getUserData());
-			if(breakable == null || (breakable.callback == null || breakable.callback != null && !breakable.callback.destroyed(body, breakable)))
+			if(breakable == null || (breakable.callback == null || !breakable.callback.destroyed(body, breakable)))
 				brokenBodies.add(body);
 		}
 
@@ -185,7 +185,7 @@ public class Breakable {
 				return;
 
 			Breakable breakable = userDataAccessor.apply(joint.getUserData());
-			if(breakable == null || (breakable.callback == null || breakable.callback != null && !breakable.callback.destroyed(joint, breakable)))
+			if(breakable == null || (breakable.callback == null || !breakable.callback.destroyed(joint, breakable)))
 				brokenJoints.add(joint);
 
 			if(breakable != null && breakable.breakBody) {
