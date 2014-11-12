@@ -19,7 +19,7 @@ import com.badlogic.gdx.scenes.scene2d.Event;
 import com.badlogic.gdx.scenes.scene2d.actions.Actions;
 import net.dermetfan.gdx.scenes.scene2d.ui.popup.Popup.Behavior;
 
-/** fades in/out in {@link #show(Event, Popup)}/{@link #hide(Event, Popup)}
+/** fades in/out in {@link #show(Event, Popup)}/{@link #hide(Event, Popup)} using {@link com.badlogic.gdx.scenes.scene2d.actions.AlphaAction AlphaActions}
  *  @author dermetfan
  *  @since 0.8.0 */
 public class FadeBehavior extends Behavior.Adapter {
@@ -38,7 +38,7 @@ public class FadeBehavior extends Behavior.Adapter {
 		this(fadeDuration, fadeDuration);
 	}
 
-	/** @param fadeInterpolation the {@link #fadeInInterpolation} and {@link #fadeOutInterpolation} */
+	/** @param fadeInterpolation the  */
 	public FadeBehavior(Interpolation fadeInterpolation) {
 		this(fadeInterpolation, fadeInterpolation);
 	}
@@ -76,6 +76,7 @@ public class FadeBehavior extends Behavior.Adapter {
 
 	@Override
 	public boolean show(Event event, Popup popup) {
+		popup.getPopup().toFront();
 		popup.getPopup().addAction(Actions.sequence(Actions.visible(true), Actions.fadeIn(fadeInDuration, fadeInInterpolation)));
 		return super.show(event, popup);
 	}
