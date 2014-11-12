@@ -18,10 +18,10 @@ import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Event;
 import net.dermetfan.gdx.scenes.scene2d.ui.popup.Popup.Behavior;
 
-/** basic popup behavior that does not react to events
+/** shows and hides the popup by settings its visibility
  *  @author dermetfan
  *  @since 0.8.0 */
-public class BasicBehavior extends Behavior.Adapter {
+public class VisibilityBehavior extends Behavior.Adapter {
 
 	/** calls {@link Actor#setVisible(boolean) setVisible(true)} and {@link Actor#toFront() toFront()} on the {@link Popup#popup} */
 	@Override

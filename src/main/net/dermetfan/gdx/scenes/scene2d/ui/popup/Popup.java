@@ -149,7 +149,7 @@ public class Popup<T extends Actor> implements EventListener {
 
 		/** @author dermetfan
 		 *  @since 0.8.0
-		 *  @see Behavior#handle(Event) */
+		 *  @see Behavior#handle(Event, Popup) */
 		public enum Reaction {
 
 			/** call {@link Popup#show(Event)} and {@link Event#handle()} */
