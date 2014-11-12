@@ -67,7 +67,7 @@ public class ListFileChooser extends FileChooser {
 	/** @see #pathFieldListener */
 	private TextField pathField;
 
-	/** shows the {@link File#listFiles() children} of current {@link #directory} */
+	/** shows the {@link FileHandle#list() children} of current {@link #directory} */
 	private List<String> contents;
 
 	/** makes the {@link #contents} scrollable */
