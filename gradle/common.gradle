@@ -59,7 +59,10 @@ jar {
 
 javadoc {
 	title = nameFull
-	options.optionFiles file("$rootProject.projectDir/gradle/javadoc-args")
+	File argFile = file("$rootProject.projectDir/gradle/javadoc-${System.getProperty('java.version').subSequence(0, 3)}-args")
+	if(!argFile.exists())
+		argFile = file("$rootProject.projectDir/gradle/javadoc-args")
+	options.optionFiles argFile
 }
 
 // distribution
