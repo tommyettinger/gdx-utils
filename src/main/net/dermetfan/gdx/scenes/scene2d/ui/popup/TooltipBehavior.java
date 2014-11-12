@@ -58,6 +58,8 @@ public class TooltipBehavior extends Behavior.Adapter {
 	/** the delay before {@link Popup#show(Event)}/{@link Popup#hide(Event)} */
 	private float showDelay = .75f, hideDelay;
 
+	public TooltipBehavior() {}
+
 	/** @param delay see {@link #setDelay(float)} */
 	public TooltipBehavior(float delay) {
 		setDelay(delay);
