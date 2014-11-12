@@ -59,11 +59,7 @@ jar {
 
 javadoc {
 	title = nameFull
-	options {
-		memberLevel = JavadocMemberLevel.PRIVATE
-		author true
-		setUse true
-	}
+	options.optionFiles file("$rootProject.projectDir/gradle/javadoc-args")
 }
 
 // distribution

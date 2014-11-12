@@ -153,14 +153,16 @@ public class WorldObserver {
 		// check for new or updated joints
 		world.getJoints(currentJoints);
 		for(Joint joint : currentJoints) {
-			JointChange jointChange = jointChanges.get(joint);
+			@SuppressWarnings("unchecked")
+			JointChange<Joint> jointChange = jointChanges.get(joint);
 			if(jointChange != null) { // updated
 				if(jointChange.update(joint) && listener != null)
 					listener.changed(joint, jointChange);
 			} else { // new
-				jointChange = JointChange.obtainFor(joint.getType());
-				jointChange.update(joint);
-				jointChanges.put(joint, jointChange);
+				@SuppressWarnings("unchecked")
+				JointChange<Joint> newJointChange = JointChange.obtainFor(joint.getType());
+				newJointChange.update(joint);
+				jointChanges.put(joint, newJointChange);
 				if(listener != null)
 					listener.created(joint);
 			}
@@ -323,7 +325,7 @@ public class WorldObserver {
 	}
 
 	/** A Listener that calls another Listener on unpredictable/unexpected events.
-	 *  In practice only {@link #changed(Body, BodyChange)} can be predicted and therefore the other methods will be called normally.
+	 *  In practice only {@link #changed(Body, WorldObserver.BodyChange)} can be predicted and therefore the other methods will be called normally.
 	 *  @author dermetfan
 	 *  @since 0.7.1 */
 	public static class UnexpectedListener implements Listener {
