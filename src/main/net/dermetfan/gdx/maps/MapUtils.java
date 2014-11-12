@@ -30,6 +30,7 @@ import com.badlogic.gdx.maps.tiled.TiledMapTileSets;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Array;
+import com.badlogic.gdx.utils.StringBuilder;
 import com.badlogic.gdx.utils.reflect.ClassReflection;
 
 /** provides useful methods for dealing with maps
@@ -102,101 +103,101 @@ public class MapUtils {
 	 *  @param indent the indentation size (indent is {@code '\t'})
 	 *  @return a human-readable hierarchy of the given map and its descendants */
 	public static String readableHierarchy(Map map, int indent) {
-		String hierarchy = "";
+		StringBuilder hierarchy = new StringBuilder();
 		for(int i = 0; i < indent; i++)
-			hierarchy += '\t';
-		hierarchy += ClassReflection.getSimpleName(map.getClass()) + '\n';
-		hierarchy += readableHierarchy(map.getProperties(), indent + 1);
+			hierarchy.append('\t');
+		hierarchy.append(ClassReflection.getSimpleName(map.getClass())).append('\n');
+		hierarchy.append(readableHierarchy(map.getProperties(), indent + 1));
 		if(map instanceof TiledMap)
-			hierarchy += readableHierarchy(((TiledMap) map).getTileSets(), indent + 1);
-		hierarchy += readableHierarchy(map.getLayers(), indent + 1);
-		return hierarchy;
+			hierarchy.append(readableHierarchy(((TiledMap) map).getTileSets(), indent + 1));
+		hierarchy.append(readableHierarchy(map.getLayers(), indent + 1));
+		return hierarchy.toString();
 	}
 
 	/** @see #readableHierarchy(com.badlogic.gdx.maps.Map, int) */
 	public static String readableHierarchy(TiledMapTileSets sets, int indent) {
-		String hierarchy = "";
+		StringBuilder hierarchy = new StringBuilder();
 		for(TiledMapTileSet set : sets)
-			hierarchy += readableHierarchy(set, indent);
-		return hierarchy;
+			hierarchy.append(readableHierarchy(set, indent));
+		return hierarchy.toString();
 	}
 
 	/** @see #readableHierarchy(com.badlogic.gdx.maps.Map, int) */
 	public static String readableHierarchy(TiledMapTileSet set, int indent) {
-		String hierarchy = "";
+		StringBuilder hierarchy = new StringBuilder();
 		for(int i = 0; i < indent; i++)
-			hierarchy += '\t';
-		hierarchy += ClassReflection.getSimpleName(set.getClass()) + ' ' + set.getName() + " (" + set.size() + " tiles)\n";
-		hierarchy += readableHierarchy(set.getProperties(), indent + 1);
+			hierarchy.append('\t');
+		hierarchy.append(ClassReflection.getSimpleName(set.getClass())).append(' ').append(set.getName()).append(" (").append(set.size()).append(" tiles)\n");
+		hierarchy.append(readableHierarchy(set.getProperties(), indent + 1));
 		for(TiledMapTile tile : set)
-			hierarchy += readableHierarchy(tile, indent + 1);
-		return hierarchy;
+			hierarchy.append(readableHierarchy(tile, indent + 1));
+		return hierarchy.toString();
 	}
 
 	/** @see #readableHierarchy(com.badlogic.gdx.maps.Map, int) */
 	public static String readableHierarchy(TiledMapTile tile, int indent) {
-		String hierarchy = "";
+		StringBuilder hierarchy = new StringBuilder();
 		for(int i = 0; i < indent; i++)
-			hierarchy += '\t';
-		hierarchy += ClassReflection.getSimpleName(tile.getClass()) + " (ID: " + tile.getId() + ", offset: " + tile.getOffsetX() + 'x' + tile.getOffsetY() + ", BlendMode: " + tile.getBlendMode() + ")\n";
-		hierarchy += readableHierarchy(tile.getProperties(), indent + 1);
-		return hierarchy;
+			hierarchy.append('\t');
+		hierarchy.append(ClassReflection.getSimpleName(tile.getClass())).append(" (ID: ").append(tile.getId()).append(", offset: ").append(tile.getOffsetX()).append('x').append(tile.getOffsetY()).append(", BlendMode: ").append(tile.getBlendMode()).append(")\n");
+		hierarchy.append(readableHierarchy(tile.getProperties(), indent + 1));
+		return hierarchy.toString();
 	}
 
 	/** @see #readableHierarchy(com.badlogic.gdx.maps.Map, int) */
 	public static String readableHierarchy(MapLayers layers, int indent) {
-		String hierarchy = "";
+		StringBuilder hierarchy = new StringBuilder();
 		for(MapLayer layer : layers)
-			hierarchy += readableHierarchy(layer, indent);
-		return hierarchy;
+			hierarchy.append(readableHierarchy(layer, indent));
+		return hierarchy.toString();
 	}
 
 	/** @see #readableHierarchy(com.badlogic.gdx.maps.Map, int) */
 	public static String readableHierarchy(MapLayer layer, int indent) {
-		String hierarchy = "";
+		StringBuilder hierarchy = new StringBuilder();
 		for(int i = 0; i < indent; i++)
-			hierarchy += '\t';
-		hierarchy += ClassReflection.getSimpleName(layer.getClass());
+			hierarchy.append('\t');
+		hierarchy.append(ClassReflection.getSimpleName(layer.getClass()));
 		if(layer instanceof TiledMapTileLayer) {
 			TiledMapTileLayer tileLayer = (TiledMapTileLayer) layer;
-			hierarchy += " (size: " + tileLayer.getWidth() + 'x' + tileLayer.getHeight() + ", tile size: " + tileLayer.getTileWidth() + 'x' + tileLayer.getTileHeight() + ')';
+			hierarchy.append(" (size: ").append(tileLayer.getWidth()).append('x').append(tileLayer.getHeight()).append(", tile size: ").append(tileLayer.getTileWidth()).append('x').append(tileLayer.getTileHeight()).append(')');
 		} else
-			hierarchy += ' ' + layer.getName();
-		hierarchy += '\n';
-		hierarchy += readableHierarchy(layer.getProperties(), indent + 1);
-		hierarchy += readableHierarchy(layer.getObjects(), indent + 1);
-		return hierarchy;
+			hierarchy.append(' ').append(layer.getName());
+		hierarchy.append('\n');
+		hierarchy.append(readableHierarchy(layer.getProperties(), indent + 1));
+		hierarchy.append(readableHierarchy(layer.getObjects(), indent + 1));
+		return hierarchy.toString();
 	}
 
 	/** @see #readableHierarchy(com.badlogic.gdx.maps.Map, int) */
 	public static String readableHierarchy(MapObjects objects, int indent) {
-		String hierarchy = "";
+		StringBuilder hierarchy = new StringBuilder();
 		for(MapObject object : objects)
-			hierarchy += readableHierarchy(object, indent);
-		return hierarchy;
+			hierarchy.append(readableHierarchy(object, indent));
+		return hierarchy.toString();
 	}
 
 	/** @see #readableHierarchy(com.badlogic.gdx.maps.Map, int) */
 	public static String readableHierarchy(MapObject object, int indent) {
-		String hierarchy = "";
+		StringBuilder hierarchy = new StringBuilder();
 		for(int i = 0; i < indent; i++)
-			hierarchy += '\t';
-		hierarchy += ClassReflection.getSimpleName(object.getClass()) + ' ' + object.getName()+ '\n';
-		hierarchy += readableHierarchy(object.getProperties(), indent + 1);
-		return hierarchy;
+			hierarchy.append('\t');
+		hierarchy.append(ClassReflection.getSimpleName(object.getClass())).append(' ').append(object.getName()).append('\n');
+		hierarchy.append(readableHierarchy(object.getProperties(), indent + 1));
+		return hierarchy.toString();
 	}
 
 	/** @see #readableHierarchy(com.badlogic.gdx.maps.Map, int) */
 	public static String readableHierarchy(MapProperties properties, int indent) {
-		String hierarchy = "";
+		StringBuilder hierarchy = new StringBuilder();
 		Iterator<String> keys = properties.getKeys();
 		while(keys.hasNext()) {
 			String key = keys.next();
 			for(int i = 0; i < indent; i++)
-				hierarchy += '\t';
-			hierarchy += key + ": " + properties.get(key).toString() + '\n';
+				hierarchy.append('\t');
+			hierarchy.append(key).append(": ").append(properties.get(key).toString()).append('\n');
 		}
-		return hierarchy;
+		return hierarchy.toString();
 	}
 
 	/** creates an array of TiledMapTiles from a {@link TiledMapTileSet}
