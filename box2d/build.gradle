@@ -1,4 +1,4 @@
-apply from: "$rootProject.projectDir/common.gradle"
+apply from: "$rootProject.projectDir/gradle/common.gradle"
 
 dependencies {
 	compile rootProject

@@ -38,12 +38,12 @@ public class UIUtils extends com.badlogic.gdx.scenes.scene2d.utils.UIUtils {
 		widget.setSize(MathUtils.clamp(widget.getPrefWidth(), widget.getMinWidth(), widget.getMaxWidth() == 0 ? Float.POSITIVE_INFINITY : widget.getMaxWidth()), MathUtils.clamp(widget.getPrefHeight(), widget.getMinHeight(), widget.getMaxHeight() == 0 ? Float.POSITIVE_INFINITY : widget.getMaxHeight()));
 	}
 
-	/** @see #newButton(ButtonStyle, String) */
+	/** @see #newButton(Button.ButtonStyle, String) */
 	public static Button newButton(ButtonStyle style) {
 		return newButton(style, "");
 	}
 
-	/** creates a {@link Button} according to the given {@link ButtonStyle} instance that may be {@link ButtonStyle}, {@link TextButtonStyle}, {@link ImageButtonStyle} or {@link ImageTextButtonStyle} */
+	/** creates a {@link Button} according to the given {@link Button.ButtonStyle} instance that may be {@link Button.ButtonStyle}, {@link TextButton.TextButtonStyle}, {@link ImageButton.ImageButtonStyle} or {@link ImageTextButton.ImageTextButtonStyle} */
 	public static Button newButton(ButtonStyle style, String textIfAny) {
 		if(style instanceof ImageTextButtonStyle)
 			return new ImageTextButton(textIfAny, (ImageTextButtonStyle) style);
@@ -54,7 +54,7 @@ public class UIUtils extends com.badlogic.gdx.scenes.scene2d.utils.UIUtils {
 		return new Button(style);
 	}
 
-	/** Tries to load a {@link TextButtonStyle}, then {@link ImageButtonStyle}, then {@link ImageTextButtonStyle} and then {@link ButtonStyle} using {@link Json#readValue(String, Class, JsonValue)} brutally by catching NPEs. Nasty... */
+	/** Tries to load a {@link TextButton.TextButtonStyle}, then {@link ImageButton.ImageButtonStyle}, then {@link ImageTextButton.ImageTextButtonStyle} and then {@link Button.ButtonStyle} using {@link Json#readValue(String, Class, JsonValue)} brutally by catching NPEs. Nasty... */
 	public static ButtonStyle readButtonStyle(String name, Json json, JsonValue jsonValue) {
 		try {
 			return json.readValue(name, TextButtonStyle.class, jsonValue);

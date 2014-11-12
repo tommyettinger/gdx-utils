@@ -44,24 +44,24 @@ import net.dermetfan.utils.Function;
  *  @author dermetfan */
 public class TreeFileChooser extends FileChooser {
 
-	/** @see #fileNode(FileHandle, LabelStyle, net.dermetfan.utils.Function) */
+	/** @see #fileNode(FileHandle, Label.LabelStyle, Function) */
 	public static Node fileNode(FileHandle file, LabelStyle labelStyle) {
 		return fileNode(file, labelStyle, null);
 	}
 
-	/** @see #fileNode(FileHandle, java.io.FileFilter, LabelStyle, net.dermetfan.utils.Function) */
+	/** @see #fileNode(FileHandle, FileFilter, Label.LabelStyle, Function) */
 	public static Node fileNode(FileHandle file, LabelStyle labelStyle, Function<Void, Node> nodeConsumer) {
 		return fileNode(file, null, labelStyle, nodeConsumer);
 	}
 
-	/** @see #fileNode(FileHandle, java.io.FileFilter, LabelStyle, net.dermetfan.utils.Function) */
+	/** @see #fileNode(FileHandle, FileFilter, Label.LabelStyle, Function) */
 	public static Node fileNode(FileHandle file, FileFilter filter, final LabelStyle labelStyle) {
 		return fileNode(file, filter, labelStyle, null);
 	}
 
 	/** passes an Accessor that creates labels representing the file name (with slash if it's a folder) using the given label style to {@link #fileNode(FileHandle, FileFilter, net.dermetfan.utils.Function, net.dermetfan.utils.Function)} (labelSupplier)
 	 *  @param labelStyle the {@link LabelStyle} to use for created labels
-	 *  @see #fileNode(FileHandle, FileFilter, net.dermetfan.utils.Function, net.dermetfan.utils.Function) */
+	 *  @see #fileNode(FileHandle, FileFilter, Function, Function) */
 	public static Node fileNode(FileHandle file, FileFilter filter, final LabelStyle labelStyle, Function<Void, Node> nodeConsumer) {
 		return fileNode(file, filter, new Function<Label, FileHandle>() {
 			@Override
@@ -78,7 +78,7 @@ public class TreeFileChooser extends FileChooser {
 		}, nodeConsumer);
 	}
 
-	/** @see #fileNode(FileHandle, FileFilter, net.dermetfan.utils.Function, net.dermetfan.utils.Function) */
+	/** @see #fileNode(FileHandle, FileFilter, Function, Function) */
 	public static Node fileNode(FileHandle file, FileFilter filter, Function<Label, FileHandle> labelSupplier) {
 		return fileNode(file, filter, labelSupplier, null);
 	}
@@ -214,7 +214,7 @@ public class TreeFileChooser extends FileChooser {
 
 	/** @param skin the skin to get a {@link Style} from
 	 *  @param listener the {@link #setListener(Listener) listener}
-	 *  @see #TreeFileChooser(Style, Listener) */
+	 *  @see #TreeFileChooser(Style, FileChooser.Listener) */
 	public TreeFileChooser(Skin skin, Listener listener) {
 		this(skin.get(Style.class), listener);
 		setSkin(skin);
@@ -223,7 +223,7 @@ public class TreeFileChooser extends FileChooser {
 	/** @param skin the skin holding the {@link Style} to use
 	 *  @param styleName the {@link Skin#get(String, Class) name} of the {@link Style} to use
 	 *  @param listener the {@link #setListener(Listener) listener}
-	 *  @see #TreeFileChooser(Style, Listener)*/
+	 *  @see #TreeFileChooser(Style, FileChooser.Listener)*/
 	public TreeFileChooser(Skin skin, String styleName, Listener listener) {
 		this(skin.get(styleName, Style.class), listener);
 		setSkin(skin);
@@ -239,7 +239,7 @@ public class TreeFileChooser extends FileChooser {
 	}
 
 	/** @param file the {@link File} to {@link Tree#add(Node) add a root} for
-	 *  @return the added {@link #fileNode(FileHandle, java.io.FileFilter, LabelStyle) file node} */
+	 *  @return the added {@link #fileNode(FileHandle, FileFilter, Label.LabelStyle) file node} */
 	public Node add(FileHandle file) {
 		Node node = fileNode(file, handlingFileFilter, style.labelStyle);
 		tree.add(node);
