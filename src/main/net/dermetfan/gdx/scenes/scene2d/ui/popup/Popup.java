@@ -39,6 +39,13 @@ public class Popup<T extends Actor> implements EventListener {
 		this.behavior = behavior;
 	}
 
+	/** @param behaviors the Behaviors to create a {@link BehaviorMultiplexer} for
+	 *  @since 0.8.2
+	 *  @see #Popup(Actor, Behavior) */
+	public Popup(T popup, Behavior... behaviors) {
+		this(popup, new BehaviorMultiplexer(behaviors));
+	}
+
 	/** @see #show(Event) */
 	public boolean show() {
 		Event dummy = Pools.obtain(InputEvent.class);
