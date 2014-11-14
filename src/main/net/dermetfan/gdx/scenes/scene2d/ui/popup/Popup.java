@@ -67,7 +67,7 @@ public class Popup<T extends Actor> implements EventListener {
 		return behavior.hide(event, this);
 	}
 
-	/** @see Behavior#handle(Event) */
+	/** @see Behavior#handle(Event, Popup) */
 	@Override
 	public boolean handle(Event event) {
 		Reaction reaction = behavior.handle(event, this);
@@ -75,21 +75,14 @@ public class Popup<T extends Actor> implements EventListener {
 			reaction = Reaction.None;
 		switch(reaction) {
 		case ShowHandle:
-			show(event);
-			return true;
 		case Show:
 			show(event);
-			return false;
+			break;
 		case HideHandle:
-			hide(event);
-			return true;
 		case Hide:
 			hide(event);
-			return false;
-		case Handle:
-			return true;
 		}
-		return false;
+		return reaction.handles;
 	}
 
 	/** @param child the possible popup child
@@ -148,23 +141,32 @@ public class Popup<T extends Actor> implements EventListener {
 		 *  @see Behavior#handle(Event, Popup) */
 		public enum Reaction {
 
-			/** call {@link Popup#show(Event)} and {@link Event#handle()} */
-			ShowHandle,
+			/** @see #Show */
+			ShowHandle(true),
 
 			/** call {@link Popup#show(Event)} */
-			Show,
+			Show(false),
 
-			/** call {@link Popup#hide(Event)} and {@link Event#handle()} */
-			HideHandle,
+			/** @see #Hide */
+			HideHandle(true),
 
 			/** call {@link Popup#hide(Event)} */
-			Hide,
+			Hide(false),
 
-			/** call {@link Event#handle()} */
-			Handle,
+			/** @see #None */
+			Handle(true),
 
 			/** do nothing */
-			None
+			None(false);
+
+			/** whether this Reaction {@link Event#handle() handles} the Event
+			 *  @since 0.8.2 */
+			public final boolean handles;
+
+			/** @param handles the {@link #handles} */
+			Reaction(boolean handles) {
+				this.handles = handles;
+			}
 
 		}
 
