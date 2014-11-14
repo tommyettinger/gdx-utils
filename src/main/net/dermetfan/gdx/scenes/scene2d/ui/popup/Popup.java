@@ -26,21 +26,6 @@ import net.dermetfan.gdx.scenes.scene2d.ui.popup.Popup.Behavior.Reaction;
  *  @author dermetfan */
 public class Popup<T extends Actor> implements EventListener {
 
-	/** @param popup the possibly ascendant popup
-	 *  @param child the possible popup child
-	 *  @return whether the given Actor is the {@link Popup#popup popup} of the given or Popup or a child {@link Popup} of the given Popup */
-	public static boolean isAscendantOf(Popup popup, Actor child) {
-		if(popup.getPopup() == child)
-			return true;
-		for(EventListener listener : popup.getPopup().getListeners()) {
-			if(listener instanceof Popup) {
-				if(isAscendantOf((Popup) listener, child))
-					return true;
-			}
-		}
-		return false;
-	}
-
 	/** the {@code T} to pop up */
 	private T popup;
 
@@ -103,6 +88,20 @@ public class Popup<T extends Actor> implements EventListener {
 			return false;
 		case Handle:
 			return true;
+		}
+		return false;
+	}
+
+	/** @param child the possible popup child
+	 *  @return whether the given Actor is the {@link Popup#popup popup} of this or a child {@link Popup} */
+	public boolean isAscendantOf(Actor child) {
+		if(getPopup() == child)
+			return true;
+		for(EventListener listener : getPopup().getListeners()) {
+			if(listener instanceof Popup) {
+				if(((Popup) listener).isAscendantOf(child))
+					return true;
+			}
 		}
 		return false;
 	}

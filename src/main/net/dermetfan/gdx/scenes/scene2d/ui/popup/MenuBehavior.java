@@ -54,7 +54,7 @@ public class MenuBehavior extends Behavior.Adapter {
 		case touchDown:
 			if((1 << event.getButton() & showButtons) == showButtons && event.getTarget().getListeners().contains(popup, true))
 				return Reaction.ShowHandle;
-			else if(!Popup.isAscendantOf(popup, event.getTarget())) // don't hide on clicks on this or child popups
+			else if(!popup.isAscendantOf(event.getTarget())) // don't hide on clicks on this or child popups
 				return Reaction.Hide;
 		case keyDown:
 			if(event.getKeyCode() == Keys.MENU && event.getTarget().getListeners().contains(popup, true)) // menu key shows
