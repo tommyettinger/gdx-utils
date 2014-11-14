@@ -95,14 +95,11 @@ public class Popup<T extends Actor> implements EventListener {
 	/** @param child the possible popup child
 	 *  @return whether the given Actor is the {@link Popup#popup popup} of this or a child {@link Popup} */
 	public boolean isAscendantOf(Actor child) {
-		if(getPopup() == child)
+		if(popup == child)
 			return true;
-		for(EventListener listener : getPopup().getListeners()) {
-			if(listener instanceof Popup) {
-				if(((Popup) listener).isAscendantOf(child))
-					return true;
-			}
-		}
+		for(EventListener listener : popup.getListeners())
+			if(listener instanceof Popup && ((Popup) listener).isAscendantOf(child))
+				return true;
 		return false;
 	}
 
