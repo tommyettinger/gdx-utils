@@ -790,7 +790,6 @@ public class Popup<T extends Actor> implements EventListener {
 			/** whether {@link Type#mouseMoved mouseMoved} events should apply the position */
 			private boolean followPointer;
 
-			/** @see PositionBehavior#PositionBehavior(Position) */
 			public TooltipPositionBehavior(Position position) {
 				super(position);
 			}
@@ -836,8 +835,7 @@ public class Popup<T extends Actor> implements EventListener {
 			this.position = position;
 		}
 
-		/** @param positions the Positions to create a {@link PositionMultiplexer} for
-		 *  @see #PositionBehavior(Position) */
+		/** @param positions the Positions to create a {@link PositionMultiplexer} for */
 		public PositionBehavior(Position... positions) {
 			this(new PositionMultiplexer(positions));
 		}
