@@ -31,6 +31,13 @@ public class PositionBehavior extends Behavior.Adapter {
 		this.position = position;
 	}
 
+	/** @param positions the Positions to create a {@link PositionMultiplexer} for
+	 *  @since 0.8.2
+	 *  @see #PositionBehavior(Position) */
+	public PositionBehavior(Position... positions) {
+		this(new PositionMultiplexer(positions));
+	}
+
 	/** @param popup the popup which position to set */
 	@Override
 	public boolean show(Event event, Popup popup) {
