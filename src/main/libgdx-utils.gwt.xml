@@ -4,4 +4,9 @@
 	<source path="net/dermetfan/">
 		<exclude name="gdx/maps/tiled/TmxMapWriter.java" />
 	</source>
+
+	<!-- net.dermetfan.gdx.assets.AnnotationAssetManager -->
+	<extend-configuration-property name="gdx.reflect.include" value="com.badlogic.gdx.assets.AssetDescriptor" />
+	<!-- net.dermetfan.gdx.math.InterpolationUtils -->
+	<extend-configuration-property name="gdx.reflect.include" value="com.badlogic.gdx.math.Interpolation" />
 </module>
