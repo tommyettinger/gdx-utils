@@ -316,7 +316,8 @@ public class Popup<T extends Actor> implements EventListener {
 				Reaction itsReaction = receivers.get(i).handle(event, popup);
 				if(reaction == null)
 					reaction = itsReaction;
-				handled |= itsReaction.handles;
+				if(!handled && itsReaction != null && itsReaction.handles)
+					handled = true;
 			}
 			if(handled && !reaction.handles)
 				switch(reaction) {
