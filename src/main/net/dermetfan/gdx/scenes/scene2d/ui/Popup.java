@@ -30,7 +30,6 @@ import com.badlogic.gdx.utils.Pools;
 import com.badlogic.gdx.utils.Timer;
 import com.badlogic.gdx.utils.Timer.Task;
 import net.dermetfan.gdx.Multiplexer;
-import net.dermetfan.gdx.scenes.scene2d.EventMultiplexer;
 import net.dermetfan.gdx.scenes.scene2d.Scene2DUtils;
 
 import static com.badlogic.gdx.scenes.scene2d.InputEvent.Type.enter;
@@ -68,6 +67,12 @@ import static com.badlogic.gdx.scenes.scene2d.InputEvent.Type.touchUp;
  *          {@code new Popup<>(tooltip, new TooltipBehavior(), new PositionBehavior(new PointerPosition(), new AlignedOffsetPosition(Align.topLeft)), new VisibilityBehavior())}
  *      </li>
  *  </ul>
+ *  <p>
+ *      Some Behaviors (like the {@link Popup.MenuBehavior} and {@link Popup.TooltipBehavior}) can only function properly if they receive events of Actors other than their {@link Event#getListenerActor() listener Actor} (for example to hide when other Actors are clicked).
+ *      Those Behaviors usually state so in their documentation. Add the Popups using such Behaviors to an {@link net.dermetfan.gdx.scenes.scene2d.EventMultiplexer EventMultiplexer} high in the hierarchy or directly on the stage.
+ *      A Behavior can distinguish between an Event on its listener Actor by checking if it has its Popup added as listener.<br>
+ *      Be warned that in return Behaviors not designed for this may not function properly if you forward events from other Actors to them.
+ *  </p>
  *  @param <T> the type of {@link #popup}
  *  @author dermetfan
  *  @since 0.9.0 */
@@ -475,7 +480,7 @@ public class Popup<T extends Actor> implements EventListener {
 	}
 
 	/** The behavior of a menu such as a menu bar or context menu. Shows and hides but does not position the popup. Add this to the Popup of the Actor that the user should be able to click.
-	 *  <strong>Note that this can only hide on events of other actors if it receives them, so consider adding all your menus to an {@link EventMultiplexer} high up in the hierarchy (e.g. added to the {@link com.badlogic.gdx.scenes.scene2d.Stage Stage}).</strong>
+	 *  <strong>Note that this can only hide on events of other actors if it receives them, so consider adding all your menus to an {@link net.dermetfan.gdx.scenes.scene2d.EventMultiplexer EventMultiplexer} high up in the hierarchy (e.g. added to the {@link com.badlogic.gdx.scenes.scene2d.Stage Stage}).</strong>
 	 *  @author dermetfan */
 	public static class MenuBehavior extends Behavior.Adapter {
 
@@ -539,7 +544,7 @@ public class Popup<T extends Actor> implements EventListener {
 	}
 
 	/** The Behavior of a classic tooltip. Does nothing in {@link #show(Event, Popup)} and {@link #hide(Event, Popup)}. Hides on {@link Keys#ESCAPE escape}.
-	 *  Add the Popup using this TooltipBehavior to an {@link EventMultiplexer} high in the hierarchy (e.g. on the Stage) to make sure events on other Actors are received so that the TooltipBehavior can hide properly.
+	 *  Add the Popup using this TooltipBehavior to an {@link net.dermetfan.gdx.scenes.scene2d.EventMultiplexer EventMultiplexer} high in the hierarchy (e.g. on the Stage) to make sure events on other Actors are received so that the TooltipBehavior can hide properly.
 	 *  @author dermetfan */
 	public static class TooltipBehavior extends Behavior.Adapter {
 
