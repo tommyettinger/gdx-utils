@@ -67,7 +67,7 @@ public class TreeFileChooser extends FileChooser {
 			@Override
 			public Label apply(FileHandle file) {
 				String name = file.name();
-				if(name.isEmpty()) {
+				if(name.length() == 0) {
 					name = file.path();
 					name = name.substring(0, name.lastIndexOf('/'));
 				}
