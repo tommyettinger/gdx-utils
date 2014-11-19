@@ -65,7 +65,7 @@ public class MapUtils {
 
 		Object value = properties.get(key);
 
-		if(value == null || value instanceof String && ((String) value).isEmpty())
+		if(value == null || value instanceof String && ((String) value).length() == 0)
 			return defaultValue;
 
 		if(defaultValue != null) {

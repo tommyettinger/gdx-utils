@@ -21,7 +21,7 @@ public class StringUtils {
 
 	/** @param string the String to convert to a valid java identifier, as far as possible */
 	public static String toJavaIdentifier(String string) {
-		if(string.isEmpty())
+		if(string.length() == 0)
 			return string;
 		StringBuilder result = new StringBuilder(string.length());
 		if(isJavaIdentifierStart(string.charAt(0)))
