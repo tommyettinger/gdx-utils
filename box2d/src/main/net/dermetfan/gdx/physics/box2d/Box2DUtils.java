@@ -128,8 +128,11 @@ public class Box2DUtils extends com.badlogic.gdx.physics.box2d.Box2DUtils {
 	/** the area that is too small for a {@link PolygonShape} to contain it (limitation by Box2D) */
 	public static final float minExclusivePolygonArea = 1.19209289550781250000e-7F;
 
-	/** the max amount of vertices of a {@link PolygonShape} (limitation by Box2D) */
+	/** the max amount of vertices of a {@link PolygonShape}, see b2Settings.h (limitation by Box2D) */
 	public static final byte maxPolygonVertices = 8;
+
+	/** the max velocity of a body, see b2Settings.h (limitation by Box2D) */
+	public static final float maxTranslation = 2;
 
 	/** if Box2D preconditions should be checked to avoid crashes */
 	public static boolean checkPreconditions = true;
