@@ -40,6 +40,7 @@ import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.IntMap;
 import com.badlogic.gdx.utils.IntMap.Entry;
 import com.badlogic.gdx.utils.ObjectMap;
+import com.badlogic.gdx.utils.Pool;
 import com.badlogic.gdx.utils.Pool.Poolable;
 import com.badlogic.gdx.utils.Pools;
 
@@ -337,7 +338,12 @@ public class WorldObserver {
 		private final ObjectMap<Body, ExpectationBase> bases = new ObjectMap<>();
 
 		/** the Pool used by this UnexpectedListener */
-		private final ExpectationBase.Pool pool = new ExpectationBase.Pool(5, 25);
+		private final Pool<ExpectationBase> pool = new Pool<ExpectationBase>(5, 75) {
+			@Override
+			protected ExpectationBase newObject() {
+				return new ExpectationBase();
+			}
+		};
 
 		/** the last time step */
 		private float step;
@@ -469,28 +475,6 @@ public class WorldObserver {
 			public void reset() {
 				transform.vals[Transform.POS_X] = transform.vals[Transform.POS_Y] = transform.vals[Transform.COS] = transform.vals[Transform.SIN] = 0;
 				angularVelocity = 0;
-			}
-
-			/** a Pool for ExpectationBases
-			 *  @author dermetfan
-			 *  @since 0.7.1 */
-			private static class Pool extends com.badlogic.gdx.utils.Pool<ExpectationBase> {
-
-				public Pool() {}
-
-				public Pool(int initialCapacity) {
-					super(initialCapacity);
-				}
-
-				public Pool(int initialCapacity, int max) {
-					super(initialCapacity, max);
-				}
-
-				@Override
-				protected ExpectationBase newObject() {
-					return new ExpectationBase();
-				}
-
 			}
 
 		}
