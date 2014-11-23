@@ -127,33 +127,35 @@ public class MouseJointAdapter extends InputAdapter {
 		/** @return true to cancel destroying the {@link MouseJointAdapter#joint joint} */
 		public boolean released(MouseJoint joint, Vector2 position);
 
+		/** Does nothing and returns false. Use this if you want to override only some methods of the Listener.
+		 *  @author dermetfan
+		 *  @since 0.9.1 */
+		public static class Adapter implements Listener {
+
+			@Override
+			public boolean touched(Fixture fixture, Vector2 position) {
+				return false;
+			}
+
+			@Override
+			public boolean dragged(MouseJoint joint, Vector2 oldPosition, Vector2 position) {
+				return false;
+			}
+
+			@Override
+			public boolean released(MouseJoint joint, Vector2 position) {
+				return false;
+			}
+
+		}
+
 	}
 
 	/** The pointer to react to. If smaller than zero, all pointers will be accepted. */
 	private byte pointer;
 
-	/** the {@link #listener} used by default */
-	public static final Listener defaultListener = new Listener() {
-
-		@Override
-		public boolean touched(Fixture fixture, Vector2 position) {
-			return false;
-		}
-
-		@Override
-		public boolean dragged(MouseJoint joint, Vector2 oldPosition, Vector2 position) {
-			return false;
-		}
-
-		@Override
-		public boolean released(MouseJoint joint, Vector2 position) {
-			return false;
-		}
-
-	};
-
 	/** the {@link Listener} called by {@link #queryCallback} */
-	private Listener listener = defaultListener;
+	private Listener listener;
 
 	/** the {@link Camera} used to convert to world coordinates */
 	private Camera camera;
@@ -182,7 +184,7 @@ public class MouseJointAdapter extends InputAdapter {
 		@Override
 		public boolean reportFixture(Fixture fixture) {
 			Body body = fixture.getBody();
-			if(body != jointDef.bodyA && fixture.testPoint(vec2_0) && !listener.touched(fixture, vec2_0)) {
+			if(body != jointDef.bodyA && fixture.testPoint(vec2_0) && (listener == null || !listener.touched(fixture, vec2_0))) {
 				jointDef.bodyB = body;
 				jointDef.target.set(vec2_0);
 				if(adaptMaxForceToBodyMass) {
@@ -255,7 +257,7 @@ public class MouseJointAdapter extends InputAdapter {
 			return false;
 
 		camera.unproject(vec3.set(screenX, screenY, 0));
-		if(!listener.dragged(joint, vec2_1.set(vec2_0), vec2_0.set(vec3.x, vec3.y)))
+		if(listener == null || !listener.dragged(joint, vec2_1.set(vec2_0), vec2_0.set(vec3.x, vec3.y)))
 			joint.setTarget(vec2_0.set(vec3.x, vec3.y));
 
 		return true;
@@ -274,7 +276,7 @@ public class MouseJointAdapter extends InputAdapter {
 			return false;
 
 		camera.unproject(vec3.set(screenX, screenY, 0));
-		if(!listener.released(joint, vec2_0.set(vec3.x, vec3.y))) {
+		if(listener == null || !listener.released(joint, vec2_0.set(vec3.x, vec3.y))) {
 			jointDef.bodyA.getWorld().destroyJoint(joint);
 			joint = null;
 			return true;
@@ -305,7 +307,7 @@ public class MouseJointAdapter extends InputAdapter {
 
 	/** @param listener the {@link #listener} to set */
 	public void setListener(Listener listener) {
-		this.listener = listener != null ? listener : defaultListener;
+		this.listener = listener;
 	}
 
 	/** @return the {@link #camera} */
