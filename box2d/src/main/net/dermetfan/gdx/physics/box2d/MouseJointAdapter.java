@@ -200,27 +200,39 @@ public class MouseJointAdapter extends InputAdapter {
 	};
 
 	/** constructs a {@link MouseJointAdapter} with pointer set to 0 (useful for desktop)
-	 * 	@see #MouseJointAdapter(MouseJointDef, boolean, Camera, byte) */
+	 * 	@see #MouseJointAdapter(MouseJointDef, boolean, Camera, byte, Listener) */
 	public MouseJointAdapter(MouseJointDef jointDef, boolean adaptMaxForceToBodyMass, Camera camera) {
 		this(jointDef, adaptMaxForceToBodyMass, camera, (byte) 0);
 	}
 
+	/** @see #MouseJointAdapter(MouseJointDef, boolean, Camera, byte, Listener) */
+	public MouseJointAdapter(MouseJointDef jointDef, boolean adaptMaxForceToBodyMass, Camera camera, byte pointer) {
+		this(jointDef, adaptMaxForceToBodyMass, camera, pointer, null);
+	}
+
+	/** @see #MouseJointAdapter(MouseJointDef, boolean, Camera, byte, Listener) */
+	public MouseJointAdapter(MouseJointDef jointDef, boolean adaptMaxForceToBodyMass, Camera camera, Listener listener) {
+		this(jointDef, adaptMaxForceToBodyMass, camera, (byte) 0, listener);
+	}
+
 	/** constructs a {@link MouseJointAdapter} using the given {@link MouseJointDef}
-	 *  @param jointDef The {@link MouseJointDef} to use. <strong>Note that its {@link JointDef#bodyB bodyB} will be changed by the {@link MouseJointAdapter} so it can be null but {@link JointDef#bodyA bodyA} has to be set!</strong> 
+	 *  @param jointDef The {@link MouseJointDef} to use. <strong>Note that its {@link JointDef#bodyB bodyB} will be changed by the {@link MouseJointAdapter} so it can be null but {@link JointDef#bodyA bodyA} has to be set!</strong>
 	 *  @param adaptMaxForceToBodyMass the {@link #adaptMaxForceToBodyMass}
 	 *  @param camera the {@link #camera}
-	 *  @param pointer the {@link #pointer} */
-	public MouseJointAdapter(MouseJointDef jointDef, boolean adaptMaxForceToBodyMass, Camera camera, byte pointer) {
+	 *  @param pointer the {@link #pointer}
+	 *  @param listener the {@link #listener} */
+	public MouseJointAdapter(MouseJointDef jointDef, boolean adaptMaxForceToBodyMass, Camera camera, byte pointer, Listener listener) {
 		this.jointDef = jointDef;
 		this.adaptMaxForceToBodyMass = adaptMaxForceToBodyMass;
 		this.camera = camera;
 		this.pointer = pointer;
+		setListener(listener);
 	}
 
 	/** constructs a new {@link MouseJointAdapter} that equals the given other one */
 	public MouseJointAdapter(MouseJointAdapter other) {
 		this(other.jointDef, other.adaptMaxForceToBodyMass, other.camera, other.pointer);
-		listener = other.listener;
+		setListener(other.listener);
 		mouseMoved = other.mouseMoved;
 	}
 
@@ -252,9 +264,7 @@ public class MouseJointAdapter extends InputAdapter {
 	/** calls {@link #touchDragged(int, int, int)} with {@link #pointer} if {@link #mouseMoved} is <code>true</code> */
 	@Override
 	public boolean mouseMoved(int screenX, int screenY) {
-		if(mouseMoved)
-			return touchDragged(screenX, screenY, pointer);
-		return false;
+		return mouseMoved && touchDragged(screenX, screenY, pointer);
 	}
 
 	/** destroys {@link #joint} if {@link Listener#released(MouseJoint, Vector2) released} of {@link #listener} returns <code>true</code> */
