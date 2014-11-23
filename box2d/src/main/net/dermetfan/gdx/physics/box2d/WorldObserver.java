@@ -568,6 +568,7 @@ public class WorldObserver {
 		private transient BodyType oldType;
 		private transient float oldAngularDamping;
 		private transient float oldAngularVelocity;
+		private transient float oldLinearDamping;
 		private transient float oldGravityScale;
 		private transient final Vector2 oldLinearVelocity = new Vector2();
 		private transient final MassData oldMassData = new MassData();
@@ -582,6 +583,7 @@ public class WorldObserver {
 		public BodyType newType;
 		public Float newAngularDamping;
 		public Float newAngularVelocity;
+		public Float newLinearDamping;
 		public Float newGravityScale;
 		public Vector2 newLinearVelocity;
 		public MassData newMassData;
@@ -614,6 +616,7 @@ public class WorldObserver {
 			BodyType type = body.getType();
 			float angularDamping = body.getAngularDamping();
 			float angularVelocity = body.getAngularVelocity();
+			float linearDamping = body.getLinearDamping();
 			float gravityScale = body.getGravityScale();
 			Vector2 linearVelocity = body.getLinearVelocity();
 			MassData massData = body.getMassData();
@@ -646,6 +649,11 @@ public class WorldObserver {
 				changed = true;
 			} else
 				newAngularVelocity = null;
+			if(linearDamping != oldLinearDamping) {
+				oldLinearDamping = newLinearDamping = linearDamping;
+				changed = true;
+			} else
+				newLinearDamping = null;
 			if(gravityScale != oldGravityScale) {
 				oldGravityScale = newGravityScale = gravityScale;
 				changed = true;
@@ -707,6 +715,8 @@ public class WorldObserver {
 				body.setAngularDamping(newAngularDamping);
 			if(newAngularVelocity != null)
 				body.setAngularVelocity(newAngularVelocity);
+			if(newLinearDamping != null)
+				body.setLinearDamping(newLinearDamping);
 			if(newGravityScale != null)
 				body.setGravityScale(newGravityScale);
 			if(newLinearVelocity != null)
@@ -736,6 +746,7 @@ public class WorldObserver {
 					Objects.equals(newType, o.newType) &&
 					Objects.equals(newAngularDamping, o.newAngularDamping) &&
 					Objects.equals(newAngularVelocity, o.newAngularVelocity) &&
+					Objects.equals(newLinearDamping, o.newLinearDamping) &&
 					Objects.equals(newGravityScale, o.newGravityScale) &&
 					Objects.equals(newLinearVelocity, o.newLinearVelocity) &&
 					Objects.equals(newMassData, o.newMassData) &&
@@ -753,6 +764,7 @@ public class WorldObserver {
 			oldType = null;
 			oldAngularDamping = 0;
 			oldAngularVelocity = 0;
+			oldLinearDamping = 0;
 			oldGravityScale = 0;
 			oldLinearVelocity.setZero();
 			oldMassData.mass = 0;
@@ -769,6 +781,7 @@ public class WorldObserver {
 			newType = null;
 			newAngularDamping = null;
 			newAngularVelocity = null;
+			newLinearDamping = null;
 			newGravityScale = null;
 			newLinearVelocity = null;
 			newMassData = null;
