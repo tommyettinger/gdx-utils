@@ -807,12 +807,14 @@ public class WorldObserver {
 		private transient float oldFriction;
 		private transient float oldRestitution;
 		private transient final Filter oldFilter = new Filter();
+		private transient boolean oldSensor;
 		private transient Object oldUserData;
 
 		public Float newDensity;
 		public Float newFriction;
 		public Float newRestitution;
 		public Filter newFilter;
+		public Boolean newSensor;
 		public Object newUserData;
 
 		/** if the {@link Fixture#userData} changed */
@@ -848,6 +850,7 @@ public class WorldObserver {
 			float friction = fixture.getFriction();
 			float restitution = fixture.getRestitution();
 			Filter filter = fixture.getFilterData();
+			boolean sensor = fixture.isSensor();
 			Object userData = fixture.getUserData();
 
 			boolean changed = false;
@@ -872,6 +875,11 @@ public class WorldObserver {
 				changed = true;
 			} else
 				newFilter = null;
+			if(sensor != oldSensor) {
+				oldSensor = newSensor = sensor;
+				changed = true;
+			} else
+				newSensor = null;
 			if(userData != null ? !userData.equals(oldUserData) : oldUserData != null) {
 				oldUserData = newUserData = userData;
 				changed = userDataChanged = true;
@@ -896,6 +904,8 @@ public class WorldObserver {
 				fixture.setRestitution(newRestitution);
 			if(newFilter != null)
 				fixture.setFilterData(newFilter);
+			if(newSensor != null)
+				fixture.setSensor(newSensor);
 			if(userDataChanged)
 				fixture.setUserData(newUserData);
 		}
@@ -909,6 +919,7 @@ public class WorldObserver {
 					Objects.equals(newFriction, o.newFriction) &&
 					Objects.equals(newRestitution, o.newRestitution) &&
 					Objects.equals(newFilter, o.newFilter) &&
+					Objects.equals(newSensor, o.newSensor) &&
 					Objects.equals(newUserData, o.newUserData);
 		}
 
@@ -923,12 +934,14 @@ public class WorldObserver {
 			oldFilter.categoryBits = 0x0001;
 			oldFilter.maskBits = -1;
 			oldFilter.groupIndex = 0;
+			oldSensor = false;
 			oldUserData = null;
 
 			newDensity = null;
 			newFriction = null;
 			newRestitution = null;
 			newFilter = null;
+			newSensor = null;
 			newUserData = null;
 
 			userDataChanged = false;
