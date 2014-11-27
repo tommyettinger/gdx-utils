@@ -166,9 +166,10 @@ public class GeometryUtils extends net.dermetfan.utils.math.GeometryUtils {
 	public static FloatArray filterX(Array<Vector2> vertices, FloatArray output) {
 		if(output == null)
 			output = new FloatArray(vertices.size);
-		output.size = vertices.size;
-		for(int i = 0; i < output.size; i++)
-			output.set(i, vertices.get(i).x);
+		output.clear();
+		output.ensureCapacity(vertices.size);
+		for(int i = 0; i < vertices.size; i++)
+			output.add(vertices.get(i).x);
 		return output;
 	}
 
@@ -204,6 +205,7 @@ public class GeometryUtils extends net.dermetfan.utils.math.GeometryUtils {
 		if(output == null)
 			output = new FloatArray(vertices.size);
 		output.clear();
+		output.ensureCapacity(vertices.size);
 		for(int i = 0; i < vertices.size; i++)
 			output.add(vertices.get(i).y);
 		return output;
@@ -346,6 +348,7 @@ public class GeometryUtils extends net.dermetfan.utils.math.GeometryUtils {
 		if(output == null)
 			output = new FloatArray(vector2s.size * 2);
 		output.clear();
+		output.ensureCapacity(vector2s.size * 2);
 
 		for(int i = 0, vi = -1; i < vector2s.size * 2; i++)
 			if(i % 2 == 0)
