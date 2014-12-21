@@ -181,7 +181,7 @@ public class ListFileChooser extends FileChooser {
 			if(event.isHandled())
 				return true;
 
-			if(getStage().getKeyboardFocus() != pathField && (c == '\r' || c == 'n')) {
+			if(getStage().getKeyboardFocus() != pathField && (c == '\r' || c == '\n')) {
 				if(currentlySelected().isDirectory())
 					openButtonListener.clicked(null, 0, 0); // fake event
 				else
@@ -301,7 +301,7 @@ public class ListFileChooser extends FileChooser {
 		setDirectory(dir, true);
 	}
 
-	/** sets {@link #directory} and updates all things that need to be udpated */
+	/** sets {@link #directory} and updates all things that need to be updated */
 	public void setDirectory(FileHandle dir, boolean addToHistory) {
 		FileHandle loc = dir.isDirectory() ? dir : dir.parent();
 		if(addToHistory)
