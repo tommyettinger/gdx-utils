@@ -57,12 +57,14 @@ public class ListFileChooser extends FileChooser {
 	/** the style */
 	private Style style;
 
+	/** the type of file handle created */
+	private FileType fileType = FileType.Absolute;
+	
 	/** the directories that have been visited previously, for the {@link #backButton} */
 	private Array<FileHandle> fileHistory = new Array<>();
 
 	/** the current directory */
-	private FileHandle directory = Gdx.files.absolute(Gdx.files.getExternalStoragePath());
-	{ fileHistory.add(directory); }
+	private FileHandle directory;
 
 	/** @see #pathFieldListener */
 	private TextField pathField;
@@ -93,7 +95,7 @@ public class ListFileChooser extends FileChooser {
 		@Override
 		public void keyTyped(TextField textField, char key) {
 			if(key == '\r' || key == '\n') {
-				FileHandle loc = Gdx.files.absolute(textField.getText());
+				FileHandle loc = Gdx.files.getFileHandle(textField.getText(), fileType);
 				if(loc.exists()) {
 					if(loc.isDirectory())
 						setDirectory(loc);
@@ -230,17 +232,24 @@ public class ListFileChooser extends FileChooser {
 		super(listener);
 		this.style = style;
 		buildWidgets();
+		setDirectory(Gdx.files.absolute(Gdx.files.getExternalStoragePath()));
 		build();
 		refresh();
+	}
+	
+	public void setFileType(FileType fileType)
+	{
+		this.fileType = fileType;
+		fileHistory.clear();
+		setDirectory(Gdx.files.getFileHandle("", fileType));
 	}
 
 	/** Override this if you want to adjust all the Widgets. Be careful though! */
 	protected void buildWidgets() {
 		addListener(keyControlsListener);
 
-		(pathField = new TextField(directory.path(), style.pathFieldStyle)).setTextFieldListener(pathFieldListener);
+		(pathField = new TextField("", style.pathFieldStyle)).setTextFieldListener(pathFieldListener);
 		contents = new List<>(style.contentsStyle);
-		contents.setItems(directory.name());
 		contents.addListener(contentsListener);
 
 		(chooseButton = UIUtils.newButton(style.chooseButtonStyle, "select")).addListener(chooseButtonListener);
@@ -307,7 +316,7 @@ public class ListFileChooser extends FileChooser {
 	public void setDirectory(FileHandle dir, boolean addToHistory) {
 		FileHandle loc = dir.isDirectory() ? dir : dir.parent();
 		if(addToHistory)
-			fileHistory.add(Gdx.files.absolute(dir.path()));
+			fileHistory.add(loc);
 		scan(directory = loc);
 		pathField.setText(loc.path());
 		pathField.setCursorPosition(pathField.getText().length());
