@@ -59,7 +59,10 @@ public class ListFileChooser extends FileChooser {
 
 	/** the type of file handle created */
 	private FileType fileType = FileType.Absolute;
-	
+
+	/** whether a selection must be an existing file */
+	private boolean newFileChoosable = false;
+
 	/** the directories that have been visited previously, for the {@link #backButton} */
 	private Array<FileHandle> fileHistory = new Array<>();
 
@@ -96,7 +99,7 @@ public class ListFileChooser extends FileChooser {
 		public void keyTyped(TextField textField, char key) {
 			if(key == '\r' || key == '\n') {
 				FileHandle loc = Gdx.files.getFileHandle(textField.getText(), fileType);
-				if(loc.exists()) {
+				if(newFileChoosable || loc.exists()) {
 					if(loc.isDirectory())
 						setDirectory(loc);
 					else
@@ -439,6 +442,16 @@ public class ListFileChooser extends FileChooser {
 			super.setDirectoriesChoosable(directoriesChoosable);
 			build();
 		}
+	}
+
+	public boolean isNewFileChoosable()
+	{
+		return newFileChoosable;
+	}
+
+	public void setNewFileChoosable(boolean newFileChoosable)
+	{
+		this.newFileChoosable = newFileChoosable;
 	}
 
 	/** @return the {@link #style} */
