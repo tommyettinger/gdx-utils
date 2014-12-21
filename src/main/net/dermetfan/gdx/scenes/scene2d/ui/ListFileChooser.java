@@ -214,11 +214,13 @@ public class ListFileChooser extends FileChooser {
 		}
 	};
 
+	/** The ui skin file needs an entry for this class; see https://bitbucket.org/dermetfan/libgdx-utils/issue/3 */
 	public ListFileChooser(Skin skin, Listener listener) {
 		this(skin.get(Style.class), listener);
 		setSkin(skin);
 	}
 
+	/** The ui skin file needs an entry for this class; see https://bitbucket.org/dermetfan/libgdx-utils/issue/3 */
 	public ListFileChooser(Skin skin, String styleName, Listener listener) {
 		this(skin.get(styleName, Style.class), listener);
 		setSkin(skin);
