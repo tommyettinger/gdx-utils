@@ -104,7 +104,8 @@ public class ListFileChooser extends FileChooser {
 						setDirectory(loc);
 					else
 						getListener().choose(loc);
-					getStage().setKeyboardFocus(ListFileChooser.this);
+					if (getStage() != null)
+						getStage().setKeyboardFocus(ListFileChooser.this);
 				}
 			}
 		}
@@ -186,7 +187,7 @@ public class ListFileChooser extends FileChooser {
 			if(event.isHandled())
 				return true;
 
-			if(getStage().getKeyboardFocus() != pathField && (c == '\r' || c == '\n')) {
+			if((getStage() == null || getStage().getKeyboardFocus() != pathField) && (c == '\r' || c == '\n')) {
 				if(currentlySelected().isDirectory())
 					openButtonListener.clicked(null, 0, 0); // fake event
 				else
