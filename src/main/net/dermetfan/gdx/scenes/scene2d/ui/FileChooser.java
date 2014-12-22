@@ -62,10 +62,13 @@ public abstract class FileChooser extends Table {
 	private FileFilter fileFilter;
 
 	/** if hidden files should be shown */
-	private boolean showHidden = false;
+	private boolean showHidden;
 
 	/** if directories can be chosen */
 	private boolean directoriesChoosable;
+
+	/** whether a selection must be an existing file */
+	private boolean newFilesChoosable;
 
 	/** @param listener the {@link #listener} */
 	public FileChooser(Listener listener) {
@@ -118,6 +121,16 @@ public abstract class FileChooser extends Table {
 	/** @param directoriesChoosable the {@link #directoriesChoosable} to set */
 	public void setDirectoriesChoosable(boolean directoriesChoosable) {
 		this.directoriesChoosable = directoriesChoosable;
+	}
+
+	/** @return the {@link #newFilesChoosable} */
+	public boolean isNewFilesChoosable() {
+		return newFilesChoosable;
+	}
+
+	/** @param newFilesChoosable the {@link #newFilesChoosable} to set */
+	public void setNewFilesChoosable(boolean newFilesChoosable) {
+		this.newFilesChoosable = newFilesChoosable;
 	}
 
 }

@@ -60,11 +60,8 @@ public class ListFileChooser extends FileChooser {
 	/** the type of file handle created */
 	private FileType fileType = FileType.Absolute;
 
-	/** whether a selection must be an existing file */
-	private boolean newFileChoosable = false;
-
 	/** the directories that have been visited previously, for the {@link #backButton} */
-	private Array<FileHandle> fileHistory = new Array<>();
+	private final Array<FileHandle> fileHistory = new Array<>();
 
 	/** the current directory */
 	private FileHandle directory;
@@ -99,7 +96,7 @@ public class ListFileChooser extends FileChooser {
 		public void keyTyped(TextField textField, char key) {
 			if(key == '\r' || key == '\n') {
 				FileHandle loc = Gdx.files.getFileHandle(textField.getText(), fileType);
-				if(newFileChoosable || loc.exists()) {
+				if(isNewFilesChoosable() || loc.exists()) {
 					if(loc.isDirectory())
 						setDirectory(loc);
 					else
@@ -241,8 +238,7 @@ public class ListFileChooser extends FileChooser {
 		refresh();
 	}
 	
-	public void setFileType(FileType fileType)
-	{
+	public void setFileType(FileType fileType) {
 		this.fileType = fileType;
 		fileHistory.clear();
 		setDirectory(Gdx.files.getFileHandle("", fileType));
@@ -397,7 +393,8 @@ public class ListFileChooser extends FileChooser {
 
 	/** @param fileHistory the {@link #fileHistory} to set */
 	public void setFileHistory(Array<FileHandle> fileHistory) {
-		this.fileHistory = fileHistory;
+		this.fileHistory.clear();
+		this.fileHistory.addAll(fileHistory);
 	}
 
 	/** @return the {@link #openButton} */
@@ -443,16 +440,6 @@ public class ListFileChooser extends FileChooser {
 			super.setDirectoriesChoosable(directoriesChoosable);
 			build();
 		}
-	}
-
-	public boolean isNewFileChoosable()
-	{
-		return newFileChoosable;
-	}
-
-	public void setNewFileChoosable(boolean newFileChoosable)
-	{
-		this.newFileChoosable = newFileChoosable;
 	}
 
 	/** @return the {@link #style} */

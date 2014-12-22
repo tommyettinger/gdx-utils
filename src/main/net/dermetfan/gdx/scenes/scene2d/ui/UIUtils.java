@@ -33,7 +33,9 @@ import com.badlogic.gdx.utils.JsonValue;
  *  @since 0.7.1 */
 public class UIUtils extends com.badlogic.gdx.scenes.scene2d.utils.UIUtils {
 
-	/** @param widget the Widget to resize according to its min, pref and max size */
+	/** @param widget the Widget to resize according to its min, pref and max size
+	 *  @deprecated seems unnecessary and with no known use case */
+	@Deprecated
 	public static void layoutSize(Widget widget) {
 		widget.setSize(MathUtils.clamp(widget.getPrefWidth(), widget.getMinWidth(), widget.getMaxWidth() == 0 ? Float.POSITIVE_INFINITY : widget.getMaxWidth()), MathUtils.clamp(widget.getPrefHeight(), widget.getMinHeight(), widget.getMaxHeight() == 0 ? Float.POSITIVE_INFINITY : widget.getMaxHeight()));
 	}
