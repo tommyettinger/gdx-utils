@@ -91,4 +91,42 @@ public class StringUtils {
 		return remove(index, index + 1, string);
 	}
 
+	/** @see #count(int, String, int, int) */
+	public static int count(String target, String string, int beginIndex, int endIndex) {
+		int count = 0;
+		for(int i = string.indexOf(target, beginIndex); i != -1 && i < endIndex; i = string.indexOf(target, i + 1))
+			count++;
+		return count;
+	}
+
+	/** @see #count(String, String, int, int) */
+	public static int count(String target, String string) {
+		return count(target, string, 0, string.length());
+	}
+
+	/** @param c the character to count
+	 *  @param string the String in which to count
+	 *  @return the number of occurrences of c in string in the range from beginIndex to endIndex */
+	public static int count(int c, String string, int beginIndex, int endIndex) {
+		int count = 0;
+		for(int i = string.indexOf(c, beginIndex); i != -1 && i < endIndex; i = string.indexOf(c, i + 1))
+			count++;
+		return count;
+	}
+
+	/** @see #count(int, String, int, int) */
+	public static int count(char c, String string, int beginIndex, int endIndex) {
+		return count((int) c, string, beginIndex, endIndex);
+	}
+
+	/** @see #count(int, String, int, int) */
+	public static int count(int c, String string) {
+		return count(c, string, 0, string.length());
+	}
+
+	/** @see #count(char, String, int, int) */
+	public static int count(char c, String string) {
+		return count((int) c, string);
+	}
+
 }
