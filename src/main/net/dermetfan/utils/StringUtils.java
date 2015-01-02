@@ -91,17 +91,30 @@ public class StringUtils {
 		return remove(index, index + 1, string);
 	}
 
-	/** @see #count(int, String, int, int) */
-	public static int count(String target, String string, int beginIndex, int endIndex) {
-		int count = 0;
-		for(int i = string.indexOf(target, beginIndex); i != -1 && i < endIndex; i = string.indexOf(target, i + 1))
+	/** @see #count(int, String, int, int)
+	 *  @param overlap if occurrences are allowed to overlap */
+	public static int count(String target, String string, int beginIndex, int endIndex, boolean overlap) {
+		int count = 0, increment = (overlap ? 1 : target.length());
+		for(int i = string.indexOf(target, beginIndex); i != -1 && i < endIndex; i = string.indexOf(target, i + increment))
 			count++;
 		return count;
 	}
 
-	/** @see #count(String, String, int, int) */
+	/** same as {@link #count(String, String, int, int, boolean) count} without overlapping occurrences
+	 *  @see #count(String, String, int, int, boolean) */
+	public static int count(String target, String string, int beginIndex, int endIndex) {
+		return count(target, string, beginIndex, endIndex, false);
+	}
+
+	/** @see #count(String, String, int, int, boolean) */
+	public static int count(String target, String string, boolean overlap) {
+		return count(target, string, 0, string.length(), overlap);
+	}
+
+	/** same as {@link #count(String, String, boolean) count} without overlapping occurrences
+	 *  @see #count(String, String, boolean) */
 	public static int count(String target, String string) {
-		return count(target, string, 0, string.length());
+		return count(target, string, false);
 	}
 
 	/** @param c the character to count
