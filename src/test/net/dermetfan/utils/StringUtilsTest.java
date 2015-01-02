@@ -21,6 +21,9 @@ public class StringUtilsTest {
 		assertEquals(4, count(", ", ", 2, 3, 4, "));
 		assertEquals(4, count(", ", ", , 3, , "));
 		assertEquals(4, count(", ", ", , , , "));
+		assertEquals(4, count("..", "........"));
+		assertEquals(7, count("..", "........", true));
+		assertEquals(6, count("...", "........", true));
 	}
 
 }
