@@ -37,44 +37,45 @@ public class MouseJointAdapter extends InputAdapter {
 		/** the {@link MouseJointAdapter MouseJointAdapters} */
 		private Array<MouseJointAdapter> adapters = new Array<>(false, 2);
 
-		/** the max size of {@link #adapters} */
+		/** The max size of {@link #adapters}. The default of -1 means no limit. */
 		private byte max = -1;
-
-		/** a temporary variable */
-		private boolean tmp;
 
 		/** calls {@link MouseJointAdapter#touchDown(int, int, int, int) touchDown} on all {@link #adapters} and creates a new one if necessary */
 		@Override
 		public boolean touchDown(int screenX, int screenY, int pointer, int button) {
 			if(adapters.size <= pointer && (pointer + 1 < max || max < 0))
 				adapters.add(newMouseJointAdapter((byte) pointer));
+			boolean handled = false;
 			for(MouseJointAdapter adapter : adapters)
-				tmp |= adapter.touchDown(screenX, screenY, pointer, button);
-			return tmp;
+				handled |= adapter.touchDown(screenX, screenY, pointer, button);
+			return handled;
 		}
 
 		/** calls {@link MouseJointAdapter#touchDragged(int, int, int) touchDragged} on all {@link #adapters} */
 		@Override
 		public boolean touchDragged(int screenX, int screenY, int pointer) {
+			boolean handled = false;
 			for(MouseJointAdapter adapter : adapters)
-				tmp |= adapter.touchDragged(screenX, screenY, pointer);
-			return tmp;
+				handled |= adapter.touchDragged(screenX, screenY, pointer);
+			return handled;
 		}
 
 		/** calls {@link MouseJointAdapter#mouseMoved(int, int) mouseMoved} on all {@link #adapters} */
 		@Override
 		public boolean mouseMoved(int screenX, int screenY) {
+			boolean handled = false;
 			for(MouseJointAdapter adapter : adapters)
-				tmp |= adapter.mouseMoved(screenX, screenY);
-			return tmp;
+				handled |= adapter.mouseMoved(screenX, screenY);
+			return handled;
 		}
 
 		/** calls {@link MouseJointAdapter#touchUp(int, int, int, int) touchUp} on all {@link #adapters} */
 		@Override
 		public boolean touchUp(int screenX, int screenY, int pointer, int button) {
+			boolean handled = false;
 			for(MouseJointAdapter adapter : adapters)
-				tmp |= adapter.touchUp(screenX, screenY, pointer, button);
-			return tmp;
+				handled |= adapter.touchUp(screenX, screenY, pointer, button);
+			return handled;
 		}
 
 		/** override this to define how new {@link MouseJointAdapter MouseJointAdapters} should be created
@@ -93,8 +94,8 @@ public class MouseJointAdapter extends InputAdapter {
 
 		/** @param max the {@link #max} to set */
 		public void setMax(byte max) {
-			if(max < 0)
-				throw new IllegalArgumentException("max must be greater or equal to zero");
+			if(max < -1)
+				throw new IllegalArgumentException("max must be greater or equal to -1");
 			this.max = max;
 		}
 
