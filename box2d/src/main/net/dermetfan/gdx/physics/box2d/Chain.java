@@ -476,7 +476,7 @@ public class Chain {
 
 	/** {@link #add(Body) adds} the given segments to the end of this Chain
 	 *  @see #add(Body) */
-	public void addAll(Body... segments) {
+	public void add(Body... segments) {
 		for(Body segment : segments)
 			add(segment);
 	}
