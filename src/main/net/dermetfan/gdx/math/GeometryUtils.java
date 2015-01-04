@@ -17,10 +17,14 @@ package net.dermetfan.gdx.math;
 import java.util.Comparator;
 
 import com.badlogic.gdx.graphics.OrthographicCamera;
+import com.badlogic.gdx.math.Circle;
 import com.badlogic.gdx.math.EarClippingTriangulator;
+import com.badlogic.gdx.math.Ellipse;
 import com.badlogic.gdx.math.Intersector;
 import com.badlogic.gdx.math.Polygon;
+import com.badlogic.gdx.math.Polyline;
 import com.badlogic.gdx.math.Rectangle;
+import com.badlogic.gdx.math.Shape2D;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Array;
@@ -30,10 +34,10 @@ import com.badlogic.gdx.utils.Pools;
 import com.badlogic.gdx.utils.ShortArray;
 import net.dermetfan.gdx.utils.ArrayUtils;
 
-import static net.dermetfan.gdx.utils.ArrayUtils.wrapIndex;
 import static net.dermetfan.gdx.math.MathUtils.amplitude;
 import static net.dermetfan.gdx.math.MathUtils.max;
 import static net.dermetfan.gdx.math.MathUtils.min;
+import static net.dermetfan.gdx.utils.ArrayUtils.wrapIndex;
 import static net.dermetfan.utils.math.MathUtils.det;
 
 /** Provides some useful methods for geometric calculations. Note that many methods return the same array instance so make a copy for subsequent calls.
@@ -700,6 +704,72 @@ public class GeometryUtils extends net.dermetfan.utils.math.GeometryUtils {
 			}
 		}
 		Pools.free(vec2_0);
+	}
+
+	/** dispatch method
+	 *  @param shape the shape to reset
+	 *  @return the given shape for chaining */
+	@SuppressWarnings("unchecked")
+	public static <T extends Shape2D> T reset(T shape) {
+		if(shape instanceof Polygon)
+			return (T) reset((Polygon) shape);
+		if(shape instanceof Polyline)
+			return (T) reset((Polyline) shape);
+		if(shape instanceof Rectangle)
+			return (T) reset((Rectangle) shape);
+		if(shape instanceof Circle)
+			return (T) reset((Circle) shape);
+		if(shape instanceof Ellipse)
+			return (T) reset((Ellipse) shape);
+		return shape;
+	}
+
+	/** @param polygon the Polygon to reset
+	 *  @return the given Polygon for chaining */
+	public static Polygon reset(Polygon polygon) {
+		polygon.setPosition(0, 0);
+		polygon.setRotation(0);
+		polygon.setOrigin(0, 0);
+		polygon.setScale(1, 1);
+		float[] vertices = polygon.getVertices();
+		for(int i = 0; i < vertices.length; i++)
+			vertices[i] = 0;
+		polygon.setVertices(vertices);
+		return polygon;
+	}
+
+	/** @param polyline the polyline to reset
+	 *  @return the given polyline for chaining */
+	public static Polyline reset(Polyline polyline) {
+		polyline.setPosition(0, 0);
+		polyline.setRotation(0);
+		polyline.setOrigin(0, 0);
+		polyline.setScale(1, 1);
+		float[] vertices = polyline.getVertices();
+		for(int i = 0; i < vertices.length; i++)
+			vertices[i] = 0;
+		polyline.dirty();
+		return polyline;
+	}
+
+	/** @param rectangle the rectangle to reset
+	 *  @return the given rectangle for chaining */
+	public static Rectangle reset(Rectangle rectangle) {
+		return rectangle.set(0, 0, 0, 0);
+	}
+
+	/** @param circle the circle to reset
+	 *  @return the given circle for chaining */
+	public static Circle reset(Circle circle) {
+		circle.set(0, 0, 0);
+		return circle;
+	}
+
+	/** @param ellipse the ellipse to reset
+	 *  @return the given ellipse for chaining */
+	public static Ellipse reset(Ellipse ellipse) {
+		ellipse.set(0, 0, 0, 0);
+		return ellipse;
 	}
 
 }
