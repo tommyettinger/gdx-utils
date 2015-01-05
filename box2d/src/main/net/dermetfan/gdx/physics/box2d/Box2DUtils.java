@@ -22,6 +22,7 @@ import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.BodyDef;
+import com.badlogic.gdx.physics.box2d.BodyDef.BodyType;
 import com.badlogic.gdx.physics.box2d.ChainShape;
 import com.badlogic.gdx.physics.box2d.CircleShape;
 import com.badlogic.gdx.physics.box2d.EdgeShape;
@@ -69,7 +70,6 @@ import net.dermetfan.utils.Pair;
 
 import static net.dermetfan.gdx.math.GeometryUtils.filterX;
 import static net.dermetfan.gdx.math.GeometryUtils.filterY;
-import static net.dermetfan.gdx.math.GeometryUtils.reset;
 import static net.dermetfan.gdx.math.MathUtils.amplitude;
 import static net.dermetfan.gdx.math.MathUtils.max;
 import static net.dermetfan.gdx.math.MathUtils.min;
@@ -503,7 +503,8 @@ public class Box2DUtils extends com.badlogic.gdx.physics.box2d.Box2DUtils {
 
 	/** @param shape the Shape which AABB to get
 	 *  @param aabb the Rectangle to set to the given Shape's AABB
-	 *  @return the given Rectangle set as axis aligned bounding box of the given Shape */
+	 *  @return the given Rectangle set as axis aligned bounding box of the given Shape
+	 *  @since 0.9.1 */
 	public static Rectangle aabb(Shape shape, float rotation, Rectangle aabb) {
 		if(shape.getType() == Type.Circle)
 			return aabb((CircleShape) shape, aabb);
@@ -520,7 +521,7 @@ public class Box2DUtils extends com.badlogic.gdx.physics.box2d.Box2DUtils {
 			int v2i = Math.min(i / 2, v2Vertices.length - 1);
 			vertices[i] = i % 2 == 0 ? v2Vertices[v2i].x : v2Vertices[v2i].y;
 		}
-		reset(polygon);
+		GeometryUtils.reset(polygon);
 		polygon.setVertices(vertices);
 		polygon.setRotation(rotation * com.badlogic.gdx.math.MathUtils.radDeg);
 		return aabb.set(polygon.getBoundingRectangle());
@@ -542,7 +543,8 @@ public class Box2DUtils extends com.badlogic.gdx.physics.box2d.Box2DUtils {
 		return aabb(fixture, polygon.getBoundingRectangle());
 	}
 
-	/** @return the given Rectangle set as axis aligned bounding box of all fixtures of the given Body, in world coordinates */
+	/** @return the given Rectangle set as axis aligned bounding box of all fixtures of the given Body, in world coordinates
+	 *  @since 0.9.1 */
 	public static Rectangle aabb(Body body, Rectangle aabb) {
 		float minX = Float.POSITIVE_INFINITY, minY = Float.POSITIVE_INFINITY, maxX = Float.NEGATIVE_INFINITY, maxY = Float.NEGATIVE_INFINITY;
 		for(Fixture fixture : body.getFixtureList()) {
@@ -1208,6 +1210,41 @@ public class Box2DUtils extends com.badlogic.gdx.physics.box2d.Box2DUtils {
 			else
 				preserved++;
 		}
+	}
+
+	/** @param bodyDef the BodyDef to reset to default values
+	 *  @return the given BodyDef for chaining
+	 *  @since 0.9.1 */
+	public static BodyDef reset(BodyDef bodyDef) {
+		bodyDef.position.setZero();
+		bodyDef.type = BodyType.StaticBody;
+		bodyDef.angle = 0;
+		bodyDef.linearVelocity.setZero();
+		bodyDef.angularVelocity = 0;
+		bodyDef.linearDamping = 0;
+		bodyDef.angularDamping = 0;
+		bodyDef.allowSleep = true;
+		bodyDef.awake = true;
+		bodyDef.fixedRotation = false;
+		bodyDef.bullet = false;
+		bodyDef.active = true;
+		bodyDef.gravityScale = 1;
+		return bodyDef;
+	}
+
+	/** @param fixtureDef the FixtureDef to reset to default values
+	 *  @return the given FixtureDef for chaining
+	 *  @since 0.9.1 */
+	public static FixtureDef reset(FixtureDef fixtureDef) {
+		fixtureDef.shape = null;
+		fixtureDef.friction = 0;
+		fixtureDef.restitution = 0;
+		fixtureDef.density = 0;
+		fixtureDef.isSensor = false;
+		fixtureDef.filter.categoryBits = 1;
+		fixtureDef.filter.maskBits = -1;
+		fixtureDef.filter.groupIndex = 0;
+		return fixtureDef;
 	}
 
 }
