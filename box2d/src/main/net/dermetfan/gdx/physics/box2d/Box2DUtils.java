@@ -516,6 +516,7 @@ public class Box2DUtils extends com.badlogic.gdx.physics.box2d.Box2DUtils {
 		if(vertices.length < v2Vertices.length * 2)
 			vertices = new float[v2Vertices.length * 2];
 		for(int i = 0; i < vertices.length; i++) {
+			// if vertices.length > v2Vertices.length * 2, set remaining vertices to the last vertex from v2Vertices to make them redundant
 			int v2i = Math.min(i / 2, v2Vertices.length - 1);
 			vertices[i] = i % 2 == 0 ? v2Vertices[v2i].x : v2Vertices[v2i].y;
 		}
