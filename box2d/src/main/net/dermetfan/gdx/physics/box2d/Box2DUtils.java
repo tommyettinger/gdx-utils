@@ -17,6 +17,8 @@ package net.dermetfan.gdx.physics.box2d;
 import java.util.Arrays;
 
 import com.badlogic.gdx.math.Intersector;
+import com.badlogic.gdx.math.Polygon;
+import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.BodyDef;
@@ -67,6 +69,7 @@ import net.dermetfan.utils.Pair;
 
 import static net.dermetfan.gdx.math.GeometryUtils.filterX;
 import static net.dermetfan.gdx.math.GeometryUtils.filterY;
+import static net.dermetfan.gdx.math.GeometryUtils.reset;
 import static net.dermetfan.gdx.math.MathUtils.amplitude;
 import static net.dermetfan.gdx.math.MathUtils.max;
 import static net.dermetfan.gdx.math.MathUtils.min;
@@ -143,6 +146,9 @@ public class Box2DUtils extends com.badlogic.gdx.physics.box2d.Box2DUtils {
 	/** for internal, temporary usage */
 	private static final Array<Vector2> tmpVector2Array = new Array<>(8);
 
+	/** for internal, temporary usage */
+	private static final Polygon polygon = new Polygon(new float[maxPolygonVertices]);
+
 	/** @param shape the Shape to create a new {@link ShapeCache} for that will be added to {@link #cache} */
 	public static ShapeCache cache(Shape shape) {
 		if(cache.containsKey(shape))
@@ -188,10 +194,10 @@ public class Box2DUtils extends com.badlogic.gdx.physics.box2d.Box2DUtils {
 			Vector2 position = circleShape.getPosition();
 			float radius = circleShape.getRadius();
 			vertices = new Vector2[4];
-			vertices[0] = new Vector2(position.x - radius, position.y + radius); // top left
-			vertices[1] = new Vector2(position.x - radius, position.y - radius); // bottom left
-			vertices[2] = new Vector2(position.x + radius, position.y - radius); // bottom right
-			vertices[3] = new Vector2(position.x + radius, position.y + radius); // top right
+			vertices[0] = new Vector2(position.x - radius, position.y - radius); // bottom left
+			vertices[1] = new Vector2(position.x + radius, position.y - radius); // bottom right
+			vertices[2] = new Vector2(position.x + radius, position.y + radius); // top right
+			vertices[3] = new Vector2(position.x - radius, position.y + radius); // top left
 			break;
 		default:
 			throw new IllegalArgumentException("shapes of the type '" + shape.getType().name() + "' are not supported");
@@ -382,7 +388,9 @@ public class Box2DUtils extends com.badlogic.gdx.physics.box2d.Box2DUtils {
 		return vertices;
 	}
 
-	/** @return the vertices of a body's fixtures */
+	/** @return the vertices of a body's fixtures
+	 *  @deprecated unusable result */
+	@Deprecated
 	public static Vector2[] vertices(Body body) {
 		Vector2[][] fixtureVertices = fixtureVertices(body);
 
@@ -479,6 +487,80 @@ public class Box2DUtils extends com.badlogic.gdx.physics.box2d.Box2DUtils {
 	/** @see #position(Shape, Body) */
 	public static Vector2 position(Fixture fixture) {
 		return position(fixture.getShape(), fixture.getBody());
+	}
+
+	// aabb
+
+	/** @see #aabb(Shape, float, Rectangle) */
+	public static Rectangle aabb(CircleShape shape, Rectangle aabb) {
+		return aabb.set(minX(shape), minY(shape), width(shape), height(shape));
+	}
+
+	/** @see #aabb(CircleShape, Rectangle) */
+	public static Rectangle aabb(CircleShape shape) {
+		return aabb(shape, polygon.getBoundingRectangle());
+	}
+
+	/** @param shape the Shape which AABB to get
+	 *  @param aabb the Rectangle to set to the given Shape's AABB
+	 *  @return the given Rectangle set as axis aligned bounding box of the given Shape */
+	public static Rectangle aabb(Shape shape, float rotation, Rectangle aabb) {
+		if(shape.getType() == Type.Circle)
+			return aabb((CircleShape) shape, aabb);
+
+		if(rotation == 0)
+			return aabb.set(minX(shape), minY(shape), width(shape), height(shape));
+
+		Vector2[] v2Vertices = Box2DUtils.vertices(shape);
+		float[] vertices = polygon.getVertices();
+		if(vertices.length < v2Vertices.length * 2)
+			vertices = new float[v2Vertices.length * 2];
+		for(int i = 0; i < vertices.length; i++) {
+			int v2i = Math.min(i / 2, v2Vertices.length - 1);
+			vertices[i] = i % 2 == 0 ? v2Vertices[v2i].x : v2Vertices[v2i].y;
+		}
+		reset(polygon);
+		polygon.setVertices(vertices);
+		polygon.setRotation(rotation * com.badlogic.gdx.math.MathUtils.radDeg);
+		return aabb.set(polygon.getBoundingRectangle());
+	}
+
+	/** @see #aabb(Shape, float, Rectangle) */
+	public static Rectangle aabb(Shape shape, float rotation) {
+		return aabb(shape, rotation, polygon.getBoundingRectangle());
+	}
+
+	/** @return the given Rectangle set as axis aligned bounding box of the given Fixture, in world coordinates
+	 *  @see #aabb(Shape, float, Rectangle) */
+	public static Rectangle aabb(Fixture fixture, Rectangle aabb) { // FIXME same as https://github.com/libgdx/libgdx/issues/2710
+		return aabb(fixture.getShape(), fixture.getBody().getAngle(), aabb).setPosition(fixture.getBody().getPosition().add(aabb.x, aabb.y));
+	}
+
+	/** @see #aabb(Fixture, Rectangle) */
+	public static Rectangle aabb(Fixture fixture) {
+		return aabb(fixture, polygon.getBoundingRectangle());
+	}
+
+	/** @return the given Rectangle set as axis aligned bounding box of all fixtures of the given Body, in world coordinates */
+	public static Rectangle aabb(Body body, Rectangle aabb) {
+		float minX = Float.POSITIVE_INFINITY, minY = Float.POSITIVE_INFINITY, maxX = Float.NEGATIVE_INFINITY, maxY = Float.NEGATIVE_INFINITY;
+		for(Fixture fixture : body.getFixtureList()) {
+			aabb(fixture, aabb);
+			if(aabb.x < minX)
+				minX = aabb.x;
+			if(aabb.x + aabb.width > maxX)
+				maxX = aabb.x + aabb.width;
+			if(aabb.y < minY)
+				minY = aabb.y;
+			if(aabb.y + aabb.height > maxY)
+				maxY = aabb.y + aabb.height;
+		}
+		return aabb.set(minX, minY, maxX - minX, maxY - minY);
+	}
+
+	/** @see #aabb(Body, Rectangle) */
+	public static Rectangle aabb(Body body) {
+		return aabb(body, polygon.getBoundingRectangle());
 	}
 
 	// clone
