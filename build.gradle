@@ -2,5 +2,5 @@ apply from: 'gradle/common.gradle'
 
 dependencies {
 	compile "com.badlogicgames.gdx:gdx:$libgdxVersion"
-	testCompile 'junit:junit:+'
+	testCompile 'junit:junit:4.12'
 }
