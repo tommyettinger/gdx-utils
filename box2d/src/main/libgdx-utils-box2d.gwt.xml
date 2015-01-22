@@ -4,4 +4,20 @@
 	<inherits name="libgdx-utils" />
 	<source path="net/dermetfan/" />
 	<source path="com/badlogic/gdx/physics/box2d/" />
+
+	<extend-configuration-property name="gdx.reflect.include" value="net.dermetfan.utils.Pair" />
+	<extend-configuration-property name="gdx.reflect.include" value="net.dermetfan.gdx.physics.box2d.WorldObserver$BodyChange" />
+	<extend-configuration-property name="gdx.reflect.include" value="net.dermetfan.gdx.physics.box2d.WorldObserver$FixtureChange" />
+	<extend-configuration-property name="gdx.reflect.include" value="net.dermetfan.gdx.physics.box2d.WorldObserver$JointChange" />
+	<extend-configuration-property name="gdx.reflect.include" value="net.dermetfan.gdx.physics.box2d.WorldObserver$RevoluteJointChange" />
+	<extend-configuration-property name="gdx.reflect.include" value="net.dermetfan.gdx.physics.box2d.WorldObserver$PrismaticJointChange" />
+	<extend-configuration-property name="gdx.reflect.include" value="net.dermetfan.gdx.physics.box2d.WorldObserver$DistanceJointChange" />
+	<extend-configuration-property name="gdx.reflect.include" value="net.dermetfan.gdx.physics.box2d.WorldObserver$MouseJointChange" />
+	<extend-configuration-property name="gdx.reflect.include" value="net.dermetfan.gdx.physics.box2d.WorldObserver$GearJointChange" />
+	<extend-configuration-property name="gdx.reflect.include" value="net.dermetfan.gdx.physics.box2d.WorldObserver$WheelJointChange" />
+	<extend-configuration-property name="gdx.reflect.include" value="net.dermetfan.gdx.physics.box2d.WorldObserver$WeldJointChange" />
+	<extend-configuration-property name="gdx.reflect.include" value="net.dermetfan.gdx.physics.box2d.WorldObserver$FrictionJointChange" />
+	<extend-configuration-property name="gdx.reflect.include" value="net.dermetfan.gdx.physics.box2d.WorldObserver$RopeJointChange" />
+	<extend-configuration-property name="gdx.reflect.include" value="net.dermetfan.gdx.physics.box2d.WorldObserver$MotorJointChange" />
+	<extend-configuration-property name="gdx.reflect.include" value="com.badlogic.gdx.utils.ObjectMap" />
 </module>
