@@ -8,7 +8,7 @@ import com.badlogic.gdx.physics.box2d.Manifold;
 /** Override this if you only want to use a subset of methods of the {@link ContactListener}.
  *  @author dermetfan
  *  @since 0.3.5 */
-public class ContactListenerAdapter implements ContactListener {
+public class ContactAdapter implements ContactListener {
 
 	@Override
 	public void beginContact(Contact contact) {}
