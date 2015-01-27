@@ -1,12 +1,17 @@
 package net.dermetfan.utils;
 
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 public class ArrayUtilsTest {
+
+	@Rule
+	public ExpectedException thrown = ExpectedException.none();
 
 	@Test
 	public void contains() {
@@ -42,5 +47,50 @@ public class ArrayUtilsTest {
 			if(f != arr[++i])
 				fail("expected " + f + ", got " + arr[i]);
 	}
-	
+
+	@Test
+	public void checkRegion() {
+		Object[] array = new Object[10];
+		ArrayUtils.checkRegion(array, 0, 10);
+		ArrayUtils.checkRegion(array, 1, 9);
+		thrown.expect(ArrayIndexOutOfBoundsException.class);
+		ArrayUtils.checkRegion(array, 1, 10);
+	}
+
+	@Test
+	public void checkRegion2() {
+		thrown.expect(ArrayIndexOutOfBoundsException.class);
+		ArrayUtils.checkRegion(new Object[10], -1, 10);
+	}
+
+	@Test
+	public void checkRegion3() {
+		thrown.expect(ArrayIndexOutOfBoundsException.class);
+		ArrayUtils.checkRegion(new Object[10], 0, -1);
+	}
+
+	@Test
+	public void checkRegion4() {
+		thrown.expect(IllegalArgumentException.class);
+		ArrayUtils.checkRegion((Object[]) null, 0, 10);
+	}
+
+	@Test
+	public void requireCapacity() {
+		Object[] source = new Object[10], dest = new Object[10];
+		ArrayUtils.requireCapacity(source, 0, 10, dest, 0);
+		ArrayUtils.requireCapacity(source, 0, 5, dest, 0);
+		ArrayUtils.requireCapacity(source, 0, 5, dest, 5);
+		ArrayUtils.requireCapacity(source, 0, 3, dest, 5);
+		ArrayUtils.requireCapacity(source, 0, 5, dest, 3);
+		thrown.expect(ArrayIndexOutOfBoundsException.class);
+		ArrayUtils.requireCapacity(source, 0, 10, dest, 1);
+	}
+
+	@Test
+	public void requireCapacity2() {
+		thrown.expect(ArrayIndexOutOfBoundsException.class);
+		ArrayUtils.requireCapacity(new Object[10], 0, 9, new Object[10], 2);
+	}
+
 }
