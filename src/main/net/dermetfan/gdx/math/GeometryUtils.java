@@ -55,12 +55,12 @@ public class GeometryUtils extends net.dermetfan.utils.math.GeometryUtils {
 
 	/** @see net.dermetfan.utils.math.GeometryUtils#between(float, float, float, float, float, float, boolean) */
 	public static boolean between(Vector2 point, Vector2 a, Vector2 b, boolean inclusive) {
-		return net.dermetfan.utils.math.GeometryUtils.between(point.x, point.y, a.x, a.y, b.x, b.y, inclusive);
+		return between(point.x, point.y, a.x, a.y, b.x, b.y, inclusive);
 	}
 
 	/** @see net.dermetfan.utils.math.GeometryUtils#between(float, float, float, float, float, float) */
 	public static boolean between(Vector2 point, Vector2 a, Vector2 b) {
-		return net.dermetfan.utils.math.GeometryUtils.between(point.x, point.y, a.x, a.y, b.x, b.y);
+		return between(point.x, point.y, a.x, a.y, b.x, b.y);
 	}
 
 	/** @param vector the {@link Vector2} which components to set to their absolute value
@@ -97,37 +97,37 @@ public class GeometryUtils extends net.dermetfan.utils.math.GeometryUtils {
 
 	/** @see #add(Array, float, float) */
 	public static FloatArray add(FloatArray vertices, float x, float y) {
-		net.dermetfan.utils.math.GeometryUtils.add(vertices.items, x, y, 0, vertices.size);
+		add(vertices.items, x, y, 0, vertices.size);
 		return vertices;
 	}
 
 	/** @see #add(Array, float, float) */
 	public static FloatArray sub(FloatArray vertices, float x, float y) {
-		net.dermetfan.utils.math.GeometryUtils.sub(vertices.items, x, y, 0, vertices.size);
+		sub(vertices.items, x, y, 0, vertices.size);
 		return vertices;
 	}
 
 	/** @see #add(FloatArray, float, float) */
 	public static FloatArray addX(FloatArray vertices, float value) {
-		net.dermetfan.utils.math.GeometryUtils.addX(vertices.items, value, 0, vertices.size);
+		addX(vertices.items, value, 0, vertices.size);
 		return vertices;
 	}
 
 	/** @see #sub(FloatArray, float, float) */
 	public static FloatArray subX(FloatArray vertices, float value) {
-		net.dermetfan.utils.math.GeometryUtils.subX(vertices.items, value, 0, vertices.size);
+		subX(vertices.items, value, 0, vertices.size);
 		return vertices;
 	}
 
 	/** @see #add(FloatArray, float, float) */
 	public static FloatArray addY(FloatArray vertices, float value) {
-		net.dermetfan.utils.math.GeometryUtils.addY(vertices.items, value, 0, vertices.size);
+		addY(vertices.items, value, 0, vertices.size);
 		return vertices;
 	}
 
 	/** @see #sub(FloatArray, float, float) */
 	public static FloatArray subY(FloatArray vertices, float value) {
-		net.dermetfan.utils.math.GeometryUtils.subY(vertices.items, value, 0, vertices.size);
+		subY(vertices.items, value, 0, vertices.size);
 		return vertices;
 	}
 
@@ -327,7 +327,7 @@ public class GeometryUtils extends net.dermetfan.utils.math.GeometryUtils {
 	public static FloatArray rotate(float x, float y, float width, float height, float radians, FloatArray output) {
 		output.clear();
 		output.ensureCapacity(8);
-		net.dermetfan.utils.math.GeometryUtils.rotate(x, y, width, height, radians, output.items, 0);
+		rotate(x, y, width, height, radians, output.items, 0);
 		return output;
 	}
 
@@ -494,7 +494,7 @@ public class GeometryUtils extends net.dermetfan.utils.math.GeometryUtils {
 			return vertices;
 		float height = height(vertices), width = width(vertices);
 		for(int i = x ? 0 : 1; i < vertices.size; i += x ^ y ? 2 : 1)
-			vertices.set(i, i % 2 == 0 ? net.dermetfan.utils.math.GeometryUtils.invertAxis(vertices.get(i), width) : net.dermetfan.utils.math.GeometryUtils.invertAxis(vertices.get(i), height));
+			vertices.set(i, i % 2 == 0 ? invertAxis(vertices.get(i), width) : invertAxis(vertices.get(i), height));
 		return vertices;
 	}
 
