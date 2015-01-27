@@ -181,4 +181,76 @@ public class ArrayUtils {
 		return boxed;
 	}
 
+	/** @throws ArrayIndexOutOfBoundsException if an invalid region is specified
+	 *  @throws IllegalArgumentException if the array is null */
+	public static void checkRegion(Object[] array, int offset, int length) {
+		if(array == null)
+			throw new IllegalArgumentException("array is null");
+		if(offset < 0)
+			throw new ArrayIndexOutOfBoundsException("negative offset: " + offset);
+		if(length < 0)
+			throw new ArrayIndexOutOfBoundsException("negative length: " + length);
+		if(offset + length > array.length)
+			throw new ArrayIndexOutOfBoundsException(offset + length);
+	}
+
+	/** throws an appropriate exception if the specified region of the source array cannot be copied to the destination array starting at the given offset
+	 *  @throws ArrayIndexOutOfBoundsException
+	 *  @throws IllegalArgumentException
+	 *  @see #checkRegion(Object[], int, int) */
+	public static void requireCapacity(Object[] source, int offset, int length, Object[] dest, int destOffset) {
+		checkRegion(source, offset, length);
+		checkRegion(dest, destOffset, length);
+	}
+
+	// primitive copies
+
+	// float
+
+	/** @throws ArrayIndexOutOfBoundsException if an invalid region is specified
+	 *  @throws IllegalArgumentException if the array is null */
+	public static void checkRegion(float[] array, int offset, int length) {
+		if(array == null)
+			throw new IllegalArgumentException("array is null");
+		if(offset < 0)
+			throw new ArrayIndexOutOfBoundsException("negative offset: " + offset);
+		if(length < 0)
+			throw new ArrayIndexOutOfBoundsException("negative length: " + length);
+		if(offset + length > array.length)
+			throw new ArrayIndexOutOfBoundsException(offset + length);
+	}
+
+	/** throws an appropriate exception if the specified region of the source array cannot be copied to the destination array starting at the given offset
+	 *  @throws ArrayIndexOutOfBoundsException
+	 *  @throws IllegalArgumentException
+	 *  @see #checkRegion(float[], int, int) */
+	public static void requireCapacity(float[] source, int offset, int length, float[] dest, int destOffset) {
+		checkRegion(source, offset, length);
+		checkRegion(dest, destOffset, length);
+	}
+
+	// int
+
+	/** @throws ArrayIndexOutOfBoundsException if an invalid region is specified
+	 *  @throws IllegalArgumentException if the array is null */
+	public static void checkRegion(int[] array, int offset, int length) {
+		if(array == null)
+			throw new IllegalArgumentException("array is null");
+		if(offset < 0)
+			throw new ArrayIndexOutOfBoundsException("negative offset: " + offset);
+		if(length < 0)
+			throw new ArrayIndexOutOfBoundsException("negative length: " + length);
+		if(offset + length > array.length)
+			throw new ArrayIndexOutOfBoundsException(offset + length);
+	}
+
+	/** throws an appropriate exception if the specified region of the source array cannot be copied to the destination array starting at the given offset
+	 *  @throws ArrayIndexOutOfBoundsException
+	 *  @throws IllegalArgumentException
+	 *  @see #checkRegion(int[], int, int) */
+	public static void requireCapacity(int[] source, int offset, int length, int[] dest, int destOffset) {
+		checkRegion(source, offset, length);
+		checkRegion(dest, destOffset, length);
+	}
+
 }
