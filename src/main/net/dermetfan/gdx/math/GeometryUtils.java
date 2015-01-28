@@ -431,6 +431,16 @@ public class GeometryUtils extends net.dermetfan.utils.math.GeometryUtils {
 		return vertices.size <= 4 || polygonArea(vertices) < 0;
 	}
 
+	/** @see #areVerticesClockwise(Polygon) */
+	public static boolean areVerticesClockwise(float[] vertices, int offset, int length) {
+		return vertices.length <= 8 || com.badlogic.gdx.math.GeometryUtils.polygonArea(vertices, offset, length) < 0;
+	}
+
+	/** @see #areVerticesClockwise(float[], int, int) */
+	public static boolean areVerticesClockwise(float[] vertices) {
+		return areVerticesClockwise(vertices, 0, vertices.length);
+	}
+
 	/** @see #areVerticesClockwise(FloatArray) */
 	public static boolean areVerticesClockwise(Array<Vector2> vertices) {
 		return vertices.size <= 2 || areVerticesClockwise(toFloatArray(vertices));
