@@ -97,37 +97,37 @@ public class GeometryUtils extends net.dermetfan.utils.math.GeometryUtils {
 
 	/** @see #add(Array, float, float) */
 	public static FloatArray add(FloatArray vertices, float x, float y) {
-		add(vertices.items, x, y, 0, vertices.size);
+		add(vertices.items, 0, vertices.size, x, y);
 		return vertices;
 	}
 
 	/** @see #add(Array, float, float) */
 	public static FloatArray sub(FloatArray vertices, float x, float y) {
-		sub(vertices.items, x, y, 0, vertices.size);
+		sub(vertices.items, 0, vertices.size, x, y);
 		return vertices;
 	}
 
 	/** @see #add(FloatArray, float, float) */
 	public static FloatArray addX(FloatArray vertices, float value) {
-		addX(vertices.items, value, 0, vertices.size);
+		addX(vertices.items, 0, vertices.size, value);
 		return vertices;
 	}
 
 	/** @see #sub(FloatArray, float, float) */
 	public static FloatArray subX(FloatArray vertices, float value) {
-		subX(vertices.items, value, 0, vertices.size);
+		subX(vertices.items, 0, vertices.size, value);
 		return vertices;
 	}
 
 	/** @see #add(FloatArray, float, float) */
 	public static FloatArray addY(FloatArray vertices, float value) {
-		addY(vertices.items, value, 0, vertices.size);
+		addY(vertices.items, 0, vertices.size, value);
 		return vertices;
 	}
 
 	/** @see #sub(FloatArray, float, float) */
 	public static FloatArray subY(FloatArray vertices, float value) {
-		subY(vertices.items, value, 0, vertices.size);
+		subY(vertices.items, 0, vertices.size, value);
 		return vertices;
 	}
 
@@ -494,32 +494,22 @@ public class GeometryUtils extends net.dermetfan.utils.math.GeometryUtils {
 		vertices.addAll(tmpVector2Array, 0, n);
 	}
 
-	/** Converts the given vertices to their position on inverted axes.
-	 *  @param vertices the vertices to convert
-	 *  @param x if the x-axis should be inverted
-	 *  @param y if the y-axis should be inverted
-	 *  @return the given vertices converted to the inverted axis in their <strong>local</strong> coordinate system */
+	/** @see #invertAxes(float[], int, int, boolean, boolean) */
 	public static FloatArray invertAxes(FloatArray vertices, boolean x, boolean y) {
-		if(!x && !y)
-			return vertices;
-		float height = height(vertices), width = width(vertices);
-		for(int i = x ? 0 : 1; i < vertices.size; i += x ^ y ? 2 : 1)
-			vertices.set(i, i % 2 == 0 ? invertAxis(vertices.get(i), width) : invertAxis(vertices.get(i), height));
+		invertAxes(vertices.items, 0, vertices.size, x, y);
 		return vertices;
 	}
 
-	/** inverts the given vertices to a y-down coordinate system and translates them according to their parent coordinate system by their {@link #height(FloatArray) height}
-	 *  @see #invertAxes(FloatArray, boolean, boolean) */
+	/** @see #toYDown(float[]) */
 	public static FloatArray toYDown(FloatArray vertices) {
-		invertAxes(vertices, false, true);
-		return subY(vertices, height(vertices));
+		toYDown(vertices.items, 0, vertices.size);
+		return vertices;
 	}
 
-	/** inverts the given vertices to a y-up coordinate system and translates them according to their parent coordinate system by their {@link #height(FloatArray) height}
-	 *  @see #invertAxes(FloatArray, boolean, boolean) */
+	/** @see #toYUp(float[]) */
 	public static FloatArray toYUp(FloatArray vertices) {
-		invertAxes(vertices, false, true);
-		return addY(vertices, height(vertices));
+		toYUp(vertices.items, 0, vertices.size);
+		return vertices;
 	}
 
 	/** @param aabb the rectangle to set as AABB of the given vertices

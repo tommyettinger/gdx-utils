@@ -58,41 +58,71 @@ public class GeometryUtils {
 		return between(x, y, aX, aY, bX, bY, true);
 	}
 
-	/** @param vertices the vertices to add the given values to
+	/** @param items the items to add the given values to
 	 *  @param x the x value to add
 	 *  @param y the y value to add
-	 *  @return the given vertices for chaining */
-	public static float[] add(float[] vertices, float x, float y, int offset, int length) {
+	 *  @return the given items for chaining */
+	public static float[] add(float[] items, int offset, int length, float x, float y) {
 		for(int i = offset + 1; i < offset + length; i += 2) {
-			vertices[i - 1] += x;
-			vertices[i] += y;
+			items[i - 1] += x;
+			items[i] += y;
 		}
-		return vertices;
+		return items;
 	}
 
-	/** @see #add(float[], float, float, int, int) */
-	public static float[] sub(float[] items, float x, float y, int offset, int length) {
-		return add(items, -x, -y, offset, length);
+	/** @see #add(float[], int, int, float, float) */
+	public static float[] add(float[] vertices, float x, float y) {
+		return add(vertices, 0, vertices.length, x, y);
 	}
 
-	/** @see #add(float[], float, float, int, int) */
-	public static float[] addX(float[] items, float value, int offset, int length) {
-		return add(items, value, 0, offset, length);
+	/** @see #add(float[], int, int, float, float) */
+	public static float[] sub(float[] items, int offset, int length, float x, float y) {
+		return add(items, offset, length, -x, -y);
 	}
 
-	/** @see #add(float[], float, float, int, int) */
-	public static float[] addY(float[] items, float value, int offset, int length) {
-		return add(items, 0, value, offset, length);
+	/** @see #sub(float[], int, int, float, float) */
+	public static float[] sub(float[] items, float x, float y) {
+		return sub(items, 0, items.length, x, y);
 	}
 
-	/** @see #sub(float[], float, float, int, int) */
-	public static float[] subX(float[] items, float value, int offset, int length) {
-		return sub(items, value, 0, offset, length);
+	/** @see #add(float[], int, int, float, float) */
+	public static float[] addX(float[] items, int offset, int length, float value) {
+		return add(items, offset, length, value, 0);
 	}
 
-	/** @see #sub(float[], float, float, int, int) */
-	public static float[] subY(float[] items, float value, int offset, int length) {
-		return sub(items, 0, value, offset, length);
+	/** @see #addX(float[], int, int, float) */
+	public static float[] addX(float[] items, float value) {
+		return addX(items, 0, items.length, value);
+	}
+
+	/** @see #add(float[], int, int, float, float) */
+	public static float[] addY(float[] items, int offset, int length, float value) {
+		return add(items, offset, length, 0, value);
+	}
+
+	/** @see #addY(float[], int, int, float) */
+	public static float[] addY(float[] items, float value) {
+		return addY(items, 0, items.length, value);
+	}
+
+	/** @see #sub(float[], int, int, float, float) */
+	public static float[] subX(float[] items, int offset, int length, float value) {
+		return sub(items, offset, length, value, 0);
+	}
+
+	/** @see #subX(float[], int, int, float) */
+	public static float[] subX(float[] items, float value) {
+		return subX(items, 0, items.length, value);
+	}
+
+	/** @see #sub(float[], int, int, float, float) */
+	public static float[] subY(float[] items, int offset, int length, float value) {
+		return sub(items, offset, length, 0, value);
+	}
+
+	/** @see #subY(float[], int, int, float) */
+	public static float[] subY(float[] items, float value) {
+		return subY(items, 0, items.length, value);
 	}
 
 	/** @param vertices the vertices which width to get
@@ -314,6 +344,51 @@ public class GeometryUtils {
 	 *  @return the position of the object on the axis, inverted from going to positive to negative */
 	public static float invertAxis(float coord, float axisSize) {
 		return mirror(coord, axisSize / 2);
+	}
+
+	/** Converts the given vertices to their position on inverted axes.
+	 *  @param vertices the vertices to convert
+	 *  @param x if the x-axis should be inverted
+	 *  @param y if the y-axis should be inverted
+	 *  @return the given vertices converted to the inverted axis in their <strong>local</strong> coordinate system */
+	public static float[] invertAxes(float[] vertices, int offset, int length, boolean x, boolean y) {
+		if(!x && !y)
+			return vertices;
+		float height = height(vertices, offset, length), width = width(vertices, offset, length);
+		for(int i = (x ? 0 : 1) + offset; i < offset + length; i += x ^ y ? 2 : 1)
+			vertices[i] = i % 2 == 0 ? invertAxis(vertices[i], width) : invertAxis(vertices[i], height);
+		return vertices;
+	}
+
+	/** @see #invertAxes(float[], int, int, boolean, boolean) */
+	public static float[] invertAxes(float[] vertices, boolean x, boolean y) {
+		return invertAxes(vertices, 0, vertices.length, x, y);
+	}
+
+	/** inverts the given vertices to a y-down coordinate system and translates them according to their parent coordinate system by their {@link #height(float[]) height}
+	 *  @see #invertAxes(float[], boolean, boolean) */
+	public static float[] toYDown(float[] vertices, int offset, int length) {
+		checkRegion(vertices, offset, length);
+		invertAxes(vertices, offset, length, false, true);
+		return subY(vertices, offset, length, height(vertices, offset, length));
+	}
+
+	/** @see #toYDown(float[], int, int) */
+	public static float[] toYDown(float[] vertices) {
+		return toYDown(vertices, 0, vertices.length);
+	}
+
+	/** inverts the given vertices to a y-up coordinate system and translates them according to their parent coordinate system by their {@link #height(float[]) height}
+	 *  @see #invertAxes(float[], boolean, boolean) */
+	public static float[] toYUp(float[] vertices, int offset, int length) {
+		checkRegion(vertices, offset, length);
+		invertAxes(vertices, offset, length, false, true);
+		return subY(vertices, offset, length, height(vertices, offset, length));
+	}
+
+	/** @see #toYUp(float[], int, int) */
+	public static float[] toYUp(float[] vertices) {
+		return toYUp(vertices, 0, vertices.length);
 	}
 
 }
