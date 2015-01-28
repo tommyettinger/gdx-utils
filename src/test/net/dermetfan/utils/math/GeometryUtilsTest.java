@@ -91,4 +91,25 @@ public class GeometryUtilsTest {
 		assertEquals(13, GeometryUtils.invertAxis(19, 32), 0);
 	}
 
+	@Test
+	public void invertAxes() {
+		assertArrayEquals(new float[] {1, 1, 0, 1, 0, 0, 1, 0}, GeometryUtils.invertAxes(new float[] {0, 0, 1, 0, 1, 1, 0, 1}, true, true), 0);
+		assertArrayEquals(new float[] {5, 5, 1, 1, 0, 1, 0, 0, 1, 0, 5, 5}, GeometryUtils.invertAxes(new float[] {5, 5, 0, 0, 1, 0, 1, 1, 0, 1, 5, 5}, 2, 8, true, true), 0);
+		assertArrayEquals(new float[] {1, 0, 0, 0, 0, 1, 1, 1}, GeometryUtils.invertAxes(new float[] {0, 0, 1, 0, 1, 1, 0, 1}, true, false), 0);
+		assertArrayEquals(new float[] {0, 1, 1, 1, 1, 0, 0, 0}, GeometryUtils.invertAxes(new float[] {0, 0, 1, 0, 1, 1, 0, 1}, false, true), 0);
+		assertArrayEquals(new float[] {0, 0, 1, 0, 1, 1, 0, 1}, GeometryUtils.invertAxes(new float[] {0, 0, 1, 0, 1, 1, 0, 1}, false, false), 0);
+	}
+
+	@Test
+	public void toYDown() {
+		assertArrayEquals(new float[] {0, 0, 1, 0, 1, -1, 0, -1}, GeometryUtils.toYDown(new float[] {0, 0, 1, 0, 1, 1, 0, 1}), 0);
+		assertArrayEquals(new float[] {5, 5, 0, 0, 1, 0, 1, -1, 0, -1, 5, 5}, GeometryUtils.toYDown(new float[] {5, 5, 0, 0, 1, 0, 1, 1, 0, 1, 5, 5}, 2, 8), 0);
+	}
+
+	@Test
+	public void toYUp() {
+		assertArrayEquals(new float[] {0, 0, 1, 0, 1, 1, 0, 1}, GeometryUtils.toYUp(new float[] {0, 0, 1, 0, 1, -1, 0, -1}), 0);
+		assertArrayEquals(new float[] {5, 5, 0, 0, 1, 0, 1, 1, 0, 1, 5, 5}, GeometryUtils.toYUp(new float[] {5, 5, 0, 0, 1, 0, 1, -1, 0, -1, 5, 5}, 2, 8), 0);
+	}
+
 }
