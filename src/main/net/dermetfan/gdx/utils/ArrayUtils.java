@@ -32,10 +32,9 @@ public class ArrayUtils extends net.dermetfan.utils.ArrayUtils {
 	 *  @param start the array index at which to start (may be negative)
 	 *  @param everyXth select every xth of items
 	 *  @param dest The array to put the values in. May be null.
-	 *  @throws IllegalArgumentException if the given dest array is not null and smaller than the required length
 	 *  @return the dest array or a new array (if dest was null) containing everyXth item of the given items array */
 	public static <T> Array<T> select(Array<T> items, int start, int length, int everyXth, Array<T> dest) {
-		int outputLength = (int) (length / (float) everyXth - (start < 0 ? start + everyXth * (Math.abs(start) / everyXth) : start) / (float) everyXth);
+		int outputLength = selectCount(start, length, everyXth);
 		if(dest == null)
 			dest = new Array<>(outputLength);
 		dest.clear();
@@ -114,7 +113,6 @@ public class ArrayUtils extends net.dermetfan.utils.ArrayUtils {
 	 *  @param skips the number of indices to skip after each selection
 	 *  @param repeatSkips The skips to use repeatedly after {@code skips} has no more values. If this is null, no more elements will be selected.
 	 *  @param output the array to fill
-	 *  @throws IllegalArgumentException if the output array is not null and smaller than the required length
 	 *  @return the {@code elements} that were not skipped */
 	@SuppressWarnings("unchecked")
 	public static <T> Array<T> skipselect(Array<T> elements, IntArray skips, IntArray repeatSkips, Array<T> output) {
@@ -162,7 +160,6 @@ public class ArrayUtils extends net.dermetfan.utils.ArrayUtils {
 
 	/** Like {@link #skipselect(Array, IntArray, IntArray)} with a skips array that contains only {@code firstSkip} and an infinite {@code repeatSkips} array which elements are all {@code skips}.
 	 * 	If {@code skips} is smaller than 1, {@code elements} will be returned.
-	 *  @throws IllegalArgumentException if the output array is not null and smaller than the required length
 	 *  @see #skipselect(Array, IntArray, IntArray) */
 	@SuppressWarnings("unchecked")
 	public static <T> Array<T> skipselect(Array<T> elements, int firstSkip, int skips, Array<T> output) {
@@ -209,10 +206,9 @@ public class ArrayUtils extends net.dermetfan.utils.ArrayUtils {
 	 *  @param start the array index at which to start (may be negative)
 	 *  @param everyXth select every xth of items
 	 *  @param dest The array to put the values in. May be null.
-	 *  @throws IllegalArgumentException if the given dest array is not null and smaller than the required length
 	 *  @return the dest array or a new array (if dest was null) containing everyXth item of the given items array */
 	public static IntArray select(IntArray items, int start, int length, int everyXth, IntArray dest) {
-		int outputLength = (int) (length / (float) everyXth - (start < 0 ? start + everyXth * (Math.abs(start) / everyXth) : start) / (float) everyXth);
+		int outputLength = selectCount(start, length, everyXth);
 		if(dest == null)
 			dest = new IntArray(outputLength);
 		dest.clear();
@@ -291,7 +287,6 @@ public class ArrayUtils extends net.dermetfan.utils.ArrayUtils {
 	 *  @param skips the number of indices to skip after each selection
 	 *  @param repeatSkips The skips to use repeatedly after {@code skips} has no more values. If this is null, no more elements will be selected.
 	 *  @param output the array to fill
-	 *  @throws IllegalArgumentException if the output array is not null and smaller than the required length
 	 *  @return the {@code elements} that were not skipped */
 	public static IntArray skipselect(IntArray elements, IntArray skips, IntArray repeatSkips, IntArray output) {
 		boolean normal = skips != null && skips.size > 0, repeat = repeatSkips != null && repeatSkips.size > 0;
@@ -338,7 +333,6 @@ public class ArrayUtils extends net.dermetfan.utils.ArrayUtils {
 
 	/** Like {@link #skipselect(Array, IntArray, IntArray)} with a skips array that contains only {@code firstSkip} and an infinite {@code repeatSkips} array which elements are all {@code skips}.
 	 * 	If {@code skips} is smaller than 1, {@code elements} will be returned.
-	 *  @throws IllegalArgumentException if the output array is not null and smaller than the required length
 	 *  @see #skipselect(Array, IntArray, IntArray) */
 	public static IntArray skipselect(IntArray elements, int firstSkip, int skips, IntArray output) {
 		int length, span = firstSkip;
@@ -377,10 +371,9 @@ public class ArrayUtils extends net.dermetfan.utils.ArrayUtils {
 	 *  @param start the array index at which to start (may be negative)
 	 *  @param everyXth select every xth of items
 	 *  @param dest The array to put the values in. May be null.
-	 *  @throws IllegalArgumentException if the given dest array is not null and smaller than the required length
 	 *  @return the dest array or a new array (if dest was null) containing everyXth item of the given items array */
 	public static FloatArray select(FloatArray items, int start, int length, int everyXth, FloatArray dest) {
-		int outputLength = (int) (length / (float) everyXth - (start < 0 ? start + everyXth * (Math.abs(start) / everyXth) : start) / (float) everyXth);
+		int outputLength = selectCount(start, length, everyXth);
 		if(dest == null)
 			dest = new FloatArray(outputLength);
 		dest.clear();
@@ -459,7 +452,6 @@ public class ArrayUtils extends net.dermetfan.utils.ArrayUtils {
 	 *  @param skips the number of indices to skip after each selection
 	 *  @param repeatSkips The skips to use repeatedly after {@code skips} has no more values. If this is null, no more elements will be selected.
 	 *  @param output the array to fill
-	 *  @throws IllegalArgumentException if the output array is not null and smaller than the required length
 	 *  @return the {@code elements} that were not skipped */
 	public static FloatArray skipselect(FloatArray elements, IntArray skips, IntArray repeatSkips, FloatArray output) {
 		boolean normal = skips != null && skips.size > 0, repeat = repeatSkips != null && repeatSkips.size > 0;
@@ -506,7 +498,6 @@ public class ArrayUtils extends net.dermetfan.utils.ArrayUtils {
 
 	/** Like {@link #skipselect(Array, IntArray, IntArray)} with a skips array that contains only {@code firstSkip} and an infinite {@code repeatSkips} array which elements are all {@code skips}.
 	 * 	If {@code skips} is smaller than 1, {@code elements} will be returned.
-	 *  @throws IllegalArgumentException if the output array is not null and smaller than the required length
 	 *  @see #skipselect(Array, IntArray, IntArray) */
 	public static FloatArray skipselect(FloatArray elements, int firstSkip, int skips, FloatArray output) {
 		int length, span = firstSkip;

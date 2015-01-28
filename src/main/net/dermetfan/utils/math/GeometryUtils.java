@@ -14,6 +14,9 @@
 
 package net.dermetfan.utils.math;
 
+import net.dermetfan.utils.ArrayUtils;
+
+import static net.dermetfan.utils.ArrayUtils.checkRegion;
 import static net.dermetfan.utils.math.MathUtils.mirror;
 
 /** geometric calculation utility methods
@@ -74,6 +77,118 @@ public class GeometryUtils {
 	/** @see #sub(float[], float, float, int, int) */
 	public static float[] subY(float[] items, float value, int offset, int length) {
 		return sub(items, 0, value, offset, length);
+	}
+
+	/** @param vertices the vertices
+	 *  @param dest the array to fill
+	 *  @return the x values of the given vertices */
+	public static float[] filterX(float[] vertices, int offset, int length, float[] dest, int destOffset) {
+		checkRegion(vertices, offset, length);
+		return ArrayUtils.select(vertices, offset - 1, length, 2, dest, destOffset);
+	}
+
+	/** @see #filterX(float[], int, int, float[], int) */
+	public static float[] filterX(float[] vertices, int offset, int length, float[] dest) {
+		return filterX(vertices, offset, length, dest, 0);
+	}
+
+	/** @see #filterX(float[], int, int, float[]) */
+	public static float[] filterX(float[] vertices, float[] dest) {
+		return filterX(vertices, 0, vertices.length, dest);
+	}
+
+	/** @see #filterX(float[], int, int, float[]) */
+	public static float[] filterX(float[] vertices, int offset, int length) {
+		return filterX(vertices, offset, length, new float[length / 2]);
+	}
+
+	/** @see #filterX(float[], float[]) */
+	public static float[] filterX(float[] vertices) {
+		return filterX(vertices, new float[vertices.length / 2]);
+	}
+
+	/** @param vertices the vertices
+	 *  @param dest the array to fill
+	 *  @return the y values of the given vertices */
+	public static float[] filterY(float[] vertices, int offset, int length, float[] dest, int destOffset) {
+		checkRegion(vertices, offset, length);
+		return ArrayUtils.select(vertices, offset, length, 2, dest, destOffset);
+	}
+
+	/** @see #filterY(float[], int, int, float[], int) */
+	public static float[] filterY(float[] vertices, int offset, int length, float[] dest) {
+		return filterY(vertices, offset, length, dest, 0);
+	}
+
+	/** @see #filterY(float[], int, int, float[]) */
+	public static float[] filterY(float[] vertices, float[] dest) {
+		return filterY(vertices, 0, vertices.length, dest);
+	}
+
+	/** @see #filterY(float[], int, int, float[]) */
+	public static float[] filterY(float[] vertices, int offset, int length) {
+		return filterY(vertices, offset, length, new float[length / 2]);
+	}
+
+	/** @see #filterY(float[], float[]) */
+	public static float[] filterY(float[] vertices) {
+		return filterY(vertices, new float[vertices.length / 2]);
+	}
+
+	/** @param vertices the vertices
+	 *  @param dest the array to fill
+	 *  @return the z values of the given vertices */
+	public static float[] filterZ(float[] vertices, int offset, int length, float[] dest, int destOffset) {
+		checkRegion(vertices, offset, length);
+		return ArrayUtils.select(vertices, offset, length, 3, dest, destOffset);
+	}
+
+	/** @see #filterZ(float[], int, int, float[], int) */
+	public static float[] filterZ(float[] vertices, int offset, int length, float[] dest) {
+		return filterZ(vertices, offset, length, dest, 0);
+	}
+
+	/** @see #filterZ(float[], int, int, float[]) */
+	public static float[] filterZ(float[] vertices, float[] dest) {
+		return filterZ(vertices, 0, vertices.length, dest);
+	}
+
+	/** @see #filterZ(float[], int, int, float[]) */
+	public static float[] filterZ(float[] vertices, int offset, int length) {
+		return filterZ(vertices, offset, length, new float[length / 3]);
+	}
+
+	/** @see #filterZ(float[], float[]) */
+	public static float[] filterZ(float[] vertices) {
+		return filterZ(vertices, new float[vertices.length / 3]);
+	}
+
+	/** @param vertices the vertices
+	 *  @param dest the array to fill
+	 *  @return the w values of the given vertices */
+	public static float[] filterW(float[] vertices, int offset, int length, float[] dest, int destOffset) {
+		checkRegion(vertices, offset, length);
+		return ArrayUtils.select(vertices, offset, length, 4, dest, destOffset);
+	}
+
+	/** @see #filterW(float[], int, int, float[], int) */
+	public static float[] filterW(float[] vertices, int offset, int length, float[] dest) {
+		return filterW(vertices, offset, length, dest, 0);
+	}
+
+	/** @see #filterW(float[], int, int, float[]) */
+	public static float[] filterW(float[] vertices, float[] dest) {
+		return filterW(vertices, 0, vertices.length, dest);
+	}
+
+	/** @see #filterW(float[], int, int, float[]) */
+	public static float[] filterW(float[] vertices, int offset, int length) {
+		return filterW(vertices, offset, length, new float[length / 4]);
+	}
+
+	/** @see #filterW(float[], float[]) */
+	public static float[] filterW(float[] vertices) {
+		return filterW(vertices, new float[vertices.length / 4]);
 	}
 
 	/** @param x the x of the rectangle

@@ -2,6 +2,7 @@ package net.dermetfan.utils.math;
 
 import org.junit.Test;
 
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -15,6 +16,30 @@ public class GeometryUtilsTest {
 		assertFalse(GeometryUtils.between(1, 1, 0, 0, 1, 1, false));
 		assertFalse(GeometryUtils.between(-.5f, .5f, 0, 0, 1, 1));
 		assertFalse(GeometryUtils.between(.4f, .5f, 0, 0, 1, 1));
+	}
+
+	@Test
+	public void filterX() {
+		assertArrayEquals(new float[] {0, 0, 0, 0}, GeometryUtils.filterX(new float[] {0, 1, 0, 1, 0, 1, 0, 1}), 0);
+		assertArrayEquals(new float[] {0, 0}, GeometryUtils.filterX(new float[] {0, 1, 0, 1, 0, 1, 0, 1}, 2, 4), 0);
+	}
+
+	@Test
+	public void filterY() {
+		assertArrayEquals(new float[] {1, 1, 1, 1}, GeometryUtils.filterY(new float[] {0, 1, 0, 1, 0, 1, 0, 1}), 0);
+		assertArrayEquals(new float[] {1, 1}, GeometryUtils.filterY(new float[] {0, 1, 0, 1, 0, 1, 0, 1}, 2, 4), 0);
+	}
+
+	@Test
+	public void filterZ() {
+		assertArrayEquals(new float[] {0, 0, 0}, GeometryUtils.filterZ(new float[] {1, 1, 0, 1, 1, 0, 1, 1, 0}), 0);
+		assertArrayEquals(new float[] {0}, GeometryUtils.filterZ(new float[] {1, 1, 0, 1, 1, 0, 1, 1, 0}, 3, 3), 0);
+	}
+
+	@Test
+	public void filterW() {
+		assertArrayEquals(new float[] {0, 0, 0}, GeometryUtils.filterW(new float[] {1, 1, 1, 0, 1, 1, 1, 0, 1, 1, 1, 0}), 0);
+		assertArrayEquals(new float[] {0}, GeometryUtils.filterW(new float[] {1, 1, 1, 0, 1, 1, 1, 0, 1, 1, 1, 0}, 4, 4), 0);
 	}
 
 	@Test
