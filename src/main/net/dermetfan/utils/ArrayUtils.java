@@ -205,14 +205,27 @@ public class ArrayUtils {
 		checkRegion(dest, destOffset, length);
 	}
 
+	/** @param start the index at which to start (may be negative)
+	 *  @param length the length of the array region
+	 *  @param everyXth select every xth item
+	 *  @return the capacity needed in the output array
+	 *  @see #select(Object[], int, int, int, Object[], int) */
+	public static int selectCount(int start, int length, int everyXth) {
+		int count = 0;
+		for(int i = start - 1; i < length; i += everyXth)
+			if(i >= 0)
+				count++;
+		return count;
+	}
+
 	/** @param items the items to select from
 	 *  @param start the array index at which to start (may be negative)
 	 *  @param everyXth select every xth of items
-	 *  @param dest The array to put the values in. Must have {@code (int) (length / (float) everyXth - (start < 0 ? start + everyXth * (Math.abs(start) / everyXth) : start) / (float) everyXth)} capacity.
+	 *  @param dest The array to put the values in. Must have at least the capacity returned by {@link #selectCount(int, int, int) selectCount}.
 	 *  @throws IllegalArgumentException if the given dest array is not null and smaller than the required length
 	 *  @return the dest array or a new array (if dest was null) containing everyXth item of the given items array */
 	public static <T> T[] select(T[] items, int start, int length, int everyXth, T[] dest, int destOffset) {
-		int outputLength = (int) (length / (float) everyXth - (start < 0 ? start + everyXth * (Math.abs(start) / everyXth) : start) / (float) everyXth);
+		int outputLength = selectCount(start, length, everyXth);
 		checkRegion(dest, destOffset, outputLength);
 		for(int di = destOffset, i = start - 1; di < outputLength; i += everyXth)
 			if(i >= 0) {
@@ -240,7 +253,7 @@ public class ArrayUtils {
 	/** @see #select(Object[], int, int, int, Object[], int) */
 	@SuppressWarnings("unchecked")
 	public static <T> T[] select(T[] items, int start, int length, int everyXth) {
-		return select(items, start, length, everyXth, (T[]) Array.newInstance(items.getClass().getComponentType(), (int) (length / (float) everyXth - start / (float) everyXth)), 0);
+		return select(items, start, length, everyXth, (T[]) Array.newInstance(items.getClass().getComponentType(), selectCount(start, length, everyXth)), 0);
 	}
 
 	/** @see #select(Object[], int, int, int) */
@@ -313,11 +326,11 @@ public class ArrayUtils {
 	/** @param items the items to select from
 	 *  @param start the array index at which to start (may be negative)
 	 *  @param everyXth select every xth of items
-	 *  @param dest The array to put the values in. Must have {@code (int) (length / (float) everyXth - (start < 0 ? start + everyXth * (Math.abs(start) / everyXth) : start) / (float) everyXth)} capacity.
+	 *  @param dest The array to put the values in. Must have at least the capacity returned by {@link #selectCount(int, int, int) selectCount}.
 	 *  @throws IllegalArgumentException if the given dest array is not null and smaller than the required length
 	 *  @return the dest array or a new array (if dest was null) containing everyXth item of the given items array */
 	public static float[] select(float[] items, int start, int length, int everyXth, float[] dest, int destOffset) {
-		int outputLength = (int) (length / (float) everyXth - (start < 0 ? start + everyXth * (Math.abs(start) / everyXth) : start) / (float) everyXth);
+		int outputLength = selectCount(start, length, everyXth);
 		checkRegion(dest, destOffset, outputLength);
 		for(int di = destOffset, i = start - 1; di < outputLength; i += everyXth)
 			if(i >= 0) {
@@ -344,7 +357,7 @@ public class ArrayUtils {
 
 	/** @see #select(Object[], int, int, int, Object[], int) */
 	public static float[] select(float[] items, int start, int length, int everyXth) {
-		return select(items, start, length, everyXth, new float[(int) (length / (float) everyXth - start / (float) everyXth)], 0);
+		return select(items, start, length, everyXth, new float[selectCount(start, length, everyXth)], 0);
 	}
 
 	/** @see #select(Object[], int, int, int) */
@@ -414,11 +427,11 @@ public class ArrayUtils {
 	/** @param items the items to select from
 	 *  @param start the array index at which to start (may be negative)
 	 *  @param everyXth select every xth of items
-	 *  @param dest The array to put the values in. Must have {@code (int) (length / (float) everyXth - (start < 0 ? start + everyXth * (Math.abs(start) / everyXth) : start) / (float) everyXth)} capacity.
+	 *  @param dest The array to put the values in. Must have at least the capacity returned by {@link #selectCount(int, int, int) selectCount}.
 	 *  @throws IllegalArgumentException if the given dest array is not null and smaller than the required length
 	 *  @return the dest array or a new array (if dest was null) containing everyXth item of the given items array */
 	public static int[] select(int[] items, int start, int length, int everyXth, int[] dest, int destOffset) {
-		int outputLength = (int) (length / (float) everyXth - (start < 0 ? start + everyXth * (Math.abs(start) / everyXth) : start) / (float) everyXth);
+		int outputLength = selectCount(start, length, everyXth);
 		checkRegion(dest, destOffset, outputLength);
 		for(int di = destOffset, i = start - 1; di < outputLength; i += everyXth)
 			if(i >= 0) {
@@ -445,7 +458,7 @@ public class ArrayUtils {
 
 	/** @see #select(Object[], int, int, int, Object[], int) */
 	public static int[] select(int[] items, int start, int length, int everyXth) {
-		return select(items, start, length, everyXth, new int[(int) (length / (float) everyXth - start / (float) everyXth)], 0);
+		return select(items, start, length, everyXth, new int[selectCount(start, length, everyXth)], 0);
 	}
 
 	/** @see #select(Object[], int, int, int) */
