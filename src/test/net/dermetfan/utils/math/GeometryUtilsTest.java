@@ -1,5 +1,6 @@
 package net.dermetfan.utils.math;
 
+import org.junit.Before;
 import org.junit.Test;
 
 import static org.junit.Assert.assertArrayEquals;
@@ -8,6 +9,13 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 public class GeometryUtilsTest {
+
+	@Before
+	public void before() {
+		float[] floats = GeometryUtils.getFloats();
+		for(int i = 0; i < floats.length; i++)
+			floats[i] = Float.NEGATIVE_INFINITY;
+	}
 
 	@Test
 	public void between() {
