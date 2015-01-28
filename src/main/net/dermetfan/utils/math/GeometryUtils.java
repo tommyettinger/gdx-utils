@@ -17,12 +17,26 @@ package net.dermetfan.utils.math;
 import net.dermetfan.utils.ArrayUtils;
 
 import static net.dermetfan.utils.ArrayUtils.checkRegion;
+import static net.dermetfan.utils.math.MathUtils.amplitude;
 import static net.dermetfan.utils.math.MathUtils.mirror;
 
 /** geometric calculation utility methods
  *  @author dermetfan
  *  @since 0.5.0 */
 public class GeometryUtils {
+
+	/** temporary float array for internal usage */
+	private static float[] floats = new float[Byte.MAX_VALUE];
+
+	/** @param floats the {@link #floats} to set */
+	public static void setFloats(float[] floats) {
+		GeometryUtils.floats = floats;
+	}
+
+	/** @return the {@link #floats} */
+	public static float[] getFloats() {
+		return floats;
+	}
 
 	/** @param x the x of the point to test
 	 *  @param y the y of the point to test
@@ -77,6 +91,28 @@ public class GeometryUtils {
 	/** @see #sub(float[], float, float, int, int) */
 	public static float[] subY(float[] items, float value, int offset, int length) {
 		return sub(items, 0, value, offset, length);
+	}
+
+	/** @param vertices the vertices which width to get
+	 *  @return the width of the given vertices */
+	public static float width(float[] vertices, int offset, int length) {
+		return amplitude(filterX(vertices, offset, length, floats), 0, length);
+	}
+
+	/** @see #width(float[], int, int) */
+	public static float width(float[] vertices) {
+		return width(vertices, 0, vertices.length);
+	}
+
+	/** @param vertices the vertices which height to get
+	 *  @return the height of the given vertices */
+	public static float height(float[] vertices, int offset, int length) {
+		return amplitude(filterY(vertices, offset, length, floats), 0, length);
+	}
+
+	/** @see #height(float[], int, int) */
+	public static float height(float[] vertices) {
+		return height(vertices, 0, vertices.length);
 	}
 
 	/** @param vertices the vertices

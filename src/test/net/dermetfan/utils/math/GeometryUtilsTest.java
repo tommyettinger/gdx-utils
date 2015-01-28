@@ -19,6 +19,18 @@ public class GeometryUtilsTest {
 	}
 
 	@Test
+	public void width() {
+		assertEquals(1, GeometryUtils.width(new float[] {0, 0, 1, 0, 1, 1, 0, 1}), 0);
+		assertEquals(1, GeometryUtils.width(new float[] {5, 5, 0, 0, 1, 0, 1, 1, 0, 1, 5, 5}, 2, 8), 0);
+	}
+
+	@Test
+	public void height() {
+		assertEquals(1, GeometryUtils.height(new float[] {0, 0, 1, 0, 1, 1, 0, 1}), 0);
+		assertEquals(1, GeometryUtils.height(new float[] {5, 5, 0, 0, 1, 0, 1, 1, 0, 1, 5, 5}, 2, 8), 0);
+	}
+
+	@Test
 	public void filterX() {
 		assertArrayEquals(new float[] {0, 0, 0, 0}, GeometryUtils.filterX(new float[] {0, 1, 0, 1, 0, 1, 0, 1}), 0);
 		assertArrayEquals(new float[] {0, 0}, GeometryUtils.filterX(new float[] {0, 1, 0, 1, 0, 1, 0, 1}, 2, 4), 0);
