@@ -284,7 +284,7 @@ public class GeometryUtils {
 			output = new float[8];
 		// http://www.monkeycoder.co.nz/Community/posts.php?topic=3935
 		float rad = (float) (Math.sqrt(height * height + width * width) / 2.);
-		float theta = com.badlogic.gdx.math.MathUtils.atan2(height, width);
+		float theta = (float) Math.atan2(height, width);
 		float x0 = (float) (rad * Math.cos(theta + radians));
 		float y0 = (float) (rad * Math.sin(theta + radians));
 		float x1 = (float) (rad * Math.cos(-theta + radians));
