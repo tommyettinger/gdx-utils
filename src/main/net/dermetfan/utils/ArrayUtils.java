@@ -1,5 +1,7 @@
 package net.dermetfan.utils;
 
+import java.lang.reflect.Array;
+
 /** array utility methods
  *  @author dermetfan */
 public class ArrayUtils {
@@ -203,6 +205,85 @@ public class ArrayUtils {
 		checkRegion(dest, destOffset, length);
 	}
 
+	/** @param items the items to select from
+	 *  @param start the array index at which to start (may be negative)
+	 *  @param everyXth select every xth of items
+	 *  @param dest The array to put the values in. Must have {@code (int) (length / (float) everyXth - start / (float) everyXth)} capacity.
+	 *  @throws IllegalArgumentException if the given dest array is not null and smaller than the required length
+	 *  @return the dest array or a new array (if dest was null) containing everyXth item of the given items array */
+	public static <T> T[] select(T[] items, int start, int length, int everyXth, T[] dest, int destOffset) {
+		int outputLength = (int) (length / (float) everyXth - start / (float) everyXth);
+		checkRegion(dest, destOffset, outputLength);
+		for(int di = destOffset, i = start - 1; di < outputLength && i < start + length; i += everyXth)
+			if(i >= 0) {
+				dest[di] = items[i];
+				di++;
+			}
+		return dest;
+	}
+
+	/** @see #select(Object[], int, int, int, Object[], int) */
+	public static <T> T[] select(T[] items, int start, int length, int everyXth, T[] dest) {
+		return select(items, start, length, everyXth, dest, 0);
+	}
+
+	/** @see #select(Object[], int, int, int, Object[]) */
+	public static <T> T[] select(T[] items, int start, int everyXth, T[] dest) {
+		return select(items, start, items.length, everyXth, dest);
+	}
+
+	/** @see #select(Object[], int, int, Object[]) */
+	public static <T> T[] select(T[] items, int everyXth, T[] dest) {
+		return select(items, 0, everyXth, dest);
+	}
+
+	/** @see #select(Object[], int, int, int, Object[], int) */
+	@SuppressWarnings("unchecked")
+	public static <T> T[] select(T[] items, int start, int length, int everyXth) {
+		return select(items, start, length, everyXth, (T[]) Array.newInstance(items.getClass().getComponentType(), (int) (length / (float) everyXth - start / (float) everyXth)), 0);
+	}
+
+	/** @see #select(Object[], int, int, int) */
+	public static <T> T[] select(T[] items, int start, int everyXth) {
+		return select(items, start, items.length, everyXth);
+	}
+
+	/** @see #select(Object[], int, int) */
+	public static <T> T[] select(T[] items, int everyXth) {
+		return select(items, 0, everyXth);
+	}
+
+	/** @param items the items to select from
+	 *  @param indices the indices to select
+	 *  @param dest the array to fill
+	 *  @return the given dest array */
+	@SuppressWarnings("unchecked")
+	public static <T> T[] select(T[] items, int[] indices, int indicesOffset, int indicesLength, T[] dest, int destOffset) {
+		checkRegion(indices, indicesOffset, indicesLength);
+		if(dest != null)
+			checkRegion(dest, destOffset, indicesLength);
+		else
+			dest = (T[]) Array.newInstance(items.getClass().getComponentType(), destOffset + indicesLength);
+		for(int i = indicesOffset, di = destOffset; i < indicesOffset + indicesLength; i++, di++)
+			dest[di] = items[indices[i]];
+		return dest;
+	}
+
+	/** @see #select(Object[], int[], int, int, Object[], int) */
+	public static <T> T[] select(T[] items, int[] indices, T[] dest, int destOffset) {
+		return select(items, indices, 0, indices.length, dest, destOffset);
+	}
+
+	/** @see #select(Object[], int[], Object[], int) */
+	public static <T> T[] select(T[] items, int[] indices, T[] dest) {
+		return select(items, indices, dest, 0);
+	}
+
+	/** @see #select(Object[], int[], Object[]) */
+	public static <T> T[] select(T[] items, int[] indices) {
+		return select(items, indices, null);
+	}
+
 	// primitive copies
 
 	// float
@@ -229,6 +310,83 @@ public class ArrayUtils {
 		checkRegion(dest, destOffset, length);
 	}
 
+	/** @param items the items to select from
+	 *  @param start the array index at which to start (may be negative)
+	 *  @param everyXth select every xth of items
+	 *  @param dest The array to put the values in. Must have {@code (int) (length / (float) everyXth - start / (float) everyXth)} capacity.
+	 *  @throws IllegalArgumentException if the given dest array is not null and smaller than the required length
+	 *  @return the dest array or a new array (if dest was null) containing everyXth item of the given items array */
+	public static float[] select(float[] items, int start, int length, int everyXth, float[] dest, int destOffset) {
+		int outputLength = (int) (length / (float) everyXth - start / (float) everyXth);
+		checkRegion(dest, destOffset, outputLength);
+		for(int di = destOffset, i = start - 1; di < outputLength && i < start + length; i += everyXth)
+			if(i >= 0) {
+				dest[di] = items[i];
+				di++;
+			}
+		return dest;
+	}
+
+	/** @see #select(Object[], int, int, int, Object[], int) */
+	public static float[] select(float[] items, int start, int length, int everyXth, float[] dest) {
+		return select(items, start, length, everyXth, dest, 0);
+	}
+
+	/** @see #select(Object[], int, int, int, Object[]) */
+	public static float[] select(float[] items, int start, int everyXth, float[] dest) {
+		return select(items, start, items.length, everyXth, dest);
+	}
+
+	/** @see #select(Object[], int, int, Object[]) */
+	public static float[] select(float[] items, int everyXth, float[] dest) {
+		return select(items, 0, everyXth, dest);
+	}
+
+	/** @see #select(Object[], int, int, int, Object[], int) */
+	public static float[] select(float[] items, int start, int length, int everyXth) {
+		return select(items, start, length, everyXth, new float[(int) (length / (float) everyXth - start / (float) everyXth)], 0);
+	}
+
+	/** @see #select(Object[], int, int, int) */
+	public static float[] select(float[] items, int start, int everyXth) {
+		return select(items, start, items.length, everyXth);
+	}
+
+	/** @see #select(Object[], int, int) */
+	public static float[] select(float[] items, int everyXth) {
+		return select(items, 0, everyXth);
+	}
+
+	/** @param items the items to select from
+	 *  @param indices the indices to select
+	 *  @param dest the array to fill
+	 *  @return the given dest array */
+	public static float[] select(float[] items, int[] indices, int indicesOffset, int indicesLength, float[] dest, int destOffset) {
+		checkRegion(indices, indicesOffset, indicesLength);
+		if(dest != null)
+			checkRegion(dest, destOffset, indicesLength);
+		else
+			dest = new float[destOffset + indicesLength];
+		for(int i = indicesOffset, di = destOffset; i < indicesOffset + indicesLength; i++, di++)
+			dest[di] = items[indices[i]];
+		return dest;
+	}
+
+	/** @see #select(Object[], int[], int, int, Object[], int) */
+	public static float[] select(float[] items, int[] indices, float[] dest, int destOffset) {
+		return select(items, indices, 0, indices.length, dest, destOffset);
+	}
+
+	/** @see #select(Object[], int[], Object[], int) */
+	public static float[] select(float[] items, int[] indices, float[] dest) {
+		return select(items, indices, dest, 0);
+	}
+
+	/** @see #select(Object[], int[], Object[]) */
+	public static float[] select(float[] items, int[] indices) {
+		return select(items, indices, null);
+	}
+
 	// int
 
 	/** @throws ArrayIndexOutOfBoundsException if an invalid region is specified
@@ -251,6 +409,83 @@ public class ArrayUtils {
 	public static void requireCapacity(int[] source, int offset, int length, int[] dest, int destOffset) {
 		checkRegion(source, offset, length);
 		checkRegion(dest, destOffset, length);
+	}
+
+	/** @param items the items to select from
+	 *  @param start the array index at which to start (may be negative)
+	 *  @param everyXth select every xth of items
+	 *  @param dest The array to put the values in. Must have {@code (int) (length / (float) everyXth - start / (float) everyXth)} capacity.
+	 *  @throws IllegalArgumentException if the given dest array is not null and smaller than the required length
+	 *  @return the dest array or a new array (if dest was null) containing everyXth item of the given items array */
+	public static int[] select(int[] items, int start, int length, int everyXth, int[] dest, int destOffset) {
+		int outputLength = (int) (length / (float) everyXth - start / (float) everyXth);
+		checkRegion(dest, destOffset, outputLength);
+		for(int di = destOffset, i = start - 1; di < outputLength && i < start + length; i += everyXth)
+			if(i >= 0) {
+				dest[di] = items[i];
+				di++;
+			}
+		return dest;
+	}
+
+	/** @see #select(Object[], int, int, int, Object[], int) */
+	public static int[] select(int[] items, int start, int length, int everyXth, int[] dest) {
+		return select(items, start, length, everyXth, dest, 0);
+	}
+
+	/** @see #select(Object[], int, int, int, Object[]) */
+	public static int[] select(int[] items, int start, int everyXth, int[] dest) {
+		return select(items, start, items.length, everyXth, dest);
+	}
+
+	/** @see #select(Object[], int, int, Object[]) */
+	public static int[] select(int[] items, int everyXth, int[] dest) {
+		return select(items, 0, everyXth, dest);
+	}
+
+	/** @see #select(Object[], int, int, int, Object[], int) */
+	public static int[] select(int[] items, int start, int length, int everyXth) {
+		return select(items, start, length, everyXth, new int[(int) (length / (float) everyXth - start / (float) everyXth)], 0);
+	}
+
+	/** @see #select(Object[], int, int, int) */
+	public static int[] select(int[] items, int start, int everyXth) {
+		return select(items, start, items.length, everyXth);
+	}
+
+	/** @see #select(Object[], int, int) */
+	public static int[] select(int[] items, int everyXth) {
+		return select(items, 0, everyXth);
+	}
+
+	/** @param items the items to select from
+	 *  @param indices the indices to select
+	 *  @param dest the array to fill
+	 *  @return the given dest array */
+	public static int[] select(int[] items, int[] indices, int indicesOffset, int indicesLength, int[] dest, int destOffset) {
+		checkRegion(indices, indicesOffset, indicesLength);
+		if(dest != null)
+			checkRegion(dest, destOffset, indicesLength);
+		else
+			dest = new int[destOffset + indicesLength];
+		for(int i = indicesOffset, di = destOffset; i < indicesOffset + indicesLength; i++, di++)
+			dest[di] = items[indices[i]];
+		return dest;
+	}
+
+	/** @see #select(Object[], int[], int, int, Object[], int) */
+	public static int[] select(int[] items, int[] indices, int[] dest, int destOffset) {
+		return select(items, indices, 0, indices.length, dest, destOffset);
+	}
+
+	/** @see #select(Object[], int[], Object[], int) */
+	public static int[] select(int[] items, int[] indices, int[] dest) {
+		return select(items, indices, dest, 0);
+	}
+
+	/** @see #select(Object[], int[], Object[]) */
+	public static int[] select(int[] items, int[] indices) {
+		return select(items, indices, null);
 	}
 
 }
