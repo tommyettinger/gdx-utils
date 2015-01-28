@@ -488,7 +488,7 @@ public class GeometryUtils extends net.dermetfan.utils.math.GeometryUtils {
 	 *  @param vertices the vertices to convert
 	 *  @param x if the x-axis should be inverted
 	 *  @param y if the y-axis should be inverted
-	 *  @return the given vertices converted to the inversed axis in their <strong>local</strong> coordinate system */
+	 *  @return the given vertices converted to the inverted axis in their <strong>local</strong> coordinate system */
 	public static FloatArray invertAxes(FloatArray vertices, boolean x, boolean y) {
 		if(!x && !y)
 			return vertices;
