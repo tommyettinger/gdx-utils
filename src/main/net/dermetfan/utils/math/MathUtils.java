@@ -14,6 +14,8 @@
 
 package net.dermetfan.utils.math;
 
+import static net.dermetfan.utils.ArrayUtils.checkRegion;
+
 /** math utility methods
  *  @author dermetfan */
 public class MathUtils {
@@ -247,6 +249,9 @@ public class MathUtils {
 
 	/** @return the largest element of the given array */
 	public static float max(float[] items, int offset, int length) {
+		checkRegion(items, offset, length);
+		if(length == 0)
+			return Float.NaN;
 		float max = Float.NEGATIVE_INFINITY;
 		for(int i = offset; i < offset + length; i++) {
 			float f = items[i];
@@ -263,6 +268,9 @@ public class MathUtils {
 
 	/** @return the smallest element of the given array */
 	public static float min(float[] items, int offset, int length) {
+		checkRegion(items, offset, length);
+		if(length == 0)
+			return Float.NaN;
 		float min = Float.POSITIVE_INFINITY;
 		for(int i = offset; i < offset + length; i++) {
 			float f = items[i];
