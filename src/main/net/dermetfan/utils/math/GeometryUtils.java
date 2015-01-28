@@ -84,7 +84,7 @@ public class GeometryUtils {
 	 *  @return the x values of the given vertices */
 	public static float[] filterX(float[] vertices, int offset, int length, float[] dest, int destOffset) {
 		checkRegion(vertices, offset, length);
-		return ArrayUtils.select(vertices, offset - 1, length, 2, dest, destOffset);
+		return ArrayUtils.select(vertices, offset, length, -1, 2, dest, destOffset);
 	}
 
 	/** @see #filterX(float[], int, int, float[], int) */
@@ -112,7 +112,7 @@ public class GeometryUtils {
 	 *  @return the y values of the given vertices */
 	public static float[] filterY(float[] vertices, int offset, int length, float[] dest, int destOffset) {
 		checkRegion(vertices, offset, length);
-		return ArrayUtils.select(vertices, offset, length, 2, dest, destOffset);
+		return ArrayUtils.select(vertices, offset, length, 0, 2, dest, destOffset);
 	}
 
 	/** @see #filterY(float[], int, int, float[], int) */
@@ -140,7 +140,7 @@ public class GeometryUtils {
 	 *  @return the z values of the given vertices */
 	public static float[] filterZ(float[] vertices, int offset, int length, float[] dest, int destOffset) {
 		checkRegion(vertices, offset, length);
-		return ArrayUtils.select(vertices, offset, length, 3, dest, destOffset);
+		return ArrayUtils.select(vertices, offset, length, 0, 3, dest, destOffset);
 	}
 
 	/** @see #filterZ(float[], int, int, float[], int) */
@@ -168,7 +168,7 @@ public class GeometryUtils {
 	 *  @return the w values of the given vertices */
 	public static float[] filterW(float[] vertices, int offset, int length, float[] dest, int destOffset) {
 		checkRegion(vertices, offset, length);
-		return ArrayUtils.select(vertices, offset, length, 4, dest, destOffset);
+		return ArrayUtils.select(vertices, offset, length, 0, 4, dest, destOffset);
 	}
 
 	/** @see #filterW(float[], int, int, float[], int) */

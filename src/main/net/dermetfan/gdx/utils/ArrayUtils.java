@@ -33,8 +33,8 @@ public class ArrayUtils extends net.dermetfan.utils.ArrayUtils {
 	 *  @param everyXth select every xth of items
 	 *  @param dest The array to put the values in. May be null.
 	 *  @return the dest array or a new array (if dest was null) containing everyXth item of the given items array */
-	public static <T> Array<T> select(Array<T> items, int start, int length, int everyXth, Array<T> dest) {
-		int outputLength = selectCount(start, length, everyXth);
+	public static <T> Array<T> select(Array<T> items, int offset, int length, int start, int everyXth, Array<T> dest) {
+		int outputLength = selectCount(offset, length, start, everyXth);
 		if(dest == null)
 			dest = new Array<>(outputLength);
 		dest.clear();
@@ -42,13 +42,13 @@ public class ArrayUtils extends net.dermetfan.utils.ArrayUtils {
 		if(start + length > items.size)
 			throw new ArrayIndexOutOfBoundsException(start + length - 1);
 		dest.size = outputLength;
-		select(items.items, start, length, everyXth, dest.items);
+		select(items.items, offset, length, start, everyXth, dest.items);
 		return dest;
 	}
 
-	/** @see #select(Array, int, int, int, Array) */
+	/** @see #select(Array, int, int, int, int, Array) */
 	public static <T> Array<T> select(Array<T> items, int start, int everyXth, Array<T> dest) {
-		return select(items, start, items.size, everyXth, dest);
+		return select(items, 0, items.size, start, everyXth, dest);
 	}
 
 	/** @see #select(Array, int, int, Array) */
@@ -56,14 +56,14 @@ public class ArrayUtils extends net.dermetfan.utils.ArrayUtils {
 		return select(items, 0, everyXth, dest);
 	}
 
-	/** @see #select(Array, int, int, int, Array) */
-	public static <T> Array<T> select(Array<T> items, int start, int length, int everyXth) {
-		return select(items, start, length, everyXth, null);
+	/** @see #select(Array, int, int, int, int, Array) */
+	public static <T> Array<T> select(Array<T> items, int offset, int length, int start, int everyXth) {
+		return select(items, offset, length, start, everyXth, null);
 	}
 
-	/** @see #select(Array, int, int, int) */
+	/** @see #select(Array, int, int, int, int) */
 	public static <T> Array<T> select(Array<T> items, int start, int everyXth) {
-		return select(items, start, items.size, everyXth);
+		return select(items, 0, items.size, start, everyXth);
 	}
 
 	/** @see #select(Array, int, int) */
@@ -207,8 +207,8 @@ public class ArrayUtils extends net.dermetfan.utils.ArrayUtils {
 	 *  @param everyXth select every xth of items
 	 *  @param dest The array to put the values in. May be null.
 	 *  @return the dest array or a new array (if dest was null) containing everyXth item of the given items array */
-	public static IntArray select(IntArray items, int start, int length, int everyXth, IntArray dest) {
-		int outputLength = selectCount(start, length, everyXth);
+	public static IntArray select(IntArray items, int offset, int length, int start, int everyXth, IntArray dest) {
+		int outputLength = selectCount(offset, length, start, everyXth);
 		if(dest == null)
 			dest = new IntArray(outputLength);
 		dest.clear();
@@ -216,13 +216,13 @@ public class ArrayUtils extends net.dermetfan.utils.ArrayUtils {
 		if(start + length > items.size)
 			throw new ArrayIndexOutOfBoundsException(start + length - 1);
 		dest.size = outputLength;
-		select(items.items, start, length, everyXth, dest.items);
+		select(items.items, offset, length, start, everyXth, dest.items);
 		return dest;
 	}
 
-	/** @see #select(Array, int, int, int, Array) */
+	/** @see #select(Array, int, int, int, int, Array) */
 	public static IntArray select(IntArray items, int start, int everyXth, IntArray dest) {
-		return select(items, start, items.size, everyXth, dest);
+		return select(items, 0, items.size, start, everyXth, dest);
 	}
 
 	/** @see #select(Array, int, int, Array) */
@@ -230,14 +230,14 @@ public class ArrayUtils extends net.dermetfan.utils.ArrayUtils {
 		return select(items, 0, everyXth, dest);
 	}
 
-	/** @see #select(Array, int, int, int, Array) */
-	public static IntArray select(IntArray items, int start, int length, int everyXth) {
-		return select(items, start, length, everyXth, null);
+	/** @see #select(Array, int, int, int, int, Array) */
+	public static IntArray select(IntArray items, int offset, int length, int start, int everyXth) {
+		return select(items, offset, length, start, everyXth, null);
 	}
 
-	/** @see #select(Array, int, int, int) */
+	/** @see #select(Array, int, int, int, int) */
 	public static IntArray select(IntArray items, int start, int everyXth) {
-		return select(items, start, items.size, everyXth);
+		return select(items, 0, items.size, start, everyXth);
 	}
 
 	/** @see #select(Array, int, int) */
@@ -372,8 +372,8 @@ public class ArrayUtils extends net.dermetfan.utils.ArrayUtils {
 	 *  @param everyXth select every xth of items
 	 *  @param dest The array to put the values in. May be null.
 	 *  @return the dest array or a new array (if dest was null) containing everyXth item of the given items array */
-	public static FloatArray select(FloatArray items, int start, int length, int everyXth, FloatArray dest) {
-		int outputLength = selectCount(start, length, everyXth);
+	public static FloatArray select(FloatArray items, int offset, int length, int start, int everyXth, FloatArray dest) {
+		int outputLength = selectCount(offset, length, start, everyXth);
 		if(dest == null)
 			dest = new FloatArray(outputLength);
 		dest.clear();
@@ -381,13 +381,13 @@ public class ArrayUtils extends net.dermetfan.utils.ArrayUtils {
 		if(start + length > items.size)
 			throw new ArrayIndexOutOfBoundsException(start + length - 1);
 		dest.size = outputLength;
-		select(items.items, start, length, everyXth, dest.items);
+		select(items.items, offset, length, start, everyXth, dest.items);
 		return dest;
 	}
 
-	/** @see #select(Array, int, int, int, Array) */
+	/** @see #select(Array, int, int, int, int, Array) */
 	public static FloatArray select(FloatArray items, int start, int everyXth, FloatArray dest) {
-		return select(items, start, items.size, everyXth, dest);
+		return select(items, 0, items.size, start, everyXth, dest);
 	}
 
 	/** @see #select(Array, int, int, Array) */
@@ -395,14 +395,14 @@ public class ArrayUtils extends net.dermetfan.utils.ArrayUtils {
 		return select(items, 0, everyXth, dest);
 	}
 
-	/** @see #select(Array, int, int, int, Array) */
-	public static FloatArray select(FloatArray items, int start, int length, int everyXth) {
-		return select(items, start, length, everyXth, null);
+	/** @see #select(Array, int, int, int, int, Array) */
+	public static FloatArray select(FloatArray items, int offset, int length, int start, int everyXth) {
+		return select(items, offset, length, start, everyXth, null);
 	}
 
-	/** @see #select(Array, int, int, int) */
+	/** @see #select(Array, int, int, int, int) */
 	public static FloatArray select(FloatArray items, int start, int everyXth) {
-		return select(items, start, items.size, everyXth);
+		return select(items, 0, items.size, start, everyXth);
 	}
 
 	/** @see #select(Array, int, int) */
