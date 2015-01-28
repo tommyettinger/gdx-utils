@@ -110,7 +110,8 @@ public class JigsawPuzzle {
 	}
 
 	/** a piece on a {@link JigsawPuzzle}
-	 *  @author dermetfan */
+	 *  @author dermetfan
+	 *  @since 0.10.0 */
 	public static class Piece extends Image {
 
 		/** the position of the piece on the puzzle (the {@link PolygonRegionDrawable#getPolygonX() minX} and {@link PolygonRegionDrawable#getPolygonY() minY} of its vertices) */
@@ -200,7 +201,8 @@ public class JigsawPuzzle {
 
 	}
 
-	/** @author dermetfan */
+	/** @author dermetfan
+	 *  @since 0.10.0 */
 	public static class Source extends DragAndDrop.Source {
 
 		/** the DragAndDrop currently using this Source */
@@ -302,7 +304,8 @@ public class JigsawPuzzle {
 
 	}
 
-	/** @author dermetfan */
+	/** @author dermetfan
+	 *  @since 0.10.0 */
 	public static class Target extends DragAndDrop.Target {
 
 		/** the puzzle */
