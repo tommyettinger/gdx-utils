@@ -51,7 +51,7 @@ public class JigsawPuzzle {
 		this.pieces = new Array<>(pieces);
 	}
 
-	/** solves the puzzle by letting all {@link #pieces} {@link Piece#place(Piece) snap} into their spot
+	/** solves the puzzle by letting all {@link #pieces} {@link JigsawPuzzle.Piece#place(JigsawPuzzle.Piece) snap} into their spot
 	 *  @param relativeTo the piece relative to which the puzzle should be solved */
 	public void solve(Piece relativeTo) {
 		if(!pieces.contains(relativeTo, true))
@@ -226,8 +226,7 @@ public class JigsawPuzzle {
 			this.puzzle = puzzle;
 		}
 
-		/** @param moveBackDuration the {@link #moveBackDuration}
-		 *  @see #Source(Group, DragAndDrop, JigsawPuzzle) */
+		/** @param moveBackDuration the {@link #moveBackDuration} */
 		public Source(final Group board, final DragAndDrop dragAndDrop, JigsawPuzzle puzzle, float moveBackDuration) {
 			this(board, dragAndDrop, puzzle);
 			this.moveBackDuration = moveBackDuration;
@@ -343,14 +342,14 @@ public class JigsawPuzzle {
 			}
 		}
 
-		/** called by {@link #drop(DragAndDrop.Source, Payload, float, float, int) drop} when a piece is placed
+		/** called by {@link JigsawPuzzle.Target#drop(DragAndDrop.Source, DragAndDrop.Payload, float, float, int) drop} when a piece is placed
 		 *  @param piece the placed piece */
 		protected void placed(Piece piece) {
 			if(puzzle.isSolved(tolerance))
 				solved();
 		}
 
-		/** called by {@link #placed(Piece) placed} when all pieces are placed correctly */
+		/** called by {@link JigsawPuzzle.Target#placed(JigsawPuzzle.Piece) placed} when all pieces are placed correctly */
 		protected void solved() {}
 
 		// getters and setters
