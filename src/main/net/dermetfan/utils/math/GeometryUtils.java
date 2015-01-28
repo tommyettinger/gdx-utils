@@ -240,34 +240,42 @@ public class GeometryUtils {
 		return filterW(vertices, new float[vertices.length / 4]);
 	}
 
+	/** @return the min x value in the given vertices */
 	public static float minX(float[] vertices, int offset, int length) {
 		return min(filterX(vertices, offset, length, floats), 0, length);
 	}
 
+	/** @see #minX(float[], int, int) */
 	public static float minX(float[] vertices) {
 		return minX(vertices, 0, vertices.length);
 	}
 
+	/** @return the min y value in the given vertices */
 	public static float minY(float[] vertices, int offset, int length) {
 		return min(filterY(vertices, offset, length, floats), 0, length);
 	}
 
+	/** @see #minY(float[], int, int) */
 	public static float minY(float[] vertices) {
 		return minY(vertices, 0, vertices.length);
 	}
 
+	/** @return the max x value in the given vertices */
 	public static float maxX(float[] vertices, int offset, int length) {
 		return max(filterX(vertices, offset, length, floats), 0, length);
 	}
 
+	/** @see #maxX(float[], int, int) */
 	public static float maxX(float[] vertices) {
 		return maxX(vertices, 0, vertices.length);
 	}
 
+	/** @return the max y value in the given vertices */
 	public static float maxY(float[] vertices, int offset, int length) {
 		return max(filterY(vertices, offset, length, floats), 0, length);
 	}
 
+	/** @see #maxY(float[], int, int) */
 	public static float maxY(float[] vertices) {
 		return maxY(vertices, 0, vertices.length);
 	}
