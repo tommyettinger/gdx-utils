@@ -17,7 +17,7 @@ package net.dermetfan.utils;
 /** Calculates how often a certain duration passed.
  *  Adds to {@link #time} until {@link #duration} is reached, then restarts from the rest.
  *  @author dermetfan
- *  @since 0.9.2 */
+ *  @since 0.10.0 */
 public class DurationCounter {
 
 	/** the current time */
