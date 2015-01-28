@@ -61,6 +61,30 @@ public class GeometryUtilsTest {
 	}
 
 	@Test
+	public void minX() {
+		assertEquals(-1, GeometryUtils.minX(new float[] {-1, 1, 1, 1, 5, 1, 0, 1}), 0);
+		assertEquals(1, GeometryUtils.minX(new float[] {-1, 1, 1, 1, 5, 1, 0, 1}, 2, 2), 0);
+	}
+
+	@Test
+	public void minY() {
+		assertEquals(-1, GeometryUtils.minY(new float[] {1, -1, 1, 1, 1, 5, 1, 0}), 0);
+		assertEquals(1, GeometryUtils.minY(new float[] {1, -1, 1, 1, 1, 5, 1, 0}, 2, 2), 0);
+	}
+
+	@Test
+	public void maxX() {
+		assertEquals(1, GeometryUtils.maxX(new float[] {0, 5, -1, 5, 1, 5, -2, 5}), 0);
+		assertEquals(1, GeometryUtils.maxX(new float[] {0, 5, -1, 5, 1, 5, -2, 5}, 2, 4), 0);
+	}
+
+	@Test
+	public void maxY() {
+		assertEquals(1, GeometryUtils.maxY(new float[] {5, 0, 5, -1, 5, 1, 5, -2}), 0);
+		assertEquals(1, GeometryUtils.maxY(new float[] {5, 0, 5, -1, 5, 1, 5, -2}, 2, 4), 0);
+	}
+
+	@Test
 	public void invertAxis() {
 		assertEquals(5, GeometryUtils.invertAxis(27, 32), 0);
 		assertEquals(27, GeometryUtils.invertAxis(5, 32), 0);

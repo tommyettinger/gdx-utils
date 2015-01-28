@@ -18,6 +18,8 @@ import net.dermetfan.utils.ArrayUtils;
 
 import static net.dermetfan.utils.ArrayUtils.checkRegion;
 import static net.dermetfan.utils.math.MathUtils.amplitude;
+import static net.dermetfan.utils.math.MathUtils.max;
+import static net.dermetfan.utils.math.MathUtils.min;
 import static net.dermetfan.utils.math.MathUtils.mirror;
 
 /** geometric calculation utility methods
@@ -236,6 +238,38 @@ public class GeometryUtils {
 	/** @see #filterW(float[], float[]) */
 	public static float[] filterW(float[] vertices) {
 		return filterW(vertices, new float[vertices.length / 4]);
+	}
+
+	public static float minX(float[] vertices, int offset, int length) {
+		return min(filterX(vertices, offset, length, floats), 0, length);
+	}
+
+	public static float minX(float[] vertices) {
+		return minX(vertices, 0, vertices.length);
+	}
+
+	public static float minY(float[] vertices, int offset, int length) {
+		return min(filterY(vertices, offset, length, floats), 0, length);
+	}
+
+	public static float minY(float[] vertices) {
+		return minY(vertices, 0, vertices.length);
+	}
+
+	public static float maxX(float[] vertices, int offset, int length) {
+		return max(filterX(vertices, offset, length, floats), 0, length);
+	}
+
+	public static float maxX(float[] vertices) {
+		return maxX(vertices, 0, vertices.length);
+	}
+
+	public static float maxY(float[] vertices, int offset, int length) {
+		return max(filterY(vertices, offset, length, floats), 0, length);
+	}
+
+	public static float maxY(float[] vertices) {
+		return maxY(vertices, 0, vertices.length);
 	}
 
 	/** @param x the x of the rectangle
