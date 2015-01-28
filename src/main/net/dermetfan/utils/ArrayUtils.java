@@ -208,13 +208,13 @@ public class ArrayUtils {
 	/** @param items the items to select from
 	 *  @param start the array index at which to start (may be negative)
 	 *  @param everyXth select every xth of items
-	 *  @param dest The array to put the values in. Must have {@code (int) (length / (float) everyXth - start / (float) everyXth)} capacity.
+	 *  @param dest The array to put the values in. Must have {@code (int) (length / (float) everyXth - (start < 0 ? start + everyXth * (Math.abs(start) / everyXth) : start) / (float) everyXth)} capacity.
 	 *  @throws IllegalArgumentException if the given dest array is not null and smaller than the required length
 	 *  @return the dest array or a new array (if dest was null) containing everyXth item of the given items array */
 	public static <T> T[] select(T[] items, int start, int length, int everyXth, T[] dest, int destOffset) {
-		int outputLength = (int) (length / (float) everyXth - start / (float) everyXth);
+		int outputLength = (int) (length / (float) everyXth - (start < 0 ? start + everyXth * (Math.abs(start) / everyXth) : start) / (float) everyXth);
 		checkRegion(dest, destOffset, outputLength);
-		for(int di = destOffset, i = start - 1; di < outputLength && i < start + length; i += everyXth)
+		for(int di = destOffset, i = start - 1; di < outputLength; i += everyXth)
 			if(i >= 0) {
 				dest[di] = items[i];
 				di++;
@@ -313,13 +313,13 @@ public class ArrayUtils {
 	/** @param items the items to select from
 	 *  @param start the array index at which to start (may be negative)
 	 *  @param everyXth select every xth of items
-	 *  @param dest The array to put the values in. Must have {@code (int) (length / (float) everyXth - start / (float) everyXth)} capacity.
+	 *  @param dest The array to put the values in. Must have {@code (int) (length / (float) everyXth - (start < 0 ? start + everyXth * (Math.abs(start) / everyXth) : start) / (float) everyXth)} capacity.
 	 *  @throws IllegalArgumentException if the given dest array is not null and smaller than the required length
 	 *  @return the dest array or a new array (if dest was null) containing everyXth item of the given items array */
 	public static float[] select(float[] items, int start, int length, int everyXth, float[] dest, int destOffset) {
-		int outputLength = (int) (length / (float) everyXth - start / (float) everyXth);
+		int outputLength = (int) (length / (float) everyXth - (start < 0 ? start + everyXth * (Math.abs(start) / everyXth) : start) / (float) everyXth);
 		checkRegion(dest, destOffset, outputLength);
-		for(int di = destOffset, i = start - 1; di < outputLength && i < start + length; i += everyXth)
+		for(int di = destOffset, i = start - 1; di < outputLength; i += everyXth)
 			if(i >= 0) {
 				dest[di] = items[i];
 				di++;
@@ -414,13 +414,13 @@ public class ArrayUtils {
 	/** @param items the items to select from
 	 *  @param start the array index at which to start (may be negative)
 	 *  @param everyXth select every xth of items
-	 *  @param dest The array to put the values in. Must have {@code (int) (length / (float) everyXth - start / (float) everyXth)} capacity.
+	 *  @param dest The array to put the values in. Must have {@code (int) (length / (float) everyXth - (start < 0 ? start + everyXth * (Math.abs(start) / everyXth) : start) / (float) everyXth)} capacity.
 	 *  @throws IllegalArgumentException if the given dest array is not null and smaller than the required length
 	 *  @return the dest array or a new array (if dest was null) containing everyXth item of the given items array */
 	public static int[] select(int[] items, int start, int length, int everyXth, int[] dest, int destOffset) {
-		int outputLength = (int) (length / (float) everyXth - start / (float) everyXth);
+		int outputLength = (int) (length / (float) everyXth - (start < 0 ? start + everyXth * (Math.abs(start) / everyXth) : start) / (float) everyXth);
 		checkRegion(dest, destOffset, outputLength);
-		for(int di = destOffset, i = start - 1; di < outputLength && i < start + length; i += everyXth)
+		for(int di = destOffset, i = start - 1; di < outputLength; i += everyXth)
 			if(i >= 0) {
 				dest[di] = items[i];
 				di++;
