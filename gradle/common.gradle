@@ -186,7 +186,7 @@ task fixNewlines(description: 'makes sure all text files end with \\n') << {
 	fileTree(rootProject.projectDir).visit {
 		if(!it.file.isDirectory()) {
 			String mime = java.nio.file.Files.probeContentType(java.nio.file.Paths.get(it.file.path))
-			if((mime.startsWith("text/") ||	mime.equals("application/xml")) && !it.file.text.endsWith('\n')) {
+			if((mime.startsWith('text/') ||	mime.equals('application/xml')) && !it.file.text.endsWith('\n')) {
 				it.file.text += '\n'
 				count++
 			}
