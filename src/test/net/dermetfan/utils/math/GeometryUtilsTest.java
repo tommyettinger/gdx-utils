@@ -31,6 +31,12 @@ public class GeometryUtilsTest {
 	}
 
 	@Test
+	public void depth() {
+		assertEquals(1, GeometryUtils.depth(new float[] {0, 0, 0, 1, 0, 0, 1, 1, 0, 0, 1, 0, 0, 0, 1, 1, 0, 1, 1, 1, 1, 0, 1, 1}), 0);
+		assertEquals(1, GeometryUtils.depth(new float[] {5, 5, 5, 0, 0, 0, 1, 0, 0, 1, 1, 0, 0, 1, 0, 0, 0, 1, 1, 0, 1, 1, 1, 1, 0, 1, 1, 5, 5, 5}, 3, 24), 0);
+	}
+
+	@Test
 	public void filterX() {
 		assertArrayEquals(new float[] {0, 0, 0, 0}, GeometryUtils.filterX(new float[] {0, 1, 0, 1, 0, 1, 0, 1}), 0);
 		assertArrayEquals(new float[] {0, 0}, GeometryUtils.filterX(new float[] {0, 1, 0, 1, 0, 1, 0, 1}, 2, 4), 0);

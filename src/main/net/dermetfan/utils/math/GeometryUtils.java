@@ -115,6 +115,17 @@ public class GeometryUtils {
 		return height(vertices, 0, vertices.length);
 	}
 
+	/** @param vertices the vertices which depth to get
+	 *  @return the depth of the given vertices */
+	public static float depth(float[] vertices, int offset, int length) {
+		return amplitude(filterZ(vertices, offset, length, floats), 0, length);
+	}
+
+	/** @see #depth(float[], int, int) */
+	public static float depth(float[] vertices) {
+		return depth(vertices, 0, vertices.length);
+	}
+
 	/** @param vertices the vertices
 	 *  @param dest the array to fill
 	 *  @return the x values of the given vertices */
