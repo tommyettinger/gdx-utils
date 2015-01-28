@@ -35,13 +35,14 @@ public class ArrayUtils extends net.dermetfan.utils.ArrayUtils {
 	 *  @throws IllegalArgumentException if the given dest array is not null and smaller than the required length
 	 *  @return the dest array or a new array (if dest was null) containing everyXth item of the given items array */
 	public static <T> Array<T> select(Array<T> items, int start, int length, int everyXth, Array<T> dest) {
-		int outputLength = (int) (length / (float) everyXth - start / (float) everyXth);
+		int outputLength = (int) (length / (float) everyXth - (start < 0 ? start + everyXth * (Math.abs(start) / everyXth) : start) / (float) everyXth);
 		if(dest == null)
 			dest = new Array<>(outputLength);
 		dest.clear();
 		dest.ensureCapacity(outputLength);
 		if(start + length > items.size)
 			throw new ArrayIndexOutOfBoundsException(start + length - 1);
+		dest.size = outputLength;
 		select(items.items, start, length, everyXth, dest.items);
 		return dest;
 	}
@@ -80,8 +81,9 @@ public class ArrayUtils extends net.dermetfan.utils.ArrayUtils {
 			dest = new Array<>(true, indicesLength, items.items.getClass().getComponentType());
 		dest.clear();
 		dest.ensureCapacity(indicesLength);
-		if(indicesOffset + indicesLength > items.size)
-			throw new ArrayIndexOutOfBoundsException(indicesOffset + indicesLength - 1);
+		if(indicesLength > items.size)
+			throw new ArrayIndexOutOfBoundsException(indicesLength - 1);
+		dest.size = indicesLength;
 		select(items.items, indices, indicesOffset, indicesLength, dest.items, 0);
 		return dest;
 	}
@@ -210,13 +212,14 @@ public class ArrayUtils extends net.dermetfan.utils.ArrayUtils {
 	 *  @throws IllegalArgumentException if the given dest array is not null and smaller than the required length
 	 *  @return the dest array or a new array (if dest was null) containing everyXth item of the given items array */
 	public static IntArray select(IntArray items, int start, int length, int everyXth, IntArray dest) {
-		int outputLength = (int) (length / (float) everyXth - start / (float) everyXth);
+		int outputLength = (int) (length / (float) everyXth - (start < 0 ? start + everyXth * (Math.abs(start) / everyXth) : start) / (float) everyXth);
 		if(dest == null)
 			dest = new IntArray(outputLength);
 		dest.clear();
 		dest.ensureCapacity(outputLength);
 		if(start + length > items.size)
 			throw new ArrayIndexOutOfBoundsException(start + length - 1);
+		dest.size = outputLength;
 		select(items.items, start, length, everyXth, dest.items);
 		return dest;
 	}
@@ -255,8 +258,9 @@ public class ArrayUtils extends net.dermetfan.utils.ArrayUtils {
 			dest = new IntArray(true, indicesLength);
 		dest.clear();
 		dest.ensureCapacity(indicesLength);
-		if(indicesOffset + indicesLength > items.size)
-			throw new ArrayIndexOutOfBoundsException(indicesOffset + indicesLength - 1);
+		if(indicesLength > items.size)
+			throw new ArrayIndexOutOfBoundsException(indicesLength - 1);
+		dest.size = indicesLength;
 		select(items.items, indices, indicesOffset, indicesLength, dest.items, 0);
 		return dest;
 	}
@@ -376,13 +380,14 @@ public class ArrayUtils extends net.dermetfan.utils.ArrayUtils {
 	 *  @throws IllegalArgumentException if the given dest array is not null and smaller than the required length
 	 *  @return the dest array or a new array (if dest was null) containing everyXth item of the given items array */
 	public static FloatArray select(FloatArray items, int start, int length, int everyXth, FloatArray dest) {
-		int outputLength = (int) (length / (float) everyXth - start / (float) everyXth);
+		int outputLength = (int) (length / (float) everyXth - (start < 0 ? start + everyXth * (Math.abs(start) / everyXth) : start) / (float) everyXth);
 		if(dest == null)
 			dest = new FloatArray(outputLength);
 		dest.clear();
 		dest.ensureCapacity(outputLength);
 		if(start + length > items.size)
 			throw new ArrayIndexOutOfBoundsException(start + length - 1);
+		dest.size = outputLength;
 		select(items.items, start, length, everyXth, dest.items);
 		return dest;
 	}
@@ -421,8 +426,9 @@ public class ArrayUtils extends net.dermetfan.utils.ArrayUtils {
 			dest = new FloatArray(true, indicesLength);
 		dest.clear();
 		dest.ensureCapacity(indicesLength);
-		if(indicesOffset + indicesLength > items.size)
-			throw new ArrayIndexOutOfBoundsException(indicesOffset + indicesLength - 1);
+		if(indicesLength > items.size)
+			throw new ArrayIndexOutOfBoundsException(indicesLength - 1);
+		dest.size = indicesLength;
 		select(items.items, indices, indicesOffset, indicesLength, dest.items, 0);
 		return dest;
 	}
