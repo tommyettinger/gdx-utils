@@ -128,7 +128,7 @@ public class GeometryUtils {
 	/** @param vertices the vertices which width to get
 	 *  @return the width of the given vertices */
 	public static float width(float[] vertices, int offset, int length) {
-		return amplitude(filterX(vertices, offset, length, floats), 0, length);
+		return amplitude(filterX(vertices, offset, length, floats), 0, length / 2);
 	}
 
 	/** @see #width(float[], int, int) */
@@ -139,7 +139,7 @@ public class GeometryUtils {
 	/** @param vertices the vertices which height to get
 	 *  @return the height of the given vertices */
 	public static float height(float[] vertices, int offset, int length) {
-		return amplitude(filterY(vertices, offset, length, floats), 0, length);
+		return amplitude(filterY(vertices, offset, length, floats), 0, length / 2);
 	}
 
 	/** @see #height(float[], int, int) */
@@ -150,7 +150,7 @@ public class GeometryUtils {
 	/** @param vertices the vertices which depth to get
 	 *  @return the depth of the given vertices */
 	public static float depth(float[] vertices, int offset, int length) {
-		return amplitude(filterZ(vertices, offset, length, floats), 0, length);
+		return amplitude(filterZ(vertices, offset, length, floats), 0, length / 3);
 	}
 
 	/** @see #depth(float[], int, int) */
@@ -272,7 +272,7 @@ public class GeometryUtils {
 
 	/** @return the min x value in the given vertices */
 	public static float minX(float[] vertices, int offset, int length) {
-		return min(filterX(vertices, offset, length, floats), 0, length);
+		return min(filterX(vertices, offset, length, floats), 0, length / 2);
 	}
 
 	/** @see #minX(float[], int, int) */
@@ -282,7 +282,7 @@ public class GeometryUtils {
 
 	/** @return the min y value in the given vertices */
 	public static float minY(float[] vertices, int offset, int length) {
-		return min(filterY(vertices, offset, length, floats), 0, length);
+		return min(filterY(vertices, offset, length, floats), 0, length / 2);
 	}
 
 	/** @see #minY(float[], int, int) */
@@ -292,7 +292,7 @@ public class GeometryUtils {
 
 	/** @return the max x value in the given vertices */
 	public static float maxX(float[] vertices, int offset, int length) {
-		return max(filterX(vertices, offset, length, floats), 0, length);
+		return max(filterX(vertices, offset, length, floats), 0, length / 2);
 	}
 
 	/** @see #maxX(float[], int, int) */
@@ -302,7 +302,7 @@ public class GeometryUtils {
 
 	/** @return the max y value in the given vertices */
 	public static float maxY(float[] vertices, int offset, int length) {
-		return max(filterY(vertices, offset, length, floats), 0, length);
+		return max(filterY(vertices, offset, length, floats), 0, length / 2);
 	}
 
 	/** @see #maxY(float[], int, int) */
