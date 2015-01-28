@@ -28,64 +28,82 @@ public class ArrayUtils extends net.dermetfan.utils.ArrayUtils {
 		return array.get(wrapIndex(index, array.size));
 	}
 
-	/** @param elements the elements to select from
-	 *  @param start the array index of elements at which to start (may be negative)
-	 *  @param everyXth select every xth of elements
-	 *  @param output The array to put the values in. May be null.
-	 *  @throws IllegalArgumentException if the given output array is not null and smaller than the required length
-	 *  @return the output array or a new array (if output was null) containing everyXth element of the given elements array */
-	@SuppressWarnings("unchecked")
-	public static <T> Array<T> select(Array<T> elements, int start, int everyXth, Array<T> output) {
-		int outputLength = 0;
-		for(int i = start - 1; i < elements.size; i += everyXth)
-			if(i >= 0)
-				outputLength++;
-		if(output == null)
-			output = new Array<>(outputLength);
-		output.clear();
-		output.ensureCapacity(outputLength - output.size);
-		for(int oi = 0, i = start - 1; oi < outputLength; i += everyXth)
-			if(i >= 0) {
-				output.add(elements.get(i));
-				oi++;
-			}
-		return output;
+	/** @param items the items to select from
+	 *  @param start the array index at which to start (may be negative)
+	 *  @param everyXth select every xth of items
+	 *  @param dest The array to put the values in. May be null.
+	 *  @throws IllegalArgumentException if the given dest array is not null and smaller than the required length
+	 *  @return the dest array or a new array (if dest was null) containing everyXth item of the given items array */
+	public static <T> Array<T> select(Array<T> items, int start, int length, int everyXth, Array<T> dest) {
+		int outputLength = (int) (length / (float) everyXth - start / (float) everyXth);
+		if(dest == null)
+			dest = new Array<>(outputLength);
+		dest.clear();
+		dest.ensureCapacity(outputLength);
+		if(start + length > items.size)
+			throw new ArrayIndexOutOfBoundsException(start + length - 1);
+		select(items.items, start, length, everyXth, dest.items);
+		return dest;
+	}
+
+	/** @see #select(Array, int, int, int, Array) */
+	public static <T> Array<T> select(Array<T> items, int start, int everyXth, Array<T> dest) {
+		return select(items, start, items.size, everyXth, dest);
 	}
 
 	/** @see #select(Array, int, int, Array) */
-	public static <T> Array<T> select(Array<T> elements, int everyXth, Array<T> output) {
-		return select(elements, 0, everyXth, output);
+	public static <T> Array<T> select(Array<T> items, int everyXth, Array<T> dest) {
+		return select(items, 0, everyXth, dest);
 	}
 
-	/** @see #select(Array, int, int, Array) */
-	public static <T> Array<T> select(Array<T> elements, int start, int everyXth) {
-		return select(elements, start, everyXth, null);
+	/** @see #select(Array, int, int, int, Array) */
+	public static <T> Array<T> select(Array<T> items, int start, int length, int everyXth) {
+		return select(items, start, length, everyXth, null);
 	}
 
-	/** @see #select(Array, int, Array) */
-	public static <T> Array<T> select(Array<T> elements, int everyXth) {
-		return select(elements, everyXth, null);
+	/** @see #select(Array, int, int, int) */
+	public static <T> Array<T> select(Array<T> items, int start, int everyXth) {
+		return select(items, start, items.size, everyXth);
 	}
 
-	/** selects the given {@code indices} from the given {@code elements}
-	 *  @param elements the elements to select from
-	 *  @param indices the indices to select from {@code select}
-	 *  @param output The array to fill. May be null.
-	 *  @return the selected {@code indices} from {@code elements} */
-	@SuppressWarnings("unchecked")
-	public static <T> Array<T> select(Array<T> elements, IntArray indices, Array<T> output) {
-		if(output == null)
-			output = new Array<>(indices.size);
-		output.clear();
-		output.ensureCapacity(indices.size - output.size);
-		for(int i = 0; i < indices.size; i++)
-			output.add(elements.get(indices.get(i)));
-		return output;
+	/** @see #select(Array, int, int) */
+	public static <T> Array<T> select(Array<T> items, int everyXth) {
+		return select(items, 0, everyXth);
+	}
+
+	/** @param items the items to select from
+	 *  @param indices the indices to select
+	 *  @param dest the array to fill
+	 *  @return the given dest array */
+	public static <T> Array<T> select(Array<T> items, int[] indices, int indicesOffset, int indicesLength, Array<T> dest) {
+		if(dest == null)
+			dest = new Array<>(true, indicesLength, items.items.getClass().getComponentType());
+		dest.clear();
+		dest.ensureCapacity(indicesLength);
+		if(indicesOffset + indicesLength > items.size)
+			throw new ArrayIndexOutOfBoundsException(indicesOffset + indicesLength - 1);
+		select(items.items, indices, indicesOffset, indicesLength, dest.items, 0);
+		return dest;
+	}
+
+	/** @see #select(Array, int[], int, int, Array) */
+	public static <T> Array<T> select(Array<T> items, int[] indices, Array<T> dest) {
+		return select(items, indices, 0, indices.length, dest);
+	}
+
+	/** @see #select(Object[], int[], Object[]) */
+	public static <T> Array<T> select(Array<T> items, int[] indices) {
+		return select(items, indices, null);
+	}
+
+	/** @see #select(Array, int[], int, int, Array) */
+	public static <T> Array<T> select(Array<T> items, IntArray indices, Array<T> dest) {
+		return select(items, indices.items, 0, indices.size, dest);
 	}
 
 	/** @see #select(Array, IntArray, Array) */
-	public static <T> Array<T> select(Array<T> elements, IntArray indices) {
-		return select(elements, indices, null);
+	public static <T> Array<T> select(Array<T> items, IntArray indices) {
+		return select(items, indices, null);
 	}
 
 	/** Skips, selects and goes to the next element repeatedly. Stops when {@code elements} has no more values. When {@code skips} has no more values, {@code repeatSkips} will be used repeatedly.<br>
@@ -185,62 +203,82 @@ public class ArrayUtils extends net.dermetfan.utils.ArrayUtils {
 		return array.get(wrapIndex(index, array.size));
 	}
 
-	/** @param elements the elements to select from
-	 *  @param start the array index of elements at which to start (may be negative)
-	 *  @param everyXth select every xth of elements
-	 *  @param output The array to put the values in. May be null.
-	 *  @throws IllegalArgumentException if the given output array is not null and smaller than the required length
-	 *  @return the output array or a new array (if output was null) containing everyXth element of the given elements array */
-	public static IntArray select(IntArray elements, int start, int everyXth, IntArray output) {
-		int outputLength = 0;
-		for(int i = start - 1; i < elements.size; i += everyXth)
-			if(i >= 0)
-				outputLength++;
-		if(output == null)
-			output = new IntArray(outputLength);
-		output.clear();
-		output.ensureCapacity(outputLength - output.size);
-		for(int oi = 0, i = start - 1; oi < outputLength; i += everyXth)
-			if(i >= 0) {
-				output.add(elements.get(i));
-				oi++;
-			}
-		return output;
+	/** @param items the items to select from
+	 *  @param start the array index at which to start (may be negative)
+	 *  @param everyXth select every xth of items
+	 *  @param dest The array to put the values in. May be null.
+	 *  @throws IllegalArgumentException if the given dest array is not null and smaller than the required length
+	 *  @return the dest array or a new array (if dest was null) containing everyXth item of the given items array */
+	public static IntArray select(IntArray items, int start, int length, int everyXth, IntArray dest) {
+		int outputLength = (int) (length / (float) everyXth - start / (float) everyXth);
+		if(dest == null)
+			dest = new IntArray(outputLength);
+		dest.clear();
+		dest.ensureCapacity(outputLength);
+		if(start + length > items.size)
+			throw new ArrayIndexOutOfBoundsException(start + length - 1);
+		select(items.items, start, length, everyXth, dest.items);
+		return dest;
+	}
+
+	/** @see #select(Array, int, int, int, Array) */
+	public static IntArray select(IntArray items, int start, int everyXth, IntArray dest) {
+		return select(items, start, items.size, everyXth, dest);
 	}
 
 	/** @see #select(Array, int, int, Array) */
-	public static IntArray select(IntArray elements, int everyXth, IntArray output) {
-		return select(elements, 0, everyXth, output);
+	public static IntArray select(IntArray items, int everyXth, IntArray dest) {
+		return select(items, 0, everyXth, dest);
 	}
 
-	/** @see #select(Array, int, int, Array) */
-	public static IntArray select(IntArray elements, int start, int everyXth) {
-		return select(elements, start, everyXth, null);
+	/** @see #select(Array, int, int, int, Array) */
+	public static IntArray select(IntArray items, int start, int length, int everyXth) {
+		return select(items, start, length, everyXth, null);
 	}
 
-	/** @see #select(Array, int, Array) */
-	public static IntArray select(IntArray elements, int everyXth) {
-		return select(elements, everyXth, null);
+	/** @see #select(Array, int, int, int) */
+	public static IntArray select(IntArray items, int start, int everyXth) {
+		return select(items, start, items.size, everyXth);
 	}
 
-	/** selects the given {@code indices} from the given {@code elements}
-	 *  @param elements the elements to select from
-	 *  @param indices the indices to select from {@code select}
-	 *  @param output The array to fill. May be null.
-	 *  @return the selected {@code indices} from {@code elements} */
-	public static IntArray select(IntArray elements, IntArray indices, IntArray output) {
-		if(output == null)
-			output = new IntArray(indices.size);
-		output.clear();
-		output.ensureCapacity(indices.size - output.size);
-		for(int i = 0; i < indices.size; i++)
-			output.add(elements.get(indices.get(i)));
-		return output;
+	/** @see #select(Array, int, int) */
+	public static IntArray select(IntArray items, int everyXth) {
+		return select(items, 0, everyXth);
+	}
+
+	/** @param items the items to select from
+	 *  @param indices the indices to select
+	 *  @param dest the array to fill
+	 *  @return the given dest array */
+	public static IntArray select(IntArray items, int[] indices, int indicesOffset, int indicesLength, IntArray dest) {
+		if(dest == null)
+			dest = new IntArray(true, indicesLength);
+		dest.clear();
+		dest.ensureCapacity(indicesLength);
+		if(indicesOffset + indicesLength > items.size)
+			throw new ArrayIndexOutOfBoundsException(indicesOffset + indicesLength - 1);
+		select(items.items, indices, indicesOffset, indicesLength, dest.items, 0);
+		return dest;
+	}
+
+	/** @see #select(Array, int[], int, int, Array) */
+	public static IntArray select(IntArray items, int[] indices, IntArray dest) {
+		return select(items, indices, 0, indices.length, dest);
+	}
+
+	/** @see #select(Object[], int[], Object[]) */
+	public static IntArray select(IntArray items, int[] indices) {
+		return select(items, indices, null);
+	}
+
+	/** @see #select(Array, int[], int, int, Array) */
+	public static IntArray select(IntArray items, IntArray indices, IntArray dest) {
+		return select(items, indices.items, 0, indices.size, dest);
 	}
 
 	/** @see #select(Array, IntArray, Array) */
-	public static IntArray select(IntArray elements, IntArray indices) {
-		return select(elements, indices, null);
+	public static IntArray select(IntArray items, IntArray indices) {
+		return select(items, indices, null);
 	}
 
 	/** Skips, selects and goes to the next element repeatedly. Stops when {@code elements} has no more values. When {@code skips} has no more values, {@code repeatSkips} will be used repeatedly.<br>
@@ -331,62 +369,82 @@ public class ArrayUtils extends net.dermetfan.utils.ArrayUtils {
 		return array.get(wrapIndex(index, array.size));
 	}
 
-	/** @param elements the elements to select from
-	 *  @param start the array index of elements at which to start (may be negative)
-	 *  @param everyXth select every xth of elements
-	 *  @param output The array to put the values in. May be null.
-	 *  @throws IllegalArgumentException if the given output array is not null and smaller than the required length
-	 *  @return the output array or a new array (if output was null) containing everyXth element of the given elements array */
-	public static FloatArray select(FloatArray elements, int start, int everyXth, FloatArray output) {
-		int outputLength = 0;
-		for(int i = start - 1; i < elements.size; i += everyXth)
-			if(i >= 0)
-				outputLength++;
-		if(output == null)
-			output = new FloatArray(outputLength);
-		output.clear();
-		output.ensureCapacity(outputLength - output.size);
-		for(int oi = 0, i = start - 1; oi < outputLength; i += everyXth)
-			if(i >= 0) {
-				output.add(elements.get(i));
-				oi++;
-			}
-		return output;
+	/** @param items the items to select from
+	 *  @param start the array index at which to start (may be negative)
+	 *  @param everyXth select every xth of items
+	 *  @param dest The array to put the values in. May be null.
+	 *  @throws IllegalArgumentException if the given dest array is not null and smaller than the required length
+	 *  @return the dest array or a new array (if dest was null) containing everyXth item of the given items array */
+	public static FloatArray select(FloatArray items, int start, int length, int everyXth, FloatArray dest) {
+		int outputLength = (int) (length / (float) everyXth - start / (float) everyXth);
+		if(dest == null)
+			dest = new FloatArray(outputLength);
+		dest.clear();
+		dest.ensureCapacity(outputLength);
+		if(start + length > items.size)
+			throw new ArrayIndexOutOfBoundsException(start + length - 1);
+		select(items.items, start, length, everyXth, dest.items);
+		return dest;
+	}
+
+	/** @see #select(Array, int, int, int, Array) */
+	public static FloatArray select(FloatArray items, int start, int everyXth, FloatArray dest) {
+		return select(items, start, items.size, everyXth, dest);
 	}
 
 	/** @see #select(Array, int, int, Array) */
-	public static FloatArray select(FloatArray elements, int everyXth, FloatArray output) {
-		return select(elements, 0, everyXth, output);
+	public static FloatArray select(FloatArray items, int everyXth, FloatArray dest) {
+		return select(items, 0, everyXth, dest);
 	}
 
-	/** @see #select(Array, int, int, Array) */
-	public static FloatArray select(FloatArray elements, int start, int everyXth) {
-		return select(elements, start, everyXth, null);
+	/** @see #select(Array, int, int, int, Array) */
+	public static FloatArray select(FloatArray items, int start, int length, int everyXth) {
+		return select(items, start, length, everyXth, null);
 	}
 
-	/** @see #select(Array, int, Array) */
-	public static FloatArray select(FloatArray elements, int everyXth) {
-		return select(elements, everyXth, null);
+	/** @see #select(Array, int, int, int) */
+	public static FloatArray select(FloatArray items, int start, int everyXth) {
+		return select(items, start, items.size, everyXth);
 	}
 
-	/** selects the given {@code indices} from the given {@code elements}
-	 *  @param elements the elements to select from
-	 *  @param indices the indices to select from {@code select}
-	 *  @param output The array to fill. May be null.
-	 *  @return the selected {@code indices} from {@code elements} */
-	public static FloatArray select(FloatArray elements, IntArray indices, FloatArray output) {
-		if(output == null)
-			output = new FloatArray(indices.size);
-		output.clear();
-		output.ensureCapacity(indices.size - output.size);
-		for(int i = 0; i < indices.size; i++)
-			output.add(elements.get(indices.get(i)));
-		return output;
+	/** @see #select(Array, int, int) */
+	public static FloatArray select(FloatArray items, int everyXth) {
+		return select(items, 0, everyXth);
+	}
+
+	/** @param items the items to select from
+	 *  @param indices the indices to select
+	 *  @param dest the array to fill
+	 *  @return the given dest array */
+	public static FloatArray select(FloatArray items, int[] indices, int indicesOffset, int indicesLength, FloatArray dest) {
+		if(dest == null)
+			dest = new FloatArray(true, indicesLength);
+		dest.clear();
+		dest.ensureCapacity(indicesLength);
+		if(indicesOffset + indicesLength > items.size)
+			throw new ArrayIndexOutOfBoundsException(indicesOffset + indicesLength - 1);
+		select(items.items, indices, indicesOffset, indicesLength, dest.items, 0);
+		return dest;
+	}
+
+	/** @see #select(Array, int[], int, int, Array) */
+	public static FloatArray select(FloatArray items, int[] indices, FloatArray dest) {
+		return select(items, indices, 0, indices.length, dest);
+	}
+
+	/** @see #select(Object[], int[], Object[]) */
+	public static FloatArray select(FloatArray items, int[] indices) {
+		return select(items, indices, null);
+	}
+
+	/** @see #select(Array, int[], int, int, Array) */
+	public static FloatArray select(FloatArray items, IntArray indices, FloatArray dest) {
+		return select(items, indices.items, 0, indices.size, dest);
 	}
 
 	/** @see #select(Array, IntArray, Array) */
-	public static FloatArray select(FloatArray elements, IntArray indices) {
-		return select(elements, indices, null);
+	public static FloatArray select(FloatArray items, IntArray indices) {
+		return select(items, indices, null);
 	}
 
 	/** Skips, selects and goes to the next element repeatedly. Stops when {@code elements} has no more values. When {@code skips} has no more values, {@code repeatSkips} will be used repeatedly.<br>
