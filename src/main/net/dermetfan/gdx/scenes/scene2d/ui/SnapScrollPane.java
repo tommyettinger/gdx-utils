@@ -17,6 +17,8 @@ package net.dermetfan.gdx.scenes.scene2d.ui;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Group;
+import com.badlogic.gdx.scenes.scene2d.InputEvent;
+import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.ui.ScrollPane;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.utils.Align;
@@ -38,6 +40,16 @@ public class SnapScrollPane extends ScrollPane {
 
 	/** if the {@link #amountX} and {@link #amountY} are currently correctly snapped, for internal use */
 	private boolean snapped;
+
+	{
+		addCaptureListener(new InputListener() {
+			@Override
+			public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
+				snapped = false;
+				return false;
+			}
+		});
+	}
 
 	public SnapScrollPane(Actor widget) {
 		super(widget);
