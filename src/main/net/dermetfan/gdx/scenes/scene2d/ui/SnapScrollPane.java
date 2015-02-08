@@ -22,6 +22,8 @@ import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.ui.ScrollPane;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.utils.Align;
+import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener.ChangeEvent;
+import com.badlogic.gdx.utils.Pools;
 import com.badlogic.gdx.utils.SnapshotArray;
 
 /** a ScrollPane that snaps to certain scroll values
@@ -105,6 +107,8 @@ public class SnapScrollPane extends ScrollPane {
 		if(snapped)
 			return;
 
+		float oldAmountX = getScrollX(), oldAmountY = getScrollY();
+
 		float halfWidth = getWidth() / 2, halfHeight = getHeight() / 2;
 		Vector2 nearest = slotFinder.getNearestSlot(this, getVisualScrollX() + halfWidth, getVisualScrollY() + halfHeight);
 		float slotX = nearest.x, slotY = nearest.y;
@@ -121,6 +125,13 @@ public class SnapScrollPane extends ScrollPane {
 		setScrollX(slotX - halfWidth);
 		setScrollY(slotY - halfHeight);
 		snapped = true;
+
+		if(getScrollX() != oldAmountX || getScrollY() != oldAmountY) {
+			ChangeEvent event = Pools.obtain(ChangeEvent.class);
+			event.setBubbles(false);
+			fire(event);
+			Pools.free(event);
+		}
 	}
 
 	// getters and setters
