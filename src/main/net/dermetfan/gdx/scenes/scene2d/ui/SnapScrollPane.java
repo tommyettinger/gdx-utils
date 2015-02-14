@@ -1,17 +1,3 @@
-/** Copyright 2015 Robin Stumm (serverkorken@gmail.com, http://dermetfan.net)
- *
- *  Licensed under the Apache License, Version 2.0 (the "License");
- *  you may not use this file except in compliance with the License.
- *  You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License. */
-
 package net.dermetfan.gdx.scenes.scene2d.ui;
 
 import com.badlogic.gdx.math.Vector2;
@@ -21,130 +7,230 @@ import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.ui.ScrollPane;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
+import com.badlogic.gdx.scenes.scene2d.ui.Value;
 import com.badlogic.gdx.scenes.scene2d.utils.Align;
-import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener.ChangeEvent;
-import com.badlogic.gdx.utils.Pools;
-import com.badlogic.gdx.utils.SnapshotArray;
+import com.badlogic.gdx.utils.Array;
 
-/** a ScrollPane that snaps to certain scroll values
- *  @author dermetfan
+/** @author dermetfan
  *  @since 0.10.0 */
 public class SnapScrollPane extends ScrollPane {
 
-	/** the SlotFinder to use */
-	private SlotFinder slotFinder = new AlignSlotFinder(Align.center);
+	/** The Slots to snap to. Invalid Slots are lazily {@link #removeInvalidSlots() removed}. */
+	private final Array<Slot> slots = new Array<>();
 
-	/** the minimal velocity to snap to the next slot even though it's not the closest one */
+	/** the current Slot */
+	private int slot;
+
+	/** The minimal mean velocity to snap to the {@link #findNextSlot(float, float) next} Slot. Default is {@value}. */
 	private float snapNextThreshold = 150;
 
-	/** @see SlotFinder#getNextSlot(ScrollPane, float, float, float) */
+	/** Direction tolerance for {@link #findNextSlot(float, float)}.
+	 *  0 means the Slot has to be perfectly aligned, 1 means the direction is ignored (so only position matters, resulting in behavior equivalent to {@link #findClosestSlot()})
+	 *  Default is {@value}. */
 	private float directionTolerance = .25f;
 
-	/** if the {@link #amountX} and {@link #amountY} are currently correctly snapped, for internal use */
-	private boolean snapped;
+	/** The Slot {@link #slot} is supposed to snap into. Does not need to have an {@link Slot#actor actor} explicitly set, it will be set when needed. */
+	private Slot<ScrollPane> target;
+
+	/** for internal, temporary use */
+	private final Vector2 vec2 = new Vector2();
+
+	public SnapScrollPane(Actor widget) {
+		this(widget, Align.center);
+	}
+
+	public SnapScrollPane(Actor widget, Skin skin) {
+		this(widget, Align.center, skin);
+	}
+
+	public SnapScrollPane(Actor widget, Skin skin, String styleName) {
+		this(widget, Align.center, skin, styleName);
+	}
+
+	public SnapScrollPane(Actor widget, ScrollPaneStyle style) {
+		this(widget, Align.center, style);
+	}
+
+	public SnapScrollPane(Actor widget, int align) {
+		this(widget, new AlignSlot<ScrollPane>(null, align));
+	}
+
+	public SnapScrollPane(Actor widget, int align, Skin skin) {
+		this(widget, new AlignSlot<ScrollPane>(null, align), skin);
+	}
+
+	public SnapScrollPane(Actor widget, int align, Skin skin, String styleName) {
+		this(widget, new AlignSlot<ScrollPane>(null, align), skin, styleName);
+	}
+
+	public SnapScrollPane(Actor widget, int align, ScrollPaneStyle style) {
+		this(widget, new AlignSlot<ScrollPane>(null, align), style);
+	}
+
+	public SnapScrollPane(Actor widget, Slot<ScrollPane> target) {
+		super(widget);
+		this.target = target;
+	}
+
+	public SnapScrollPane(Actor widget, Slot<ScrollPane> target, Skin skin) {
+		super(widget, skin);
+		this.target = target;
+	}
+
+	public SnapScrollPane(Actor widget, Slot<ScrollPane> target, Skin skin, String styleName) {
+		super(widget, skin, styleName);
+		this.target = target;
+	}
+
+	public SnapScrollPane(Actor widget, Slot<ScrollPane> target, ScrollPaneStyle style) {
+		super(widget, style);
+		this.target = target;
+	}
 
 	{
 		addCaptureListener(new InputListener() {
 			@Override
 			public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
-				snapped = false;
-				return false;
+				return event.getListenerActor() instanceof ScrollPane;
+			}
+
+			@Override
+			public void touchUp(InputEvent event, float x, float y, int pointer, int button) {
+				if(!(event.getListenerActor() instanceof ScrollPane))
+					return;
+				if(event.isTouchFocusCancel() && !isFlinging()) {
+					event.getStage().addTouchFocus(this, SnapScrollPane.this, event.getTarget(), pointer, button);
+					return;
+				}
+
+				removeInvalidSlots();
+				if(isFlinging() && Math.abs(getVelocityX() + getVelocityY()) / 2 >= snapNextThreshold) {
+					Slot slot = findNextSlot(getVelocityX(), getVelocityY());
+					if(slot != null)
+						setSlot(slot);
+				} else
+					setSlot(findClosestSlot());
 			}
 		});
 	}
 
-	public SnapScrollPane(Actor widget) {
-		super(widget);
-	}
-
-	public SnapScrollPane(Actor widget, Skin skin) {
-		super(widget, skin);
-	}
-
-	public SnapScrollPane(Actor widget, Skin skin, String styleName) {
-		super(widget, skin, styleName);
-	}
-
-	public SnapScrollPane(Actor widget, ScrollPaneStyle style) {
-		super(widget, style);
-	}
-
-	/** @param slotFinder the {@link #slotFinder}
-	 *  @see #SnapScrollPane(Actor) */
-	public SnapScrollPane(Actor widget, SlotFinder slotFinder) {
-		this(widget);
-		this.slotFinder = slotFinder;
-	}
-
-	/** @param slotFinder the {@link #slotFinder}
-	 *  @see #SnapScrollPane(Actor, Skin) */
-	public SnapScrollPane(Actor widget, SlotFinder slotFinder, Skin skin) {
-		this(widget, skin);
-		this.slotFinder = slotFinder;
-	}
-
-	/** @param slotFinder the {@link #slotFinder}
-	 *  @see #SnapScrollPane(Actor, Skin, String) */
-	public SnapScrollPane(Actor widget, SlotFinder slotFinder, Skin skin, String styleName) {
-		this(widget, skin, styleName);
-		this.slotFinder = slotFinder;
-	}
-
-	/** @param slotFinder the {@link #slotFinder}
-	 *  @see #SnapScrollPane(Actor, Skin) */
-	public SnapScrollPane(Actor widget, SlotFinder slotFinder, ScrollPaneStyle style) {
-		this(widget, style);
-		this.slotFinder = slotFinder;
-	}
-
-	@Override
-	public void act(float delta) {
-		super.act(delta);
-		if(isDragging() || isPanning()) {
-			snapped = false;
-			return;
+	/** @param slot the Slot to snap to */
+	public void snap(Slot slot) {
+		float slotX = slot.getX(), slotY = slot.getY();
+		if(slot.getActor() != getWidget()) {
+			assert getWidget() instanceof Group : "invalid Slot, ScrollPane#widget is not a group so Slot#actor must be ScrollPane#widget but it is not";
+			assert slot.getActor().isDescendantOf(getWidget()) : "invalid Slot, Slot#actor is not a child of or ScrollPane#widget";
+			vec2.set(slotX, slotY);
+			slot.getActor().localToAscendantCoordinates(getWidget(), vec2);
+			slotX = vec2.x;
+			slotY = vec2.y;
 		}
-		if(snapped)
-			return;
+		fling(0, 0, 0);
+		target.setActor(this);
+		setScrollX(slotX - target.getX());
+		setScrollY(slotY - target.getY());
+	}
 
-		float oldAmountX = getScrollX(), oldAmountY = getScrollY();
-
-		float halfWidth = getWidth() / 2, halfHeight = getHeight() / 2;
-		Vector2 nearest = slotFinder.getNearestSlot(this, getVisualScrollX() + halfWidth, getVisualScrollY() + halfHeight);
-		float slotX = nearest.x, slotY = nearest.y;
-
-		if(isFlinging() && (Math.abs(getVelocityX()) + Math.abs(getVelocityY())) / 2 >= snapNextThreshold) {
-			Vector2 next = slotFinder.getNextSlot(this, slotX, slotY, directionTolerance);
-			if(next != null) {
-				slotX = next.x;
-				slotY = next.y;
+	/** @return the Slot closest to {@link #target} with the visual scroll amount */
+	public Slot findClosestSlot() {
+		Slot closest = null;
+		target.setActor(this);
+		float targetX = target.getX() + getVisualScrollX(), targetY = target.getY() + getVisualScrollY();
+		float closestDistance = Float.POSITIVE_INFINITY;
+		for(Slot slot : slots) {
+			vec2.set(slot.getX(), slot.getY());
+			slot.getActor().localToAscendantCoordinates(getWidget(), vec2);
+			float distance = Vector2.dst2(targetX, targetY, vec2.x, vec2.y);
+			if(distance < closestDistance) {
+				closestDistance = distance;
+				closest = slot;
 			}
 		}
+		return closest;
+	}
 
-		fling(0, 0, 0);
-		setScrollX(slotX - halfWidth);
-		setScrollY(slotY - halfHeight);
-		snapped = true;
+	/** @return the next Slot in the given direction starting from the {@link #findClosestSlot() closest} Slot */
+	public Slot findNextSlot(float directionX, float directionY) {
+		Slot next = null, current = findClosestSlot();
+		current.getActor().localToAscendantCoordinates(getWidget(), vec2.set(current.getX(), current.getY()));
+		float currentX = vec2.x, currentY = vec2.y;
+		float candidateNonCollinearity = Float.POSITIVE_INFINITY, candidateNonLocality = Float.POSITIVE_INFINITY;
+		float targetAngle = vec2.set(directionX, directionY).angleRad();
+		for(Slot slot : slots) {
+			slot.getActor().localToAscendantCoordinates(getWidget(), vec2.set(slot.getX(), slot.getY()));
+			float slotX = vec2.x, slotY = vec2.y;
 
-		if(getScrollX() != oldAmountX || getScrollY() != oldAmountY) {
-			ChangeEvent event = Pools.obtain(ChangeEvent.class);
-			event.setBubbles(false);
-			fire(event);
-			Pools.free(event);
+			if(directionTolerance < 1 && (Math.signum(directionX) != Math.signum(currentX - slotX) || Math.signum(directionY) != Math.signum(currentY - slotY)))
+				continue;
+			vec2.set(currentX, currentY);
+			float childAngle = (float) Math.atan2(vec2.crs(slotX, slotY), vec2.dot(slotX, slotY)); // perform Vector2#angleRad(Vector2) manually because we just have one Vector2 instance
+			float childNonCollinearity = Math.abs(childAngle - targetAngle);
+
+			float childNonLocality = Math.abs(slotX - currentX) + Math.abs(slotY - currentY);
+
+			if(childNonCollinearity * (1 - directionTolerance) + childNonLocality * directionTolerance < candidateNonCollinearity * (1 - directionTolerance) + candidateNonLocality * directionTolerance) {
+				candidateNonCollinearity = childNonCollinearity;
+				candidateNonLocality = childNonLocality;
+				next = slot;
+			}
 		}
+		return next;
+	}
+
+	/** Removes every Slot which {@link Slot#actor actor} is not a {@link Actor#isDescendantOf(Actor) descendant} of the widget */
+	public void removeInvalidSlots() {
+		for(int i = 0; i < slots.size; ) {
+			if(!slots.get(i).getActor().isDescendantOf(this))
+				slots.removeIndex(i);
+			else
+				i++;
+		}
+	}
+
+	/** adds the given Slot if it is not already added
+	 *  @param slot the Slot to add
+	 *  @throws IllegalArgumentException if the Slot is {@link #removeInvalidSlots() invalid} */
+	public void addSlot(Slot slot) {
+		if(!slot.getActor().isDescendantOf(this))
+			throw new IllegalArgumentException("the given Slot's actor is not a descendant of the ScrollPane#widget");
+		if(!slots.contains(slot, true))
+			slots.add(slot);
+	}
+
+	/** removes the given Slot if it is added and {@link #setSlot(Slot) sets} the closest Slot
+	 *  @param slot the Slot to remove
+	 *  @return if the Slot was found and removed */
+	public boolean removeSlot(Slot slot) {
+		Slot oldSlot = getSlot();
+		boolean removed = slots.removeValue(slot, true);
+		if(slot == oldSlot) {
+			if(slots.size == 1)
+				setSlot(slots.first());
+			else if(slots.size > 1)
+				setSlot(findClosestSlot());
+		}
+		return removed;
+	}
+
+	/** @param slot the {@link #slot} to set and {@link #snap(Slot) snap} to */
+	public void setSlot(Slot slot) {
+		addSlot(slot);
+		this.slot = slots.indexOf(slot, true);
+		snap(slot);
+	}
+
+	/** @return the Slot corresponding to {@link #slot} */
+	public Slot getSlot() {
+		return slots.get(slot);
+	}
+
+	/** @return the {@link #slots} with invalid slots {@link #removeInvalidSlots() removed} */
+	public Array<Slot> getSlots() {
+		removeInvalidSlots();
+		return slots;
 	}
 
 	// getters and setters
-
-	/** @return the {@link #slotFinder} */
-	public SlotFinder getSlotFinder() {
-		return slotFinder;
-	}
-
-	/** @param slotFinder the {@link #slotFinder} to set */
-	public void setSlotFinder(SlotFinder slotFinder) {
-		this.slotFinder = slotFinder;
-	}
 
 	/** @return the {@link #snapNextThreshold} */
 	public float getSnapNextThreshold() {
@@ -166,94 +252,71 @@ public class SnapScrollPane extends ScrollPane {
 		this.directionTolerance = directionTolerance;
 	}
 
-	/** finds slots on the actor the ScrollPane scrolls
+	/** @return the {@link #target} */
+	public Slot<ScrollPane> getTarget() {
+		return target;
+	}
+
+	/** @param target the {@link #target} to set */
+	public void setTarget(Slot<ScrollPane> target) {
+		this.target = target;
+	}
+
+	/** a slot on an Actor the Snapper can snap to
 	 *  @author dermetfan
 	 *  @since 0.10.0 */
-	public interface SlotFinder {
+	public static abstract class Slot<T extends Actor> {
 
-		/** @param targetX the x coordinate of the point to which to find the closest slot
-		 *  @param targetY the y coordinate of the point to which to find the closest slot
-		 *  @return the slot nearest to the given target */
-		Vector2 getNearestSlot(ScrollPane pane, float targetX, float targetY);
+		/** the Actor of this Slot */
+		protected T actor;
 
-		/** @param currentSlotX the x coordinate of the slot in respect to which the next slot should be found
-		 *  @param currentSlotY the y coordinate of the slot in respect to which the next slot should be found
-		 *  @param directionTolerance the ratio of the significances of locality and collinearity of each slot in respect to the given current slot, in the range from 0 to 1
-		 *  @throws IllegalArgumentException if the given directionTolerance is &lt; 0 or &gt; 1
-		 *  @return the next slot seen from the given slot in the direction of the velocity of the ScrollPane */
-		Vector2 getNextSlot(ScrollPane pane, float currentSlotX, float currentSlotY, float directionTolerance);
+		/** @param actor the the {@link #actor} to set */
+		public Slot(T actor) {
+			this.actor = actor;
+		}
+
+		/** @return the x coordinate of the slot position in the {@link #actor}'s coordinate system */
+		public abstract float getX();
+
+		/** @return the y coordinate of the slot position in the {@link #actor}'s coordinate system */
+		public abstract float getY();
+
+		// getters and setters
+
+		/** @param actor the {@link #actor} to set */
+		public void setActor(T actor) {
+			this.actor = actor;
+		}
+
+		/** @return the {@link #actor} */
+		public T getActor() {
+			return actor;
+		}
 
 	}
 
-	/** each slot is determined by an {@link Align} flag
+	/** a Slot determined by an {@link Align} on the reference Actor
 	 *  @author dermetfan
 	 *  @since 0.10.0 */
-	public static class AlignSlotFinder implements SlotFinder {
+	public static class AlignSlot<T extends Actor> extends Slot<T> {
 
-		/** the {@link Align} flag to use */
+		/** the {@link Align} flag */
 		private int align;
 
-		private final Vector2 vec2 = new Vector2();
-
-		/** @param align the {@link #align} */
-		public AlignSlotFinder(int align) {
+		/** @param align the {@link #align} to set */
+		public AlignSlot(T actor, int align) {
+			super(actor);
 			this.align = align;
 		}
 
 		@Override
-		public Vector2 getNearestSlot(ScrollPane pane, float targetX, float targetY) {
-			Actor actor = pane.getWidget();
-			vec2.set(actor.getX(align) - actor.getX(), actor.getY(align) - actor.getY());
-			if(actor instanceof Group) {
-				SnapshotArray<Actor> children = ((Group) actor).getChildren();
-				if(children.size > 0) {
-					float nearestX = Float.POSITIVE_INFINITY, nearestY = Float.POSITIVE_INFINITY;
-					for(Actor child : children) {
-						float slotX = child.getX(align), slotY = child.getY(align);
-						if(Math.abs(targetX - slotX) < Math.abs(targetX - nearestX))
-							nearestX = slotX;
-						if(Math.abs(targetY - slotY) < Math.abs(targetY - nearestY))
-							nearestY = slotY;
-					}
-					vec2.set(nearestX, nearestY);
-				}
-			}
-			return vec2;
+		public float getX() {
+			return actor.getX(align) - actor.getX();
 		}
 
 		@Override
-		public Vector2 getNextSlot(ScrollPane pane, float currentSlotX, float currentSlotY, float directionTolerance) {
-			if(directionTolerance < 0 || directionTolerance > 1)
-				throw new IllegalArgumentException("directionTolerance < 0 || directionTolerance > 1: " + directionTolerance);
-			Actor actor = pane.getWidget();
-			vec2.set(actor.getX(align) - actor.getX(), actor.getY(align) - actor.getY());
-			if(actor instanceof Group) {
-				SnapshotArray<Actor> children = ((Group) actor).getChildren();
-				if(children.size > 0) {
-					Actor candidate = null;
-					float candidateNonCollinearity = Float.POSITIVE_INFINITY, candidateNonLocality = Float.POSITIVE_INFINITY;
-					float targetAngle = vec2.set(pane.getVelocityX(), pane.getVelocityY()).angleRad();
-					for(Actor child : children) {
-						float childSlotX = child.getX(align), childSlotY = child.getY(align);
-
-						if(Math.signum(pane.getVelocityX()) != Math.signum(currentSlotX - childSlotX) || Math.signum(pane.getVelocityY()) != Math.signum(currentSlotY - childSlotY))
-							continue;
-						vec2.set(currentSlotX, currentSlotY);
-						float childAngle = (float) Math.atan2(vec2.crs(childSlotX, childSlotY), vec2.dot(childSlotX, childSlotY)); // perform Vector2#angleRad(Vector2) manually because we just have one Vector2 instance
-						float childNonCollinearity = Math.abs(childAngle - targetAngle);
-
-						float childNonLocality = Math.abs(childSlotX - currentSlotX) + Math.abs(childSlotY - currentSlotY);
-
-						if(childNonCollinearity * (1 - directionTolerance) + childNonLocality * directionTolerance < candidateNonCollinearity * (1 - directionTolerance) + candidateNonLocality * directionTolerance) {
-							candidateNonCollinearity = childNonCollinearity;
-							candidateNonLocality = childNonLocality;
-							candidate = child;
-						}
-					}
-					return candidate != null ? vec2.set(candidate.getX(align), candidate.getY(align)) : null;
-				}
-			}
-			return vec2;
+		public float getY() {
+			return actor.getY(align) - actor.getY();
 		}
 
 		// getters and setters
@@ -266,6 +329,56 @@ public class SnapScrollPane extends ScrollPane {
 		/** @param align the {@link #align} to set */
 		public void setAlign(int align) {
 			this.align = align;
+		}
+
+	}
+
+	/** a Slot determined by {@link Value Values}
+	 *  @author dermetfan
+	 *  @since 0.10.0 */
+	public static class ValueSlot<T extends Actor> extends Slot<T> {
+
+		/** the Value determining this slot */
+		private Value valueX, valueY;
+
+		/** @param valueX the {@link #valueX} to set
+		 *  @param valueY the {@link #valueY} to set */
+		public ValueSlot(T actor, Value valueX, Value valueY) {
+			super(actor);
+			this.valueX = valueX;
+			this.valueY = valueY;
+		}
+
+		@Override
+		public float getX() {
+			return valueX.get(actor);
+		}
+
+		@Override
+		public float getY() {
+			return valueX.get(actor);
+		}
+
+		// getters and setters
+
+		/** @return the {@link #valueX} */
+		public Value getValueX() {
+			return valueX;
+		}
+
+		/** @param valueX the {@link #valueX} to set */
+		public void setValueX(Value valueX) {
+			this.valueX = valueX;
+		}
+
+		/** @return the {@link #valueY} */
+		public Value getValueY() {
+			return valueY;
+		}
+
+		/** @param valueY the {@link #valueY} to set */
+		public void setValueY(Value valueY) {
+			this.valueY = valueY;
 		}
 
 	}
