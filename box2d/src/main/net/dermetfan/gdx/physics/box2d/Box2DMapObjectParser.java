@@ -510,7 +510,7 @@ public class Box2DMapObjectParser {
 	 *  @param mapObject the {@link MapObject} to parse the {@link Body} from
 	 *  @return the {@link Body} created in the given {@link World} from the given {@link MapObject} */
 	public Body createBody(World world, MapObject mapObject) {
-		if(listener.createBody(mapObject) == null)
+		if((mapObject = listener.createBody(mapObject)) == null)
 			return null;
 
 		MapProperties properties = mapObject.getProperties();
