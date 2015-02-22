@@ -491,25 +491,12 @@ public class Box2DUtils extends com.badlogic.gdx.physics.box2d.Box2DUtils {
 
 	// aabb
 
-	/** @see #aabb(Shape, float, Rectangle) */
-	public static Rectangle aabb(CircleShape shape, Rectangle aabb) {
-		return aabb.set(minX(shape), minY(shape), width(shape), height(shape));
-	}
-
-	/** @see #aabb(CircleShape, Rectangle) */
-	public static Rectangle aabb(CircleShape shape) {
-		return aabb(shape, polygon.getBoundingRectangle());
-	}
-
 	/** @param shape the Shape which AABB to get
 	 *  @param aabb the Rectangle to set to the given Shape's AABB
 	 *  @return the given Rectangle set as axis aligned bounding box of the given Shape
 	 *  @since 0.9.1 */
 	public static Rectangle aabb(Shape shape, float rotation, Rectangle aabb) {
-		if(shape.getType() == Type.Circle)
-			return aabb((CircleShape) shape, aabb);
-
-		if(rotation == 0)
+		if(com.badlogic.gdx.math.MathUtils.isZero(rotation))
 			return aabb.set(minX(shape), minY(shape), width(shape), height(shape));
 
 		Vector2[] v2Vertices = Box2DUtils.vertices(shape);
@@ -523,6 +510,12 @@ public class Box2DUtils extends com.badlogic.gdx.physics.box2d.Box2DUtils {
 			vertices[i] = i % 2 == 0 ? v2Vertices[v2i].x : v2Vertices[v2i].y;
 		}
 		polygon.setVertices(vertices);
+		if(shape.getType() == Type.Circle) {
+			polygon.setOrigin(GeometryUtils.minX(vertices) + GeometryUtils.width(vertices) / 2, GeometryUtils.minY(vertices) + GeometryUtils.height(vertices) / 2);
+			polygon.setRotation(-rotation * com.badlogic.gdx.math.MathUtils.radDeg);
+			polygon.setVertices(polygon.getTransformedVertices());
+			polygon.setOrigin(0, 0);
+		}
 		polygon.setRotation(rotation * com.badlogic.gdx.math.MathUtils.radDeg);
 		return aabb.set(polygon.getBoundingRectangle());
 	}
@@ -534,7 +527,7 @@ public class Box2DUtils extends com.badlogic.gdx.physics.box2d.Box2DUtils {
 
 	/** @return the given Rectangle set as axis aligned bounding box of the given Fixture, in world coordinates
 	 *  @see #aabb(Shape, float, Rectangle) */
-	public static Rectangle aabb(Fixture fixture, Rectangle aabb) { // FIXME same as https://github.com/libgdx/libgdx/issues/2710
+	public static Rectangle aabb(Fixture fixture, Rectangle aabb) {
 		return aabb(fixture.getShape(), fixture.getBody().getAngle(), aabb).setPosition(fixture.getBody().getPosition().add(aabb.x, aabb.y));
 	}
 
