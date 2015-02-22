@@ -513,6 +513,7 @@ public class Box2DUtils extends com.badlogic.gdx.physics.box2d.Box2DUtils {
 			return aabb.set(minX(shape), minY(shape), width(shape), height(shape));
 
 		Vector2[] v2Vertices = Box2DUtils.vertices(shape);
+		GeometryUtils.reset(polygon);
 		float[] vertices = polygon.getVertices();
 		if(vertices.length < v2Vertices.length * 2)
 			vertices = new float[v2Vertices.length * 2];
@@ -521,7 +522,6 @@ public class Box2DUtils extends com.badlogic.gdx.physics.box2d.Box2DUtils {
 			int v2i = Math.min(i / 2, v2Vertices.length - 1);
 			vertices[i] = i % 2 == 0 ? v2Vertices[v2i].x : v2Vertices[v2i].y;
 		}
-		GeometryUtils.reset(polygon);
 		polygon.setVertices(vertices);
 		polygon.setRotation(rotation * com.badlogic.gdx.math.MathUtils.radDeg);
 		return aabb.set(polygon.getBoundingRectangle());
