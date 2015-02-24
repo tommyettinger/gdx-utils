@@ -12,6 +12,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.Value;
 import com.badlogic.gdx.scenes.scene2d.utils.Align;
 import com.badlogic.gdx.utils.FloatArray;
 import com.badlogic.gdx.utils.Pools;
+import net.dermetfan.gdx.scenes.scene2d.ui.Snapper.SnapEvent.Type;
 
 /** @author dermetfan
  *  @since 0.10.0 */
@@ -26,6 +27,9 @@ public class Snapper extends InputListener {
 	private final SlotSearchEvent searchEvent = new SlotSearchEvent() {{
 		this.setBubbles(false);
 	}};
+
+	/** For internal use. If a SnapEvent of the type Type.Out has already been fired. */
+	private boolean snapOutFired;
 
 //	/** The minimal mean velocity to snap to the {@link #findNextSlot(ScrollPane, float, float, Vector2) next} Slot. Default is {@value}. */
 //	private float snapNextThreshold = 150;
@@ -43,7 +47,26 @@ public class Snapper extends InputListener {
 
 	@Override
 	public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
+		if(!snapOutFired && event.getListenerActor() instanceof ScrollPane) {
+			ScrollPane pane = (ScrollPane) event.getListenerActor();
+			vec2.set(getSnappedSlotX(pane), getSnappedSlotY(pane));
+		}
 		return true;
+	}
+
+	@Override
+	public void touchDragged(InputEvent event, float x, float y, int pointer) {
+		if(snapOutFired || !(event.getListenerActor() instanceof ScrollPane))
+			return;
+		ScrollPane pane = (ScrollPane) event.getListenerActor();
+		SnapEvent snap = Pools.obtain(SnapEvent.class);
+		snap.init(this, Type.Out, vec2.x, vec2.y);
+		if(pane.fire(snap)) {
+			snap0(pane, vec2.x, vec2.y);
+			pane.cancel();
+		}
+		Pools.free(snap);
+		snapOutFired = true;
 	}
 
 	@Override
@@ -156,15 +179,24 @@ public class Snapper extends InputListener {
 	 *  @param slotY the y coordinate of the slot to snap to */
 	public void snap(ScrollPane pane, float slotX, float slotY) {
 		SnapEvent event = Pools.obtain(SnapEvent.class);
-		event.snapper = this;
-		event.slotX = slotX;
-		event.slotY = slotY;
-		if(!pane.fire(event)) {
-			pane.fling(0, 0, 0);
-			pane.setScrollX(slotX - targetX.get(pane));
-			pane.setScrollY(slotY - targetY.get(pane));
+		if(!snapOutFired) {
+			event.init(this, Type.Out, getSnappedSlotX(pane), getSnappedSlotY(pane));
+			if(pane.fire(event)) {
+				Pools.free(event);
+				return;
+			}
 		}
+		event.init(this, Type.In, slotX, slotY);
+		if(!pane.fire(event))
+			snap0(pane, slotX, slotY);
 		Pools.free(event);
+		snapOutFired = false;
+	}
+
+	private void snap0(ScrollPane pane, float slotX, float slotY) {
+		pane.fling(0, 0, 0);
+		pane.setScrollX(slotX - targetX.get(pane));
+		pane.setScrollY(slotY - targetY.get(pane));
 	}
 
 	/** @param pane the ScrollPane which currently snapped slot x to get
@@ -233,7 +265,8 @@ public class Snapper extends InputListener {
 		this.targetY = targetY;
 	}
 
-	/** fired by {@link Snapper#snap(ScrollPane, float, float) snap}
+	/** Fired when the ScrollPane snaps into or out of a slot.
+	 *  Cancelling this event will cause the ScrollPane to not snap into/out of the slot.
 	 *  @author dermetfan
 	 *  @since 0.10.0 */
 	public static class SnapEvent extends Event {
@@ -241,13 +274,24 @@ public class Snapper extends InputListener {
 		/** the Snapper that fired this event */
 		private Snapper snapper;
 
+		/** the Type of this SnapEvent */
+		private Type type;
+
 		/** the slot position */
 		private float slotX, slotY;
+
+		private void init(Snapper snapper, Type type, float slotX, float slotY) {
+			this.snapper = snapper;
+			this.type = type;
+			this.slotX = slotX;
+			this.slotY = slotY;
+		}
 
 		@Override
 		public void reset() {
 			super.reset();
 			snapper = null;
+			type = null;
 			slotX = 0;
 			slotY = 0;
 		}
@@ -259,6 +303,11 @@ public class Snapper extends InputListener {
 			return snapper;
 		}
 
+		/** @return the {@link #type} */
+		public Type getType() {
+			return type;
+		}
+
 		/** @return the {@link #slotX} */
 		public float getSlotX() {
 			return slotX;
@@ -267,6 +316,19 @@ public class Snapper extends InputListener {
 		/** @return the {@link #slotY} */
 		public float getSlotY() {
 			return slotY;
+		}
+
+		/** whether the slot was snapped into or out of
+		 *  @author dermetfan
+		 *  @since 0.10.0 */
+		public enum Type {
+
+			/** the slot was snapped into */
+			In,
+
+			/** the slot was snapped out of */
+			Out
+
 		}
 
 	}
