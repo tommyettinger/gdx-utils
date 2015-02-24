@@ -181,7 +181,12 @@ public class Snapper extends InputListener {
 
 	// getters and setters
 
-//	/** @return the {@link #snapNextThreshold} */
+	/** @return the {@link #slots} */
+	public FloatArray getSlots() {
+		return slots;
+	}
+
+	//	/** @return the {@link #snapNextThreshold} */
 //	public float getSnapNextThreshold() {
 //		return snapNextThreshold;
 //	}
