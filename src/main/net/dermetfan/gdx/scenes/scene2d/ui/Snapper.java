@@ -296,6 +296,12 @@ public class Snapper extends InputListener {
 			slotY = 0;
 		}
 
+		/** @return the ScrollPane that snapped */
+		public ScrollPane getScrollPane() {
+			assert getListenerActor() instanceof ScrollPane;
+			return (ScrollPane) getListenerActor();
+		}
+
 		// getters and setters
 
 		/** @return the {@link #snapper} */
