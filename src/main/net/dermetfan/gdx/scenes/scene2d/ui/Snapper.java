@@ -23,7 +23,7 @@ public class Snapper extends InputListener {
 
 	/** the event used to search for slots
 	 *  @see #updateSlots(ScrollPane) */
-	private final SlotSearchEvent event = new SlotSearchEvent() {{
+	private final SlotSearchEvent searchEvent = new SlotSearchEvent() {{
 		this.setBubbles(false);
 	}};
 
@@ -69,8 +69,8 @@ public class Snapper extends InputListener {
 	/** @param pane the ScrollPane on which to find slots
 	 *  @param root the Actor from which to start searching downward recursively */
 	private void findSlots(ScrollPane pane, Actor root) {
-		event.setTarget(pane.getWidget());
-		root.notify(event, false);
+		searchEvent.setTarget(pane.getWidget());
+		root.notify(searchEvent, false);
 		if(root instanceof Group)
 			for(Actor child : ((Group) root).getChildren())
 				findSlots(pane, child);
@@ -155,9 +155,16 @@ public class Snapper extends InputListener {
 	 *  @param slotX the x coordinate of the slot to snap to
 	 *  @param slotY the y coordinate of the slot to snap to */
 	public void snap(ScrollPane pane, float slotX, float slotY) {
-		pane.fling(0, 0, 0);
-		pane.setScrollX(slotX - targetX.get(pane));
-		pane.setScrollY(slotY - targetY.get(pane));
+		SnapEvent event = Pools.obtain(SnapEvent.class);
+		event.snapper = this;
+		event.slotX = slotX;
+		event.slotY = slotY;
+		if(!pane.fire(event)) {
+			pane.fling(0, 0, 0);
+			pane.setScrollX(slotX - targetX.get(pane));
+			pane.setScrollY(slotY - targetY.get(pane));
+		}
+		Pools.free(event);
 	}
 
 	/** @param pane the ScrollPane which currently snapped slot x to get
@@ -219,6 +226,44 @@ public class Snapper extends InputListener {
 	public void setTarget(Value targetX, Value targetY) {
 		this.targetX = targetX;
 		this.targetY = targetY;
+	}
+
+	/** fired by {@link Snapper#snap(ScrollPane, float, float) snap}
+	 *  @author dermetfan
+	 *  @since 0.10.0 */
+	public static class SnapEvent extends Event {
+
+		/** the Snapper that fired this event */
+		private Snapper snapper;
+
+		/** the slot position */
+		private float slotX, slotY;
+
+		@Override
+		public void reset() {
+			super.reset();
+			snapper = null;
+			slotX = 0;
+			slotY = 0;
+		}
+
+		// getters and setters
+
+		/** @return the {@link #snapper} */
+		public Snapper getSnapper() {
+			return snapper;
+		}
+
+		/** @return the {@link #slotX} */
+		public float getSlotX() {
+			return slotX;
+		}
+
+		/** @return the {@link #slotY} */
+		public float getSlotY() {
+			return slotY;
+		}
+
 	}
 
 	/** @author dermetfan
