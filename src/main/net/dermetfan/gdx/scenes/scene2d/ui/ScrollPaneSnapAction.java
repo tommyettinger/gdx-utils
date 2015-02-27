@@ -46,7 +46,7 @@ public class ScrollPaneSnapAction extends Action {
 		this.setBubbles(false);
 	}};
 
-	/** the {@link #actor} cast to a ScrollPane */
+	/** the {@link #target} cast to a ScrollPane */
 	private ScrollPane pane;
 
 	/** whether a SnapEvent of the type Type.Out has already been fired */
@@ -99,10 +99,10 @@ public class ScrollPaneSnapAction extends Action {
 	}
 
 	@Override
-	public void setActor(Actor actor) {
-		super.setActor(actor);
-		if(actor instanceof ScrollPane)
-			pane = (ScrollPane) actor;
+	public void setTarget(Actor target) {
+		super.setTarget(target);
+		if(target instanceof ScrollPane)
+			pane = (ScrollPane) target;
 	}
 
 	@Override
