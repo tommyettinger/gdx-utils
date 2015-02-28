@@ -287,44 +287,36 @@ public class MathUtils {
 
 	/** @param value the desired value
 	 *  @param items the values to inspect
-	 *  @param range values out of this range will not be returned
+	 *  @param minDiff the minimal difference to the given value
 	 *  @return the nearest to value in values, {@code NaN} if none is found */
-	public static float nearest(float value, float[] items, float range, int offset, int length) {
-		float diff, smallestDiff = Float.POSITIVE_INFINITY, nearest = Float.NaN;
+	public static float nearest(float value, float[] items, float minDiff, int offset, int length) {
+		if(value == Float.POSITIVE_INFINITY)
+			return max(items, offset, length);
+		if(value == Float.NEGATIVE_INFINITY)
+			return min(items, offset, length);
 
-		if(value == Float.POSITIVE_INFINITY) {
-			float max = max(items, offset, length);
-			if(max - range <= value)
-				return max;
-			return nearest;
-		} else if(value == Float.NEGATIVE_INFINITY) {
-			float min = min(items, offset, length);
-			if(min + range >= value)
-				return min;
-			return nearest;
-		}
-
+		float smallestDiff = Float.POSITIVE_INFINITY, nearest = Float.NaN;
 		for(int i = offset; i < offset + length; i++) {
-			float candidate = items[i];
-			if(candidate == value)
-				return value;
-			if((diff = Math.abs(candidate - value)) < smallestDiff)
-				if((smallestDiff = diff) <= range)
-					nearest = candidate;
+			float diff = Math.abs(value - items[i]);
+			if(diff < minDiff)
+				continue;
+			if(diff < smallestDiff) {
+				smallestDiff = diff;
+				nearest = items[i];
+			}
 		}
-
 		return nearest;
 	}
 
 	/** @see #nearest(float, float[], float, int, int) */
-	public static float nearest(float value, float[] items, float range) {
-		return nearest(value, items, range, 0, items.length);
+	public static float nearest(float value, float[] items, float minDiff) {
+		return nearest(value, items, minDiff, 0, items.length);
 	}
 
 	/** @return the nearest to value in values
 	 *  @see #nearest(float, float[], float, int, int) */
 	public static float nearest(float value, float[] items, int offset, int length) {
-		return nearest(value, items, Float.POSITIVE_INFINITY, offset, length);
+		return nearest(value, items, 0, offset, length);
 	}
 
 	/** @see #nearest(float, float[], int, int) */

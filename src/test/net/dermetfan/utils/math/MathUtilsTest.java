@@ -131,8 +131,8 @@ public class MathUtilsTest {
 		assertEquals(1.1f, MathUtils.nearest(3, values, 0, values.length), 0);
 		assertEquals(83232, MathUtils.nearest(Float.POSITIVE_INFINITY, values, 0, values.length), 0);
 		assertEquals(-53424.23f, MathUtils.nearest(Float.NEGATIVE_INFINITY, values, 100, 0, values.length), 0);
-		assertEquals(180, MathUtils.nearest(100, new float[] {-300, 200, 180}, 100, 0, 3), 0);
-		assertTrue(Float.isNaN(MathUtils.nearest(0, new float[] {-300, 200, 180}, 100, 0, 3)));
+		assertEquals(200, MathUtils.nearest(100, new float[] {-300, 200, 180}, 100, 0, 3), 0);
+		assertTrue(Float.isNaN(MathUtils.nearest(0, new float[] {-300, 200, 180}, 350)));
 	}
 
 	@Test
