@@ -70,7 +70,7 @@ public class ScrollPaneSnapAction extends Action {
 
 	/** uses {@link Value#percentWidth(float) percentWidth(.5f)} and {@link Value#percentHeight(float) percentHeight(.5f)} as target */
 	public ScrollPaneSnapAction() {
-		reset();
+		this(Value.percentWidth(.5f), Value.percentHeight(.5f));
 	}
 
 	/** @param targetX the {@link #targetX}
@@ -154,12 +154,16 @@ public class ScrollPaneSnapAction extends Action {
 		super.reset();
 		targetX = Value.percentWidth(.5f);
 		targetY = Value.percentHeight(.5f);
+		indicator = null;
+		indicateVertical = false;
 		slots.clear();
 		searchEvent.reset();
 		pane = null;
 		snapOutFired = true;
 		snapOutCancelled = false;
 		snapped = false;
+		visualScrollX = Float.NaN;
+		visualScrollY = Float.NaN;
 	}
 
 	/** clears and fills {@link #slots} with slots on the given ScrollPane */
@@ -206,7 +210,7 @@ public class ScrollPaneSnapAction extends Action {
 
 	/** {@link #snap(float, float) snaps} to the {@link #findClosestSlot(Vector2) closest} slot */
 	private void snapClosest() {
-		Vector2 vec2 = Pools.obtain(Vector2.class).set(Float.NaN, Float.NaN);
+		Vector2 vec2 = Pools.obtain(Vector2.class);
 		if(findClosestSlot(vec2))
 			snap(vec2.x, vec2.y);
 		else
