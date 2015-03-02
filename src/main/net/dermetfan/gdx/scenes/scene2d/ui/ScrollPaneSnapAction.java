@@ -26,6 +26,7 @@ import com.badlogic.gdx.scenes.scene2d.utils.Align;
 import com.badlogic.gdx.utils.FloatArray;
 import com.badlogic.gdx.utils.Pools;
 import net.dermetfan.gdx.scenes.scene2d.ui.ScrollPaneSnapAction.SnapEvent.Type;
+import net.dermetfan.utils.math.MathUtils;
 
 /** Lets a {@link ScrollPane} snap to certain {@link #slots slots}.
  *  Does nothing when added to other Actors. Stays until it is manually removed.
@@ -35,6 +36,12 @@ public class ScrollPaneSnapAction extends Action {
 
 	/** the target position all slots shall snap into */
 	private Value targetX, targetY;
+
+	/** the Indicator to notify (may be null) */
+	private Indicator indicator;
+
+	/** whether the y-axis should be indicated to the {@link #indicator} rather than the x-axis */
+	private boolean indicateVertical;
 
 	/** the slots to snap to
 	 *  @see #findClosestSlot(Vector2) */
@@ -58,6 +65,9 @@ public class ScrollPaneSnapAction extends Action {
 	/** whether the ScrollPane is currently snapped */
 	private boolean snapped;
 
+	/** the last {@link ScrollPane#getVisualScrollX() visual scroll amount} of {@link #pane}, needed to know whether the {@link #indicator} must be notified */
+	private float visualScrollX = Float.NaN, visualScrollY = Float.NaN;
+
 	/** uses {@link Value#percentWidth(float) percentWidth(.5f)} and {@link Value#percentHeight(float) percentHeight(.5f)} as target */
 	public ScrollPaneSnapAction() {
 		reset();
@@ -74,6 +84,8 @@ public class ScrollPaneSnapAction extends Action {
 	public boolean act(float delta) {
 		if(pane == null)
 			return false;
+
+		boolean cancelSnapping = false;
 		if(pane.isDragging() || pane.isPanning()) {
 			snapped = false;
 			if(!snapOutFired) {
@@ -86,23 +98,55 @@ public class ScrollPaneSnapAction extends Action {
 				Pools.free(event);
 				snapOutFired = true;
 			}
-			return false;
+			cancelSnapping = true;
 		}
-		if(snapped |= snapOutCancelled) {
+		if(!cancelSnapping && (snapped |= snapOutCancelled)) {
 			snapOutCancelled = false;
 			snapOutFired = false;
-			return false;
+			cancelSnapping = true;
 		}
-		updateSlots();
-		snapClosest();
+		boolean slotsUpdated = false;
+		if(!cancelSnapping) {
+			updateSlots();
+			slotsUpdated = true;
+			snapClosest();
+		}
+
+		if(indicator != null && (pane.getVisualScrollX() != visualScrollX || pane.getVisualScrollY() != visualScrollY)) {
+			visualScrollX = pane.getVisualScrollX();
+			visualScrollY = pane.getVisualScrollY();
+			if(!slotsUpdated)
+				updateSlots();
+			float currentSlot = indicateVertical ? getSnappedSlotY() : getSnappedSlotX();
+			int page = 0;
+			float closestSmaller = Float.NEGATIVE_INFINITY, closestGreater = Float.POSITIVE_INFINITY;
+			for(int i = indicateVertical ? 1 : 0; i < slots.size; i += 2) {
+				float slot = slots.get(i), diff = currentSlot - slot;
+				if(diff >= 0) {
+					if(diff <= currentSlot - closestSmaller)
+						closestSmaller = slot;
+				} else if(diff >= currentSlot - closestGreater)
+					closestGreater = slot;
+				if(slot <= currentSlot)
+					page++;
+			}
+			indicator.indicate(this, page, slots.size / 2, MathUtils.replaceNaN((currentSlot - closestSmaller) / (closestGreater - closestSmaller), 1));
+		}
+
 		return false;
 	}
 
 	@Override
 	public void setTarget(Actor target) {
 		super.setTarget(target);
-		if(target instanceof ScrollPane)
+		if(target instanceof ScrollPane) {
 			pane = (ScrollPane) target;
+			dirtyIndicator();
+		} else if(target == null) {
+			pane = null;
+			if(indicator != null)
+				indicator.indicate(this, 0, 0, 0);
+		}
 	}
 
 	@Override
@@ -139,6 +183,7 @@ public class ScrollPaneSnapAction extends Action {
 		slots.ensureCapacity(2);
 		slots.add(x);
 		slots.add(y);
+		dirtyIndicator();
 	}
 
 	/** @param slot is set to the Slot closest to the target with the visual scroll amount
@@ -197,6 +242,11 @@ public class ScrollPaneSnapAction extends Action {
 		pane.setScrollY(slotY - targetY.get(pane));
 	}
 
+	/** forces the {@link #indicator} to be notified next time {@link #act(float) act} is called */
+	public void dirtyIndicator() {
+		visualScrollX = visualScrollY = Float.NaN;
+	}
+
 	/** @return the slot x the given pane is currently snapped to (assuming it is) */
 	public float getSnappedSlotX() {
 		return pane.getScrollX() + targetX.get(pane);
@@ -234,6 +284,26 @@ public class ScrollPaneSnapAction extends Action {
 	public void setTarget(Value targetX, Value targetY) {
 		this.targetX = targetX;
 		this.targetY = targetY;
+	}
+
+	/** @return the {@link #indicator} */
+	public Indicator getIndicator() {
+		return indicator;
+	}
+
+	/** @param indicator the {@link #indicator} to set */
+	public void setIndicator(Indicator indicator) {
+		this.indicator = indicator;
+	}
+
+	/** @return the {@link #indicateVertical} */
+	public boolean isIndicateVertical() {
+		return indicateVertical;
+	}
+
+	/** @param indicateVertical the {@link #indicateVertical} to set */
+	public void setIndicateVertical(boolean indicateVertical) {
+		this.indicateVertical = indicateVertical;
 	}
 
 	/** @return the {@link #slots} */
@@ -444,6 +514,20 @@ public class ScrollPaneSnapAction extends Action {
 		public void setValueY(Value valueY) {
 			this.valueY = valueY;
 		}
+
+	}
+
+	/** indicates the position of the {@link #getSnappedSlotX() snapped} slot
+	 *  @author dermetfan
+	 *  @since 0.10.0 */
+	public interface Indicator {
+
+		/** called by {@link #act(float) if the {@link ScrollPane#getVisualScrollX() visual scroll amount} changed
+		 *  @param action the instance calling this method
+		 *  @param page the current slot index in a sorted sequence of all slots
+		 *  @param pages the number of slots
+		 *  @param progress how far the ScrollPane's visual scroll amount is to the next slot */
+		void indicate(ScrollPaneSnapAction action, int page, int pages, float progress);
 
 	}
 
