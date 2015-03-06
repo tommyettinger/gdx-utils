@@ -17,7 +17,7 @@ package net.dermetfan.utils.math;
 import net.dermetfan.utils.ArrayUtils;
 
 import static net.dermetfan.utils.ArrayUtils.checkRegion;
-import static net.dermetfan.utils.math.MathUtils.amplitude;
+import static net.dermetfan.utils.math.MathUtils.amplitude2;
 import static net.dermetfan.utils.math.MathUtils.max;
 import static net.dermetfan.utils.math.MathUtils.min;
 import static net.dermetfan.utils.math.MathUtils.mirror;
@@ -128,7 +128,7 @@ public class GeometryUtils {
 	/** @param vertices the vertices which width to get
 	 *  @return the width of the given vertices */
 	public static float width(float[] vertices, int offset, int length) {
-		return amplitude(filterX(vertices, offset, length, floats), 0, length / 2);
+		return amplitude2(filterX(vertices, offset, length, floats), 0, length / 2);
 	}
 
 	/** @see #width(float[], int, int) */
@@ -139,7 +139,7 @@ public class GeometryUtils {
 	/** @param vertices the vertices which height to get
 	 *  @return the height of the given vertices */
 	public static float height(float[] vertices, int offset, int length) {
-		return amplitude(filterY(vertices, offset, length, floats), 0, length / 2);
+		return amplitude2(filterY(vertices, offset, length, floats), 0, length / 2);
 	}
 
 	/** @see #height(float[], int, int) */
@@ -150,7 +150,7 @@ public class GeometryUtils {
 	/** @param vertices the vertices which depth to get
 	 *  @return the depth of the given vertices */
 	public static float depth(float[] vertices, int offset, int length) {
-		return amplitude(filterZ(vertices, offset, length, floats), 0, length / 3);
+		return amplitude2(filterZ(vertices, offset, length, floats), 0, length / 3);
 	}
 
 	/** @see #depth(float[], int, int) */

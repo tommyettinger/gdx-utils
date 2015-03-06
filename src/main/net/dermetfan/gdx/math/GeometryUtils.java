@@ -34,7 +34,7 @@ import com.badlogic.gdx.utils.Pools;
 import com.badlogic.gdx.utils.ShortArray;
 import net.dermetfan.gdx.utils.ArrayUtils;
 
-import static net.dermetfan.gdx.math.MathUtils.amplitude;
+import static net.dermetfan.gdx.math.MathUtils.amplitude2;
 import static net.dermetfan.gdx.math.MathUtils.max;
 import static net.dermetfan.gdx.math.MathUtils.min;
 import static net.dermetfan.gdx.utils.ArrayUtils.wrapIndex;
@@ -143,27 +143,27 @@ public class GeometryUtils extends net.dermetfan.utils.math.GeometryUtils {
 
 	/** @return the amplitude from the min x vertice to the max x vertice */
 	public static float width(Array<Vector2> vertices) {
-		return amplitude(filterX(vertices));
+		return amplitude2(filterX(vertices));
 	}
 
 	/** @return the amplitude from the min y vertice to the max y vertice */
 	public static float height(Array<Vector2> vertices) {
-		return amplitude(filterY(vertices));
+		return amplitude2(filterY(vertices));
 	}
 
 	/** @see #width(Array) */
 	public static float width(FloatArray vertices) {
-		return amplitude(filterX(vertices));
+		return amplitude2(filterX(vertices));
 	}
 
 	/** @see #height(Array) */
 	public static float height(FloatArray vertices) {
-		return amplitude(filterY(vertices));
+		return amplitude2(filterY(vertices));
 	}
 
 	/** @return the amplitude of the min z vertice to the max z vertice */
 	public static float depth(FloatArray vertices) {
-		return amplitude(filterZ(vertices));
+		return amplitude2(filterZ(vertices));
 	}
 
 	/** @return the x values of the given vertices */

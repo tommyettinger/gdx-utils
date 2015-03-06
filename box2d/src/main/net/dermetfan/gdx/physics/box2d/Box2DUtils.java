@@ -70,7 +70,7 @@ import net.dermetfan.utils.Pair;
 
 import static net.dermetfan.gdx.math.GeometryUtils.filterX;
 import static net.dermetfan.gdx.math.GeometryUtils.filterY;
-import static net.dermetfan.gdx.math.MathUtils.amplitude;
+import static net.dermetfan.gdx.math.MathUtils.amplitude2;
 import static net.dermetfan.gdx.math.MathUtils.max;
 import static net.dermetfan.gdx.math.MathUtils.min;
 
@@ -247,7 +247,7 @@ public class Box2DUtils extends com.badlogic.gdx.physics.box2d.Box2DUtils {
 			return shape.getRadius() * 2;
 		tmpVector2Array.clear();
 		tmpVector2Array.addAll(vertices0(shape));
-		return amplitude(filterX(tmpVector2Array));
+		return amplitude2(filterX(tmpVector2Array));
 	}
 
 	/** @return the height of the given Shape */
@@ -256,7 +256,7 @@ public class Box2DUtils extends com.badlogic.gdx.physics.box2d.Box2DUtils {
 			return shape.getRadius() * 2;
 		tmpVector2Array.clear();
 		tmpVector2Array.addAll(vertices0(shape));
-		return amplitude(filterY(tmpVector2Array));
+		return amplitude2(filterY(tmpVector2Array));
 	}
 
 	/** @return a Vector2 representing the size of the given Shape */

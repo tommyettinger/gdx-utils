@@ -63,9 +63,9 @@ public class MathUtils extends net.dermetfan.utils.math.MathUtils {
 		return sum(values.items, 0, values.size);
 	}
 
-	/** @see net.dermetfan.utils.math.MathUtils#amplitude(float[], int, int) */
-	public static float amplitude(FloatArray f) {
-		return amplitude(f.items, 0, f.size);
+	/** @see net.dermetfan.utils.math.MathUtils#amplitude2(float[], int, int) */
+	public static float amplitude2(FloatArray f) {
+		return amplitude2(f.items, 0, f.size);
 	}
 
 	/** @see net.dermetfan.utils.math.MathUtils#max(float[], int, int) */

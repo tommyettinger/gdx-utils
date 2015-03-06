@@ -238,13 +238,13 @@ public class MathUtils {
 	}
 
 	/** @return the peak-to-peak amplitude of the given array */
-	public static float amplitude(float[] items, int offset, int length) {
+	public static float amplitude2(float[] items, int offset, int length) {
 		return max(items, offset, length) - min(items, offset, length);
 	}
 
-	/** @see #amplitude(float[], int, int) */
-	public static float amplitude(float[] items) {
-		return amplitude(items, 0, items.length);
+	/** @see #amplitude2(float[], int, int) */
+	public static float amplitude2(float[] items) {
+		return amplitude2(items, 0, items.length);
 	}
 
 	/** @return the largest element of the given array */
@@ -330,7 +330,7 @@ public class MathUtils {
 	 *  @param max the desired maximal value in the array
 	 *  @return the scaled array */
 	public static float[] scale(float[] items, float min, float max, int offset, int length) {
-		float tmp = amplitude(items, offset, length) / (max - min);
+		float tmp = amplitude2(items, offset, length) / (max - min);
 		for(int i = offset; i < offset + length; i++)
 			items[i] /= tmp;
 
