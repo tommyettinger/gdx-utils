@@ -136,20 +136,20 @@ public class MathUtilsTest {
 	}
 
 	@Test
-	public void amplitude() {
+	public void amplitude2() {
 		float[] values = {-5, 1, 3, 2, 4, 1, -4, 3.2f, 5};
-		assertEquals(10, MathUtils.amplitude(values, 0, values.length), 0);
+		assertEquals(10, MathUtils.amplitude2(values, 0, values.length), 0);
 	}
 
 	@Test
 	public void scale() {
 		float[] values = {-50, -25, 0, 25, 50};
-		assertEquals(1, MathUtils.amplitude(MathUtils.scale(values, 0, 1, 0, values.length), 0, values.length), 0);
+		assertEquals(1, MathUtils.amplitude2(MathUtils.scale(values, 0, 1, 0, values.length), 0, values.length), 0);
 
 		// float rounding error
 		float min = 0, max = Float.MAX_VALUE / 3;
-		assertNotEquals(Math.abs(max - min), MathUtils.amplitude(MathUtils.scale(values, min, max, 0, values.length), 0, values.length), com.badlogic.gdx.math.MathUtils.FLOAT_ROUNDING_ERROR);
-		assertEquals(Math.abs(max - min), MathUtils.amplitude(MathUtils.clamp(values, min, max, 0, values.length), 0, values.length), 0); // clamped amplitude must be correct
+		assertNotEquals(Math.abs(max - min), MathUtils.amplitude2(MathUtils.scale(values, min, max, 0, values.length), 0, values.length), com.badlogic.gdx.math.MathUtils.FLOAT_ROUNDING_ERROR);
+		assertEquals(Math.abs(max - min), MathUtils.amplitude2(MathUtils.clamp(values, min, max, 0, values.length), 0, values.length), 0); // clamped amplitude must be correct
 	}
 
 	@Test
