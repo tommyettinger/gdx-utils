@@ -47,8 +47,9 @@ public class AnnotationAssetManager extends AssetManager {
 		/** @return the {@link AssetDescriptor#type} to use */
 		Class<?> value() default void.class;
 
-		/** @return The fully qualified or simple name of a field which value is an instance of {@link AssetLoaderParameters}. An empty String means no parameters.<br>
-		 *  The AssetLoaderParameters instance is assumed to be usable with {@link #value()} and no type parameters are checked. */
+		/** The referenced AssetLoaderParameters instance is assumed to be usable with {@link #value()} and no type parameters are checked.
+		 *  @return The fully qualified or simple name of a field which value is an instance of {@link AssetLoaderParameters}. An empty String means no parameters.
+		 *  If the name is simple, the declaring class of the field annotated with this annotation is assumed to be the declaring class of the AssetLoaderParameters field as well. */
 		String params() default "";
 
 	}
