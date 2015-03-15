@@ -34,7 +34,7 @@ import com.badlogic.gdx.utils.reflect.ReflectionException;
  *  @author dermetfan */
 public class AnnotationAssetManager extends AssetManager {
 
-	/** Indicates whether a field should be {@link AnnotationAssetManager#load(Field) loaded} and which {@link AssetDescriptor#type} to use if necessary.<br>
+	/** Indicates whether a field should be {@link AnnotationAssetManager#load(Field) loaded} and which {@link AssetDescriptor#type} to use if necessary.
 	 *  @author dermetfan */
 	@Documented
 	@Retention(RetentionPolicy.RUNTIME)
@@ -46,6 +46,10 @@ public class AnnotationAssetManager extends AssetManager {
 
 		/** @return the {@link AssetDescriptor#type} to use */
 		Class<?> value() default void.class;
+
+		/** @return The fully qualified or simple name of a field which value is an instance of {@link AssetLoaderParameters}. An empty String means no parameters.<br>
+		 *  The AssetLoaderParameters instance is assumed to be usable with {@link #value()} and no type parameters are checked. */
+		String params() default "";
 
 	}
 
@@ -62,14 +66,14 @@ public class AnnotationAssetManager extends AssetManager {
 	/** {@link #load(Field) Loads} all fields in the given {@code container} class if they are annotated with {@link Asset} and {@link Asset#load()} is true.
 	 *  @param container the instance of a container class from which to load fields annotated with {@link Asset} */
 	public void load(Object container) {
-		for(Field field : ClassReflection.getFields(container.getClass()))
+		for(Field field : ClassReflection.getDeclaredFields(container.getClass()))
 			if(field.isAnnotationPresent(Asset.class) && field.getDeclaredAnnotation(Asset.class).getAnnotation(Asset.class).load())
 				load(field, container);
 	}
 
 	/** @param container the class containing the fields whose {@link AssetDescriptor AssetDescriptors} to load */
 	public void load(Class<?> container) {
-		for(Field field : ClassReflection.getFields(container))
+		for(Field field : ClassReflection.getDeclaredFields(container))
 			if(field.isAnnotationPresent(Asset.class) && field.getDeclaredAnnotation(Asset.class).getAnnotation(Asset.class).load())
 				load(field);
 	}
@@ -100,6 +104,8 @@ public class AnnotationAssetManager extends AssetManager {
 	public static String getAssetPath(Field field, Object container) {
 		String path = null;
 		try {
+			if(!field.isAccessible())
+				field.setAccessible(true);
 			Object content = field.get(container);
 			if(content instanceof AssetDescriptor)
 				path = ((AssetDescriptor<?>) content).fileName;
@@ -108,7 +114,7 @@ public class AnnotationAssetManager extends AssetManager {
 			else
 				path = content.toString();
 		} catch(IllegalArgumentException | ReflectionException e) {
-			Gdx.app.error(ClassReflection.getSimpleName(AnnotationAssetManager.class), "could not access field \"" + field.getName() + "\"", e);
+			Gdx.app.error("AnnotationAssetManager", "could not access field \"" + field.getName() + "\"", e);
 		}
 		return path;
 	}
@@ -118,9 +124,11 @@ public class AnnotationAssetManager extends AssetManager {
 	public static Class<?> getAssetType(Field field, Object container) {
 		if(ClassReflection.isAssignableFrom(AssetDescriptor.class, field.getType()))
 			try {
+				if(!field.isAccessible())
+					field.setAccessible(true);
 				return ((AssetDescriptor<?>) field.get(container)).type;
 			} catch(IllegalArgumentException | ReflectionException e) {
-				Gdx.app.error(ClassReflection.getSimpleName(AnnotationAssetManager.class), "could not access field \"" + field.getName() + "\"", e);
+				Gdx.app.error("AnnotationAssetManager", "could not access field \"" + field.getName() + "\"", e);
 			}
 		if(field.isAnnotationPresent(Asset.class))
 			return field.getDeclaredAnnotation(Asset.class).getAnnotation(Asset.class).value();
@@ -131,11 +139,46 @@ public class AnnotationAssetManager extends AssetManager {
 	 *  @return the {@link AssetDescriptor#params AssetLoaderParameters} of the AssetDescriptor in the given field */
 	@SuppressWarnings("unchecked")
 	public static <T> AssetLoaderParameters<T> getAssetLoaderParameters(Field field, Object container) {
+		if(field.isAnnotationPresent(Asset.class)) {
+			String params = field.getDeclaredAnnotation(Asset.class).getAnnotation(Asset.class).params();
+			if(params.length() > 0) {
+				Field paramsField = null;
+				if(params.contains(".")) { // fully qualified name
+					int lastPeriod = params.lastIndexOf('.');
+					String className = params.substring(0, lastPeriod), fieldName = params.substring(lastPeriod + 1);
+					try {
+						paramsField = ClassReflection.getDeclaredField(ClassReflection.forName(className), fieldName);
+					} catch(ReflectionException e) {
+						Gdx.app.error("AnnotationAssetManager", "could not access class " + className, e);
+					}
+				} else { // simple name of field in declaring class
+					try {
+						paramsField = ClassReflection.getDeclaredField(field.getDeclaringClass(), params);
+					} catch(ReflectionException e) {
+						Gdx.app.error("AnnotationAssetManager", "could not access field \"" + field.getName() + "\" of class " + ClassReflection.getSimpleName(field.getDeclaringClass()), e);
+					}
+				}
+				if(paramsField != null) {
+					if(ClassReflection.isAssignableFrom(AssetLoaderParameters.class, paramsField.getType()))
+						try {
+							if(!paramsField.isAccessible())
+								paramsField.setAccessible(true);
+							return (AssetLoaderParameters<T>) paramsField.get(container);
+						} catch(ReflectionException e) {
+							Gdx.app.error("AnnotationAssetManager", "could not access value of field \"" + paramsField.getName() + "\" of class " + ClassReflection.getSimpleName(paramsField.getDeclaringClass()) + " and instance " + container, e);
+						}
+					else
+						Gdx.app.debug("AnnotationAssetManager", "field \"" + paramsField.getName() + "\" of class " + ClassReflection.getSimpleName(paramsField.getDeclaringClass()) + " and instance " + container + " is not assignable from AssetLoaderParameters");
+				}
+			}
+		}
 		if(ClassReflection.isAssignableFrom(AssetDescriptor.class, field.getType()))
 			try {
+				if(!field.isAccessible())
+					field.setAccessible(true);
 				return ((AssetDescriptor<T>) field.get(container)).params;
 			} catch(IllegalArgumentException | ReflectionException e) {
-				Gdx.app.error(ClassReflection.getSimpleName(AnnotationAssetManager.class), "could not access field\"" + field.getName() + "\"", e);
+				Gdx.app.error("AnnotationAssetManager", "could not access field\"" + field.getName() + "\"", e);
 			}
 		return null;
 	}
@@ -149,6 +192,8 @@ public class AnnotationAssetManager extends AssetManager {
 		Class<?> fieldType = field.getType(), type = getAssetType(field, container);
 		if(fieldType == AssetDescriptor.class)
 			try {
+				if(!field.isAccessible())
+					field.setAccessible(true);
 				AssetDescriptor<?> alreadyExistingDescriptor = (AssetDescriptor<?>) field.get(container);
 				if(alreadyExistingDescriptor.type == type)
 					return (AssetDescriptor<T>) alreadyExistingDescriptor;
@@ -159,6 +204,8 @@ public class AnnotationAssetManager extends AssetManager {
 			}
 		else
 			try {
+				if(!field.isAccessible())
+					field.setAccessible(true);
 				if(fieldType == FileHandle.class)
 					return new AssetDescriptor<>((FileHandle) field.get(container), (Class<T>) type);
 				else
