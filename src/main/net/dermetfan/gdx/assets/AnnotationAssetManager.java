@@ -146,6 +146,11 @@ public class AnnotationAssetManager extends AssetManager {
 		return path;
 	}
 
+	/** @see #getAssetPath(Field, Object, int) */
+	public static String getAssetPath(Field field, Object container) {
+		return getAssetPath(field, container, -1);
+	}
+
 	/** @param container the instance of the class containing the given field (may be null if it's static)
 	 *  @param index The index to use in case the field is an array. The field is not treated like an array if this is < 0.
 	 *  @return the {@link Asset#value()} of the given Field */
@@ -158,12 +163,17 @@ public class AnnotationAssetManager extends AssetManager {
 			field.setAccessible(true);
 		try {
 			Object content = index < 0 ? field.get(container) : ((Object[]) field.get(container))[index];
-			if(content instanceof AssetDescriptor)
-				return ((AssetDescriptor) content).type;
+			if(content instanceof AssetDescriptor<?>)
+				return ((AssetDescriptor<?>) content).type;
 		} catch(ReflectionException e) {
 			Gdx.app.error("AnnotationAssetManager", "could not access field \"" + field.getName() + "\"", e);
 		}
 		return null;
+	}
+
+	/** @see #getAssetType(Field, Object, int) */
+	public static Class<?> getAssetType(Field field, Object container) {
+		return getAssetType(field, container, -1);
 	}
 
 	/** @param container the instance of the class containing the given field (may be null if it's static)
@@ -216,6 +226,11 @@ public class AnnotationAssetManager extends AssetManager {
 			Gdx.app.error("AnnotationAssetManager", "could not access field\"" + field.getName() + "\"", e);
 		}
 		return null;
+	}
+
+	/** @see #getAssetLoaderParameters(Field, Object, int) */
+	public static <T> AssetLoaderParameters<T> getAssetLoaderParameters(Field field, Object container) {
+		return getAssetLoaderParameters(field, container, -1);
 	}
 
 	/** Creates an {@link AssetDescriptor} from a field that is annotated with {@link Asset}.
