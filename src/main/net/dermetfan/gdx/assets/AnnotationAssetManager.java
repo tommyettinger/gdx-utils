@@ -84,13 +84,23 @@ public class AnnotationAssetManager extends AssetManager {
 	 *  @param container the instance of the class containing the given field (may be null if it's static) */
 	@SuppressWarnings("unchecked")
 	public void load(Field field, Object container) {
-		String path = getAssetPath(field, container);
-		Class<?> type = getAssetType(field, container);
-		@SuppressWarnings("rawtypes")
-		AssetLoaderParameters params = getAssetLoaderParameters(field, container);
-		if(path == null || type == null)
-			Gdx.app.debug(ClassReflection.getSimpleName(getClass()), '@' + ClassReflection.getSimpleName(Asset.class) + " (" + path + ", " + type + ") " + field.getName());
-		load(path, type, params);
+		int assetCount = getAssetCount(field, container);
+		for(int i = 0; i < assetCount; i++) {
+			boolean single = assetCount == 1;
+			if(single)
+				i = -1;
+
+			String path = getAssetPath(field, container, i);
+			Class<?> type = getAssetType(field, container, i);
+			@SuppressWarnings("rawtypes")
+			AssetLoaderParameters params = getAssetLoaderParameters(field, container, i);
+			if(path == null || type == null)
+				Gdx.app.debug(ClassReflection.getSimpleName(getClass()), '@' + ClassReflection.getSimpleName(Asset.class) + " (" + path + ", " + type + ") " + field.getName());
+			load(path, type, params);
+
+			if(single)
+				break;
+		}
 	}
 
 	/** @param field the static field to load
@@ -99,15 +109,31 @@ public class AnnotationAssetManager extends AssetManager {
 		load(field, null);
 	}
 
+	/** @return the number of assets described by the given field */
+	public static int getAssetCount(Field field, Object container) {
+		if(!field.isAccessible())
+			field.setAccessible(true);
+		try {
+			if(field.getType().getSimpleName().endsWith("[]")) // https://github.com/libgdx/libgdx/issues/2943
+				return ((Object[]) field.get(container)).length;
+			else
+				return field.get(container) == null ? 0 : 1;
+		} catch(ReflectionException e) {
+			Gdx.app.error("AnnotationAssetManager", "could not access field \"" + field.getName() + "\" of class " + ClassReflection.getSimpleName(field.getDeclaringClass()) + " and instance " + container, e);
+			return 1;
+		}
+	}
+
 	/** @param field the field to get the asset path from
 	 *  @param container the instance of the class containing the given field (may be null if it's static)
+	 *  @param index The index to use in case the field is an array. The field is not treated like an array if this is < 0.
 	 *  @return the asset path stored by the field */
-	public static String getAssetPath(Field field, Object container) {
+	public static String getAssetPath(Field field, Object container, int index) {
 		String path = null;
 		try {
 			if(!field.isAccessible())
 				field.setAccessible(true);
-			Object content = field.get(container);
+			Object content = index < 0 ? field.get(container) : ((Object[]) field.get(container))[index];
 			if(content instanceof AssetDescriptor)
 				path = ((AssetDescriptor<?>) content).fileName;
 			else if(content instanceof FileHandle)
@@ -121,25 +147,30 @@ public class AnnotationAssetManager extends AssetManager {
 	}
 
 	/** @param container the instance of the class containing the given field (may be null if it's static)
+	 *  @param index The index to use in case the field is an array. The field is not treated like an array if this is < 0.
 	 *  @return the {@link Asset#value()} of the given Field */
-	public static Class<?> getAssetType(Field field, Object container) {
-		if(ClassReflection.isAssignableFrom(AssetDescriptor.class, field.getType()))
-			try {
-				if(!field.isAccessible())
-					field.setAccessible(true);
-				return ((AssetDescriptor<?>) field.get(container)).type;
-			} catch(IllegalArgumentException | ReflectionException e) {
-				Gdx.app.error("AnnotationAssetManager", "could not access field \"" + field.getName() + "\"", e);
-			}
+	public static Class<?> getAssetType(Field field, Object container, int index) {
 		if(field.isAnnotationPresent(Asset.class))
 			return field.getDeclaredAnnotation(Asset.class).getAnnotation(Asset.class).value();
+		if(!ClassReflection.isAssignableFrom(AssetDescriptor.class, field.getType()) && index < 0)
+			return null;
+		if(!field.isAccessible())
+			field.setAccessible(true);
+		try {
+			Object content = index < 0 ? field.get(container) : ((Object[]) field.get(container))[index];
+			if(content instanceof AssetDescriptor)
+				return ((AssetDescriptor) content).type;
+		} catch(ReflectionException e) {
+			Gdx.app.error("AnnotationAssetManager", "could not access field \"" + field.getName() + "\"", e);
+		}
 		return null;
 	}
 
 	/** @param container the instance of the class containing the given field (may be null if it's static)
+	 *  @param index The index to use in case the field is an array. The field is not treated like an array if this is < 0.
 	 *  @return the {@link AssetDescriptor#params AssetLoaderParameters} of the AssetDescriptor in the given field */
 	@SuppressWarnings("unchecked")
-	public static <T> AssetLoaderParameters<T> getAssetLoaderParameters(Field field, Object container) {
+	public static <T> AssetLoaderParameters<T> getAssetLoaderParameters(Field field, Object container, int index) {
 		if(field.isAnnotationPresent(Asset.class)) {
 			String params = field.getDeclaredAnnotation(Asset.class).getAnnotation(Asset.class).params();
 			if(params.length() > 0) {
@@ -173,14 +204,17 @@ public class AnnotationAssetManager extends AssetManager {
 				}
 			}
 		}
-		if(ClassReflection.isAssignableFrom(AssetDescriptor.class, field.getType()))
-			try {
-				if(!field.isAccessible())
-					field.setAccessible(true);
-				return ((AssetDescriptor<T>) field.get(container)).params;
-			} catch(IllegalArgumentException | ReflectionException e) {
-				Gdx.app.error("AnnotationAssetManager", "could not access field\"" + field.getName() + "\"", e);
-			}
+		if(!ClassReflection.isAssignableFrom(AssetDescriptor.class, field.getType()) && index < 0)
+			return null;
+		if(!field.isAccessible())
+			field.setAccessible(true);
+		try {
+			Object content = index < 0 ? field.get(container) : ((Object[]) field.get(container))[index];
+			if(content instanceof AssetDescriptor)
+				return ((AssetDescriptor) content).params;
+		} catch(IllegalArgumentException | ReflectionException e) {
+			Gdx.app.error("AnnotationAssetManager", "could not access field\"" + field.getName() + "\"", e);
+		}
 		return null;
 	}
 
@@ -190,7 +224,7 @@ public class AnnotationAssetManager extends AssetManager {
 	 *  @return an {@link AssetDescriptor} created from the given, with {@link Asset} annotated field (may be null if all fields in the class annotated with {@link Asset} are static) */
 	@SuppressWarnings("unchecked")
 	public <T> AssetDescriptor<T> createAssetDescriptor(Field field, Object container) {
-		Class<?> fieldType = field.getType(), type = getAssetType(field, container);
+		Class<?> fieldType = field.getType(), type = getAssetType(field, container, -1);
 		if(fieldType == AssetDescriptor.class)
 			try {
 				if(!field.isAccessible())
