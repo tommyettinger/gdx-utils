@@ -114,7 +114,7 @@ public class AnnotationAssetManager extends AssetManager {
 		if(!field.isAccessible())
 			field.setAccessible(true);
 		try {
-			if(field.getType().getSimpleName().endsWith("[]")) // https://github.com/libgdx/libgdx/issues/2943
+			if(field.getType().getSimpleName().endsWith("[]")) // TODO https://github.com/libgdx/libgdx/issues/2943
 				return ((Object[]) field.get(container)).length;
 			else
 				return field.get(container) == null ? 0 : 1;
