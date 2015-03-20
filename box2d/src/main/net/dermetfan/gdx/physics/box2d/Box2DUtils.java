@@ -83,7 +83,7 @@ public class Box2DUtils extends com.badlogic.gdx.physics.box2d.Box2DUtils {
 	public static class ShapeCache {
 
 		/** @see Box2DUtils#vertices0(Shape) */
-		public final Vector2[] vertices;
+		public final float[] vertices;
 
 		/** @see Box2DUtils#width0(Shape) */
 		public final float width;
@@ -110,7 +110,7 @@ public class Box2DUtils extends com.badlogic.gdx.physics.box2d.Box2DUtils {
 		 *  @param maxX the {@link #maxX}
 		 *  @param minY the {@link #minY}
 		 *  @param maxY the {@link #maxX} */
-		public ShapeCache(Vector2[] vertices, float width, float height, float minX, float maxX, float minY, float maxY) {
+		public ShapeCache(float[] vertices, float width, float height, float minX, float maxX, float minY, float maxY) {
 			this.vertices = vertices;
 			this.width = width;
 			this.height = height;
@@ -153,7 +153,7 @@ public class Box2DUtils extends com.badlogic.gdx.physics.box2d.Box2DUtils {
 	public static ShapeCache cache(Shape shape) {
 		if(cache.containsKey(shape))
 			return cache.get(shape);
-		Vector2[] vertices = vertices0(shape), cachedVertices = new Vector2[vertices.length];
+		float[] vertices = vertices0(shape), cachedVertices = new float[vertices.length];
 		System.arraycopy(vertices, 0, cachedVertices, 0, vertices.length);
 		ShapeCache results = new ShapeCache(cachedVertices, width0(shape), height0(shape), minX0(shape), maxX0(shape), minY0(shape), maxY0(shape));
 		cache.put(shape, results);
@@ -164,40 +164,45 @@ public class Box2DUtils extends com.badlogic.gdx.physics.box2d.Box2DUtils {
 
 	/** @param shape the Shape which vertices to get (for circles, the bounding box vertices will be returned)
 	 *  @return the vertices of the given Shape*/
-	private static Vector2[] vertices0(Shape shape) {
-		Vector2[] vertices;
+	private static float[] vertices0(Shape shape) {
+		float[] vertices;
 		switch(shape.getType()) {
 		case Polygon:
 			PolygonShape polygonShape = (PolygonShape) shape;
-			vertices = new Vector2[polygonShape.getVertexCount()];
-			for(int i = 0; i < vertices.length; i++) {
-				vertices[i] = new Vector2();
-				polygonShape.getVertex(i, vertices[i]);
+			int polygonVertexCount = polygonShape.getVertexCount();
+			vertices = new float[polygonVertexCount * 2];
+			for(int i = 0; i < polygonVertexCount; i++) {
+				polygonShape.getVertex(i, vec2_0);
+				vertices[i * 2] = vec2_0.x;
+				vertices[i * 2 + 1] = vec2_0.y;
 			}
 			break;
 		case Edge:
 			EdgeShape edgeShape = (EdgeShape) shape;
 			edgeShape.getVertex1(vec2_0);
 			edgeShape.getVertex2(vec2_1);
-			vertices = new Vector2[] {new Vector2(vec2_0), new Vector2(vec2_1)};
+			vertices = new float[] {vec2_0.x, vec2_0.y, vec2_1.x, vec2_1.y};
 			break;
 		case Chain:
 			ChainShape chainShape = (ChainShape) shape;
-			vertices = new Vector2[chainShape.getVertexCount()];
-			for(int i = 0; i < vertices.length; i++) {
-				vertices[i] = new Vector2();
-				chainShape.getVertex(i, vertices[i]);
+			int chainVertexCount = chainShape.getVertexCount();
+			vertices = new float[chainVertexCount * 2];
+			for(int i = 0; i < chainVertexCount; i++) {
+				chainShape.getVertex(i, vec2_0);
+				vertices[i * 2] = vec2_0.x;
+				vertices[i * 2 + 1] = vec2_0.y;
 			}
 			break;
 		case Circle:
 			CircleShape circleShape = (CircleShape) shape;
 			Vector2 position = circleShape.getPosition();
 			float radius = circleShape.getRadius();
-			vertices = new Vector2[4];
-			vertices[0] = new Vector2(position.x - radius, position.y - radius); // bottom left
-			vertices[1] = new Vector2(position.x + radius, position.y - radius); // bottom right
-			vertices[2] = new Vector2(position.x + radius, position.y + radius); // top right
-			vertices[3] = new Vector2(position.x - radius, position.y + radius); // top left
+			vertices = new float[] {
+					position.x - radius, position.y - radius, // bottom left
+					position.x + radius, position.y - radius, // bottom right
+					position.x + radius, position.y + radius, // top right
+					position.x - radius, position.y + radius // top left
+			};
 			break;
 		default:
 			throw new IllegalArgumentException("shapes of the type '" + shape.getType().name() + "' are not supported");
@@ -209,54 +214,42 @@ public class Box2DUtils extends com.badlogic.gdx.physics.box2d.Box2DUtils {
 	private static float minX0(Shape shape) {
 		if(shape instanceof CircleShape)
 			return ((CircleShape) shape).getPosition().x - shape.getRadius();
-		tmpVector2Array.clear();
-		tmpVector2Array.addAll(vertices0(shape));
-		return min(filterX(tmpVector2Array));
+		return min(filterX(vertices0(shape)));
 	}
 
 	/** @return the minimal y of the vertices of the given Shape */
 	private static float minY0(Shape shape) {
 		if(shape instanceof CircleShape)
 			return ((CircleShape) shape).getPosition().y - shape.getRadius();
-		tmpVector2Array.clear();
-		tmpVector2Array.addAll(vertices0(shape));
-		return min(filterY(tmpVector2Array));
+		return min(filterY(vertices0(shape)));
 	}
 
 	/** @return the maximal x of the vertices of the given Shape */
 	private static float maxX0(Shape shape) {
 		if(shape instanceof CircleShape)
 			return ((CircleShape) shape).getPosition().x + shape.getRadius();
-		tmpVector2Array.clear();
-		tmpVector2Array.addAll(vertices0(shape));
-		return max(filterX(tmpVector2Array));
+		return max(filterX(vertices0(shape)));
 	}
 
 	/** @return the maximal y of the vertices of the given Shape */
 	private static float maxY0(Shape shape) {
 		if(shape instanceof CircleShape)
 			return ((CircleShape) shape).getPosition().y + shape.getRadius();
-		tmpVector2Array.clear();
-		tmpVector2Array.addAll(vertices0(shape));
-		return max(filterY(tmpVector2Array));
+		return max(filterY(vertices0(shape)));
 	}
 
 	/** @return the width of the given Shape */
 	private static float width0(Shape shape) {
 		if(shape.getType() == Type.Circle)
 			return shape.getRadius() * 2;
-		tmpVector2Array.clear();
-		tmpVector2Array.addAll(vertices0(shape));
-		return amplitude2(filterX(tmpVector2Array));
+		return amplitude2(filterX(vertices0(shape)));
 	}
 
 	/** @return the height of the given Shape */
 	private static float height0(Shape shape) {
 		if(shape.getType() == Type.Circle)
 			return shape.getRadius() * 2;
-		tmpVector2Array.clear();
-		tmpVector2Array.addAll(vertices0(shape));
-		return amplitude2(filterY(tmpVector2Array));
+		return amplitude2(filterY(vertices0(shape)));
 	}
 
 	/** @return a Vector2 representing the size of the given Shape */
@@ -267,7 +260,7 @@ public class Box2DUtils extends com.badlogic.gdx.physics.box2d.Box2DUtils {
 	// cache
 
 	/** @return the vertices of the given Shape */
-	public static Vector2[] vertices(Shape shape) {
+	public static float[] vertices(Shape shape) {
 		if(cache.containsKey(shape))
 			return cache.get(shape).vertices;
 		if(autoCache)
@@ -338,7 +331,7 @@ public class Box2DUtils extends com.badlogic.gdx.physics.box2d.Box2DUtils {
 	// fixture
 
 	/** @see #vertices(Shape) */
-	public static Vector2[] vertices(Fixture fixture) {
+	public static float[] vertices(Fixture fixture) {
 		return vertices(fixture.getShape());
 	}
 
@@ -380,30 +373,11 @@ public class Box2DUtils extends com.badlogic.gdx.physics.box2d.Box2DUtils {
 	// body
 
 	/** @return the vertices of all fixtures of a body */
-	public static Vector2[][] fixtureVertices(Body body) {
+	public static float[][] fixtureVertices(Body body) {
 		Array<Fixture> fixtures = body.getFixtureList();
-		Vector2[][] vertices = new Vector2[fixtures.size][];
+		float[][] vertices = new float[fixtures.size][];
 		for(int i = 0; i < vertices.length; i++)
 			vertices[i] = vertices(fixtures.get(i));
-		return vertices;
-	}
-
-	/** @return the vertices of a body's fixtures
-	 *  @deprecated unusable result */
-	@Deprecated
-	public static Vector2[] vertices(Body body) {
-		Vector2[][] fixtureVertices = fixtureVertices(body);
-
-		int vertexCount = 0;
-		for(Vector2[] fixtureVertice : fixtureVertices)
-			vertexCount += fixtureVertice.length;
-
-		Vector2[] vertices = new Vector2[vertexCount];
-		int vi = -1;
-		for(Vector2[] verts : fixtureVertices)
-			for(Vector2 vertice : verts)
-				vertices[++vi] = vertice;
-
 		return vertices;
 	}
 
@@ -499,17 +473,18 @@ public class Box2DUtils extends com.badlogic.gdx.physics.box2d.Box2DUtils {
 		if(com.badlogic.gdx.math.MathUtils.isZero(rotation))
 			return aabb.set(minX(shape), minY(shape), width(shape), height(shape));
 
-		Vector2[] v2Vertices = Box2DUtils.vertices(shape);
+		float[] vertices = vertices(shape);
 		GeometryUtils.reset(polygon);
-		float[] vertices = polygon.getVertices();
-		if(vertices.length < v2Vertices.length * 2)
-			vertices = new float[v2Vertices.length * 2];
-		for(int i = 0; i < vertices.length; i++) {
-			// if vertices.length > v2Vertices.length * 2, set remaining vertices to the last vertex from v2Vertices to make them redundant
-			int v2i = Math.min(i / 2, v2Vertices.length - 1);
-			vertices[i] = i % 2 == 0 ? v2Vertices[v2i].x : v2Vertices[v2i].y;
+		float[] polygonVertices = polygon.getVertices();
+		if(polygonVertices.length < vertices.length || polygonVertices.length % 2 != 0)
+			polygonVertices = new float[vertices.length];
+		System.arraycopy(vertices, 0, polygonVertices, 0, vertices.length);
+		// if polygonVertices.length > vertices.length, set remaining polygonVertices to the last vertex from vertices to make them redundant
+		for(int i = vertices.length; i < polygonVertices.length; i += 2) {
+			polygonVertices[i] = vertices[vertices.length - 2];
+			polygonVertices[i + 1] = vertices[vertices.length - 1];
 		}
-		polygon.setVertices(vertices);
+		polygon.setVertices(polygonVertices);
 		if(shape.getType() == Type.Circle) {
 			polygon.setOrigin(GeometryUtils.minX(vertices) + GeometryUtils.width(vertices) / 2, GeometryUtils.minY(vertices) + GeometryUtils.height(vertices) / 2);
 			polygon.setRotation(-rotation * com.badlogic.gdx.math.MathUtils.radDeg);
@@ -1044,10 +1019,11 @@ public class Box2DUtils extends com.badlogic.gdx.physics.box2d.Box2DUtils {
 
 		store.clear();
 
-		Vector2 vertices[] = vertices(shape), aa = Pools.obtain(Vector2.class).set(a), bb = Pools.obtain(Vector2.class).set(b);
+		Vector2 aa = Pools.obtain(Vector2.class).set(a), bb = Pools.obtain(Vector2.class).set(b);
 		Array<Vector2> aVertices = Pools.obtain(Array.class), bVertices = Pools.obtain(Array.class);
 		aVertices.clear();
 		bVertices.clear();
+		Vector2[] vertices = GeometryUtils.toVector2Array(new FloatArray(vertices(shape))).toArray(Vector2.class);
 
 		if(type == Type.Polygon) {
 			aVertices.add(aa);
