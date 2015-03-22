@@ -943,10 +943,13 @@ public class Box2DUtils extends com.badlogic.gdx.physics.box2d.Box2DUtils {
 		@SuppressWarnings("unchecked")
 		Pair<FixtureDef, FixtureDef> defs = Pools.obtain(Pair.class);
 		if(!split(fixture, a, b, defs)) {
+			defs.clear();
 			Pools.free(defs);
 			return false;
 		}
 		Fixture aFixture = aBody.createFixture(defs.getKey()), bFixture = bBody.createFixture(defs.getValue());
+		defs.clear();
+		Pools.free(defs);
 		if(store != null)
 			store.set(aFixture, bFixture);
 		return true;
@@ -976,6 +979,7 @@ public class Box2DUtils extends com.badlogic.gdx.physics.box2d.Box2DUtils {
 		FixtureDef aDef = createDef(fixture), bDef = createDef(fixture);
 		aDef.shape = shapes.getKey();
 		bDef.shape = shapes.getValue();
+		shapes.clear();
 		Pools.free(shapes);
 		store.set(aDef, bDef);
 		return true;
