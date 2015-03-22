@@ -115,10 +115,10 @@ public class GeometryUtilsTest {
 	}
 
 	@Test
-	public void intersectSegmentPolygon() {
+	public void intersectSegmentConvexPolygon() {
 		FloatArray polygon = new FloatArray(new float[] {0, 0, 1, 0, 1, 1, 0, 1});
 		Vector2 is1 = new Vector2(), is2 = new Vector2();
-		GeometryUtils.intersectSegments(new Vector2(-1, .5f), new Vector2(2, .5f), polygon, is1, is2);
+		GeometryUtils.intersectSegmentConvexPolygon(new Vector2(-1, .5f), new Vector2(2, .5f), polygon, is1, is2);
 		assertEquals(new Vector2(1, .5f), is1);
 		assertEquals(new Vector2(0, .5f), is2);
 	}

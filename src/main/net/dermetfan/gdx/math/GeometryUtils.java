@@ -651,43 +651,45 @@ public class GeometryUtils extends net.dermetfan.utils.math.GeometryUtils {
 	 *  @param intersection2 the second intersection point
 	 *  @return the number of intersection points
 	 *  @see #intersectSegments(Vector2, Vector2, FloatArray, boolean, Array)*/
-	public static int intersectSegments(Vector2 a, Vector2 b, FloatArray polygon, Vector2 intersection1, Vector2 intersection2) {
+	public static int intersectSegmentConvexPolygon(Vector2 a, Vector2 b, FloatArray polygon, Vector2 intersection1, Vector2 intersection2) {
 		FloatArray intersections = Pools.obtain(FloatArray.class);
 		intersectSegments(a.x, a.y, b.x, b.y, polygon, true, intersections);
 		int size = intersections.size;
+		if(size % 2 != 0)
+			assert false : "malformed intersection point: " + size;
 		if(size >= 2) {
 			intersection1.set(intersections.get(0), intersections.get(1));
 			if(size == 4)
 				intersection2.set(intersections.get(2), intersections.get(3));
-			else if(size > 4)
-				assert false : "more intersection points with a convex polygon found than possible: " + size;
 		}
+		intersections.clear();
 		Pools.free(intersections);
+		if(size > 4)
+			throw new IllegalArgumentException("More intersection points with a convex polygon found than possible: " + size / 2 + " Is your polygon concave? " + polygon);
 		return size / 2;
 	}
 
 	/** @see #intersectSegments(float, float, float, float, FloatArray, boolean, FloatArray) */
-	public static void intersectSegments(Vector2 a, Vector2 b, FloatArray segments, boolean polygon, Array<Vector2> intersections) {
+	public static boolean intersectSegments(Vector2 a, Vector2 b, FloatArray segments, boolean polygon, Array<Vector2> intersections) {
 		FloatArray fa = Pools.obtain(FloatArray.class);
-		intersectSegments(a.x, a.y, b.x, b.y, segments, polygon, fa);
-		if(fa.size < 1) {
-			intersections.clear();
+		intersections.clear();
+		if(intersectSegments(a.x, a.y, b.x, b.y, segments, polygon, fa)) {
 			Pools.free(fa);
-			return;
+			return false;
 		}
-		intersections.ensureCapacity(fa.size / 2 - intersections.size);
+		intersections.ensureCapacity(fa.size / 2);
 		for(int i = 1; i < fa.size; i += 2)
-			if(intersections.size > i / 2)
-				intersections.get(i / 2).set(fa.get(i - 1), fa.get(i));
-			else
-				intersections.add(new Vector2(fa.get(i - 1), fa.get(i)));
+			intersections.add(new Vector2(fa.get(i - 1), fa.get(i)));
+		fa.clear();
 		Pools.free(fa);
+		return true;
 	}
 
 	/** @param segments the segments
 	 *  @param polygon if the segments represent a closed polygon
-	 *  @param intersections the array to store the intersections in */
-	public static void intersectSegments(float x1, float y1, float x2, float y2, FloatArray segments, boolean polygon, FloatArray intersections) {
+	 *  @param intersections the array to store the intersections in
+	 *  @return whether the given segment intersects with any of the given segments */
+	public static boolean intersectSegments(float x1, float y1, float x2, float y2, FloatArray segments, boolean polygon, FloatArray intersections) {
 		if(polygon && segments.size < 6)
 			throw new IllegalArgumentException("a polygon consists of at least 3 points: " + segments.size);
 		else if(segments.size < 4)
@@ -696,14 +698,16 @@ public class GeometryUtils extends net.dermetfan.utils.math.GeometryUtils {
 			throw new IllegalArgumentException("malformed segments; the number of vertices is not dividable by 2: " + segments.size);
 		intersections.clear();
 		vec2_0.setZero();
+		boolean intersects = false;
 		for(int i = 0, n = segments.size - (polygon ? 0 : 2); i < n; i += 2) {
 			float x3 = segments.get(i), y3 = segments.get(i + 1), x4 = wrapIndex(i + 2, segments), y4 = wrapIndex(i + 3, segments);
 			if(Intersector.intersectSegments(x1, y1, x2, y2, x3, y3, x4, y4, vec2_0)) {
+				intersects = true;
 				intersections.add(vec2_0.x);
 				intersections.add(vec2_0.y);
 			}
 		}
-		Pools.free(vec2_0);
+		return intersects;
 	}
 
 	/** dispatch method
