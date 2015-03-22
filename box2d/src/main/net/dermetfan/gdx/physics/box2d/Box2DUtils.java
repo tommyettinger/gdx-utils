@@ -969,10 +969,12 @@ public class Box2DUtils extends com.badlogic.gdx.physics.box2d.Box2DUtils {
 		GeometryUtils.rotate(tmpB, Vector2.Zero, -body.getAngle());
 		@SuppressWarnings("unchecked")
 		Pair<Shape, Shape> shapes = Pools.obtain(Pair.class);
+		shapes.clear();
 		boolean split = split(fixture.getShape(), tmpA, tmpB, shapes);
 		Pools.free(tmpA);
 		Pools.free(tmpB);
 		if(!split) {
+			shapes.clear();
 			Pools.free(shapes);
 			return false;
 		}
@@ -1023,20 +1025,21 @@ public class Box2DUtils extends com.badlogic.gdx.physics.box2d.Box2DUtils {
 
 		store.clear();
 
-		Vector2 aa = Pools.obtain(Vector2.class).set(a), bb = Pools.obtain(Vector2.class).set(b);
 		Array<Vector2> aVertices = Pools.obtain(Array.class), bVertices = Pools.obtain(Array.class);
 		aVertices.clear();
 		bVertices.clear();
 		Vector2[] vertices = GeometryUtils.toVector2Array(new FloatArray(vertices(shape))).toArray(Vector2.class);
 
 		if(type == Type.Polygon) {
+			Vector2 aa = Pools.obtain(Vector2.class).set(a), bb = Pools.obtain(Vector2.class).set(b);
+
 			aVertices.add(aa);
 			aVertices.add(bb);
 			GeometryUtils.arrangeClockwise(aVertices);
 
 			tmpVector2Array.clear();
 			tmpVector2Array.addAll(vertices);
-			if(GeometryUtils.intersectSegments(a, b, GeometryUtils.toFloatArray(tmpVector2Array), aVertices.first(), aVertices.peek()) < 2) {
+			if(GeometryUtils.intersectSegmentConvexPolygon(a, b, GeometryUtils.toFloatArray(tmpVector2Array), aVertices.first(), aVertices.peek()) < 2) {
 				Pools.free(aa);
 				Pools.free(bb);
 				Pools.free(aVertices);
@@ -1078,32 +1081,31 @@ public class Box2DUtils extends com.badlogic.gdx.physics.box2d.Box2DUtils {
 				sb.set((Vector2[]) bVertices.toArray(Vector2.class));
 				store.set((T) sa, (T) sb);
 			}
+
+			Pools.free(aa);
+			Pools.free(bb);
 		} else if(type == Type.Chain) {
 			Vector2 tmp = Pools.obtain(Vector2.class);
 			boolean intersected = false;
 			for(int i = 0; i < vertices.length; i++) {
-				if(!intersected)
-					aVertices.add(vertices[i]);
-				else
-					bVertices.add(vertices[i]);
-				if(!intersected && i + 1 < vertices.length && Intersector.intersectSegments(vertices[i], vertices[i + 1], aa, bb, tmp)) {
+				(intersected ? bVertices : aVertices).add(vertices[i]);
+				if(!intersected && i + 1 < vertices.length && Intersector.intersectSegments(vertices[i], vertices[i + 1], a, b, tmp)) {
 					intersected = true;
 					aVertices.add(tmp);
 					bVertices.add(tmp);
 				}
 			}
-			if(intersected)
-				if(!checkPreconditions || aVertices.size >= 3 && bVertices.size >= 3) {
-					ChainShape sa = new ChainShape(), sb = new ChainShape();
-					sa.createChain((Vector2[]) aVertices.toArray(Vector2.class));
-					sb.createChain((Vector2[]) bVertices.toArray(Vector2.class));
-					store.set((T) sa, (T) sb);
-				}
+			if(intersected && (!checkPreconditions || aVertices.size >= 2 && bVertices.size >= 2)) {
+				ChainShape sa = new ChainShape(), sb = new ChainShape();
+				sa.createChain((Vector2[]) aVertices.toArray(Vector2.class));
+				sb.createChain((Vector2[]) bVertices.toArray(Vector2.class));
+				store.set((T) sa, (T) sb);
+			}
 			Pools.free(tmp);
 		}
 
-		Pools.free(aa);
-		Pools.free(bb);
+		aVertices.clear();
+		bVertices.clear();
 		Pools.free(aVertices);
 		Pools.free(bVertices);
 
@@ -1112,26 +1114,26 @@ public class Box2DUtils extends com.badlogic.gdx.physics.box2d.Box2DUtils {
 
 	// various
 
-	/** @return if the two given Transform's {@link Transform#vals values} equal
+	/** @return whether the two given Transforms {@link Transform#vals values} equal
 	 *  @since 0.7.1 */
 	public static boolean equals(Transform a, Transform b) {
 		return Arrays.equals(a.vals, b.vals);
 	}
 
-	/** @return if the two MassData's values equal
+	/** @return whether the two MassDatas values equal
 	 *  @since 0.7.1 */
 	public static boolean equals(MassData a, MassData b) {
 		return a.center.equals(b.center) && a.mass == b.mass && a.I == b.I;
 	}
 
-	/** @return if the two Filter's values equal
+	/** @return whether the two Filters values equal
 	 *  @since 0.7.1 */
 	public static boolean equals(Filter a, Filter b) {
 		return a.categoryBits == b.categoryBits && a.maskBits == b.maskBits && a.groupIndex == b.groupIndex;
 	}
 
-	/** sets the {@link Fixture#isSensor() sensor flag} of all of the given Body's Fixtures
-	 *  @param body the {@link Body} which {@link Fixture Fixtures'} sensor flag to set
+	/** sets the {@link Fixture#isSensor() sensor flags} of all of the given Body's Fixtures
+	 *  @param body the {@link Body} which {@link Fixture Fixtures'} sensor flags to set
 	 *  @param sensor the parameter to pass to {@link Fixture#setSensor(boolean)}
 	 *  @see Fixture#setSensor(boolean) */
 	public static void setSensor(Body body, boolean sensor) {
