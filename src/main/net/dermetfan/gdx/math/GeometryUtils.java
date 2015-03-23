@@ -37,7 +37,7 @@ import net.dermetfan.gdx.utils.ArrayUtils;
 import static net.dermetfan.gdx.math.MathUtils.amplitude2;
 import static net.dermetfan.gdx.math.MathUtils.max;
 import static net.dermetfan.gdx.math.MathUtils.min;
-import static net.dermetfan.gdx.utils.ArrayUtils.wrapIndex;
+import static net.dermetfan.gdx.utils.ArrayUtils.getRepeated;
 import static net.dermetfan.utils.math.MathUtils.det;
 
 /** Provides some useful methods for geometric calculations. Note that many methods return the same array instance so make a copy for subsequent calls.
@@ -700,7 +700,7 @@ public class GeometryUtils extends net.dermetfan.utils.math.GeometryUtils {
 		vec2_0.setZero();
 		boolean intersects = false;
 		for(int i = 0, n = segments.size - (polygon ? 0 : 2); i < n; i += 2) {
-			float x3 = segments.get(i), y3 = segments.get(i + 1), x4 = wrapIndex(i + 2, segments), y4 = wrapIndex(i + 3, segments);
+			float x3 = segments.get(i), y3 = segments.get(i + 1), x4 = getRepeated(segments, i + 2), y4 = getRepeated(segments, i + 3);
 			if(Intersector.intersectSegments(x1, y1, x2, y2, x3, y3, x4, y4, vec2_0)) {
 				intersects = true;
 				intersections.add(vec2_0.x);

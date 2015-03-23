@@ -23,9 +23,9 @@ import com.badlogic.gdx.utils.IntArray;
  *  @since 0.5.0 */
 public class ArrayUtils extends net.dermetfan.utils.ArrayUtils {
 
-	/** @see #wrapIndex(int, Object[]) */
-	public static <T> T wrapIndex(int index, Array<T> array) {
-		return array.get(wrapIndex(index, array.size));
+	/** @see #getRepeated(Object[], int) */
+	public static <T> T getRepeated(Array<T> array, int index) {
+		return array.get(repeat(index, array.size));
 	}
 
 	/** @param items the items to select from
@@ -197,9 +197,9 @@ public class ArrayUtils extends net.dermetfan.utils.ArrayUtils {
 
 	// int
 
-	/** @see #wrapIndex(int, int[]) */
-	public static int wrapIndex(int index, IntArray array) {
-		return array.get(wrapIndex(index, array.size));
+	/** @see #getRepeated(int[], int) */
+	public static int getRepeated(IntArray array, int index) {
+		return array.get(repeat(index, array.size));
 	}
 
 	/** @param items the items to select from
@@ -362,9 +362,9 @@ public class ArrayUtils extends net.dermetfan.utils.ArrayUtils {
 
 	// float
 
-	/** @see #wrapIndex(int, float[]) */
-	public static float wrapIndex(int index, FloatArray array) {
-		return array.get(wrapIndex(index, array.size));
+	/** @see #getRepeated(float[], int) */
+	public static float getRepeated(FloatArray array, int index) {
+		return array.get(repeat(index, array.size));
 	}
 
 	/** @param items the items to select from

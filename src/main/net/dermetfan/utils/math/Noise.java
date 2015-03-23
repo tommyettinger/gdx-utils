@@ -14,12 +14,13 @@
 
 package net.dermetfan.utils.math;
 
-import static net.dermetfan.utils.ArrayUtils.wrapIndex;
+import java.util.Random;
 
+import net.dermetfan.utils.ArrayUtils;
 import net.dermetfan.utils.Function;
 import net.dermetfan.utils.Pair;
 
-import java.util.Random;
+import static net.dermetfan.utils.ArrayUtils.getRepeated;
 
 /** provides noise algorithms
  *  @author dermetfan */
@@ -41,7 +42,7 @@ public abstract class Noise {
 	 *  @return the randomized float array */
 	public static float[] midpointDisplacement(float[] values, float range, float smoothness) {
 		for(int i = 0; i < values.length; i++, range /= smoothness)
-			values[i] = (wrapIndex(i - 1, values) + wrapIndex(i + 1, values)) / 2 + random(-range, range);
+			values[i] = (getRepeated(values, i - 1) + getRepeated(values, i + 1)) / 2 + random(-range, range);
 		return values;
 	}
 
@@ -175,7 +176,7 @@ public abstract class Noise {
 			// diamond step
 			for(x = 0; x < width - (wrapX ? 1 : 0); x += power)
 				for(y = power * (1 - x / power % 2); y < height - (wrapY ? 1 : 0); y += power * 2) {
-					map[x][y] = (avg = (map[wrapIndex(x - power, width)][y] + map[wrapIndex(x + power, width)][y] + map[x][wrapIndex(y - power, height)] + map[x][wrapIndex(y + power, height)]) / 4) + random(-range, range);
+					map[x][y] = (avg = (map[ArrayUtils.repeat(x - power, width)][y] + map[ArrayUtils.repeat(x + power, width)][y] + map[x][ArrayUtils.repeat(y - power, height)] + map[x][ArrayUtils.repeat(y + power, height)]) / 4) + random(-range, range);
 
 					if(wrapX && x == 0)
 						map[width - 1][y] = avg;
