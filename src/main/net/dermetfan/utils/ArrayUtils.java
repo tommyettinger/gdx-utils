@@ -8,22 +8,22 @@ public class ArrayUtils {
 
 	/** @param array the array from which to access a value at the wrapped index
 	 *  @return the value at the wrapped index
-	 *  @see #wrapIndex(int, int) */
-	public static <T> T wrapIndex(int index, T[] array) {
-		return array[wrapIndex(index, array.length)];
+	 *  @see #repeat(int, int) */
+	public static <T> T getRepeated(T[] array, int index) {
+		return array[repeat(index, array.length)];
 	}
 
-	/** @see #wrapIndex(int, Object[]) */
-	public static int wrapIndex(int index, int[] array) {
-		return array[wrapIndex(index, array.length)];
+	/** @see #getRepeated(Object[], int) */
+	public static int getRepeated(int[] array, int index) {
+		return array[repeat(index, array.length)];
 	}
 
-	/** @see #wrapIndex(int, Object[]) */
-	public static float wrapIndex(int index, float[] array) {
-		return array[wrapIndex(index, array.length)];
+	/** @see #getRepeated(Object[], int) */
+	public static float getRepeated(float[] array, int index) {
+		return array[repeat(index, array.length)];
 	}
 
-	/** Wraps the given index around the given length (of an array). For example for a length of 10:<br>
+	/** Repeats the given index within the given length (of an array). For example for a length of 10:<br>
 	 * 	<table summary="index and return value">
 	 * 	<tr><th>index</th><th>returns</th></tr>
 	 * 	<tr><td>0</td><td>0</td></tr>
@@ -35,14 +35,14 @@ public class ArrayUtils {
 	 * 	</table>
 	 *  @param index the desired index
 	 *  @param length the length of the array
-	 *  @return the index wrapped around the array length */
-	public static int wrapIndex(int index, int length) {
+	 *  @return {@code (index + length) % length} */
+	public static int repeat(int index, int length) {
 		return (index + length) % length;
 	}
 
 	/** @param array the array that may contain the given value
 	 *  @param value the value to search for in the given array
-	 *  @param identity if {@code ==} comparison should be used instead of <code>{@link Object#equals(Object) .equals()}</code>
+	 *  @param identity if {@code ==} comparison should be used instead of {@link Object#equals(Object) equals(Object)}
 	 *  @return if the given value is contained in the given array */
 	public static <T> boolean contains(T[] array, T value, boolean identity) {
 		int i = array.length - 1;
