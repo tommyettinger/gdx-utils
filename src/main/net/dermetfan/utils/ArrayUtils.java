@@ -2,6 +2,8 @@ package net.dermetfan.utils;
 
 import java.lang.reflect.Array;
 
+import net.dermetfan.gdx.math.MathUtils;
+
 /** array utility methods
  *  @author dermetfan */
 public class ArrayUtils {
@@ -10,17 +12,22 @@ public class ArrayUtils {
 	 *  @return the value at the wrapped index
 	 *  @see #repeat(int, int) */
 	public static <T> T getRepeated(T[] array, int index) {
-		return array[repeat(index, array.length)];
+		return array[repeat(array.length, index)];
 	}
 
 	/** @see #getRepeated(Object[], int) */
 	public static int getRepeated(int[] array, int index) {
-		return array[repeat(index, array.length)];
+		return array[repeat(array.length, index)];
 	}
 
 	/** @see #getRepeated(Object[], int) */
 	public static float getRepeated(float[] array, int index) {
-		return array[repeat(index, array.length)];
+		return array[repeat(array.length, index)];
+	}
+
+	/** @see #repeat(int, int, int) */
+	public static int repeat(int length, int index) {
+		return repeat(0, length, index);
 	}
 
 	/** Repeats the given index within the given length (of an array). For example for a length of 10:<br>
@@ -33,13 +40,13 @@ public class ArrayUtils {
 	 * 	<tr><td>20</td><td>0</td></tr>
 	 * 	<tr><td>55</td><td>5</td></tr>
 	 * 	</table>
-	 *  @param index the desired index
 	 *  @param length the length of the array
-	 *  @return {@code (index + length) % length} */
-	public static int repeat(int index, int length) {
-		index = (index + length) % length;
-		if(index < 0 || index >= length)
-			index = repeat(index, length);
+	 *  @param index the index to repeat
+	 *  @return the repeated index */
+	public static int repeat(int offset, int length, int index) {
+		index = MathUtils.normalize(index, offset, offset + length);
+		if(index == offset + length)
+			index = offset;
 		return index;
 	}
 

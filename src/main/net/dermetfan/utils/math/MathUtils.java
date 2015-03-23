@@ -65,13 +65,6 @@ public class MathUtils {
 		return x1 * y2 + x2 * y3 + x3 * y1 - y1 * x2 - y2 * x3 - y3 * x1;
 	}
 
-	/** @param value the value to normalize between 0 and the given range
-	 *  @param range the other bound of the interval with 0
-	 *  @see #normalize(float, float, float) */
-	public static float normalize(float value, float range) {
-		return normalize(value, 0, range);
-	}
-
 	/** Normalizes/repeats the given value in the given interval [min, max] as if min and max were portals the value travels through. For example:<br>
 	 *  <table summary="examples">
 	 *      <tr>
@@ -110,6 +103,21 @@ public class MathUtils {
 		min = Math.min(min, max);
 		max = Math.max(oldMin, max);
 		float under = value < min ? Math.abs(min - value) : 0, over = value > max ? value - Math.abs(max) : 0;
+		if(under > 0)
+			return normalize(oldMax + (oldMax > oldMin ? -under : under), min, max);
+		if(over > 0)
+			return normalize(oldMin + (oldMin < oldMax ? over : -over), min, max);
+		return value;
+	}
+
+	/** @see #normalize(float, float, float) */
+	public static int normalize(int value, int min, int max) {
+		if(min == max)
+			return min;
+		int oldMin = min, oldMax = max;
+		min = Math.min(min, max);
+		max = Math.max(oldMin, max);
+		int under = value < min ? Math.abs(min - value) : 0, over = value > max ? value - Math.abs(max) : 0;
 		if(under > 0)
 			return normalize(oldMax + (oldMax > oldMin ? -under : under), min, max);
 		if(over > 0)

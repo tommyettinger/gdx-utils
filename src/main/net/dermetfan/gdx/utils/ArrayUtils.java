@@ -25,7 +25,7 @@ public class ArrayUtils extends net.dermetfan.utils.ArrayUtils {
 
 	/** @see #getRepeated(Object[], int) */
 	public static <T> T getRepeated(Array<T> array, int index) {
-		return array.get(repeat(index, array.size));
+		return array.get(repeat(array.size, index));
 	}
 
 	/** @param items the items to select from
@@ -199,7 +199,7 @@ public class ArrayUtils extends net.dermetfan.utils.ArrayUtils {
 
 	/** @see #getRepeated(int[], int) */
 	public static int getRepeated(IntArray array, int index) {
-		return array.get(repeat(index, array.size));
+		return array.get(repeat(array.size, index));
 	}
 
 	/** @param items the items to select from
@@ -364,7 +364,7 @@ public class ArrayUtils extends net.dermetfan.utils.ArrayUtils {
 
 	/** @see #getRepeated(float[], int) */
 	public static float getRepeated(FloatArray array, int index) {
-		return array.get(repeat(index, array.size));
+		return array.get(repeat(array.size, index));
 	}
 
 	/** @param items the items to select from
