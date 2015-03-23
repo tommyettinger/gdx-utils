@@ -99,10 +99,16 @@ public class ArrayUtils {
 		return equalsAny(obj, array, 0, array.length);
 	}
 
+	/** @see #shuffle(Object[], int, int) */
+	public static void shuffle(Object[] array) {
+		shuffle(array, 0, array.length);
+	}
+
 	/** shuffles the given array
 	 *  @param array the array to shuffle */
-	public static void shuffle(Object[] array) {
-		for(int i = array.length - 1; i > 0; i--) {
+	public static void shuffle(Object[] array, int offset, int length) {
+		checkRegion(array, offset, length);
+		for(int i = offset + length - 1; i > offset; i--) {
 			int ii = (int) (Math.random() * (i + 1));
 			Object tmp = array[i];
 			array[i] = array[ii];
@@ -110,10 +116,16 @@ public class ArrayUtils {
 		}
 	}
 
+	/** @see #shuffle(int[], int, int) */
+	public static void shuffle(int[] array) {
+		shuffle(array, 0, array.length);
+	}
+
 	/** shuffles the given array
 	 *  @param array the array to shuffle */
-	public static void shuffle(int[] array) {
-		for(int i = array.length - 1; i > 0; i--) {
+	public static void shuffle(int[] array, int offset, int length) {
+		checkRegion(array, offset, length);
+		for(int i = offset + length - 1; i > offset; i--) {
 			int ii = (int) (Math.random() * (i + 1));
 			int tmp = array[i];
 			array[i] = array[ii];
@@ -121,10 +133,16 @@ public class ArrayUtils {
 		}
 	}
 
+	/** @see #shuffle(float[], int, int) */
+	public static void shuffle(float[] array) {
+		shuffle(array, 0, array.length);
+	}
+
 	/** shuffles the given array
 	 *  @param array the array to shuffle */
-	public static void shuffle(float[] array) {
-		for(int i = array.length - 1; i > 0; i--) {
+	public static void shuffle(float[] array, int offset, int length) {
+		checkRegion(array, offset, length);
+		for(int i = offset + length - 1; i > offset; i--) {
 			int ii = (int) (Math.random() * (i + 1));
 			float tmp = array[i];
 			array[i] = array[ii];
