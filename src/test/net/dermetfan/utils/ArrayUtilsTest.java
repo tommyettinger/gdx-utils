@@ -5,6 +5,7 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
 import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -13,6 +14,24 @@ public class ArrayUtilsTest {
 
 	@Rule
 	public ExpectedException thrown = ExpectedException.none();
+
+	@Test
+	public void repeat() {
+		assertEquals(0, ArrayUtils.repeat(0, 5));
+		assertEquals(3, ArrayUtils.repeat(3, 5));
+		assertEquals(4, ArrayUtils.repeat(4, 5));
+		assertEquals(0, ArrayUtils.repeat(5, 5));
+		assertEquals(1, ArrayUtils.repeat(6, 5));
+		assertEquals(3, ArrayUtils.repeat(8, 5));
+		assertEquals(0, ArrayUtils.repeat(10, 5));
+		assertEquals(2, ArrayUtils.repeat(12, 5));
+		assertEquals(2, ArrayUtils.repeat(22, 5));
+		assertEquals(3, ArrayUtils.repeat(-2, 5));
+		assertEquals(0, ArrayUtils.repeat(-5, 5));
+		assertEquals(2, ArrayUtils.repeat(-8, 5));
+		assertEquals(2, ArrayUtils.repeat(-13, 5));
+		assertEquals(2, ArrayUtils.repeat(-23, 5));
+	}
 
 	@Test
 	public void contains() {

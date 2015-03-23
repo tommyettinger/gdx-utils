@@ -37,7 +37,10 @@ public class ArrayUtils {
 	 *  @param length the length of the array
 	 *  @return {@code (index + length) % length} */
 	public static int repeat(int index, int length) {
-		return (index + length) % length;
+		index = (index + length) % length;
+		if(index < 0 || index >= length)
+			index = repeat(index, length);
+		return index;
 	}
 
 	/** @param array the array that may contain the given value
