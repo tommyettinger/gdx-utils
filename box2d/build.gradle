@@ -3,4 +3,5 @@ apply from: "$rootProject.projectDir/gradle/common.gradle"
 dependencies {
 	compile rootProject
 	compile "com.badlogicgames.gdx:gdx-box2d:$libgdxVersion"
+	testCompile 'junit:junit:4.12'
 }
