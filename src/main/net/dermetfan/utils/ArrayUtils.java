@@ -129,6 +129,52 @@ public class ArrayUtils {
 		array[i] = newItem;
 	}
 
+	/** @see #shift(int[], int, int, int) */
+	public static void shift(int[] array, int shift) {
+		shift(array, 0, array.length, shift);
+	}
+
+	/** @param array the array to shift
+	 *  @param shift The amount by which to shift. 1 means that every item will be moved 1 index to the right. */
+	public static void shift(int[] array, int offset, int length, int shift) {
+		checkRegion(array, offset, length);
+		if(shift == 0)
+			return;
+		shift(array, offset, length, shift, offset);
+	}
+
+	/** @param i the current index */
+	private static void shift(int[] array, int offset, int length, int shift, int i) {
+		if(i == offset + length)
+			return;
+		int newItem = array[repeat(offset, length, i - shift)];
+		shift(array, offset, length, shift, i + 1);
+		array[i] = newItem;
+	}
+
+	/** @see #shift(float[], int, int, int) */
+	public static void shift(float[] array, int shift) {
+		shift(array, 0, array.length, shift);
+	}
+
+	/** @param array the array to shift
+	 *  @param shift The amount by which to shift. 1 means that every item will be moved 1 index to the right. */
+	public static void shift(float[] array, int offset, int length, int shift) {
+		checkRegion(array, offset, length);
+		if(shift == 0)
+			return;
+		shift(array, offset, length, shift, offset);
+	}
+
+	/** @param i the current index */
+	private static void shift(float[] array, int offset, int length, int shift, int i) {
+		if(i == offset + length)
+			return;
+		float newItem = array[repeat(offset, length, i - shift)];
+		shift(array, offset, length, shift, i + 1);
+		array[i] = newItem;
+	}
+
 	/** @see #shuffle(Object[], int, int) */
 	public static void shuffle(Object[] array) {
 		shuffle(array, 0, array.length);
