@@ -1,15 +1,16 @@
 package net.dermetfan.utils;
 
-import static org.junit.Assert.*;
-
 import org.junit.Test;
+
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
 
 public class AppenderTest {
 
 	/** tests {@link Appender#update(float)}, {@link Appender#append(CharSequence)}, {@link Appender#updateAndAppend(CharSequence, float)}, {@link Appender#getAppendices()}, {@link Appender#getDurations()}, {@link Appender#getTime()}, {@link Appender#appendixAt(float)} {@link Appender#Appender(CharSequence[], float)} */
 	@Test
 	public void multi() {
-		CharSequence[] appendices = new CharSequence[] {"0", "1"};
+		CharSequence[] appendices = {"0", "1"};
 		Appender appender = new Appender(appendices, .5f);
 		assertArrayEquals(appendices, appender.getAppendices());
 		assertArrayEquals(new float[] {.5f, .5f}, appender.getDurations(), 0);

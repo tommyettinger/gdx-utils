@@ -176,7 +176,7 @@ public abstract class Noise {
 			// diamond step
 			for(x = 0; x < width - (wrapX ? 1 : 0); x += power)
 				for(y = power * (1 - x / power % 2); y < height - (wrapY ? 1 : 0); y += power * 2) {
-					map[x][y] = (avg = (map[ArrayUtils.repeat(x - power, width)][y] + map[ArrayUtils.repeat(x + power, width)][y] + map[x][ArrayUtils.repeat(y - power, height)] + map[x][ArrayUtils.repeat(y + power, height)]) / 4) + random(-range, range);
+					map[x][y] = (avg = (map[ArrayUtils.repeat(width, x - power)][y] + map[ArrayUtils.repeat(width, x + power)][y] + map[x][ArrayUtils.repeat(height, y - power)] + map[x][ArrayUtils.repeat(height, y + power)]) / 4) + random(-range, range);
 
 					if(wrapX && x == 0)
 						map[width - 1][y] = avg;

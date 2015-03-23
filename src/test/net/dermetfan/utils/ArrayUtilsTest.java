@@ -17,20 +17,29 @@ public class ArrayUtilsTest {
 
 	@Test
 	public void repeat() {
-		assertEquals(0, ArrayUtils.repeat(0, 5));
-		assertEquals(3, ArrayUtils.repeat(3, 5));
-		assertEquals(4, ArrayUtils.repeat(4, 5));
+		assertEquals(0, ArrayUtils.repeat(5, 0));
+		assertEquals(3, ArrayUtils.repeat(5, 3));
+		assertEquals(4, ArrayUtils.repeat(5, 4));
 		assertEquals(0, ArrayUtils.repeat(5, 5));
-		assertEquals(1, ArrayUtils.repeat(6, 5));
-		assertEquals(3, ArrayUtils.repeat(8, 5));
-		assertEquals(0, ArrayUtils.repeat(10, 5));
-		assertEquals(2, ArrayUtils.repeat(12, 5));
-		assertEquals(2, ArrayUtils.repeat(22, 5));
-		assertEquals(3, ArrayUtils.repeat(-2, 5));
-		assertEquals(0, ArrayUtils.repeat(-5, 5));
-		assertEquals(2, ArrayUtils.repeat(-8, 5));
-		assertEquals(2, ArrayUtils.repeat(-13, 5));
-		assertEquals(2, ArrayUtils.repeat(-23, 5));
+		assertEquals(1, ArrayUtils.repeat(5, 6));
+		assertEquals(3, ArrayUtils.repeat(5, 8));
+		assertEquals(0, ArrayUtils.repeat(5, 10));
+		assertEquals(2, ArrayUtils.repeat(5, 12));
+		assertEquals(2, ArrayUtils.repeat(5, 22));
+		assertEquals(3, ArrayUtils.repeat(5, -2));
+		assertEquals(0, ArrayUtils.repeat(5, -5));
+		assertEquals(2, ArrayUtils.repeat(5, -8));
+		assertEquals(2, ArrayUtils.repeat(5, -13));
+		assertEquals(2, ArrayUtils.repeat(5, -23));
+
+		assertEquals(2, ArrayUtils.repeat(2, 8, 2));
+		assertEquals(4, ArrayUtils.repeat(2, 8, 4));
+		assertEquals(6, ArrayUtils.repeat(2, 8, 6));
+		assertEquals(8, ArrayUtils.repeat(2, 8, 8));
+		assertEquals(2, ArrayUtils.repeat(2, 8, 10));
+		assertEquals(3, ArrayUtils.repeat(2, 8, 11));
+		assertEquals(4, ArrayUtils.repeat(2, 8, 12));
+		assertEquals(7, ArrayUtils.repeat(2, 8, 15));
 	}
 
 	@Test
