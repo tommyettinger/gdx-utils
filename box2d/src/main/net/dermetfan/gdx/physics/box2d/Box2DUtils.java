@@ -137,6 +137,9 @@ public class Box2DUtils extends com.badlogic.gdx.physics.box2d.Box2DUtils {
 	/** the max velocity of a body, see b2Settings.h (limitation by Box2D) */
 	public static final float maxTranslation = 2;
 
+	/** the min distance between vertices, see b2Settings.h (limitation by Box2D) */
+	public static final float linearSlop = .005f;
+
 	/** if Box2D preconditions should be checked to avoid crashes */
 	public static boolean checkPreconditions = true;
 
@@ -1110,6 +1113,33 @@ public class Box2DUtils extends com.badlogic.gdx.physics.box2d.Box2DUtils {
 		Pools.free(bVertices);
 
 		return store.isFull();
+	}
+
+	/** @see #weld(float[], int, int) */
+	public static int weld(FloatArray vertices) {
+		return weld(vertices.items, 0, vertices.size);
+	}
+
+	/** @see #weld(float[], int, int) */
+	public static int weld(float[] vertices) {
+		return weld(vertices, 0, vertices.length);
+	}
+
+	/** welds the given vertices together the way {@link PolygonShape#set(float[])} does
+	 *  @return the new number of vertices (starting at offset) */
+	public static int weld(float[] vertices, int offset, int length) {
+		ArrayUtils.checkRegion(vertices, offset, length);
+		if(length < 4) // less than two points, nothing to weld
+			return length / 2;
+		for(int i = offset; i + 3 < offset + length;) {
+			float x1 = vertices[i], y1 = vertices[i + 1], x2 = vertices[i + 2], y2 = vertices[i + 3];
+			if(Vector2.dst2(x1, y1, x2, y2) < linearSlop / 2) {
+				net.dermetfan.utils.ArrayUtils.shift(vertices, i + 2, length - i - 2, -2);
+				length -= 2;
+			} else
+				i += 2;
+		}
+		return length / 2;
 	}
 
 	// various
