@@ -60,6 +60,26 @@ public class ArrayUtilsTest {
 	}
 
 	@Test
+	public void shift() {
+		String[] array = {"0", "1", "2", "3", "4", "5", "6", "7", "8", "9"};
+		ArrayUtils.shift(array, 0, array.length, -1);
+		assertArrayEquals(new String[] {"1", "2", "3", "4", "5", "6", "7", "8", "9", "0"}, array);
+		ArrayUtils.shift(array, 0, array.length, 2);
+		assertArrayEquals(new String[] {"9", "0", "1", "2", "3", "4", "5", "6", "7", "8"}, array);
+		ArrayUtils.shift(array, 0, array.length, -1);
+		ArrayUtils.shift(array, 1, array.length - 2, -1);
+		assertArrayEquals(new String[] {"0", "2", "3", "4", "5", "6", "7", "8", "1", "9"}, array);
+		ArrayUtils.shift(array, 1, array.length - 2, 1);
+		ArrayUtils.shift(array, 2, array.length - 4, -1);
+		assertArrayEquals(new String[] {"0", "1", "3", "4", "5", "6", "7", "2", "8", "9"}, array);
+		ArrayUtils.shift(array, 2, array.length - 4, 1);
+		ArrayUtils.shift(array, 3, array.length - 6, -3);
+		assertArrayEquals(new String[] {"0", "1", "2", "6", "3", "4", "5", "7", "8", "9"}, array);
+		ArrayUtils.shift(array, 3, array.length - 5, 12);
+		assertArrayEquals(new String[] {"0", "1", "2", "5", "7", "6", "3", "4", "8", "9"}, array);
+	}
+
+	@Test
 	public void unbox() {
 		Float[] arr = {1f, 2f, 3f};
 		int i = -1;
