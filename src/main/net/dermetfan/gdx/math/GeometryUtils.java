@@ -428,12 +428,13 @@ public class GeometryUtils extends net.dermetfan.utils.math.GeometryUtils {
 
 	/** @see #areVerticesClockwise(Polygon) */
 	public static boolean areVerticesClockwise(FloatArray vertices) {
-		return vertices.size <= 4 || polygonArea(vertices) < 0;
+		return areVerticesClockwise(vertices.items, 0, vertices.size);
 	}
 
 	/** @see #areVerticesClockwise(Polygon) */
 	public static boolean areVerticesClockwise(float[] vertices, int offset, int length) {
-		return vertices.length <= 8 || com.badlogic.gdx.math.GeometryUtils.polygonArea(vertices, offset, length) < 0;
+		ArrayUtils.checkRegion(vertices, offset, length);
+		return length <= 4 || com.badlogic.gdx.math.GeometryUtils.polygonArea(vertices, offset, length) < 0;
 	}
 
 	/** @see #areVerticesClockwise(float[], int, int) */
@@ -451,8 +452,8 @@ public class GeometryUtils extends net.dermetfan.utils.math.GeometryUtils {
 		return com.badlogic.gdx.math.GeometryUtils.polygonArea(vertices.items, 0, vertices.size);
 	}
 
-	/** used in {@link #arrangeClockwise(Array)} */
-	private static final Comparator<Vector2> arrangeClockwiseComparator = new Comparator<Vector2>() {
+	/** used in {@link #arrangeCounterClockwise(Array)} */
+	private static final Comparator<Vector2> arrangeCounterClockwiseComparator = new Comparator<Vector2>() {
 		/** compares the x coordinates */
 		@Override
 		public int compare(Vector2 a, Vector2 b) {
@@ -465,7 +466,7 @@ public class GeometryUtils extends net.dermetfan.utils.math.GeometryUtils {
 	};
 
 	/** @param vertices the vertices to arrange in clockwise order */
-	public static void arrangeClockwise(Array<Vector2> vertices) {
+	public static void arrangeCounterClockwise(Array<Vector2> vertices) {
 		// http://www.emanueleferonato.com/2011/08/05/slicing-splitting-and-cutting-objects-with-box2d-part-4-using-real-graphics
 		int n = vertices.size, i1 = 1, i2 = vertices.size - 1;
 
@@ -473,7 +474,7 @@ public class GeometryUtils extends net.dermetfan.utils.math.GeometryUtils {
 			tmpVector2Array = new Array<>(vertices.size);
 		tmpVector2Array.clear();
 		tmpVector2Array.addAll(vertices);
-		tmpVector2Array.sort(arrangeClockwiseComparator);
+		tmpVector2Array.sort(arrangeCounterClockwiseComparator);
 
 		tmpVector2Array.set(0, vertices.first());
 		Vector2 C = vertices.first();
