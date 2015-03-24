@@ -120,6 +120,21 @@ public class GeometryUtilsTest {
 	}
 
 	@Test
+	public void sortPoints() {
+		float[] points = {0, 0, .75f, 2, 1.5f, 2.5f, 2.5f, 2, 2, .5f, 1, 0, 0, 0};
+		GeometryUtils.sortPoints(points, false);
+		assertArrayEquals(new float[] {0, 0, 0, 0, .75f, 2, 1, 0, 1.5f, 2.5f, 2, .5f, 2.5f, 2}, points, 0);
+		GeometryUtils.sortPoints(points, true);
+		assertArrayEquals(new float[] {0, 0, 1, 0, 0, 0, 2, .5f, 2.5f, 2, .75f, 2, 1.5f, 2.5f}, points, 0);
+
+		points = new float[] {9, 9, 3, 3, 2, 4, 4, 2, 1, 5, 5, 1, 9, 9};
+		GeometryUtils.sortPoints(points, 2, points.length - 4, false);
+		assertArrayEquals(new float[] {9, 9, 1, 5, 2, 4, 3, 3, 4, 2, 5, 1, 9, 9}, points, 0);
+		GeometryUtils.sortPoints(points, 2, points.length - 4, true);
+		assertArrayEquals(new float[] {9, 9, 5, 1, 4, 2, 3, 3, 2, 4, 1, 5, 9, 9}, points, 0);
+	}
+
+	@Test
 	public void keepWithin() {
 		assertEquals(new Vector2(0, 0), GeometryUtils.keepWithin(5, 5, 5, 5, 0, 0, 5, 5));
 	}
