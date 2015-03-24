@@ -310,6 +310,106 @@ public class GeometryUtils {
 		return maxY(vertices, 0, vertices.length);
 	}
 
+	/** @return the distance between the two given points
+	 *  @since 0.11.0 */
+	public static float distance(float x1, float y1, float x2, float y2) {
+		return (float) Math.sqrt(distance2(x1, y1, x2, y2));
+	}
+
+	/** @return the squared distance between the two given points
+	 *  @since 0.11.0 */
+	public static float distance2(float x1, float y1, float x2, float y2) {
+		float x_dist = x2 - x1, y_dist = y2 - y1;
+		return x_dist * x_dist + y_dist * y_dist;
+	}
+
+	/** @param x the x coordinate of the point
+	 *  @param y the y coordinate of the point
+	 *  @param maxDistance2 the max squared distance between the given point and a close point
+	 *  @param vertices the vertices to search for close points
+	 *  @return the number of points close to the given point
+	 *  @since 0.11.0 */
+	public static int closePoints(float x, float y, float maxDistance2, float[] vertices, int offset, int length) {
+		ArrayUtils.checkRegion(vertices, offset, length);
+		int count = 0;
+		for(int i = offset; i < offset + length; i += 2)
+			if(distance2(x, y, vertices[i], vertices[i + 1]) <= maxDistance2)
+				count++;
+		return count;
+	}
+
+	/** @param x the x coordinate of the point
+	 *  @param y the y coordinate of the point
+	 *  @param deltaX the max difference between the point's and a close point's x coordinate
+	 *  @param deltaY the max difference between the point's and a close point's y coordinate
+	 *  @param vertices the vertices to search for close points
+	 *  @return the number of points close to the given point
+	 *  @since 0.11.0 */
+	public static int closePoints(float x, float y, float deltaX, float deltaY, float[] vertices, int offset, int length) {
+		ArrayUtils.checkRegion(vertices, offset, length);
+		int count = 0;
+		for(int i = offset; i < offset + length; i += 2)
+			if(Math.abs(vertices[i] - x) <= deltaX && Math.abs(vertices[i + 1] - y) <= deltaY)
+				count++;
+		return count;
+	}
+
+	/** @see #sortPoints(float[], int, int, boolean)
+	 *  @since 0.11.0 */
+	public static void sortPoints(float[] vertices, boolean byY) {
+		sortPoints(vertices, 0, vertices.length, byY);
+	}
+
+	/** Sorts the given points in ascending order by their x (or, if byY is true, y) coordinate.
+	 *  @param vertices the points to sort
+	 *  @param byY whether the points shall by sorted by their y rather than their x coordinate
+	 *  @since 0.11.0 */
+	public static void sortPoints(float[] vertices, int offset, int length, boolean byY) {
+		ArrayUtils.checkRegion(vertices, offset, length);
+		int y = byY ? 1 : 0;
+
+		// find point with smallest x coordinate
+		int smallest = offset;
+		for(int i = offset; i < offset + length; i += 2)
+			if(vertices[i + y] < vertices[smallest + y])
+				smallest = i;
+
+		// find point with greatest x coordinate
+		int greatest = offset;
+		for(int i = offset; i < offset + length; i += 2)
+			if(vertices[i + y] > vertices[greatest + y])
+				greatest = i;
+
+		// find each next point
+		floats[0] = vertices[smallest];
+		floats[1] = vertices[smallest + 1];
+		for(int i = smallest, fi = 2; fi < length; fi += 2) {
+			int next = greatest;
+			float coord = vertices[i + y];
+			for(int ii = offset; ii < offset + length; ii += 2) {
+				if(ii == i)
+					continue;
+				float coord2 = vertices[ii + y];
+				if(coord2 < coord)
+					continue;
+				if(coord2 - coord <= vertices[next + y] - coord) {
+					int coord2InFloats = closePoints(coord2, coord2, byY ? Float.POSITIVE_INFINITY : 0, byY ? 0 : Float.POSITIVE_INFINITY, floats, 0, fi);
+					if(coord2InFloats > 0) {
+						int coord2InVertices = closePoints(coord2, coord2, byY ? Float.POSITIVE_INFINITY : 0, byY ? 0 : Float.POSITIVE_INFINITY, vertices, offset, length);
+						if(coord2InFloats >= coord2InVertices)
+							continue;
+					}
+					next = ii;
+				}
+			}
+			floats[fi] = vertices[next];
+			floats[fi + 1] = vertices[next + 1];
+			i = next;
+		}
+
+		System.arraycopy(floats, 0, vertices, offset, length);
+	}
+
 	/** @param x the x of the rectangle
 	 *  @param y the y of the rectangle
 	 *  @param width the width of the rectangle
