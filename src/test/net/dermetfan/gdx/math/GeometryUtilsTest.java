@@ -9,7 +9,6 @@ import org.junit.Test;
 
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 public class GeometryUtilsTest {
@@ -104,13 +103,6 @@ public class GeometryUtilsTest {
 	@Test
 	public void polygonArea() {
 		assertEquals(1, GeometryUtils.polygonArea(new FloatArray(new float[] {0, 0, 1, 0, 1, 1, 0, 1})), 0);
-	}
-
-	@Test
-	public void arrangeCounterClockwise() {
-		Array<Vector2> v2Vertices = GeometryUtils.toVector2Array(new FloatArray(new float[] {0, 0, .75f, 2, 1.5f, 2.5f, 2.5f, 2, 2, .5f, 1, 0}), new Array<Vector2>());
-		GeometryUtils.arrangeCounterClockwise(v2Vertices);
-		assertFalse(GeometryUtils.areVerticesClockwise(v2Vertices));
 	}
 
 	@Test

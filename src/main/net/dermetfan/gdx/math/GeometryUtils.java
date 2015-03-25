@@ -14,8 +14,6 @@
 
 package net.dermetfan.gdx.math;
 
-import java.util.Comparator;
-
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.math.Circle;
 import com.badlogic.gdx.math.EarClippingTriangulator;
@@ -37,14 +35,13 @@ import net.dermetfan.gdx.utils.ArrayUtils;
 import static net.dermetfan.gdx.math.MathUtils.amplitude2;
 import static net.dermetfan.gdx.math.MathUtils.max;
 import static net.dermetfan.gdx.math.MathUtils.min;
-import static net.dermetfan.utils.math.MathUtils.det;
 
 /** Provides some useful methods for geometric calculations. Note that many methods return the same array instance so make a copy for subsequent calls.
  *  @author dermetfan */
 public class GeometryUtils extends net.dermetfan.utils.math.GeometryUtils {
 
 	/** a {@link Vector2} for temporary usage */
-	private static final Vector2 vec2_0 = new Vector2(), vec2_1 = new Vector2();
+	private static final Vector2 vec2_0 = new Vector2();
 
 	/** a temporarily used array, returned by some methods */
 	private static Array<Vector2> tmpVector2Array = new Array<>();
@@ -443,50 +440,6 @@ public class GeometryUtils extends net.dermetfan.utils.math.GeometryUtils {
 	/** @see #arrangeConvexPolygon(float[], int, int, boolean) */
 	public static void arrangeConvexPolygon(FloatArray vertices, boolean clockwise) {
 		arrangeConvexPolygon(vertices.items, 0, vertices.size, clockwise);
-	}
-
-	/** used in {@link #arrangeCounterClockwise(Array)} */
-	private static final Comparator<Vector2> arrangeCounterClockwiseComparator = new Comparator<Vector2>() {
-		/** compares the x coordinates */
-		@Override
-		public int compare(Vector2 a, Vector2 b) {
-			if(a.x > b.x)
-				return 1;
-			else if(a.x < b.x)
-				return -1;
-			return 0;
-		}
-	};
-
-	/** @param vertices the vertices to arrange in clockwise order */
-	@Deprecated
-	public static void arrangeCounterClockwise(Array<Vector2> vertices) {
-		// http://www.emanueleferonato.com/2011/08/05/slicing-splitting-and-cutting-objects-with-box2d-part-4-using-real-graphics
-		int n = vertices.size, i1 = 1, i2 = vertices.size - 1;
-
-		if(tmpVector2Array == null)
-			tmpVector2Array = new Array<>(vertices.size);
-		tmpVector2Array.clear();
-		tmpVector2Array.addAll(vertices);
-		tmpVector2Array.sort(arrangeCounterClockwiseComparator);
-
-		tmpVector2Array.set(0, vertices.first());
-		Vector2 C = vertices.first();
-		Vector2 D = vertices.get(n - 1);
-
-		float det;
-		for(int i = 1; i < n - 1; i++) {
-			det = det(C.x, C.y, D.x, D.y, vertices.get(i).x, vertices.get(i).y);
-			if(det < 0)
-				tmpVector2Array.set(i1++, vertices.get(i));
-			else
-				tmpVector2Array.set(i2--, vertices.get(i));
-		}
-
-		tmpVector2Array.set(i1, vertices.get(n - 1));
-
-		vertices.clear();
-		vertices.addAll(tmpVector2Array, 0, n);
 	}
 
 	/** @see #invertAxes(float[], int, int, boolean, boolean) */
