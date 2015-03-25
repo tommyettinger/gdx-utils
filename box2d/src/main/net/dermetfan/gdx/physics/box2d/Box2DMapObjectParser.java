@@ -625,7 +625,7 @@ public class Box2DMapObjectParser {
 
 		Polygon polygon;
 
-		if(!(mapObject instanceof PolygonMapObject) || isConvex(polygon = ((PolygonMapObject) mapObject).getPolygon()) && (!Box2DUtils.checkPreconditions || polygon.getVertices().length / 2 <= Box2DUtils.maxPolygonVertices))
+		if(!(mapObject instanceof PolygonMapObject) || isConvex(polygon = ((PolygonMapObject) mapObject).getPolygon()) && (!Box2DUtils.checkPreconditions || polygon.getVertices().length / 2 <= Box2DUtils.Settings.maxPolygonVertices))
 			return new Fixture[] {createFixture(mapObject, body)};
 
 		Polygon[] convexPolygons = triangulate ? triangulate(polygon) : decompose(polygon);

@@ -73,10 +73,29 @@ import static net.dermetfan.gdx.math.GeometryUtils.filterY;
 import static net.dermetfan.gdx.math.MathUtils.amplitude2;
 import static net.dermetfan.gdx.math.MathUtils.max;
 import static net.dermetfan.gdx.math.MathUtils.min;
+import static net.dermetfan.gdx.physics.box2d.Box2DUtils.Settings.epsilon;
+import static net.dermetfan.gdx.physics.box2d.Box2DUtils.Settings.linearSlop;
+import static net.dermetfan.gdx.physics.box2d.Box2DUtils.Settings.maxPolygonVertices;
 
 /** provides methods for operations with Box2D {@link Body Bodies}, {@link Fixture Fixtures} and {@link Shape Shapes}
  *  @author dermetfan */
 public class Box2DUtils extends com.badlogic.gdx.physics.box2d.Box2DUtils {
+
+	/** b2Settings.h
+	 *  @author dermetfan
+	 *  @since 0.11.0 */
+	public static class Settings {
+
+		/** b2_epsilon */
+		public static final float epsilon = 1e-5f; // 1.1920928955078125e-7f
+
+		/** b2_maxPolygonVertices, the max amount of vertices of a {@link PolygonShape} */
+		public static final byte maxPolygonVertices = 8;
+
+		/** b2_linearSlop, the min distance between vertices */
+		public static final float linearSlop = .005f;
+
+	}
 
 	/** cached method results
 	 *  @author dermetfan */
@@ -127,18 +146,6 @@ public class Box2DUtils extends com.badlogic.gdx.physics.box2d.Box2DUtils {
 
 	/** if shapes should automatically be cached when they are inspected for the first time */
 	public static boolean autoCache = true;
-
-	/** the area that is too small for a {@link PolygonShape} to contain it (limitation by Box2D) */
-	public static final float minExclusivePolygonArea = 1.19209289550781250000e-7F;
-
-	/** the max amount of vertices of a {@link PolygonShape}, see b2Settings.h (limitation by Box2D) */
-	public static final byte maxPolygonVertices = 8;
-
-	/** the max velocity of a body, see b2Settings.h (limitation by Box2D) */
-	public static final float maxTranslation = 2;
-
-	/** the min distance between vertices, see b2Settings.h (limitation by Box2D) */
-	public static final float linearSlop = .005f;
 
 	/** if Box2D preconditions should be checked to avoid crashes */
 	public static boolean checkPreconditions = true;
@@ -1093,12 +1100,12 @@ public class Box2DUtils extends com.badlogic.gdx.physics.box2d.Box2DUtils {
 				weld(aVertices);
 				weld(bVertices);
 			}
-			if(!checkPreconditions || aVertices.size >= 6 && aVertices.size <= maxPolygonVertices * 2 && GeometryUtils.polygonArea(aVertices) > minExclusivePolygonArea) {
+			if(!checkPreconditions || aVertices.size >= 6 && aVertices.size <= maxPolygonVertices * 2 && GeometryUtils.polygonArea(aVertices) > epsilon) {
 				PolygonShape sa = new PolygonShape();
 				sa.set(aVertices.items, 0, aVertices.size);
 				store.setKey((T) sa);
 			}
-			if(!checkPreconditions || bVertices.size >= 6 && bVertices.size <= maxPolygonVertices * 2 && GeometryUtils.polygonArea(bVertices) > minExclusivePolygonArea) {
+			if(!checkPreconditions || bVertices.size >= 6 && bVertices.size <= maxPolygonVertices * 2 && GeometryUtils.polygonArea(bVertices) > epsilon) {
 				PolygonShape sb = new PolygonShape();
 				sb.set(bVertices.items, 0, bVertices.size);
 				store.setValue((T) sb);
