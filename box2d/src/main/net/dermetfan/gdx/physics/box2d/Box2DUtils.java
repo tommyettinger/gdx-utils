@@ -926,36 +926,50 @@ public class Box2DUtils extends com.badlogic.gdx.physics.box2d.Box2DUtils {
 		World world = body.getWorld();
 		BodyDef bodyDef = createDef(body);
 		Body aBody = world.createBody(bodyDef), bBody = world.createBody(bodyDef);
+		boolean split = false;
 		for(Fixture fixture : body.getFixtureList())
-			if(!split(fixture, a, b, aBody, bBody, null))
-				return false;
+			split |= split(fixture, a, b, aBody, bBody, null);
 		if(store != null)
-			store.set(aBody, bBody);
-		return true;
+			store.clear();
+		if(aBody.getFixtureList().size == 0)
+			world.destroyBody(aBody);
+		else if(store != null)
+			store.setKey(aBody);
+		if(bBody.getFixtureList().size == 0)
+			world.destroyBody(bBody);
+		else if(store != null)
+			store.setValue(bBody);
+		return split;
 	}
 
 	/** @param fixture the fixture to split
 	 *  @param a the first point of the segment
 	 *  @param b the second point of the segment
-	 *  @param aBody the body the first resulting fixture will be created on
-	 *  @param bBody the body the second resulting fixture will be created on
+	 *  @param aBody The body the first resulting fixture will be created on. No fixture will be created if this is null.
+	 *  @param bBody The body the second resulting fixture will be created on. No fixture will be created if this is null.
 	 *  @param store The {@link Pair} to store the resulting fixtures in. May be null.
 	 *  @return if the fixture was split
 	 *  @see #split(Shape, Vector2, Vector2, Pair) */
 	public static boolean split(Fixture fixture, Vector2 a, Vector2 b, Body aBody, Body bBody, Pair<Fixture, Fixture> store) {
 		@SuppressWarnings("unchecked")
 		Pair<FixtureDef, FixtureDef> defs = Pools.obtain(Pair.class);
+		if(store != null)
+			store.clear();
 		if(!split(fixture, a, b, defs)) {
 			defs.clear();
 			Pools.free(defs);
 			return false;
 		}
-		Fixture aFixture = aBody.createFixture(defs.getKey()), bFixture = bBody.createFixture(defs.getValue());
+		Fixture aFixture = aBody != null && defs.hasKey() ? aBody.createFixture(defs.getKey()) : null, bFixture = bBody != null && defs.hasValue() ? bBody.createFixture(defs.getValue()) : null;
+		if(defs.hasKey())
+			defs.getKey().shape.dispose();
+		if(defs.hasValue())
+			defs.getValue().shape.dispose();
 		defs.clear();
 		Pools.free(defs);
 		if(store != null)
 			store.set(aFixture, bFixture);
-		return true;
+		return aFixture != null || bFixture != null;
 	}
 
 	/** @param fixture the fixture to split
@@ -976,28 +990,37 @@ public class Box2DUtils extends com.badlogic.gdx.physics.box2d.Box2DUtils {
 		boolean split = split(fixture.getShape(), tmpA, tmpB, shapes);
 		Pools.free(tmpA);
 		Pools.free(tmpB);
-		if(!split) {
-			shapes.clear();
-			Pools.free(shapes);
-			return false;
+		if(store != null)
+			store.clear();
+		if(split) {
+			if(shapes.hasKey()) {
+				FixtureDef def = createDef(fixture);
+				def.shape = shapes.getKey();
+				if(store != null)
+					store.setKey(def);
+			}
+			if(shapes.hasValue()) {
+				FixtureDef def = createDef(fixture);
+				def.shape = shapes.getValue();
+				if(store != null)
+					store.setValue(def);
+			}
 		}
-		FixtureDef aDef = createDef(fixture), bDef = createDef(fixture);
-		aDef.shape = shapes.getKey();
-		bDef.shape = shapes.getValue();
 		shapes.clear();
 		Pools.free(shapes);
-		store.set(aDef, bDef);
-		return true;
+		return split;
 	}
 
 	/** splits the given Shape using the segment described by the two given Vector2s
 	 *  @param shape the Shape to split
-	 *  @param a the first point of the segment
-	 *  @param b the second point of the segment
+	 *  @param a The first point of the segment. Will be set to the first intersection with the given shape.
+	 *  @param b The second point of the segment. Will be set to the second intersection with the given shape.
 	 *  @param store the {@link Pair} to store the split Shapes in
 	 *  @return if the given shape was split */
 	@SuppressWarnings("unchecked")
 	public static <T extends Shape> boolean split(T shape, Vector2 a, Vector2 b, Pair<T, T> store) {
+		store.clear();
+
 		Type type = shape.getType();
 
 		if(type == Type.Circle)
@@ -1026,85 +1049,96 @@ public class Box2DUtils extends com.badlogic.gdx.physics.box2d.Box2DUtils {
 			return true;
 		}
 
-		store.clear();
-
-		Array<Vector2> aVertices = Pools.obtain(Array.class), bVertices = Pools.obtain(Array.class);
+		FloatArray aVertices = Pools.obtain(FloatArray.class), bVertices = Pools.obtain(FloatArray.class);
 		aVertices.clear();
 		bVertices.clear();
-		Vector2[] vertices = GeometryUtils.toVector2Array(new FloatArray(vertices(shape))).toArray(Vector2.class);
+		float[] vertices = vertices(shape);
 
 		if(type == Type.Polygon) {
-			Vector2 aa = Pools.obtain(Vector2.class).set(a), bb = Pools.obtain(Vector2.class).set(b);
-
-			aVertices.add(aa);
-			aVertices.add(bb);
-			GeometryUtils.arrangeClockwise(aVertices);
-
-			tmpVector2Array.clear();
-			tmpVector2Array.addAll(vertices);
-			if(GeometryUtils.intersectSegmentConvexPolygon(a, b, GeometryUtils.toFloatArray(tmpVector2Array), aVertices.first(), aVertices.peek()) < 2) {
-				Pools.free(aa);
-				Pools.free(bb);
+			if(GeometryUtils.intersectSegmentConvexPolygon(a.x, a.y, b.x, b.y, vertices, a, b) < 2) {
+				aVertices.clear();
+				bVertices.clear();
 				Pools.free(aVertices);
 				Pools.free(bVertices);
 				return false;
 			}
 
-			bVertices.add(aa);
-			bVertices.add(bb);
+			aVertices.add(a.x);
+			aVertices.add(a.y);
+			aVertices.add(b.x);
+			aVertices.add(b.y);
+			bVertices.add(a.x);
+			bVertices.add(a.y);
+			bVertices.add(b.x);
+			bVertices.add(b.y);
 
-			for(Vector2 vertice : vertices) {
-				float det = MathUtils.det(aa.x, aa.y, vertice.x, vertice.y, bb.x, bb.y);
-				if(det < 0)
-					aVertices.add(vertice);
-				else if(det > 0)
-					bVertices.add(vertice);
-				else {
-					aVertices.add(vertice);
-					bVertices.add(vertice);
+			for(int i = 0; i < vertices.length; i += 2) {
+				float x = vertices[i], y = vertices[i + 1];
+				float det = MathUtils.det(a.x, a.y, x, y, b.x, b.y);
+				if(det < 0) {
+					aVertices.add(x);
+					aVertices.add(y);
+				} else if(det > 0) {
+					bVertices.add(x);
+					bVertices.add(y);
+				} else {
+					aVertices.add(x);
+					aVertices.add(y);
+					bVertices.add(x);
+					bVertices.add(y);
 				}
 			}
 
-			GeometryUtils.arrangeClockwise(aVertices);
-			GeometryUtils.arrangeClockwise(bVertices);
+			GeometryUtils.arrangeConvexPolygon(aVertices, false);
+			GeometryUtils.arrangeConvexPolygon(bVertices, false);
 
 			if(checkPreconditions) {
-				if(aVertices.size >= 3 && aVertices.size <= maxPolygonVertices && bVertices.size >= 3 && bVertices.size <= maxPolygonVertices) {
-					FloatArray aVerticesFloatArray = GeometryUtils.toFloatArray(aVertices, new FloatArray(aVertices.size * 2)), bVerticesFloatArray = GeometryUtils.toFloatArray(bVertices, new FloatArray(bVertices.size * 2));
-					if(GeometryUtils.polygonArea(aVerticesFloatArray) > minExclusivePolygonArea && GeometryUtils.polygonArea(bVerticesFloatArray) > minExclusivePolygonArea) {
-						PolygonShape sa = new PolygonShape(), sb = new PolygonShape();
-						sa.set(aVerticesFloatArray.toArray());
-						sb.set(bVerticesFloatArray.toArray());
-						store.set((T) sa, (T) sb);
-					}
-				}
-			} else {
-				PolygonShape sa = new PolygonShape(), sb = new PolygonShape();
-				sa.set((Vector2[]) aVertices.toArray(Vector2.class));
-				sb.set((Vector2[]) bVertices.toArray(Vector2.class));
-				store.set((T) sa, (T) sb);
+				weld(aVertices);
+				weld(bVertices);
 			}
-
-			Pools.free(aa);
-			Pools.free(bb);
+			if(!checkPreconditions || aVertices.size >= 6 && aVertices.size <= maxPolygonVertices * 2 && GeometryUtils.polygonArea(aVertices) > minExclusivePolygonArea) {
+				PolygonShape sa = new PolygonShape();
+				sa.set(aVertices.items, 0, aVertices.size);
+				store.setKey((T) sa);
+			}
+			if(!checkPreconditions || bVertices.size >= 6 && bVertices.size <= maxPolygonVertices * 2 && GeometryUtils.polygonArea(bVertices) > minExclusivePolygonArea) {
+				PolygonShape sb = new PolygonShape();
+				sb.set(bVertices.items, 0, bVertices.size);
+				store.setValue((T) sb);
+			}
 		} else if(type == Type.Chain) {
 			Vector2 tmp = Pools.obtain(Vector2.class);
 			boolean intersected = false;
-			for(int i = 0; i < vertices.length; i++) {
-				(intersected ? bVertices : aVertices).add(vertices[i]);
-				if(!intersected && i + 1 < vertices.length && Intersector.intersectSegments(vertices[i], vertices[i + 1], a, b, tmp)) {
+			for(int i = 1; i < vertices.length; i += 2) {
+				float x = vertices[i - 1], y = vertices[i];
+				if(!intersected) {
+					aVertices.add(x);
+					aVertices.add(y);
+				} else {
+					bVertices.add(x);
+					bVertices.add(y);
+				}
+				if(!intersected && i + 2 < vertices.length && Intersector.intersectSegments(x, y, vertices[i + 1], vertices[i + 2], a.x, a.y, b.x, b.y, tmp)) {
 					intersected = true;
-					aVertices.add(tmp);
-					bVertices.add(tmp);
+					aVertices.add(tmp.x);
+					aVertices.add(tmp.y);
+					bVertices.add(tmp.x);
+					bVertices.add(tmp.y);
 				}
 			}
-			if(intersected && (!checkPreconditions || aVertices.size >= 2 && bVertices.size >= 2)) {
-				ChainShape sa = new ChainShape(), sb = new ChainShape();
-				sa.createChain((Vector2[]) aVertices.toArray(Vector2.class));
-				sb.createChain((Vector2[]) bVertices.toArray(Vector2.class));
-				store.set((T) sa, (T) sb);
-			}
 			Pools.free(tmp);
+			if(intersected) {
+				if(!checkPreconditions || aVertices.size >= 4) {
+					ChainShape cs = new ChainShape();
+					cs.createChain(aVertices.toArray());
+					store.setKey((T) cs);
+				}
+				if(!checkPreconditions || bVertices.size >= 4) {
+					ChainShape cs = new ChainShape();
+					cs.createChain(bVertices.toArray());
+					store.setValue((T) cs);
+				}
+			}
 		}
 
 		aVertices.clear();
@@ -1112,7 +1146,7 @@ public class Box2DUtils extends com.badlogic.gdx.physics.box2d.Box2DUtils {
 		Pools.free(aVertices);
 		Pools.free(bVertices);
 
-		return store.isFull();
+		return !store.isEmpty();
 	}
 
 	/** @see #weld(float[], int, int) */
