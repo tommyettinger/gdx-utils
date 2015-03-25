@@ -135,6 +135,21 @@ public class GeometryUtilsTest {
 	}
 
 	@Test
+	public void arrangeConvexPolygon() {
+		float[] vertices = {0, 0, .75f, 2, 1.5f, 2.5f, 2.5f, 2, 2, .5f, 1, 0};
+		GeometryUtils.arrangeConvexPolygon(vertices, false);
+		assertArrayEquals(new float[] {0, 0, 1, 0, 2, .5f, 2.5f, 2, 1.5f, 2.5f, .75f, 2}, vertices, 0);
+		GeometryUtils.arrangeConvexPolygon(vertices, true);
+		assertArrayEquals(new float[] {0, 0, .75f, 2, 1.5f, 2.5f, 2.5f, 2, 2, .5f, 1, 0}, vertices, 0);
+
+		vertices = new float[] {9, 9, 0, 0, 1, 0, 1.25f, 1, .75f, 1.25f, 9, 9};
+		GeometryUtils.arrangeConvexPolygon(vertices, 2, vertices.length - 4, true);
+		assertArrayEquals(new float[] {9, 9, 0, 0, .75f, 1.25f, 1.25f, 1, 1, 0, 9, 9}, vertices, 0);
+		GeometryUtils.arrangeConvexPolygon(vertices, 2, vertices.length - 4, false);
+		assertArrayEquals(new float[] {9, 9, 0, 0, 1, 0, 1.25f, 1, .75f, 1.25f, 9, 9}, vertices, 0);
+	}
+
+	@Test
 	public void keepWithin() {
 		assertEquals(new Vector2(0, 0), GeometryUtils.keepWithin(5, 5, 5, 5, 0, 0, 5, 5));
 	}

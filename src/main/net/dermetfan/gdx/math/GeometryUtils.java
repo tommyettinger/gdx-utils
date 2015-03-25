@@ -431,17 +431,6 @@ public class GeometryUtils extends net.dermetfan.utils.math.GeometryUtils {
 		return areVerticesClockwise(vertices.items, 0, vertices.size);
 	}
 
-	/** @see #areVerticesClockwise(Polygon) */
-	public static boolean areVerticesClockwise(float[] vertices, int offset, int length) {
-		ArrayUtils.checkRegion(vertices, offset, length);
-		return length <= 4 || com.badlogic.gdx.math.GeometryUtils.polygonArea(vertices, offset, length) < 0;
-	}
-
-	/** @see #areVerticesClockwise(float[], int, int) */
-	public static boolean areVerticesClockwise(float[] vertices) {
-		return areVerticesClockwise(vertices, 0, vertices.length);
-	}
-
 	/** @see #areVerticesClockwise(FloatArray) */
 	public static boolean areVerticesClockwise(Array<Vector2> vertices) {
 		return vertices.size <= 2 || areVerticesClockwise(toFloatArray(vertices));
@@ -449,7 +438,7 @@ public class GeometryUtils extends net.dermetfan.utils.math.GeometryUtils {
 
 	/** @see com.badlogic.gdx.math.GeometryUtils#polygonArea(float[], int, int) */
 	public static float polygonArea(FloatArray vertices) {
-		return com.badlogic.gdx.math.GeometryUtils.polygonArea(vertices.items, 0, vertices.size);
+		return polygonArea(vertices.items, 0, vertices.size);
 	}
 
 	/** used in {@link #arrangeCounterClockwise(Array)} */
@@ -466,6 +455,7 @@ public class GeometryUtils extends net.dermetfan.utils.math.GeometryUtils {
 	};
 
 	/** @param vertices the vertices to arrange in clockwise order */
+	@Deprecated
 	public static void arrangeCounterClockwise(Array<Vector2> vertices) {
 		// http://www.emanueleferonato.com/2011/08/05/slicing-splitting-and-cutting-objects-with-box2d-part-4-using-real-graphics
 		int n = vertices.size, i1 = 1, i2 = vertices.size - 1;
