@@ -410,6 +410,60 @@ public class GeometryUtils {
 		System.arraycopy(floats, 0, vertices, offset, length);
 	}
 
+	/** @see #arrangeConvexPolygon(float[], int, int, boolean) */
+	public static void arrangeConvexPolygon(float[] vertices, boolean clockwise) {
+		arrangeConvexPolygon(vertices, 0, vertices.length, clockwise);
+	}
+
+	/** @param vertices the vertices of the convex polygon
+	 *  @param clockwise if true, the vertices will be arranged in clockwise, otherwise counter-clockwise order */
+	public static void arrangeConvexPolygon(float[] vertices, int offset, int length, boolean clockwise) {
+		ArrayUtils.checkRegion(vertices, offset, length);
+		if(length % 2 != 0)
+			throw new IllegalArgumentException("malformed vertices, length is odd: " + length);
+		if(length <= 4)
+			return;
+		sortPoints(vertices, offset, length, false);
+		System.arraycopy(vertices, 0, floats, 0, offset + length);
+		for(int i = offset + 2, ltI = i, gtI = offset + length - 2; i < offset + length; i += 2) {
+			float x = floats[i], y = floats[i + 1];
+			float det = MathUtils.det(floats[offset], floats[offset + 1], floats[offset + length - 2], floats[offset + length - 1], x, y);
+			if(clockwise ? det > 0 : det < 0) {
+				vertices[ltI++] = x;
+				vertices[ltI++] = y;
+			} else {
+				vertices[gtI] = x;
+				vertices[gtI + 1] = y;
+				gtI -= 2;
+			}
+		}
+	}
+
+	/** @return the area contained by the given polygon */
+	public static float polygonArea(float[] vertices, int offset, int length) {
+		ArrayUtils.checkRegion(vertices, offset, length);
+		if(length % 2 != 0)
+			throw new IllegalArgumentException("malformed vertices, length is odd: " + length);
+		float area = 0;
+		for(int i = offset; i < offset + length; i += 2) {
+			float x = vertices[i], y = vertices[i + 1], x2 = vertices[ArrayUtils.repeat(offset, length, i + 2)], y2 = vertices[ArrayUtils.repeat(offset, length, i + 3)];
+			area += x * y2;
+			area -= y * x2;
+		}
+		return area / 2;
+	}
+
+	/** @return whether the given vertices are in clockwise order */
+	public static boolean areVerticesClockwise(float[] vertices, int offset, int length) {
+		ArrayUtils.checkRegion(vertices, offset, length);
+		return length <= 4 || polygonArea(vertices, offset, length) < 0;
+	}
+
+	/** @see #areVerticesClockwise(float[], int, int) */
+	public static boolean areVerticesClockwise(float[] vertices) {
+		return areVerticesClockwise(vertices, 0, vertices.length);
+	}
+
 	/** @param x the x of the rectangle
 	 *  @param y the y of the rectangle
 	 *  @param width the width of the rectangle
