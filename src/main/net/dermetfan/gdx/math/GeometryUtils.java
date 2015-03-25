@@ -662,36 +662,46 @@ public class GeometryUtils extends net.dermetfan.utils.math.GeometryUtils {
 
 	/** @see #intersectSegments(float, float, float, float, FloatArray, boolean, FloatArray) */
 	public static boolean intersectSegments(Vector2 a, Vector2 b, FloatArray segments, boolean polygon, Array<Vector2> intersections) {
-		FloatArray fa = Pools.obtain(FloatArray.class);
+		FloatArray floatIntersections = Pools.obtain(FloatArray.class);
 		intersections.clear();
-		if(intersectSegments(a.x, a.y, b.x, b.y, segments, polygon, fa)) {
-			Pools.free(fa);
+		if(!intersectSegments(a.x, a.y, b.x, b.y, segments, polygon, floatIntersections)) {
+			floatIntersections.clear();
+			Pools.free(floatIntersections);
 			return false;
 		}
-		intersections.ensureCapacity(fa.size / 2);
-		for(int i = 1; i < fa.size; i += 2)
-			intersections.add(new Vector2(fa.get(i - 1), fa.get(i)));
-		fa.clear();
-		Pools.free(fa);
+		intersections.ensureCapacity(floatIntersections.size / 2);
+		for(int i = 1; i < floatIntersections.size; i += 2)
+			intersections.add(new Vector2(floatIntersections.get(i - 1), floatIntersections.get(i)));
+		floatIntersections.clear();
+		Pools.free(floatIntersections);
 		return true;
 	}
 
-	/** @param segments the segments
+	/** @see #intersectSegments(float, float, float, float, float[], int, int, boolean, FloatArray) */
+	public static boolean intersectSegments(float x1, float y1, float x2, float y2, FloatArray segments, boolean polygon, FloatArray intersections) {
+		return intersectSegments(x1, y1, x2, y2, segments.items, 0, segments.size, polygon, intersections);
+	}
+
+	/** @param x1 the x coordinate of the first point of the segment
+	 *  @param y1 the y coordinate of the first point of the segment
+	 *  @param x2 the x coordinate of the second point of the segment
+	 *  @param y2 the y coordinate of the second point of the segment
+	 *  @param segments the segments
 	 *  @param polygon if the segments represent a closed polygon
 	 *  @param intersections the array to store the intersections in
 	 *  @return whether the given segment intersects with any of the given segments */
-	public static boolean intersectSegments(float x1, float y1, float x2, float y2, FloatArray segments, boolean polygon, FloatArray intersections) {
-		if(polygon && segments.size < 6)
-			throw new IllegalArgumentException("a polygon consists of at least 3 points: " + segments.size);
-		else if(segments.size < 4)
-			throw new IllegalArgumentException("segments does not contain enough vertices to represent at least one segment: " + segments.size);
-		if(segments.size % 2 != 0)
-			throw new IllegalArgumentException("malformed segments; the number of vertices is not dividable by 2: " + segments.size);
+	public static boolean intersectSegments(float x1, float y1, float x2, float y2, float[] segments, int offset, int length, boolean polygon, FloatArray intersections) {
+		ArrayUtils.checkRegion(segments, offset, length);
+		if(polygon && length < 6)
+			throw new IllegalArgumentException("A polygon consists of at least 3 points. length: " + length);
+		else if(length < 4)
+			throw new IllegalArgumentException("segments does not contain enough vertices to represent at least one segment: " + length);
+		if(length % 2 != 0)
+			throw new IllegalArgumentException("malformed segments, length is odd: " + length);
 		intersections.clear();
-		vec2_0.setZero();
 		boolean intersects = false;
-		for(int i = 0, n = segments.size - (polygon ? 0 : 2); i < n; i += 2) {
-			float x3 = segments.get(i), y3 = segments.get(i + 1), x4 = getRepeated(segments, i + 2), y4 = getRepeated(segments, i + 3);
+		for(int i = offset, n = offset + length - (polygon ? 0 : 2); i < n; i += 2) {
+			float x3 = segments[i], y3 = segments[i + 1], x4 = getRepeated(segments, i + 2), y4 = getRepeated(segments, i + 3);
 			if(Intersector.intersectSegments(x1, y1, x2, y2, x3, y3, x4, y4, vec2_0)) {
 				intersects = true;
 				intersections.add(vec2_0.x);
