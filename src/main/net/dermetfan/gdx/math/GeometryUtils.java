@@ -441,6 +441,11 @@ public class GeometryUtils extends net.dermetfan.utils.math.GeometryUtils {
 		return polygonArea(vertices.items, 0, vertices.size);
 	}
 
+	/** @see #arrangeConvexPolygon(float[], int, int, boolean) */
+	public static void arrangeConvexPolygon(FloatArray vertices, boolean clockwise) {
+		arrangeConvexPolygon(vertices.items, 0, vertices.size, clockwise);
+	}
+
 	/** used in {@link #arrangeCounterClockwise(Array)} */
 	private static final Comparator<Vector2> arrangeCounterClockwiseComparator = new Comparator<Vector2>() {
 		/** compares the x coordinates */
@@ -635,13 +640,18 @@ public class GeometryUtils extends net.dermetfan.utils.math.GeometryUtils {
 		camera.position.y = vec2_0.y + camera.viewportHeight / 2 * camera.zoom;
 	}
 
+	/** @see #intersectSegmentConvexPolygon(float, float, float, float, float[], int, int, Vector2, Vector2) */
+	public static int intersectSegmentConvexPolygon(float x1, float y1, float x2, float y2, float[] polygon, Vector2 intersection1, Vector2 intersection2) {
+		return intersectSegmentConvexPolygon(x1, y1, x2, y2, polygon, 0,  polygon.length, intersection1, intersection2);
+	}
+
 	/** @param x1 the x coordinate of the first point of the segment to intersect with the polygon
 	 *  @param y1 the y coordinate of the first point of the segment to intersect with the polygon
 	 *  @param x2 the x coordinate of the second point of the segment to intersect with the polygon
 	 *  @param y2 the y coordinate of the second point of the segment to intersect with the polygon
 	 *  @param polygon the convex polygon
-	 *  @param intersection1 the first intersection point
-	 *  @param intersection2 the second intersection point
+	 *  @param intersection1 The first intersection point. May be null.
+	 *  @param intersection2 The second intersection point. May be null.
 	 *  @return the number of intersection points
 	 *  @see #intersectSegments(float, float, float, float, float[], int, int, boolean, FloatArray) */
 	public static int intersectSegmentConvexPolygon(float x1, float y1, float x2, float y2, float[] polygon, int offset, int length, Vector2 intersection1, Vector2 intersection2) {
@@ -650,8 +660,9 @@ public class GeometryUtils extends net.dermetfan.utils.math.GeometryUtils {
 		assert intersections.size % 2 == 0;
 		int count = intersections.size / 2;
 		if(count >= 1) {
-			intersection1.set(intersections.get(0), intersections.get(1));
-			if(count == 2)
+			if(intersection1 != null)
+				intersection1.set(intersections.get(0), intersections.get(1));
+			if(count == 2 && intersection2 != null)
 				intersection2.set(intersections.get(2), intersections.get(3));
 		}
 		intersections.clear();
