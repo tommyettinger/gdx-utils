@@ -14,6 +14,7 @@
 
 package net.dermetfan.gdx.math;
 
+import java.util.Arrays;
 import java.util.Comparator;
 
 import com.badlogic.gdx.graphics.OrthographicCamera;
@@ -37,7 +38,6 @@ import net.dermetfan.gdx.utils.ArrayUtils;
 import static net.dermetfan.gdx.math.MathUtils.amplitude2;
 import static net.dermetfan.gdx.math.MathUtils.max;
 import static net.dermetfan.gdx.math.MathUtils.min;
-import static net.dermetfan.gdx.utils.ArrayUtils.getRepeated;
 import static net.dermetfan.utils.math.MathUtils.det;
 
 /** Provides some useful methods for geometric calculations. Note that many methods return the same array instance so make a copy for subsequent calls.
@@ -635,29 +635,35 @@ public class GeometryUtils extends net.dermetfan.utils.math.GeometryUtils {
 		camera.position.y = vec2_0.y + camera.viewportHeight / 2 * camera.zoom;
 	}
 
-	/** @param a the first point of the segment
-	 *  @param b the second point of the segment
-	 *  @param polygon the polygon, assumed to be convex
+	/** @param x1 the x coordinate of the first point of the segment to intersect with the polygon
+	 *  @param y1 the y coordinate of the first point of the segment to intersect with the polygon
+	 *  @param x2 the x coordinate of the second point of the segment to intersect with the polygon
+	 *  @param y2 the y coordinate of the second point of the segment to intersect with the polygon
+	 *  @param polygon the convex polygon
 	 *  @param intersection1 the first intersection point
 	 *  @param intersection2 the second intersection point
 	 *  @return the number of intersection points
-	 *  @see #intersectSegments(Vector2, Vector2, FloatArray, boolean, Array)*/
-	public static int intersectSegmentConvexPolygon(Vector2 a, Vector2 b, FloatArray polygon, Vector2 intersection1, Vector2 intersection2) {
+	 *  @see #intersectSegments(float, float, float, float, float[], int, int, boolean, FloatArray) */
+	public static int intersectSegmentConvexPolygon(float x1, float y1, float x2, float y2, float[] polygon, int offset, int length, Vector2 intersection1, Vector2 intersection2) {
 		FloatArray intersections = Pools.obtain(FloatArray.class);
-		intersectSegments(a.x, a.y, b.x, b.y, polygon, true, intersections);
-		int size = intersections.size;
-		if(size % 2 != 0)
-			assert false : "malformed intersection point: " + size;
-		if(size >= 2) {
+		intersectSegments(x1, y1, x2, y2, polygon, offset, length, true, intersections);
+		assert intersections.size % 2 == 0;
+		int count = intersections.size / 2;
+		if(count >= 1) {
 			intersection1.set(intersections.get(0), intersections.get(1));
-			if(size == 4)
+			if(count == 2)
 				intersection2.set(intersections.get(2), intersections.get(3));
 		}
 		intersections.clear();
 		Pools.free(intersections);
-		if(size > 4)
-			throw new IllegalArgumentException("More intersection points with a convex polygon found than possible: " + size / 2 + " Is your polygon concave? " + polygon);
-		return size / 2;
+		if(count > 2)
+			throw new IllegalArgumentException("More intersections with a convex polygon found than possible: " + count + ". Is your polygon concave? " + Arrays.toString(polygon));
+		return count;
+	}
+
+	/** @see #intersectSegmentConvexPolygon(float, float, float, float, float[], int, int, Vector2, Vector2) */
+	public static int intersectSegmentConvexPolygon(Vector2 a, Vector2 b, FloatArray polygon, Vector2 intersection1, Vector2 intersection2) {
+		return intersectSegmentConvexPolygon(a.x, a.y, b.x, b.y, polygon.items, 0, polygon.size, intersection1, intersection2);
 	}
 
 	/** @see #intersectSegments(float, float, float, float, FloatArray, boolean, FloatArray) */
@@ -701,7 +707,7 @@ public class GeometryUtils extends net.dermetfan.utils.math.GeometryUtils {
 		intersections.clear();
 		boolean intersects = false;
 		for(int i = offset, n = offset + length - (polygon ? 0 : 2); i < n; i += 2) {
-			float x3 = segments[i], y3 = segments[i + 1], x4 = getRepeated(segments, i + 2), y4 = getRepeated(segments, i + 3);
+			float x3 = segments[i], y3 = segments[i + 1], x4 = segments[ArrayUtils.repeat(offset, length, i + 2)], y4 = segments[ArrayUtils.repeat(offset, length, i + 3)];
 			if(Intersector.intersectSegments(x1, y1, x2, y2, x3, y3, x4, y4, vec2_0)) {
 				intersects = true;
 				intersections.add(vec2_0.x);
