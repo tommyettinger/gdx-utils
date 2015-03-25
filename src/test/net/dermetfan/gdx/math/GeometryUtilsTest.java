@@ -102,12 +102,6 @@ public class GeometryUtilsTest {
 	}
 
 	@Test
-	public void isConvex() {
-		assertEquals(false, GeometryUtils.isConvex(new FloatArray(new float[] {0, 0, 0, 1, 1, 1, .5f, .5f, 1, 0}))); // ccw
-		assertEquals(true, GeometryUtils.isConvex(new FloatArray(new float[] {0, 0, 1, 0, 1, 1, 0, 1}))); // cw
-	}
-
-	@Test
 	public void polygonArea() {
 		assertEquals(1, GeometryUtils.polygonArea(new FloatArray(new float[] {0, 0, 1, 0, 1, 1, 0, 1})), 0);
 	}

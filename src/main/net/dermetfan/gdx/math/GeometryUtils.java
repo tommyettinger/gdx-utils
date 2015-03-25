@@ -519,40 +519,19 @@ public class GeometryUtils extends net.dermetfan.utils.math.GeometryUtils {
 		return aabb.set(minX(vertices), minY(vertices), width(vertices), height(vertices));
 	}
 
-	/** @see #isConvex(Array) */
+	/** @see #isConvex(float[], int, int) */
 	public static boolean isConvex(FloatArray vertices) {
-		return isConvex(toVector2Array(vertices));
+		return isConvex(vertices.items, 0, vertices.size);
 	}
 
-	/** @see #isConvex(Array) */
+	/** @see #isConvex(float[]) */
 	public static boolean isConvex(Polygon polygon) {
-		tmpFloatArray.clear();
-		tmpFloatArray.addAll(polygon.getVertices());
-		return isConvex(tmpFloatArray);
+		return isConvex(polygon.getVertices());
 	}
 
-	/** @param vertices the vertices of the polygon to examine for convexity
-	 *  @return if the polygon is convex */
+	/** @see #isConvex(FloatArray) */
 	public static boolean isConvex(Array<Vector2> vertices) {
-		// http://www.sunshine2k.de/coding/java/Polygon/Convex/polygon.htm
-		Vector2 p, v = vec2_1, u;
-		float res = 0;
-		for(int i = 0; i < vertices.size; i++) {
-			p = vertices.get(i);
-			vec2_0.set(vertices.get((i + 1) % vertices.size));
-			v.x = vec2_0.x - p.x;
-			v.y = vec2_0.y - p.y;
-			u = vertices.get((i + 2) % vertices.size);
-
-			if(i == 0) // in first loop direction is unknown, so save it in res
-				res = u.x * v.y - u.y * v.x + v.x * p.y - v.y * p.x;
-			else {
-				float newres = u.x * v.y - u.y * v.x + v.x * p.y - v.y * p.x;
-				if(newres > 0 && res < 0 || newres < 0 && res > 0)
-					return false;
-			}
-		}
-		return true;
+		return isConvex(toFloatArray(vertices));
 	}
 
 	/** @param concave the concave polygon to triangulate
