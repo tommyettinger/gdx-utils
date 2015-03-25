@@ -1164,8 +1164,8 @@ public class Box2DUtils extends com.badlogic.gdx.physics.box2d.Box2DUtils {
 			throw new IllegalArgumentException("malformed vertices, length is odd: " + length);
 		if(length < 4) // less than two points, nothing to weld
 			return length / 2;
-		for(int i = offset; i + 3 < offset + length;) {
-			float x1 = vertices[i], y1 = vertices[i + 1], x2 = vertices[i + 2], y2 = vertices[i + 3];
+		for(int i = offset; i + 1 < offset + length;) {
+			float x1 = vertices[i], y1 = vertices[i + 1], x2 = vertices[ArrayUtils.repeat(offset, length, i + 2)], y2 = vertices[ArrayUtils.repeat(offset, length, i + 3)];
 			if(GeometryUtils.distance2(x1, y1, x2, y2) < linearSlop / 2) {
 				ArrayUtils.shift(vertices, i + 2, length - i - 2, -2);
 				length -= 2;
