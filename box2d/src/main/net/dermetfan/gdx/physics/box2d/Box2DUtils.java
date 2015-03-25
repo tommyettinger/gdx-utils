@@ -97,6 +97,215 @@ public class Box2DUtils extends com.badlogic.gdx.physics.box2d.Box2DUtils {
 
 	}
 
+	/** checks if Box2D's preconditions are met to avoid native crashes
+	 *  @author dermetfan
+	 *  @since 0.11.0 */
+	public enum PreconditionCheck {
+
+		/** doesn't check anything */
+		NONE {
+			@Override
+			public boolean isValidChainShape(float[] vertices, int offset, int length) {
+				return true;
+			}
+
+			@Override
+			public boolean isValidPolygonShape(float[] vertices, int offset, int length) {
+				return true;
+			}
+		},
+
+		/** checks preconditions normally */
+		SILENT {
+			@Override
+			public boolean isValidChainShape(float[] vertices, int offset, int length) {
+				try {
+					checkChainShape(vertices, offset, length);
+				} catch(Exception e) {
+					return false;
+				}
+				return true;
+			}
+
+			@Override
+			public boolean isValidPolygonShape(float[] vertices, int offset, int length) {
+				try {
+					checkPolygonShape(vertices, offset, length);
+				} catch(Exception e) {
+					return false;
+				}
+				return true;
+			}
+		},
+
+		/** throws an exception */
+		EXCEPTION {
+			@Override
+			public boolean isValidChainShape(float[] vertices, int offset, int length) {
+				checkChainShape(vertices, offset, length);
+				return true;
+			}
+
+			@Override
+			public boolean isValidPolygonShape(float[] vertices, int offset, int length) {
+				checkPolygonShape(vertices, offset, length);
+				return true;
+			}
+		};
+
+		/** indicates that a poly shape cannot be created from these vertices
+		 *  @author dermetfan
+		 *  @since 0.11.0 */
+		public static abstract class InvalidPolyShapeException extends IllegalArgumentException {
+
+			/** the vertices of the shape */
+			public float[] vertices;
+			public int offset, length;
+
+			InvalidPolyShapeException(String message, float[] vertices, int offset, int length) {
+				super(message);
+				this.vertices = vertices;
+				this.offset = offset;
+				this.length = length;
+			}
+
+			/** @return the Type of the Shape */
+			public abstract Type getType();
+
+		}
+
+		/** indicates that a PolygonShape cannot be created from this polygon
+		 *  @author dermetfan
+		 *  @since 0.11.0 */
+		public static class InvalidPolygonShapeException extends InvalidPolyShapeException {
+
+			/** the reason this shape is invalid
+			 *  @author dermetfan
+			 *  @since 0.11.10 */
+			public enum Problem {
+
+				/** malformed vertices */
+				MALFORMED_VERTICES,
+
+				/** invalid vertex count: smaller than 3 or greater than {@link Settings#maxPolygonVertices} */
+				VERTEX_COUNT,
+
+				/** the vertices form a concave polygon */
+				CONCAVE,
+
+				/** too small area: smaller than {@link Settings#epsilon} */
+				AREA
+
+			}
+
+			/** why a PolygonShape cannot be created */
+			public Problem problem;
+
+			public InvalidPolygonShapeException(String message, Problem problem, float[] vertices, int offset, int length) {
+				super(message, vertices, offset, length);
+				this.problem = problem;
+			}
+
+			@Override
+			public Type getType() {
+				return Type.Polygon;
+			}
+
+		}
+
+		/** indicates that a ChainShape cannot be created from this polyline
+		 *  @author dermetfan
+		 *  @since 0.11.0 */
+		public static class InvalidChainShapeException extends InvalidPolyShapeException {
+
+			/** the reason why this ChainShape cannot be created
+			 *  @author dermetfan
+			 *  @since 0.11.0 */
+			public enum Problem {
+
+				/** malformed vertices */
+				MALFORMED_VERTICES,
+
+				/** less than 2 vertices */
+				VERTEX_COUNT,
+
+				/** too close vertices: the squared distance between at least 2 vertices is closer than {@link Settings#linearSlop} squared */
+				CLOSE_VERTICES
+
+			}
+
+			public Problem problem;
+
+			public InvalidChainShapeException(String message, Problem problem, float[] vertices, int offset, int length) {
+				super(message, vertices, offset, length);
+				this.problem = problem;
+			}
+
+			@Override
+			public Type getType() {
+				return Type.Chain;
+			}
+
+		}
+
+		public static void checkChainShape(float[] vertices, int offset, int length) {
+			ArrayUtils.checkRegion(vertices, offset, length);
+			if(length % 2 != 0)
+				throw new InvalidChainShapeException("chain vertices are malformed. vertices.length: " + length, InvalidChainShapeException.Problem.MALFORMED_VERTICES, vertices, offset, length);
+			if(length < 4)
+				throw new InvalidChainShapeException("chain has less than 2 vertices: vertices.length: " + length, InvalidChainShapeException.Problem.VERTEX_COUNT, vertices, offset, length);
+			boolean verticesTooClose = false;
+			for(int i = offset; i + 3 < offset + length; i += 2) {
+				float x1 = vertices[i], y1 = vertices[i + 1], x2 = vertices[i + 2], y2 = vertices[i + 3];
+				if(GeometryUtils.distance2(x1, y1, x2, y2) > linearSlop * linearSlop) {
+					verticesTooClose = true;
+					break;
+				}
+			}
+			if(verticesTooClose)
+				throw new InvalidChainShapeException("chain vertices are too close together", InvalidChainShapeException.Problem.CLOSE_VERTICES, vertices, offset, length);
+		}
+
+		public static void checkPolygonShape(float[] vertices, int offset, int length) {
+			ArrayUtils.checkRegion(vertices, offset, length);
+			if(length % 2 != 0)
+				throw new InvalidPolygonShapeException("polygon vertices are malformed. vertices.length: " + length, InvalidPolygonShapeException.Problem.MALFORMED_VERTICES, vertices, offset, length);
+			if(length < 6 || length > maxPolygonVertices * 2)
+				throw new InvalidPolygonShapeException("polygon has invalid number of vertices (min: 3, max: Settings.maxPolygonVertices = " + maxPolygonVertices + "). length: " + length, InvalidPolygonShapeException.Problem.VERTEX_COUNT, vertices, offset, length);
+			float[] floats = GeometryUtils.getFloats();
+			System.arraycopy(vertices, offset, floats, 0, length);
+			int count = weld(floats, 0, length);
+			if(count < 3)
+				throw new InvalidPolygonShapeException("polygon has too few vertices after welding: " + count, InvalidPolygonShapeException.Problem.VERTEX_COUNT, vertices, offset, length);
+			if(!GeometryUtils.isConvex(vertices, offset, length))
+				throw new InvalidPolygonShapeException("polygon is concave", InvalidPolygonShapeException.Problem.CONCAVE, vertices, offset, length);
+			float area = GeometryUtils.polygonArea(vertices, offset, length);
+			if(area < epsilon)
+				throw new InvalidPolygonShapeException("polygon area is too small: " + area + " (min is Settings.epsilon: " + epsilon, InvalidPolygonShapeException.Problem.AREA, vertices, offset, length);
+		}
+
+		public boolean isValidChainShape(FloatArray vertices) {
+			return isValidChainShape(vertices.items, 0, vertices.size);
+		}
+
+		public boolean isValidChainShape(float[] vertices) {
+			return isValidChainShape(vertices, 0, vertices.length);
+		}
+
+		public abstract boolean isValidChainShape(float[] vertices, int offset, int length);
+
+		public boolean isValidPolygonShape(FloatArray vertices) {
+			return isValidPolygonShape(vertices.items, 0, vertices.size);
+		}
+
+		public boolean isValidPolygonShape(float[] vertices) {
+			return isValidPolygonShape(vertices, 0, vertices.length);
+		}
+
+		public abstract boolean isValidPolygonShape(float[] vertices, int offset, int length);
+
+	}
+
 	/** cached method results
 	 *  @author dermetfan */
 	public static class ShapeCache {
@@ -147,8 +356,8 @@ public class Box2DUtils extends com.badlogic.gdx.physics.box2d.Box2DUtils {
 	/** if shapes should automatically be cached when they are inspected for the first time */
 	public static boolean autoCache = true;
 
-	/** if Box2D preconditions should be checked to avoid crashes */
-	public static boolean checkPreconditions = true;
+	/** the PreconditionCheck to use */
+	public static PreconditionCheck check = PreconditionCheck.SILENT;
 
 	/** for internal, temporary usage */
 	private static final Vector2 vec2_0 = new Vector2(), vec2_1 = new Vector2();
@@ -1096,16 +1305,12 @@ public class Box2DUtils extends com.badlogic.gdx.physics.box2d.Box2DUtils {
 			GeometryUtils.arrangeConvexPolygon(aVertices, false);
 			GeometryUtils.arrangeConvexPolygon(bVertices, false);
 
-			if(checkPreconditions) {
-				weld(aVertices);
-				weld(bVertices);
-			}
-			if(!checkPreconditions || aVertices.size >= 6 && aVertices.size <= maxPolygonVertices * 2 && GeometryUtils.polygonArea(aVertices) > epsilon) {
+			if(check.isValidPolygonShape(aVertices.items, 0, aVertices.size)) {
 				PolygonShape sa = new PolygonShape();
 				sa.set(aVertices.items, 0, aVertices.size);
 				store.setKey((T) sa);
 			}
-			if(!checkPreconditions || bVertices.size >= 6 && bVertices.size <= maxPolygonVertices * 2 && GeometryUtils.polygonArea(bVertices) > epsilon) {
+			if(check.isValidPolygonShape(bVertices.items, 0, bVertices.size)) {
 				PolygonShape sb = new PolygonShape();
 				sb.set(bVertices.items, 0, bVertices.size);
 				store.setValue((T) sb);
@@ -1132,12 +1337,12 @@ public class Box2DUtils extends com.badlogic.gdx.physics.box2d.Box2DUtils {
 			}
 			Pools.free(tmp);
 			if(intersected) {
-				if(!checkPreconditions || aVertices.size >= 4) {
+				if(check.isValidChainShape(aVertices)) {
 					ChainShape cs = new ChainShape();
 					cs.createChain(aVertices.toArray());
 					store.setKey((T) cs);
 				}
-				if(!checkPreconditions || bVertices.size >= 4) {
+				if(check.isValidChainShape(bVertices)) {
 					ChainShape cs = new ChainShape();
 					cs.createChain(bVertices.toArray());
 					store.setValue((T) cs);
