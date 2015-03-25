@@ -155,6 +155,7 @@ public class GeometryUtilsTest {
 		assertEquals(2, GeometryUtils.intersectSegmentConvexPolygon(new Vector2(-1, .5f), new Vector2(2, .5f), polygon, is1, is2));
 		assertEquals(new Vector2(1, .5f), is1);
 		assertEquals(new Vector2(0, .5f), is2);
+		assertEquals(-1, GeometryUtils.intersectSegmentConvexPolygon(-0.86391723f, 5.6546535f, 3.1480494f, 0.7268717f, new float[] {1.6658267f, 2.5474427f, 0.7151414f, 3.7151418f, -0.34594774f, 2.6540527f, 0.2054267f, 1.7798085f, 0.72087777f, 1.8255825f}, 0, 10, null, null));
 	}
 
 	@Test

@@ -630,7 +630,7 @@ public class GeometryUtils extends net.dermetfan.utils.math.GeometryUtils {
 	 *  @param polygon the convex polygon
 	 *  @param intersection1 The first intersection point. May be null.
 	 *  @param intersection2 The second intersection point. May be null.
-	 *  @return the number of intersection points
+	 *  @return The number of intersection points. May return 0, 1, 2 or -1 for an infinite number of intersections (if the segment lies on a side of the polygon).
 	 *  @see #intersectSegments(float, float, float, float, float[], int, int, boolean, FloatArray) */
 	public static int intersectSegmentConvexPolygon(float x1, float y1, float x2, float y2, float[] polygon, int offset, int length, Vector2 intersection1, Vector2 intersection2) {
 		FloatArray intersections = Pools.obtain(FloatArray.class);
@@ -640,14 +640,14 @@ public class GeometryUtils extends net.dermetfan.utils.math.GeometryUtils {
 		if(count >= 1) {
 			if(intersection1 != null)
 				intersection1.set(intersections.get(0), intersections.get(1));
-			if(count == 2 && intersection2 != null)
+			if(count >= 2 && intersection2 != null)
 				intersection2.set(intersections.get(2), intersections.get(3));
 		}
 		intersections.clear();
 		Pools.free(intersections);
-		if(count > 2)
+		if(count > 3)
 			throw new IllegalArgumentException("More intersections with a convex polygon found than possible: " + count + ". Is your polygon concave? " + ArrayUtils.toString(polygon, offset, length) + " segment: [" + x1 + ", " + y1 + "; " + x2 + ", " + y2 + "]");
-		return count;
+		return count == 3 ? -1 : count;
 	}
 
 	/** @see #intersectSegmentConvexPolygon(float, float, float, float, float[], int, int, Vector2, Vector2) */
