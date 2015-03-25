@@ -107,13 +107,13 @@ public class ArrayUtils {
 	}
 
 	/** @see #shift(Object[], int, int, int) */
-	public static <T> void shift(T[] array, int shift) {
+	public static void shift(Object[] array, int shift) {
 		shift(array, 0, array.length, shift);
 	}
 
 	/** @param array the array to shift
 	 *  @param shift The amount by which to shift. 1 means that every item will be moved 1 index to the right. */
-	public static <T> void shift(T[] array, int offset, int length, int shift) {
+	public static void shift(Object[] array, int offset, int length, int shift) {
 		checkRegion(array, offset, length);
 		if(shift == 0)
 			return;
@@ -121,10 +121,10 @@ public class ArrayUtils {
 	}
 
 	/** @param i the current index */
-	private static <T> void shift(T[] array, int offset, int length, int shift, int i) {
+	private static void shift(Object[] array, int offset, int length, int shift, int i) {
 		if(i == offset + length)
 			return;
-		T newItem = array[repeat(offset, length, i - shift)];
+		Object newItem = array[repeat(offset, length, i - shift)];
 		shift(array, offset, length, shift, i + 1);
 		array[i] = newItem;
 	}
