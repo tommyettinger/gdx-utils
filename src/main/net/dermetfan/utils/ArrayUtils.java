@@ -8,6 +8,102 @@ import net.dermetfan.gdx.math.MathUtils;
  *  @author dermetfan */
 public class ArrayUtils {
 
+	/** @see #toString(Object[], int, int) */
+	public static String toString(Object[] array) {
+		return toString(array, 0, array != null ? array.length : -1);
+	}
+
+	/** @see #toString(Object[], int, int, String) */
+	public static String toString(Object[] array, String separator) {
+		return toString(array, 0, array != null ? array.length : -1, separator);
+	}
+
+	/** @see #toString(Object[], int, int, String) */
+	public static String toString(Object[] array, int offset, int length) {
+		return toString(array, offset, length, ", ");
+	}
+
+	/** a more sophisticated version of {@link java.util.Arrays#toString(Object[])} */
+	public static String toString(Object[] array, int offset, int length, String separator) {
+		if(array == null)
+			return "null";
+		checkRegion(array, offset, length);
+		if(array.length == 0)
+			return "[]";
+		StringBuilder s = new StringBuilder(2 + (array.length - 1) * separator.length());
+		s.append('[');
+		for(int i = offset; i < offset + length;) {
+			s.append(String.valueOf(array[i]));
+			if(++i < offset + length)
+				s.append(separator);
+		}
+		return s.append(']').toString();
+	}
+
+	/** @see #toString(Object[], int, int) */
+	public static String toString(int[] array) {
+		return toString(array, 0, array != null ? array.length : -1);
+	}
+
+	/** @see #toString(Object[], int, int, String) */
+	public static String toString(int[] array, String separator) {
+		return toString(array, 0, array != null ? array.length : -1, separator);
+	}
+
+	/** @see #toString(Object[], int, int, String) */
+	public static String toString(int[] array, int offset, int length) {
+		return toString(array, offset, length, ", ");
+	}
+
+	/** a more sophisticated version of {@link java.util.Arrays#toString(Object[])} */
+	public static String toString(int[] array, int offset, int length, String separator) {
+		if(array == null)
+			return "null";
+		checkRegion(array, offset, length);
+		if(array.length == 0)
+			return "[]";
+		StringBuilder s = new StringBuilder(2 + (array.length - 1) * separator.length());
+		s.append('[');
+		for(int i = offset; i < offset + length;) {
+			s.append(array[i]);
+			if(++i < offset + length)
+				s.append(separator);
+		}
+		return s.append(']').toString();
+	}
+
+	/** @see #toString(Object[], int, int) */
+	public static String toString(float[] array) {
+		return toString(array, 0, array != null ? array.length : -1);
+	}
+
+	/** @see #toString(Object[], int, int, String) */
+	public static String toString(float[] array, String separator) {
+		return toString(array, 0, array != null ? array.length : -1, separator);
+	}
+
+	/** @see #toString(Object[], int, int, String) */
+	public static String toString(float[] array, int offset, int length) {
+		return toString(array, offset, length, ", ");
+	}
+
+	/** a more sophisticated version of {@link java.util.Arrays#toString(Object[])} */
+	public static String toString(float[] array, int offset, int length, String separator) {
+		if(array == null)
+			return "null";
+		checkRegion(array, offset, length);
+		if(array.length == 0)
+			return "[]";
+		StringBuilder s = new StringBuilder(2 + (array.length - 1) * separator.length());
+		s.append('[');
+		for(int i = offset; i < offset + length;) {
+			s.append(array[i]);
+			if(++i < offset + length)
+				s.append(separator);
+		}
+		return s.append(']').toString();
+	}
+
 	/** @param array the array from which to access a value at the wrapped index
 	 *  @return the value at the wrapped index
 	 *  @see #repeat(int, int) */

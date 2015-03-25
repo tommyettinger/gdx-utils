@@ -16,6 +16,18 @@ public class ArrayUtilsTest {
 	public ExpectedException thrown = ExpectedException.none();
 
 	@Test
+	public void toString0() {
+		assertEquals("null", ArrayUtils.toString((Object[]) null));
+		assertEquals("null", ArrayUtils.toString((Object[]) null, 1, 5, ", "));
+		assertEquals("[]", ArrayUtils.toString(new String[] {}));
+		assertEquals("[0]", ArrayUtils.toString(new String[] {"0"}));
+		assertEquals("[0, 1, 2, 3, 4]", ArrayUtils.toString(new String[] {"0", "1", "2", "3", "4"}));
+		assertEquals("[0; 1; 2; 3; 4]", ArrayUtils.toString(new String[] {"0", "1", "2", "3", "4"}, "; "));
+		assertEquals("[0, 1, 2, 3, 4]", ArrayUtils.toString(new String[] {"-1", "0", "1", "2", "3", "4", "5"}, 1, 5));
+		assertEquals("[0; 1; 2; 3; 4]", ArrayUtils.toString(new String[] {"-1", "0", "1", "2", "3", "4", "5"}, 1, 5, "; "));
+	}
+
+	@Test
 	public void repeat() {
 		assertEquals(0, ArrayUtils.repeat(5, 0));
 		assertEquals(3, ArrayUtils.repeat(5, 3));

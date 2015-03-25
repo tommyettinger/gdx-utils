@@ -14,7 +14,6 @@
 
 package net.dermetfan.gdx.math;
 
-import java.util.Arrays;
 import java.util.Comparator;
 
 import com.badlogic.gdx.graphics.OrthographicCamera;
@@ -647,7 +646,7 @@ public class GeometryUtils extends net.dermetfan.utils.math.GeometryUtils {
 		intersections.clear();
 		Pools.free(intersections);
 		if(count > 2)
-			throw new IllegalArgumentException("More intersections with a convex polygon found than possible: " + count + ". Is your polygon concave? " + Arrays.toString(polygon));
+			throw new IllegalArgumentException("More intersections with a convex polygon found than possible: " + count + ". Is your polygon concave? " + ArrayUtils.toString(polygon, offset, length) + " segment: [" + x1 + ", " + y1 + "; " + x2 + ", " + y2 + "]");
 		return count;
 	}
 
