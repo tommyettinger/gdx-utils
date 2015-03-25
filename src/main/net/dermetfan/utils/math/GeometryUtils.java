@@ -479,6 +479,25 @@ public class GeometryUtils {
 		return areVerticesClockwise(vertices, 0, vertices.length);
 	}
 
+	/** @see #isConvex(float[], int, int) */
+	public static boolean isConvex(float[] vertices) {
+		return isConvex(vertices, 0, vertices.length);
+	}
+
+	/** @param vertices the polygon
+	 *  @return whether the given vertices form a convex polygon */
+	public static boolean isConvex(float[] vertices, int offset, int length) {
+		ArrayUtils.checkRegion(vertices, offset, length);
+		for(int i = offset, direction = 0; i < offset + length; i += 2) {
+			float det = MathUtils.det(vertices[i], vertices[i + 1], vertices[ArrayUtils.repeat(offset, length, i + 2)], vertices[ArrayUtils.repeat(offset, length, i + 3)], vertices[ArrayUtils.repeat(offset, length, i + 4)], vertices[ArrayUtils.repeat(offset, length, i + 5)]);
+			int dir = det > 0 ? 1 : det < 0 ? -1 : 0;
+			if(i != offset && dir != direction)
+				return false;
+			direction = dir;
+		}
+		return true;
+	}
+
 	/** @param x the x of the rectangle
 	 *  @param y the y of the rectangle
 	 *  @param width the width of the rectangle

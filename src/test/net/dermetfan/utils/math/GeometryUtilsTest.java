@@ -93,6 +93,14 @@ public class GeometryUtilsTest {
 	}
 
 	@Test
+	public void isConvex() {
+		assertFalse(GeometryUtils.isConvex(new float[] {0, 0, 0, 1, 1, 1, .5f, .5f, 1, 0})); // ccw
+		assertTrue(GeometryUtils.isConvex(new float[] {0, 0, 1, 0, 1, 1, 0, 1})); // cw
+		assertFalse(GeometryUtils.isConvex(new float[] {99, 99, 0, 0, 0, 1, 1, 1, .5f, .5f, 1, 0, 99, 99}, 2, 10)); // ccw
+		assertTrue(GeometryUtils.isConvex(new float[] {99, 99, 0, 0, 1, 0, 1, 1, 0, 1, 99, 99}, 2, 8)); // cw
+	}
+
+	@Test
 	public void invertAxis() {
 		assertEquals(5, GeometryUtils.invertAxis(27, 32), 0);
 		assertEquals(27, GeometryUtils.invertAxis(5, 32), 0);
