@@ -329,13 +329,20 @@ public class GeometryUtils {
 	 *  @param vertices the vertices to search for close points
 	 *  @return the number of points close to the given point
 	 *  @since 0.11.0 */
-	public static int closePoints(float x, float y, float maxDistance2, float[] vertices, int offset, int length) {
+	public static int closePoints(float x, float y, float maxDistance2, float[] vertices, int offset, int length, float[] output, int outputOffset) {
 		ArrayUtils.checkRegion(vertices, offset, length);
-		int count = 0;
-		for(int i = offset; i < offset + length; i += 2)
-			if(distance2(x, y, vertices[i], vertices[i + 1]) <= maxDistance2)
-				count++;
-		return count;
+		int outputIndex = outputOffset;
+		for(int i = offset; i < offset + length; i += 2) {
+			float pX = vertices[i], pY = vertices[i + 1];
+			if(distance2(x, y, pX, pY) <= maxDistance2) {
+				if(output != null) {
+					output[outputIndex] = pX;
+					output[outputIndex + 1] = pY;
+				}
+				outputIndex += 2;
+			}
+		}
+		return (outputIndex - outputOffset) / 2;
 	}
 
 	/** @param x the x coordinate of the point
@@ -343,15 +350,23 @@ public class GeometryUtils {
 	 *  @param deltaX the max difference between the point's and a close point's x coordinate
 	 *  @param deltaY the max difference between the point's and a close point's y coordinate
 	 *  @param vertices the vertices to search for close points
+	 *  @param output The array to store the close points in. May be null.
 	 *  @return the number of points close to the given point
 	 *  @since 0.11.0 */
-	public static int closePoints(float x, float y, float deltaX, float deltaY, float[] vertices, int offset, int length) {
+	public static int closePoints(float x, float y, float deltaX, float deltaY, float[] vertices, int offset, int length, float[] output, int outputOffset) {
 		ArrayUtils.checkRegion(vertices, offset, length);
-		int count = 0;
-		for(int i = offset; i < offset + length; i += 2)
-			if(Math.abs(vertices[i] - x) <= deltaX && Math.abs(vertices[i + 1] - y) <= deltaY)
-				count++;
-		return count;
+		int outputIndex = outputOffset;
+		for(int i = offset; i < offset + length; i += 2) {
+			float pX = vertices[i], pY = vertices[i + 1];
+			if(Math.abs(pX - x) <= deltaX && Math.abs(pY - y) <= deltaY) {
+				if(output != null) {
+					output[outputIndex] = pX;
+					output[outputIndex + 1] = pY;
+				}
+				outputIndex += 2;
+			}
+		}
+		return (outputIndex - outputOffset) / 2;
 	}
 
 	/** @see #sortPoints(float[], int, int, boolean)
@@ -393,9 +408,9 @@ public class GeometryUtils {
 				if(coord2 < coord)
 					continue;
 				if(coord2 - coord <= vertices[next + y] - coord) {
-					int coord2InFloats = closePoints(coord2, coord2, byY ? Float.POSITIVE_INFINITY : 0, byY ? 0 : Float.POSITIVE_INFINITY, floats, 0, fi);
+					int coord2InFloats = closePoints(coord2, coord2, byY ? Float.POSITIVE_INFINITY : 0, byY ? 0 : Float.POSITIVE_INFINITY, floats, 0, fi, null, 0);
 					if(coord2InFloats > 0) {
-						int coord2InVertices = closePoints(coord2, coord2, byY ? Float.POSITIVE_INFINITY : 0, byY ? 0 : Float.POSITIVE_INFINITY, vertices, offset, length);
+						int coord2InVertices = closePoints(coord2, coord2, byY ? Float.POSITIVE_INFINITY : 0, byY ? 0 : Float.POSITIVE_INFINITY, vertices, offset, length, null, 0);
 						if(coord2InFloats >= coord2InVertices)
 							continue;
 					}
