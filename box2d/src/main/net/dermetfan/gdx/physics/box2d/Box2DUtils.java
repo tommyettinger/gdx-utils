@@ -752,7 +752,7 @@ public class Box2DUtils extends com.badlogic.gdx.physics.box2d.Box2DUtils {
 
 	// clone
 
-	/** clones a Body (without deep copying the Shapes of its Fixtures)<br>
+	/** clones a Body (without deep copying the Shapes of its Fixtures)
 	 *  @return {@link #clone(Body, boolean) copy(body, false)}
 	 *  @see #clone(Body, boolean) */
 	public static Body clone(Body body) {
