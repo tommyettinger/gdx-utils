@@ -1,7 +1,5 @@
 package net.dermetfan.utils;
 
-import java.lang.reflect.Array;
-
 import net.dermetfan.gdx.math.MathUtils;
 
 /** array utility methods
@@ -417,7 +415,7 @@ public class ArrayUtils {
 	 *  @param everyXth select every xth of items
 	 *  @param dest The array to put the values in. Must have at least the capacity returned by {@link #selectCount(int, int, int, int) selectCount}.
 	 *  @throws IllegalArgumentException if the given dest array is not null and smaller than the required length
-	 *  @return the dest array or a new array (if dest was null) containing everyXth item of the given items array */
+	 *  @return the dest array containing everyXth item of the given items array */
 	public static <T> T[] select(T[] items, int offset, int length, int start, int everyXth, T[] dest, int destOffset) {
 		int outputLength = selectCount(offset, length, start, everyXth);
 		checkRegion(dest, destOffset, outputLength);
@@ -447,7 +445,7 @@ public class ArrayUtils {
 	/** @see #select(Object[], int, int, int, int, Object[], int) */
 	@SuppressWarnings("unchecked")
 	public static <T> T[] select(T[] items, int offset, int length, int start, int everyXth) {
-		return select(items, offset, length, start, everyXth, (T[]) Array.newInstance(items.getClass().getComponentType(), selectCount(offset, length, start, everyXth)), 0);
+		return select(items, offset, length, start, everyXth, (T[]) new Object[selectCount(offset, length, start, everyXth)], 0); // XXX not using Array#newInstance for GWT compatibility
 	}
 
 	/** @see #select(Object[], int, int, int, int) */
@@ -470,7 +468,7 @@ public class ArrayUtils {
 		if(dest != null)
 			checkRegion(dest, destOffset, indicesLength);
 		else
-			dest = (T[]) Array.newInstance(items.getClass().getComponentType(), destOffset + indicesLength);
+			dest = (T[]) new Object[destOffset + indicesLength]; // XXX not using Array#newInstance for GWT compatibility
 		for(int i = indicesOffset, di = destOffset; i < indicesOffset + indicesLength; i++, di++)
 			dest[di] = items[indices[i]];
 		return dest;
@@ -522,7 +520,7 @@ public class ArrayUtils {
 	 *  @param everyXth select every xth of items
 	 *  @param dest The array to put the values in. Must have at least the capacity returned by {@link #selectCount(int, int, int, int) selectCount}.
 	 *  @throws IllegalArgumentException if the given dest array is not null and smaller than the required length
-	 *  @return the dest array or a new array (if dest was null) containing everyXth item of the given items array */
+	 *  @return the dest array containing everyXth item of the given items array */
 	public static float[] select(float[] items, int offset, int length, int start, int everyXth, float[] dest, int destOffset) {
 		int outputLength = selectCount(offset, length, start, everyXth);
 		checkRegion(dest, destOffset, outputLength);
@@ -623,7 +621,7 @@ public class ArrayUtils {
 	 *  @param everyXth select every xth of items
 	 *  @param dest The array to put the values in. Must have at least the capacity returned by {@link #selectCount(int, int, int, int) selectCount}.
 	 *  @throws IllegalArgumentException if the given dest array is not null and smaller than the required length
-	 *  @return the dest array or a new array (if dest was null) containing everyXth item of the given items array */
+	 *  @return the dest array containing everyXth item of the given items array */
 	public static int[] select(int[] items, int offset, int length, int start, int everyXth, int[] dest, int destOffset) {
 		int outputLength = selectCount(offset, length, start, everyXth);
 		checkRegion(dest, destOffset, outputLength);
