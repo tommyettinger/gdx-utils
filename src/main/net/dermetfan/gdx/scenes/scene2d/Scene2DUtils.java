@@ -22,11 +22,11 @@ import com.badlogic.gdx.scenes.scene2d.Group;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 
-import static com.badlogic.gdx.scenes.scene2d.utils.Align.bottom;
-import static com.badlogic.gdx.scenes.scene2d.utils.Align.left;
-import static com.badlogic.gdx.scenes.scene2d.utils.Align.right;
-import static com.badlogic.gdx.scenes.scene2d.utils.Align.top;
-import static com.badlogic.gdx.scenes.scene2d.utils.Align.center;
+import static com.badlogic.gdx.utils.Align.bottom;
+import static com.badlogic.gdx.utils.Align.left;
+import static com.badlogic.gdx.utils.Align.right;
+import static com.badlogic.gdx.utils.Align.top;
+import static com.badlogic.gdx.utils.Align.center;
 
 /** provides useful methods for scene2d
  *  @author dermetfan */
