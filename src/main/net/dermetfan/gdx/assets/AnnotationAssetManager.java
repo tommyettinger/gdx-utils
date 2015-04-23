@@ -114,13 +114,11 @@ public class AnnotationAssetManager extends AssetManager {
 		if(!field.isAccessible())
 			field.setAccessible(true);
 		try {
-			if(field.getType().getSimpleName().endsWith("[]")) // TODO https://github.com/libgdx/libgdx/issues/2943
-				return ((Object[]) field.get(container)).length;
-			else
-				return field.get(container) == null ? 0 : 1;
+			Object obj = field.get(container);
+			return obj == null ? 0 : obj instanceof Object[] ? ((Object[]) obj).length : 1;
 		} catch(ReflectionException e) {
 			Gdx.app.error("AnnotationAssetManager", "could not access field \"" + field.getName() + "\" of class " + ClassReflection.getSimpleName(field.getDeclaringClass()) + " and instance " + container, e);
-			return 1;
+			return 0;
 		}
 	}
 
