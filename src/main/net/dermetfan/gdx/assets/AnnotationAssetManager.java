@@ -232,6 +232,8 @@ public class AnnotationAssetManager extends AssetManager {
 			load(getAssetPath(pathObj), getAssetType(asset, pathObj), getAssetLoaderParameters(asset, pathObj, containerType, container));
 	}
 
+	/** @param container the class which fields and methods annotated with {@link net.dermetfan.gdx.assets.AnnotationAssetManager.Asset Asset} to load
+	 *  @param instance an instance of the container class */
 	private <T> void load(Class<T> container, T instance) {
 		for(Field field : ClassReflection.getDeclaredFields(container)) {
 			if(!field.isAnnotationPresent(Asset.class))
@@ -245,23 +247,30 @@ public class AnnotationAssetManager extends AssetManager {
 		}
 	}
 
+	/** @see #load(Class, Object) */
 	@SuppressWarnings("unchecked")
 	public <T> void load(T container) {
 		load((Class<T>) container.getClass(), container);
 	}
 
+	/** @see #load(Class, Object) */
 	public void load(Class<?> container) {
 		load(container, null);
 	}
 
+	/** @param field the field which value to load
+	 *  @param container an instance of the field's declaring class */
 	public void load(Field field, Object container) {
 		load(field.isAnnotationPresent(Asset.class) ? field.getDeclaredAnnotation(Asset.class).getAnnotation(Asset.class) : null, get(field, container), field.getDeclaringClass(), container);
 	}
 
+	/** @see #load(Field, Object) */
 	public void load(Field field) {
 		load(field, null);
 	}
 
+	/** @param method the method which return value to load
+	 *  @param container an instance of the method's declaring class */
 	public void load(Method method, Object container) {
 		if(method.getParameterTypes().length != 0)
 			throw new IllegalArgumentException(method + " takes parameters. Methods that take parameters are not supported.");
@@ -271,11 +280,14 @@ public class AnnotationAssetManager extends AssetManager {
 		// TODO com.badlogic.gdx.reflect.Method does not provide access to annotations
 	}
 
+	/** @see #load(Method, Object) */
 	public void load(Method method) {
 		load(method, null);
 	}
 
-	/** provides information about assets that fields or methods represent
+	/** Provides information about assets that fields or methods represent.
+	 *  The toString value of the value of the field or return value of the method annotated is used as path (except for {@link FileHandle} and {@link AssetDescriptor} which get special treatment).
+	 *  Methods annotated with this annotation must not return a primitive and have no parameters.
 	 *  @author dermetfan */
 	@Documented
 	@Retention(RetentionPolicy.RUNTIME)
