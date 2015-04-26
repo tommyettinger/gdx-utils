@@ -1102,7 +1102,7 @@ public class Popup<T extends Actor> implements EventListener {
 		 *  @author dermetfan */
 		public static class AlignedOffsetPosition implements Position {
 
-			/** the {@link com.badlogic.gdx.scenes.scene2d.utils.Align Align} flag */
+			/** the {@link com.badlogic.gdx.utils.Align Align} flag */
 			private int align;
 
 			/** @param align the {@link #align} */
