@@ -192,21 +192,28 @@ public class AnnotationAssetManager extends AssetManager {
 		return getAssetLoaderParameters(method, null);
 	}
 
+	/** @param field the field from which to create a new AssetDescriptor
+	 *  @param container an instance of the field's declaring class
+	 *  @return a new AssetDescriptor created from the given field */
 	public static <T> AssetDescriptor<T> createAssetDescriptor(Field field, Object container) {
 		Object obj = get(field, container);
 		if(obj instanceof AssetDescriptor)
 			return (AssetDescriptor<T>) obj;
 		if(!field.isAnnotationPresent(Asset.class))
-			return null;
+			throw new IllegalArgumentException("cannot create an AssetDescriptor from a field not annotated with @Asset");
 		Asset asset = field.getDeclaredAnnotation(Asset.class).getAnnotation(Asset.class);
 		Object pathObj = get(field, container);
 		return new AssetDescriptor<>(getAssetPath(pathObj), getAssetType(asset, pathObj), getAssetLoaderParameters(asset, pathObj, field.getDeclaringClass(), container));
 	}
 
+	/** @see #createAssetDescriptor(Field, Object) */
 	public static <T> AssetDescriptor<T> createAssetDescriptor(Field field) {
 		return createAssetDescriptor(field, null);
 	}
 
+	/** @param method the method from which to create a new AssetDescriptor
+	 *  @param container an instance of the method's declaring class
+	 *  @return a new AssetDescriptor created from the given method */
 	public static <T> AssetDescriptor<T> createAssetDescriptor(Method method, Object container) {
 		Object obj = get(method, container);
 		if(obj instanceof AssetDescriptor)
@@ -215,6 +222,7 @@ public class AnnotationAssetManager extends AssetManager {
 		// TODO com.badlogic.gdx.reflect.Method does not provide access to annotations
 	}
 
+	/** @see #createAssetDescriptor(Method, Object) */
 	public static <T> AssetDescriptor<T> createAssetDescriptor(Method method) {
 		return createAssetDescriptor(method, null);
 	}
