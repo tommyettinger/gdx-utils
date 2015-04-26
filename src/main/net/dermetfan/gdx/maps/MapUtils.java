@@ -238,9 +238,8 @@ public class MapUtils {
 
 	/** sets the given Vector2 to the max width and height of all {@link TiledMapTileLayer tile layers} of the given map
 	 *  @param map the map to measure
-	 *  @param output the Vector2 to set to the map size
 	 *  @return the given Vector2 representing the map size */
-	public static Vector2 size(TiledMap map, Vector2 output) {
+	public static Vector2 size(TiledMap map) {
 		Array<TiledMapTileLayer> layers = map.getLayers().getByType(TiledMapTileLayer.class);
 		float maxWidth = 0, maxTileWidth = 0, maxHeight = 0, maxTileHeight = 0;
 		for(TiledMapTileLayer layer : layers) {
@@ -255,7 +254,7 @@ public class MapUtils {
 			if(layerTileHeight > maxTileHeight)
 				maxTileHeight = layerTileHeight;
 		}
-		return output.set(maxWidth * maxTileWidth, maxHeight * maxTileHeight);
+		return vec2.set(maxWidth * maxTileWidth, maxHeight * maxTileHeight);
 	}
 
 }
