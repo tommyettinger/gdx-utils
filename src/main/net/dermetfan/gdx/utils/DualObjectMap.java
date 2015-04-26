@@ -16,7 +16,7 @@ package net.dermetfan.gdx.utils;
 
 import com.badlogic.gdx.utils.ObjectMap;
 
-/** Two {@link ObjectMap ObjectMaps} holding each others contents in reverse for fast retrieval of both keys and values.
+/** Two {@link ObjectMap ObjectMaps} holding each other's contents in reverse for fast retrieval of both keys and values.
  *  This causes null values not to be allowed.
  *  @author dermetfan
  *  @since 0.6.0 */
