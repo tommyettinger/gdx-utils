@@ -35,6 +35,9 @@ import com.badlogic.gdx.utils.reflect.ReflectionException;
  *  @author dermetfan */
 public class AnnotationAssetManager extends AssetManager {
 
+	/** @param field the field which value to get
+	 *  @param container an instance of the field's declaring class
+	 *  @return the value of the field */
 	private static Object get(Field field, Object container) {
 		if(container == null && !field.isStatic())
 			throw new IllegalArgumentException("field is not static but container instance is null: " + field.getName());
@@ -52,6 +55,10 @@ public class AnnotationAssetManager extends AssetManager {
 		return obj;
 	}
 
+	/** @param method the method which return value to get
+	 *  @param container an instance of the method's declaring class
+	 *  @param parameters the parameters with which to invoke the method
+	 *  @return the return value of the method */
 	private static Object get(Method method, Object container, Object... parameters) {
 		if(container == null && !method.isStatic())
 			throw new IllegalArgumentException("method is not static but container instance is null: " + method.getName());
@@ -69,6 +76,8 @@ public class AnnotationAssetManager extends AssetManager {
 		return obj;
 	}
 
+	/** @param pathObj the Object specifying a path of an asset
+	 *  @return the path of the Asset specified by the given Object */
 	private static String getAssetPath(Object pathObj) {
 		if(pathObj instanceof FileHandle)
 			return ((FileHandle) pathObj).path();
@@ -77,12 +86,19 @@ public class AnnotationAssetManager extends AssetManager {
 		return pathObj.toString();
 	}
 
+	/** @param asset the Asset annotation the field or method pathObj was extracted from is annotated with
+	 *  @param pathObj the Object specifying a path of an asset, extracted from the field or method annotated with the given Asset annotation
+	 *  @return the type of the specified asset */
 	private static Class getAssetType(Asset asset, Object pathObj) {
 		if(pathObj instanceof AssetDescriptor)
 			return ((AssetDescriptor<?>) pathObj).type;
 		return asset.value();
 	}
 
+	/** @param asset the Asset annotation the field or method pathObj was extracted from is annotated with
+	 *  @param pathObj the Object specifying a path of an asset, extracted from the field or method annotated with the given Asset annotation
+	 *  @param container an instance of the field's or method's declaring class
+	 *  @return the AssetLoaderParameters associated with the specified asset */
 	private static AssetLoaderParameters getAssetLoaderParameters(Asset asset, Object pathObj, Class containerType, Object container) {
 		if(pathObj instanceof AssetDescriptor)
 			return ((AssetDescriptor) pathObj).params;
@@ -142,52 +158,76 @@ public class AnnotationAssetManager extends AssetManager {
 		}
 	}
 
+	/** @param field the field which asset's path to get
+	 *  @param container an instance of the field's declaring class
+	 *  @return the path of the given field's asset */
 	public static String getAssetPath(Field field, Object container) {
 		return getAssetPath(get(field, container));
 	}
 
+	/** @see #getAssetPath(Field, Object) */
 	public static String getAssetPath(Field field) {
 		return getAssetPath(field, null);
 	}
 
+	/** @param method the method which asset's path to get
+	 *  @param container an instance of the method's declaring class
+	 *  @return the path of the given method's asset */
 	public static String getAssetPath(Method method, Object container) {
 		return getAssetPath(get(method, container));
 	}
 
+	/** @see #getAssetPath(Method, Object) */
 	public static String getAssetPath(Method method) {
 		return getAssetPath(method, null);
 	}
 
+	/** @param field the field which asset's type to get
+	 *  @param container an instance of the field's declaring class
+	 *  @return the type of the given field's asset */
 	public static Class getAssetType(Field field, Object container) {
 		return getAssetType(field.isAnnotationPresent(Asset.class) ? field.getDeclaredAnnotation(Asset.class).getAnnotation(Asset.class) : null, get(field, container));
 	}
 
+	/** @see #getAssetType(Field, Object) */
 	public static Class getAssetType(Field field) {
 		return getAssetType(field, null);
 	}
 
+	/** @param method the method which asset's type to get
+	 *  @param container an instance of the method's declaring class
+	 *  @return the type of the given method's asset */
 	public static Class getAssetType(Method method, Object container) {
 		throw new UnsupportedOperationException("com.badlogic.gdx.reflect.Method does not provide access to annotations");
 		// TODO com.badlogic.gdx.reflect.Method does not provide access to annotations
 	}
 
+	/** @see #getAssetType(Method, Object) */
 	public static Class getAssetType(Method method) {
 		return getAssetType(method, null);
 	}
 
+	/** @param field the field which asset's AssetLoaderParameters to get
+	 *  @param container an instance of the field's declaring class
+	 *  @return the AssetLoaderParameters to use with the given field's asset */
 	public static AssetLoaderParameters getAssetLoaderParameters(Field field, Object container) {
 		return getAssetLoaderParameters(field.isAnnotationPresent(Asset.class) ? field.getDeclaredAnnotation(Asset.class).getAnnotation(Asset.class) : null, get(field, container), field.getDeclaringClass(), container);
 	}
 
+	/** @see #getAssetLoaderParameters(Field, Object) */
 	public static AssetLoaderParameters getAssetLoaderParameters(Field field) {
 		return getAssetLoaderParameters(field, null);
 	}
 
+	/** @param method the method which asset's AssetLoaderParameters to get
+	 *  @param container an instance of the method's declaring class
+	 *  @return the AssetLoaderParameters to use with the given method's asset */
 	public static AssetLoaderParameters getAssetLoaderParameters(Method method, Object container) {
 		throw new UnsupportedOperationException("com.badlogic.gdx.reflect.Method does not provide access to annotations");
 		// TODO com.badlogic.gdx.reflect.Method does not provide access to annotations
 	}
 
+	/** @see #getAssetLoaderParameters(Method, Object) */
 	public static AssetLoaderParameters getAssetLoaderParameters(Method method) {
 		return getAssetLoaderParameters(method, null);
 	}
