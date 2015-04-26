@@ -275,15 +275,21 @@ public class AnnotationAssetManager extends AssetManager {
 		load(method, null);
 	}
 
+	/** provides information about assets that fields or methods represent
+	 *  @author dermetfan */
 	@Documented
 	@Retention(RetentionPolicy.RUNTIME)
 	@Target({ElementType.FIELD, ElementType.METHOD})
 	public @interface Asset {
 
+		/** @return Whether this field or method should be loaded by {@link AnnotationAssetManager#load(Class, Object)}. Default is @{@code true}. */
 		boolean load() default true;
 
+		/** @return the type of the asset this field or method represents */
 		Class<?> value() default void.class;
 
+		/** @return The fully qualified or simple name of a field or method providing AssetLoaderParameters.
+		 *  If the name is simple, the declaring class of this field or method is assumed to be the declaring class of the AssetLoaderParameters field or method as well. */
 		String params() default "";
 
 	}
