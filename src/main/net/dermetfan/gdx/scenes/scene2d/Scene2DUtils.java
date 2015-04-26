@@ -137,7 +137,7 @@ public class Scene2DUtils {
 
 	/** @param width the width of the area
 	 *  @param height the height of the area
-	 *  @param align the {@link com.badlogic.gdx.scenes.scene2d.utils.Align Align} flag
+	 *  @param align the {@link com.badlogic.gdx.utils.Align Align} flag
 	 *  @return the aligned local position
 	 *  @since 0.8.0 */
 	public static Vector2 align(float width, float height, int align) {
