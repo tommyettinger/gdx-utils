@@ -55,11 +55,11 @@ public class AnnotationAssetManager extends AssetManager {
 		return obj;
 	}
 
-	/** @param method the method which return value to get
+	/** @param method the method to invoke
 	 *  @param container an instance of the method's declaring class
 	 *  @param parameters the parameters with which to invoke the method
 	 *  @return the return value of the method */
-	private static Object get(Method method, Object container, Object... parameters) {
+	private static Object invoke(Method method, Object container, Object... parameters) {
 		if(container == null && !method.isStatic())
 			throw new IllegalArgumentException("method is not static but container instance is null: " + method.getName());
 		boolean accessible = method.isAccessible();
@@ -146,8 +146,8 @@ public class AnnotationAssetManager extends AssetManager {
 			if(!ClassReflection.isAssignableFrom(AssetLoaderParameters.class, m.getReturnType()))
 				throw new IllegalArgumentException("AssetLoaderParameters supplier method does not return AssetLoaderParameters: " + m.getReturnType());
 			if(withParams)
-				return (AssetLoaderParameters) get(m, container, getAssetType(asset, pathObj), getAssetPath(pathObj), pathObj);
-			return (AssetLoaderParameters) get(m, container);
+				return (AssetLoaderParameters) invoke(m, container, getAssetType(asset, pathObj), getAssetPath(pathObj), pathObj);
+			return (AssetLoaderParameters) invoke(m, container);
 		} else {
 			try {
 				Field f = ClassReflection.getDeclaredField(clazz, name);
@@ -174,7 +174,7 @@ public class AnnotationAssetManager extends AssetManager {
 	 *  @param container an instance of the method's declaring class
 	 *  @return the path of the given method's asset */
 	public static String getAssetPath(Method method, Object container) {
-		return getAssetPath(get(method, container));
+		return getAssetPath(invoke(method, container));
 	}
 
 	/** @see #getAssetPath(Method, Object) */
@@ -255,7 +255,7 @@ public class AnnotationAssetManager extends AssetManager {
 	 *  @param container an instance of the method's declaring class
 	 *  @return a new AssetDescriptor created from the given method */
 	public static <T> AssetDescriptor<T> createAssetDescriptor(Method method, Object container) {
-		Object obj = get(method, container);
+		Object obj = invoke(method, container);
 		if(obj instanceof AssetDescriptor)
 			return (AssetDescriptor<T>) obj;
 		throw new UnsupportedOperationException("com.badlogic.gdx.reflect.Method does not provide access to annotations");
