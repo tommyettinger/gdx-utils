@@ -411,7 +411,7 @@ public class Chain {
 	/** {@link #extend(Builder) extends} this chain by the given {@code length} using the given {@link Builder}
 	 *  @see #extend(Builder) */
 	public Chain extend(int length, Builder builder) {
-		for(; length > 0; length--)
+		for(; length >= 0; length--)
 			extend(builder);
 		return this;
 	}

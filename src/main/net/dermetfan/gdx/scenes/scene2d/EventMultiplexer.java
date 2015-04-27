@@ -27,7 +27,7 @@ public class EventMultiplexer extends Multiplexer<EventListener> implements Even
 	 *  @since 0.9.0
 	 *  @see Array#contains(Object, boolean) */
 	public static boolean contains(Array listeners, EventListener listener, boolean identity) {
-		for(int i = listeners.size - 1; i > 0; i--) {
+		for(int i = listeners.size - 1; i >= 0; i--) {
 			Object it = listeners.get(i);
 			if((identity ? it == listener : it.equals(listener)) || it instanceof EventMultiplexer && contains(((EventMultiplexer) it).getReceivers(), listener, identity))
 				return true;
