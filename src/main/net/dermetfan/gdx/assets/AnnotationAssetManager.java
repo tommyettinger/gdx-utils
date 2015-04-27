@@ -102,6 +102,8 @@ public class AnnotationAssetManager extends AssetManager {
 	private static AssetLoaderParameters getAssetLoaderParameters(Asset asset, Object pathObj, Class containerType, Object container) {
 		if(pathObj instanceof AssetDescriptor)
 			return ((AssetDescriptor) pathObj).params;
+		if(asset.params().length() == 0)
+			return null;
 
 		Class<?> clazz; // class of the field or method containing the AssetLoaderParameters
 		boolean method; // if a method contains the AssetLoaderParameters
