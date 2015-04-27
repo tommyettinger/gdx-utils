@@ -633,6 +633,26 @@ public class Box2DUtils extends com.badlogic.gdx.physics.box2d.Box2DUtils {
 		return y;
 	}
 
+	/** @return the minimal x coordinate of the vertices of all fixtures of the given Body in world coordinates */
+	public static float minXWorld(Body body) {
+		return body.getWorldPoint(body.localPoint2.set(minX(body), 0)).x;
+	}
+
+	/** @return the minimal y coordinate of the vertices of all fixtures of the given Body in world coordinates */
+	public static float minYWorld(Body body) {
+		return body.getWorldPoint(body.localPoint2.set(0, minY(body))).y;
+	}
+
+	/** @return the maximal x coordinate of the vertices of all fixtures of the given Body in world coordinates */
+	public static float maxXWorld(Body body) {
+		return body.getWorldPoint(body.localPoint2.set(maxX(body), 0)).x;
+	}
+
+	/** @return the maximal y coordinate of the vertices of all fixtures of the given Body in world coordinates */
+	public static float maxYWorld(Body body) {
+		return body.getWorldPoint(body.localPoint2.set(0, maxY(body))).y;
+	}
+
 	/** @return the width of the given Body */
 	public static float width(Body body) {
 		return Math.abs(maxX(body) - minX(body));
