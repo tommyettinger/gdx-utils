@@ -200,8 +200,7 @@ public class AnnotationAssetManager extends AssetManager {
 	 *  @param container an instance of the method's declaring class
 	 *  @return the type of the given method's asset */
 	public static Class getAssetType(Method method, Object container) {
-		throw new UnsupportedOperationException("com.badlogic.gdx.reflect.Method does not provide access to annotations");
-		// TODO com.badlogic.gdx.reflect.Method does not provide access to annotations
+		return getAssetType(method.isAnnotationPresent(Asset.class) ? method.getDeclaredAnnotation(Asset.class).getAnnotation(Asset.class) : null, invoke(method, container));
 	}
 
 	/** @see #getAssetType(Method, Object) */
@@ -225,8 +224,7 @@ public class AnnotationAssetManager extends AssetManager {
 	 *  @param container an instance of the method's declaring class
 	 *  @return the AssetLoaderParameters to use with the given method's asset */
 	public static AssetLoaderParameters getAssetLoaderParameters(Method method, Object container) {
-		throw new UnsupportedOperationException("com.badlogic.gdx.reflect.Method does not provide access to annotations");
-		// TODO com.badlogic.gdx.reflect.Method does not provide access to annotations
+		return getAssetLoaderParameters(method.isAnnotationPresent(Asset.class) ? method.getDeclaredAnnotation(Asset.class).getAnnotation(Asset.class) : null, invoke(method, container), method.getDeclaringClass(), container);
 	}
 
 	/** @see #getAssetLoaderParameters(Method, Object) */
@@ -238,13 +236,12 @@ public class AnnotationAssetManager extends AssetManager {
 	 *  @param container an instance of the field's declaring class
 	 *  @return a new AssetDescriptor created from the given field */
 	public static <T> AssetDescriptor<T> createAssetDescriptor(Field field, Object container) {
-		Object obj = get(field, container);
-		if(obj instanceof AssetDescriptor)
-			return (AssetDescriptor<T>) obj;
+		Object pathObj = get(field, container);
+		if(pathObj instanceof AssetDescriptor)
+			return (AssetDescriptor<T>) pathObj;
 		if(!field.isAnnotationPresent(Asset.class))
 			throw new IllegalArgumentException("cannot create an AssetDescriptor from a field not annotated with @Asset");
 		Asset asset = field.getDeclaredAnnotation(Asset.class).getAnnotation(Asset.class);
-		Object pathObj = get(field, container);
 		return new AssetDescriptor<>(getAssetPath(pathObj), getAssetType(asset, pathObj), getAssetLoaderParameters(asset, pathObj, field.getDeclaringClass(), container));
 	}
 
@@ -257,11 +254,13 @@ public class AnnotationAssetManager extends AssetManager {
 	 *  @param container an instance of the method's declaring class
 	 *  @return a new AssetDescriptor created from the given method */
 	public static <T> AssetDescriptor<T> createAssetDescriptor(Method method, Object container) {
-		Object obj = invoke(method, container);
-		if(obj instanceof AssetDescriptor)
-			return (AssetDescriptor<T>) obj;
-		throw new UnsupportedOperationException("com.badlogic.gdx.reflect.Method does not provide access to annotations");
-		// TODO com.badlogic.gdx.reflect.Method does not provide access to annotations
+		Object pathObj = invoke(method, container);
+		if(pathObj instanceof AssetDescriptor)
+			return (AssetDescriptor<T>) pathObj;
+		if(!method.isAnnotationPresent(Asset.class))
+			throw new IllegalArgumentException("cannot create an AssetDescriptor from a method not annotated with @Asset");
+		Asset asset = method.getDeclaredAnnotation(Asset.class).getAnnotation(Asset.class);
+		return new AssetDescriptor<>(getAssetPath(pathObj), getAssetType(asset, pathObj), getAssetLoaderParameters(asset, pathObj, method.getDeclaringClass(), container));
 	}
 
 	/** @see #createAssetDescriptor(Method, Object) */
@@ -282,18 +281,22 @@ public class AnnotationAssetManager extends AssetManager {
 			load(getAssetPath(pathObj), getAssetType(asset, pathObj), getAssetLoaderParameters(asset, pathObj, containerType, container));
 	}
 
-	/** @param container the class which fields and methods annotated with {@link net.dermetfan.gdx.assets.AnnotationAssetManager.Asset Asset} to load
+	/** @param container the class which fields and methods annotated with {@link Asset Asset} to load
 	 *  @param instance an instance of the container class */
 	private <T> void load(Class<T> container, T instance) {
+		for(Method method : ClassReflection.getDeclaredMethods(container)) {
+			if(!method.isAnnotationPresent(Asset.class))
+				continue;
+			Asset asset = method.getDeclaredAnnotation(Asset.class).getAnnotation(Asset.class);
+			if(asset.load())
+				load(method, instance);
+		}
 		for(Field field : ClassReflection.getDeclaredFields(container)) {
 			if(!field.isAnnotationPresent(Asset.class))
 				continue;
 			Asset asset = field.getDeclaredAnnotation(Asset.class).getAnnotation(Asset.class);
 			if(asset.load())
 				load(field, instance);
-		}
-		for(Method method : ClassReflection.getDeclaredMethods(container)) {
-			// TODO com.badlogic.gdx.reflect.Method does not provide access to annotations
 		}
 	}
 
@@ -326,8 +329,7 @@ public class AnnotationAssetManager extends AssetManager {
 			throw new IllegalArgumentException(method + " takes parameters. Methods that take parameters are not supported.");
 		if(method.getReturnType().isPrimitive())
 			throw new IllegalArgumentException(method + " returns " + method.getReturnType() + ". Methods that return primitives are not supported.");
-		throw new UnsupportedOperationException("com.badlogic.gdx.reflect.Method does not provide access to annotations");
-		// TODO com.badlogic.gdx.reflect.Method does not provide access to annotations
+		load(method.getDeclaredAnnotation(Asset.class).getAnnotation(Asset.class), invoke(method, container), method.getDeclaringClass(), container);
 	}
 
 	/** @see #load(Method, Object) */
