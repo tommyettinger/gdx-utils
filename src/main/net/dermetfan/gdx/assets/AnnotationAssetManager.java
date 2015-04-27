@@ -86,7 +86,7 @@ public class AnnotationAssetManager extends AssetManager {
 		return pathObj.toString();
 	}
 
-	/** @param asset the Asset annotation the field or method pathObj was extracted from is annotated with
+	/** @param asset The Asset annotation the field or method pathObj was extracted from is annotated with. May be null if pathObj is an AssetDescriptor.
 	 *  @param pathObj the Object specifying a path of an asset, extracted from the field or method annotated with the given Asset annotation
 	 *  @return the type of the specified asset */
 	private static Class getAssetType(Asset asset, Object pathObj) {
@@ -326,10 +326,10 @@ public class AnnotationAssetManager extends AssetManager {
 	 *  @param container an instance of the method's declaring class */
 	public void load(Method method, Object container) {
 		if(method.getParameterTypes().length != 0)
-			throw new IllegalArgumentException(method + " takes parameters. Methods that take parameters are not supported.");
+			throw new IllegalArgumentException(method.getName() + " takes parameters. Methods that take parameters are not supported.");
 		if(method.getReturnType().isPrimitive())
-			throw new IllegalArgumentException(method + " returns " + method.getReturnType() + ". Methods that return primitives are not supported.");
-		load(method.getDeclaredAnnotation(Asset.class).getAnnotation(Asset.class), invoke(method, container), method.getDeclaringClass(), container);
+			throw new IllegalArgumentException(method.getName() + " returns " + method.getReturnType() + ". Methods that return primitives are not supported.");
+		load(method.isAnnotationPresent(Asset.class) ? method.getDeclaredAnnotation(Asset.class).getAnnotation(Asset.class) : null, invoke(method, container), method.getDeclaringClass(), container);
 	}
 
 	/** @see #load(Method, Object) */
@@ -352,7 +352,9 @@ public class AnnotationAssetManager extends AssetManager {
 		/** @return the type of the asset this field or method represents */
 		Class<?> value() default void.class;
 
-		/** @return The fully qualified or simple name of a field or method providing AssetLoaderParameters.
+		/** Methods referenced by this can either have no parameters or take a {@link Class}, {@link String} and {@link Object} in this order.
+		 *  The Class is the type of the asset, the String is the path of the asset and the Object is the value of the field or return value of the method from which the asset is being loaded.
+		 *  @return The fully qualified or simple name of a field or method providing AssetLoaderParameters.
 		 *  If the name is simple, the declaring class of this field or method is assumed to be the declaring class of the AssetLoaderParameters field or method as well. */
 		String params() default "";
 
