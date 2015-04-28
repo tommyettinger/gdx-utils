@@ -14,8 +14,6 @@
 
 package net.dermetfan.utils;
 
-import com.badlogic.gdx.utils.reflect.ClassReflection;
-
 /** @param <K> the type of the key
  *  @param <V> the type of the value
  *  @author dermetfan */
@@ -101,7 +99,7 @@ public class Pair<K, V> {
 	@SuppressWarnings("unchecked")
 	public void swap() throws IllegalStateException {
 		if(key.getClass() != value.getClass())
-			throw new IllegalStateException("key and value are not of the same type: " + ClassReflection.getSimpleName(key.getClass()) + " - " + ClassReflection.getSimpleName(value.getClass()));
+			throw new IllegalStateException("key and value are not of the same type: " + key.getClass() + " & " + value.getClass());
 		V oldValue = value;
 		value = (V) key;
 		key = (K) oldValue;
