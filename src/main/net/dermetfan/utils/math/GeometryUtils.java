@@ -323,6 +323,48 @@ public class GeometryUtils {
 		return x_dist * x_dist + y_dist * y_dist;
 	}
 
+	/** @param vertices the 2D vertices to reverse
+	 *  @return the reversed given vertices for chaining */
+	public static float[] reverse2D(float[] vertices, int offset, int length) {
+		checkRegion(vertices, offset, length);
+		for(int i = offset, ii = offset + length - 2; i < offset + length / 2; i += 2, ii -= 2) {
+			float ix = vertices[i], iy = vertices[i + 1];
+			float iix = vertices[ii], iiy = vertices[ii + 1];
+			vertices[i] = iix;
+			vertices[i + 1] = iiy;
+			vertices[ii] = ix;
+			vertices[ii + 1] = iy;
+		}
+		return vertices;
+	}
+
+	/** @see #reverse2D(float[], int, int) */
+	public static float[] reverse2D(float[] vertices) {
+		return reverse2D(vertices, 0, vertices.length);
+	}
+
+	/** @param vertices the 3D vertices to reverse
+	 *  @return the reversed given vertices for chaining */
+	public static float[] reverse3D(float[] vertices, int offset, int length) {
+		checkRegion(vertices, offset, length);
+		for(int i = offset, ii = offset + length - 3; i < offset + length / 2; i += 3, ii -= 3) {
+			float ix = vertices[i], iy = vertices[i + 1], iz = vertices[i + 2];
+			float iix = vertices[ii], iiy = vertices[ii + 1], iiz = vertices[ii + 2];
+			vertices[i] = iix;
+			vertices[i + 1] = iiy;
+			vertices[i + 2] = iiz;
+			vertices[ii] = ix;
+			vertices[ii + 1] = iy;
+			vertices[ii + 2] = iz;
+		}
+		return vertices;
+	}
+
+	/** @see #reverse3D(float[], int, int) */
+	public static float[] reverse3D(float[] vertices) {
+		return reverse3D(vertices, 0, vertices.length);
+	}
+
 	/** @param x the x coordinate of the point
 	 *  @param y the y coordinate of the point
 	 *  @param maxDistance2 the max squared distance between the given point and a close point

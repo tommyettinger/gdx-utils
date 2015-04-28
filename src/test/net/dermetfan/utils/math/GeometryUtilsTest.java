@@ -93,6 +93,18 @@ public class GeometryUtilsTest {
 	}
 
 	@Test
+	public void reverse2D() {
+		assertArrayEquals(new float[] {4, 4, 3, 3, 2, 2, 1, 1, 0, 0}, GeometryUtils.reverse2D(new float[] {0, 0, 1, 1, 2, 2, 3, 3, 4, 4}), 0);
+		assertArrayEquals(new float[] {0, 0, 3, 3, 2, 2, 1, 1, 4, 4}, GeometryUtils.reverse2D(new float[] {0, 0, 1, 1, 2, 2, 3, 3, 4, 4}, 2, 6), 0);
+	}
+
+	@Test
+	public void reverse3D() {
+		assertArrayEquals(new float[] {4, 4, 4, 3, 3, 3, 2, 2, 2, 1, 1, 1, 0, 0, 0}, GeometryUtils.reverse3D(new float[] {0, 0, 0, 1, 1, 1, 2, 2, 2, 3, 3, 3, 4, 4, 4}), 0);
+		assertArrayEquals(new float[] {0, 0, 0, 3, 3, 3, 2, 2, 2, 1, 1, 1, 4, 4, 4}, GeometryUtils.reverse3D(new float[] {0, 0, 0, 1, 1, 1, 2, 2, 2, 3, 3, 3, 4, 4, 4}, 3, 9), 0);
+	}
+
+	@Test
 	public void isConvex() {
 		assertFalse(GeometryUtils.isConvex(new float[] {0, 0, 0, 1, 1, 1, .5f, .5f, 1, 0})); // ccw
 		assertTrue(GeometryUtils.isConvex(new float[] {0, 0, 1, 0, 1, 1, 0, 1})); // cw
