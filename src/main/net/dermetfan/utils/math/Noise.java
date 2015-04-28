@@ -188,8 +188,7 @@ public abstract class Noise {
 		return map;
 	}
 
-	/** a copy of {@link com.badlogic.gdx.math.MathUtils#random(float, float)} using the {@link #random Random object} of {@link Noise}
-	 *  @return a random value between start (inclusive) and end (exclusive) */
+	/** @return a random value between start (inclusive) and end (exclusive) */
 	public static float random(float start, float end) {
 		return start + random.nextFloat() * (end - start);
 	}

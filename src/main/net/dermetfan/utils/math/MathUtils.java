@@ -20,6 +20,30 @@ import static net.dermetfan.utils.ArrayUtils.checkRegion;
  *  @author dermetfan */
 public class MathUtils {
 
+	/** @param value the value to clamp
+	 *  @param min the min value
+	 *  @param max the max value
+	 *  @return the value clamped in between min and max */
+	public static float clamp(float value, float min, float max) {
+		if(value < min)
+			return min;
+		if(value > max)
+			return max;
+		return value;
+	}
+
+	/** @param value the value to clamp
+	 *  @param min the min value
+	 *  @param max the max value
+	 *  @return the value clamped in between min and max */
+	public static int clamp(int value, int min, int max) {
+		if(value < min)
+			return min;
+		if(value > max)
+			return max;
+		return value;
+	}
+
 	/** @param n the number which cross sum to calculate
 	 *  @return the cross sum (sum of a number's digits) */
 	public static int crossSum(int n) {
@@ -157,7 +181,7 @@ public class MathUtils {
 	/** @return the given array clamped to min and max */
 	public static float[] clamp(float[] items, float min, float max, int offset, int length) {
 		for(int i = offset; i < offset + length; i++)
-			items[i]= com.badlogic.gdx.math.MathUtils.clamp(items[i], min, max);
+			items[i]= clamp(items[i], min, max);
 		return items;
 	}
 

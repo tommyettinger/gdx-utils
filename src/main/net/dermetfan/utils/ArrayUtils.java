@@ -1,6 +1,6 @@
 package net.dermetfan.utils;
 
-import net.dermetfan.gdx.math.MathUtils;
+import net.dermetfan.utils.math.MathUtils;
 
 /** array utility methods
  *  @author dermetfan */
