@@ -299,6 +299,18 @@ public class GeometryUtils extends net.dermetfan.utils.math.GeometryUtils {
 		return max(filterY(vertices));
 	}
 
+	/** @see #reverse2D(float[]) */
+	public static FloatArray reverse2D(FloatArray vertices) {
+		reverse2D(vertices.items, 0, vertices.size);
+		return vertices;
+	}
+
+	/** @see #reverse3D(float[]) */
+	public static FloatArray reverse3D(FloatArray vertices) {
+		reverse3D(vertices.items, 0, vertices.size);
+		return vertices;
+	}
+
 	/** rotates a {@code point} around {@code center}
 	 *  @param point the point to rotate
 	 *  @param origin the point around which to rotate {@code point}
