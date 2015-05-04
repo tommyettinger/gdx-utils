@@ -105,30 +105,22 @@ public class AnnotationAssetManager extends AssetManager {
 		if(asset.params().length() == 0)
 			return null;
 
+		String location = asset.params();
+		boolean method = location.endsWith("()"); // if a method contains the AssetLoaderParameters
 		Class<?> clazz; // class of the field or method containing the AssetLoaderParameters
-		boolean method; // if a method contains the AssetLoaderParameters
 		String name; // the name of the field or method inside clazz
-		{
-			String location = asset.params();
-			if(location.contains(".")) { // fully qualified path
-				int end = location.lastIndexOf('#');
-				if(end == -1) {
-					method = false;
-					end = location.lastIndexOf('.');
-				} else
-					method = true;
-				String className = location.substring(0, end);
-				name = location.substring(end + 1);
-				try {
-					clazz = Class.forName(className);
-				} catch(ClassNotFoundException e) {
-					throw new IllegalArgumentException("Failed to load AssetLoaderParameters from " + location + ": class " + className + " does not exist");
-				}
-			} else { // in container class
-				clazz = containerType;
-				method = location.contains("#");
-				name = method ? location.substring(1) : location;
+		if(location.contains(".")) { // fully qualified path
+			int end = location.lastIndexOf('.');
+			String className = location.substring(0, end);
+			name = location.substring(end + 1, method ? location.lastIndexOf("()") : 0);
+			try {
+				clazz = Class.forName(className);
+			} catch(ClassNotFoundException e) {
+				throw new IllegalArgumentException("Failed to load AssetLoaderParameters from " + location + ": class " + className + " does not exist");
 			}
+		} else { // in container class
+			clazz = containerType;
+			name = method ? location.substring(0, location.lastIndexOf("()")) : location;
 		}
 
 		if(method) {
