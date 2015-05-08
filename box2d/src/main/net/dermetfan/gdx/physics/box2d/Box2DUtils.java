@@ -281,7 +281,7 @@ public class Box2DUtils extends com.badlogic.gdx.physics.box2d.Box2DUtils {
 				throw new InvalidPolygonShapeException("polygon is concave", InvalidPolygonShapeException.Problem.CONCAVE, vertices, offset, length);
 			float area = GeometryUtils.polygonArea(vertices, offset, length);
 			if(area < epsilon)
-				throw new InvalidPolygonShapeException("polygon area is too small: " + area + " (min is Settings.epsilon: " + epsilon, InvalidPolygonShapeException.Problem.AREA, vertices, offset, length);
+				throw new InvalidPolygonShapeException("polygon area is too small: " + area + " (min is Settings.epsilon: " + epsilon + ")", InvalidPolygonShapeException.Problem.AREA, vertices, offset, length);
 		}
 
 		public boolean isValidChainShape(FloatArray vertices) {
