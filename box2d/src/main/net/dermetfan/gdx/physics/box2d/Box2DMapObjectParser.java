@@ -1,4 +1,4 @@
-/** Copyright 2014 Robin Stumm (serverkorken@gmail.com, http://dermetfan.net)
+/** Copyright 2015 Robin Stumm (serverkorken@gmail.com, http://dermetfan.net)
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -69,6 +69,7 @@ import static net.dermetfan.gdx.maps.MapUtils.findProperty;
 import static net.dermetfan.gdx.maps.MapUtils.getProperty;
 import static net.dermetfan.gdx.math.GeometryUtils.decompose;
 import static net.dermetfan.gdx.math.GeometryUtils.isConvex;
+import static net.dermetfan.gdx.math.GeometryUtils.toPolygonArray;
 import static net.dermetfan.gdx.math.GeometryUtils.triangulate;
 
 /** Parses {@link MapObjects} from a {@link Map} and generates Box2D {@link Body Bodies}, {@link Fixture Fixtures} and {@link Joint Joints} from them.<br>
@@ -101,51 +102,51 @@ public class Box2DMapObjectParser {
 	public interface Listener {
 
 		/** @param parser the {@link Box2DMapObjectParser} instance that is going to {@link Box2DMapObjectParser#load(World, Map) process} a map */
-		public void init(Box2DMapObjectParser parser);
+		void init(Box2DMapObjectParser parser);
 
 		/** @param map the {@link Map} to load from
 		 *  @param queue the {@link MapLayer MapLayers} to actually parse */
-		public void load(Map map, Array<MapLayer> queue);
+		void load(Map map, Array<MapLayer> queue);
 
 		/** @param layer the {@link MapObject MapObjects} in the layer
 		 *  @param queue the {@link MapObject MapObjects} to actually parse */
-		public void load(MapLayer layer, Array<MapObject> queue);
+		void load(MapLayer layer, Array<MapObject> queue);
 
 		/** @param mapObject the map object to create an object from
 		 *  @return the map object to create an object from, null to cancel the creation */
-		public MapObject createObject(MapObject mapObject);
+		MapObject createObject(MapObject mapObject);
 
 		/** @param mapObject the map object to create a body from
 		 *  @return the map object to create a body from, null to cancel the creation */
-		public MapObject createBody(MapObject mapObject);
+		MapObject createBody(MapObject mapObject);
 
 		/** @param mapObject the map object to create fixtures from
 		 *  @return the map object to create fixtures from, null to cancel the creation */
-		public MapObject createFixtures(MapObject mapObject);
+		MapObject createFixtures(MapObject mapObject);
 
 		/** @param mapObject the map object to create a fixture from
 		 *  @return the map object to create a fixture from, null to cancel the creation */
-		public MapObject createFixture(MapObject mapObject);
+		MapObject createFixture(MapObject mapObject);
 
 		/** @param mapObject the map object to create a joint from
 		 *  @return the map object to create a joint from, null to cancel the creation */
-		public MapObject createJoint(MapObject mapObject);
+		MapObject createJoint(MapObject mapObject);
 
 		/** @param body the created body
 		 *  @param mapObject the map object used to create the body */
-		public void created(Body body, MapObject mapObject);
+		void created(Body body, MapObject mapObject);
 
 		/** @param fixture the created fixture
 		 *  @param mapObject the map object used to create the fixture */
-		public void created(Fixture fixture, MapObject mapObject);
+		void created(Fixture fixture, MapObject mapObject);
 
 		/** @param joint the created joint
 		 *  @param mapObject the map object used to create the joint */
-		public void created(Joint joint, MapObject mapObject);
+		void created(Joint joint, MapObject mapObject);
 
 		/** Does nothing. Subclass this if you only want to override only some methods.
 		 *  @author dermetfan */
-		public static class Adapter implements Listener {
+		class Adapter implements Listener {
 
 			/** does nothing */
 			@Override
@@ -628,7 +629,7 @@ public class Box2DMapObjectParser {
 		if(!(mapObject instanceof PolygonMapObject) || isConvex(polygon = ((PolygonMapObject) mapObject).getPolygon()) && Box2DUtils.check.isValidPolygonShape(polygon.getVertices()))
 			return new Fixture[] {createFixture(mapObject, body)};
 
-		Polygon[] convexPolygons = triangulate ? triangulate(polygon) : decompose(polygon);
+		Polygon[] convexPolygons = toPolygonArray(triangulate ? triangulate(polygon.getTransformedVertices()) : decompose(polygon.getTransformedVertices()));
 		Fixture[] fixtures = new Fixture[convexPolygons.length];
 		for(int i = 0; i < fixtures.length; i++) {
 			PolygonMapObject convexObject = new PolygonMapObject(convexPolygons[i]);

@@ -1,4 +1,4 @@
-/** Copyright 2014 Robin Stumm (serverkorken@gmail.com, http://dermetfan.net)
+/** Copyright 2015 Robin Stumm (serverkorken@gmail.com, http://dermetfan.net)
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -428,6 +428,15 @@ public class GeometryUtils extends net.dermetfan.utils.math.GeometryUtils {
 		return polygons;
 	}
 
+	/** @param polygons the polygons' vertices
+	 *  @return an array of Polygons created from the given polygons' vertices */
+	public static Polygon[] toPolygonArray(float[][] polygons) {
+		Polygon[] polys = new Polygon[polygons.length];
+		for(int i = 0; i < polys.length; i++)
+			polys[i] = new Polygon(polygons[i]);
+		return polys;
+	}
+
 	/** @param polygon the polygon, assumed to be simple
 	 *  @return if the vertices are in clockwise order */
 	public static boolean areVerticesClockwise(Polygon polygon) {
@@ -498,43 +507,49 @@ public class GeometryUtils extends net.dermetfan.utils.math.GeometryUtils {
 		return isConvex(toFloatArray(vertices));
 	}
 
-	/** @param concave the concave polygon to triangulate
-	 *  @return an array of triangles representing the given concave polygon
-	 *  @see EarClippingTriangulator#computeTriangles(float[]) */
-	public static Polygon[] triangulate(Polygon concave) {
-		@SuppressWarnings("unchecked")
-		Array<Vector2> polygonVertices = Pools.obtain(Array.class);
-		polygonVertices.clear();
-		tmpFloatArray.clear();
-		tmpFloatArray.addAll(concave.getTransformedVertices());
-		polygonVertices.addAll(toVector2Array(tmpFloatArray));
-		ShortArray indices = new EarClippingTriangulator().computeTriangles(tmpFloatArray);
+	/** @see #triangulate(float[], int, int) */
+	public static float[][] triangulate(float[] polygon) {
+		return triangulate(polygon, 0, polygon.length);
+	}
 
-		@SuppressWarnings("unchecked")
-		Array<Vector2> vertices = Pools.obtain(Array.class);
-		vertices.clear();
-		vertices.ensureCapacity(indices.size);
-		for(int i = 0; i < indices.size; i++)
-			vertices.set(i, polygonVertices.get(indices.get(i)));
-		Polygon[] polygons = toPolygonArray(vertices, 3);
+	/** @param polygon the polygon to triangulate
+	 *  @return the triangles created from the polygon
+	 *  @see EarClippingTriangulator */
+	public static float[][] triangulate(float[] polygon, int offset, int length) {
+		EarClippingTriangulator triangulator = Pools.obtain(EarClippingTriangulator.class);
+		ShortArray indices = triangulator.computeTriangles(polygon, offset, length);
+		Pools.free(triangulator);
 
-		polygonVertices.clear();
-		vertices.clear();
-		Pools.free(polygonVertices);
-		Pools.free(vertices);
-		return polygons;
+		float[][] triangles = new float[indices.size / 3][];
+		for(int ti = 0, i = 0; i < indices.size; ti++, i += 3) {
+			int p1 = indices.get(i) * 2;
+			int p2 = indices.get(i + 1) * 2;
+			int p3 = indices.get(i + 2) * 2;
+			triangles[ti] = new float[] {
+					polygon[p1], polygon[p1 + 1],
+					polygon[p2], polygon[p2 + 1],
+					polygon[p3], polygon[p3 + 1]
+			};
+		}
+		return triangles;
+	}
+
+	/** @see #decompose(float[], int, int) */
+	public static float[][] decompose(float[] concave) {
+		return decompose(concave, 0, concave.length);
 	}
 
 	/** @param concave the concave polygon to to decompose
 	 *  @return an array of convex polygons representing the given concave polygon
 	 *  @see BayazitDecomposer#convexPartition(Array) */
-	public static Polygon[] decompose(Polygon concave) {
+	public static float[][] decompose(float[] concave, int offset, int length) {
+		ArrayUtils.checkRegion(concave, offset, length);
 		tmpFloatArray.clear();
-		tmpFloatArray.addAll(concave.getTransformedVertices());
-		Array<Array<Vector2>> convexPolys = BayazitDecomposer.convexPartition(new Array<>(toVector2Array(tmpFloatArray)));
-		Polygon[] convexPolygons = new Polygon[convexPolys.size];
+		tmpFloatArray.addAll(concave, offset, length);
+		Array<Array<Vector2>> convexPolys = BayazitDecomposer.convexPartition(toVector2Array(tmpFloatArray));
+		float[][] convexPolygons = new float[convexPolys.size][];
 		for(int i = 0; i < convexPolygons.length; i++)
-			convexPolygons[i] = new Polygon(toFloatArray(convexPolys.get(i)).toArray());
+			convexPolygons[i] = toFloatArray(convexPolys.get(i)).toArray();
 		return convexPolygons;
 	}
 
