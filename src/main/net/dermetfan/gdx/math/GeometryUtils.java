@@ -482,9 +482,20 @@ public class GeometryUtils extends net.dermetfan.utils.math.GeometryUtils {
 	}
 
 	/** @param aabb the rectangle to set as AABB of the given vertices
-	 *  @param vertices the vertices */
+	 *  @param vertices the vertices
+	 *  @return the given Rectangle for chaining */
+	public static Rectangle setToAABB(Rectangle aabb, float[] vertices, int offset, int length) {
+		return aabb.set(minX(vertices, offset, length), minY(vertices, offset, length), width(vertices, offset, length), height(vertices, offset, length));
+	}
+
+	/** @see #setToAABB(Rectangle, float[], int, int) */
+	public static Rectangle setToAABB(Rectangle aabb, float[] vertices) {
+		return setToAABB(aabb, vertices, 0, vertices.length);
+	}
+
+	/** @see #setToAABB(Rectangle, float[], int, int) */
 	public static Rectangle setToAABB(Rectangle aabb, FloatArray vertices) {
-		return aabb.set(minX(vertices), minY(vertices), width(vertices), height(vertices));
+		return setToAABB(aabb, vertices.items, 0, vertices.size);
 	}
 
 	/** @see #setToAABB(Rectangle, FloatArray) */
