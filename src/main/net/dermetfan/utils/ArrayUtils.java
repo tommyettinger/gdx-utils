@@ -494,10 +494,10 @@ public class ArrayUtils {
 	// float
 
 	/** @throws ArrayIndexOutOfBoundsException if an invalid region is specified
-	 *  @throws IllegalArgumentException if the array is null */
+	 *  @throws NullPointerException if the array is null */
 	public static void checkRegion(float[] array, int offset, int length) {
 		if(array == null)
-			throw new IllegalArgumentException("array is null");
+			throw new NullPointerException("array is null");
 		if(offset < 0)
 			throw new ArrayIndexOutOfBoundsException("negative offset: " + offset);
 		if(length < 0)
