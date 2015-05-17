@@ -725,7 +725,6 @@ public class GeometryUtils extends net.dermetfan.utils.math.GeometryUtils {
 		float[] vertices = polygon.getVertices();
 		for(int i = 0; i < vertices.length; i++)
 			vertices[i] = 0;
-		polygon.setVertices(vertices);
 		return polygon;
 	}
 
@@ -739,7 +738,6 @@ public class GeometryUtils extends net.dermetfan.utils.math.GeometryUtils {
 		float[] vertices = polyline.getVertices();
 		for(int i = 0; i < vertices.length; i++)
 			vertices[i] = 0;
-		polyline.dirty();
 		return polyline;
 	}
 
