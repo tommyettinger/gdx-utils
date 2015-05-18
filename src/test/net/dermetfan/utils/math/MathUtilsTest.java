@@ -130,9 +130,9 @@ public class MathUtilsTest {
 		float[] values = {-32.1f, -53424.23f, 83232, -1, 20, 1.1f, 0};
 		assertEquals(1.1f, MathUtils.nearest(3, values, 0, values.length), 0);
 		assertEquals(83232, MathUtils.nearest(Float.POSITIVE_INFINITY, values, 0, values.length), 0);
-		assertEquals(-53424.23f, MathUtils.nearest(Float.NEGATIVE_INFINITY, values, 100, 0, values.length), 0);
-		assertEquals(200, MathUtils.nearest(100, new float[] {-300, 200, 180}, 100, 0, 3), 0);
-		assertTrue(Float.isNaN(MathUtils.nearest(0, new float[] {-300, 200, 180}, 350)));
+		assertEquals(-53424.23f, MathUtils.nearest(Float.NEGATIVE_INFINITY, 100, values, 0, values.length), 0);
+		assertEquals(200, MathUtils.nearest(100, 100, new float[] {-300, 200, 180}, 0, 3), 0);
+		assertTrue(Float.isNaN(MathUtils.nearest(0, 350, new float[] {-300, 200, 180})));
 	}
 
 	@Test
@@ -144,12 +144,12 @@ public class MathUtilsTest {
 	@Test
 	public void scale() {
 		float[] values = {-50, -25, 0, 25, 50};
-		assertEquals(1, MathUtils.amplitude2(MathUtils.scale(values, 0, 1, 0, values.length), 0, values.length), 0);
+		assertEquals(1, MathUtils.amplitude2(MathUtils.scale(values, 0, values.length, 0, 1), 0, values.length), 0);
 
 		// float rounding error
 		float min = 0, max = Float.MAX_VALUE / 3;
-		assertNotEquals(Math.abs(max - min), MathUtils.amplitude2(MathUtils.scale(values, min, max, 0, values.length), 0, values.length), com.badlogic.gdx.math.MathUtils.FLOAT_ROUNDING_ERROR);
-		assertEquals(Math.abs(max - min), MathUtils.amplitude2(MathUtils.clamp(values, min, max, 0, values.length), 0, values.length), 0); // clamped amplitude must be correct
+		assertNotEquals(Math.abs(max - min), MathUtils.amplitude2(MathUtils.scale(values, 0, values.length, min, max), 0, values.length), com.badlogic.gdx.math.MathUtils.FLOAT_ROUNDING_ERROR);
+		assertEquals(Math.abs(max - min), MathUtils.amplitude2(MathUtils.clamp(values, 0, values.length, min, max), 0, values.length), 0); // clamped amplitude must be correct
 	}
 
 	@Test
@@ -164,22 +164,22 @@ public class MathUtilsTest {
 
 	@Test
 	public void add() {
-		assertArrayEquals(new float[] {0, 1, 2}, MathUtils.add(new float[] {-1, 0, 1}, 1, 0, 3), 0);
+		assertArrayEquals(new float[] {0, 1, 2}, MathUtils.add(new float[] {-1, 0, 1}, 0, 3, 1), 0);
 	}
 
 	@Test
 	public void sub() {
-		assertArrayEquals(new float[] {0, 1, 2}, MathUtils.sub(new float[] {1, 2, 3}, 1, 0, 3), 0);
+		assertArrayEquals(new float[] {0, 1, 2}, MathUtils.sub(new float[] {1, 2, 3}, 0, 3, 1), 0);
 	}
 
 	@Test
 	public void mul() {
-		assertArrayEquals(new float[] {0, 1, 2}, MathUtils.mul(new float[] {0, .5f, 1}, 2, 0, 3), 0);
+		assertArrayEquals(new float[] {0, 1, 2}, MathUtils.mul(new float[] {0, .5f, 1}, 0, 3, 2), 0);
 	}
 
 	@Test
 	public void div() {
-		assertArrayEquals(new float[] {0, 1, 2}, MathUtils.div(new float[] {0, 2, 4}, 2, 0, 3), 0);
+		assertArrayEquals(new float[] {0, 1, 2}, MathUtils.div(new float[] {0, 2, 4}, 0, 3, 2), 0);
 	}
 
 }
