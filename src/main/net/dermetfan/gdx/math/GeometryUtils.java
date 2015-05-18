@@ -299,9 +299,9 @@ public class GeometryUtils extends net.dermetfan.utils.math.GeometryUtils {
 		return max(filterY(vertices));
 	}
 
-	/** @see #reverse2D(float[]) */
+	/** @see #reverse(float[]) */
 	public static FloatArray reverse2D(FloatArray vertices) {
-		reverse2D(vertices.items, 0, vertices.size);
+		reverse(vertices.items, 0, vertices.size);
 		return vertices;
 	}
 

@@ -93,9 +93,9 @@ public class GeometryUtilsTest {
 	}
 
 	@Test
-	public void reverse2D() {
-		assertArrayEquals(new float[] {4, 4, 3, 3, 2, 2, 1, 1, 0, 0}, GeometryUtils.reverse2D(new float[] {0, 0, 1, 1, 2, 2, 3, 3, 4, 4}), 0);
-		assertArrayEquals(new float[] {0, 0, 3, 3, 2, 2, 1, 1, 4, 4}, GeometryUtils.reverse2D(new float[] {0, 0, 1, 1, 2, 2, 3, 3, 4, 4}, 2, 6), 0);
+	public void reverse() {
+		assertArrayEquals(new float[] {4, 4, 3, 3, 2, 2, 1, 1, 0, 0}, GeometryUtils.reverse(new float[] {0, 0, 1, 1, 2, 2, 3, 3, 4, 4}), 0);
+		assertArrayEquals(new float[] {0, 0, 3, 3, 2, 2, 1, 1, 4, 4}, GeometryUtils.reverse(new float[] {0, 0, 1, 1, 2, 2, 3, 3, 4, 4}, 2, 6), 0);
 	}
 
 	@Test

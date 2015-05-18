@@ -323,9 +323,9 @@ public class GeometryUtils {
 		return x_dist * x_dist + y_dist * y_dist;
 	}
 
-	/** @param vertices the 2D vertices to reverse
+	/** @param vertices the vertices to reverse
 	 *  @return the reversed given vertices for chaining */
-	public static float[] reverse2D(float[] vertices, int offset, int length) {
+	public static float[] reverse(float[] vertices, int offset, int length) {
 		checkRegion(vertices, offset, length);
 		for(int i = offset, ii = offset + length - 2; i < offset + length / 2; i += 2, ii -= 2) {
 			float ix = vertices[i], iy = vertices[i + 1];
@@ -338,9 +338,9 @@ public class GeometryUtils {
 		return vertices;
 	}
 
-	/** @see #reverse2D(float[], int, int) */
-	public static float[] reverse2D(float[] vertices) {
-		return reverse2D(vertices, 0, vertices.length);
+	/** @see #reverse(float[], int, int) */
+	public static float[] reverse(float[] vertices) {
+		return reverse(vertices, 0, vertices.length);
 	}
 
 	/** @param vertices the 3D vertices to reverse
