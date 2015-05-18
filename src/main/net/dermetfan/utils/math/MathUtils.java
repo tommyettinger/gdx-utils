@@ -179,15 +179,15 @@ public class MathUtils {
 	}
 
 	/** @return the given array clamped to min and max */
-	public static float[] clamp(float[] items, float min, float max, int offset, int length) {
+	public static float[] clamp(float[] items, int offset, int length, float min, float max) {
 		for(int i = offset; i < offset + length; i++)
 			items[i]= clamp(items[i], min, max);
 		return items;
 	}
 
-	/** @see #clamp(float[], float, float, int, int) */
+	/** @see #clamp(float[], int, int, float, float) */
 	public static float[] clamp(float[] items, float min, float max) {
-		return clamp(items, min, max, 0, items.length);
+		return clamp(items, 0, items.length, min, max);
 	}
 
 	/** @return the given values with each element being the {@link Math#abs(float) absolute} of its value */
@@ -203,47 +203,47 @@ public class MathUtils {
 	}
 
 	/** @return the given values with the given value added to each element */
-	public static float[] add(float[] items, float value, int offset, int length) {
+	public static float[] add(float[] items, int offset, int length, float value) {
 		for(int i = offset; i < offset + length; i++)
 			items[i] += value;
 		return items;
 	}
 
-	/** @see #add(float[], float, int, int) */
+	/** @see #add(float[], int, int, float) */
 	public static float[] add(float[] items, float value) {
-		return add(items, value, 0, items.length);
+		return add(items, 0, items.length, value);
 	}
 
 	/** @return the given values with the given value subtracted from each element */
-	public static float[] sub(float[] items, float value, int offset, int length) {
-		return add(items, -value, offset, length);
+	public static float[] sub(float[] items, int offset, int length, float value) {
+		return add(items, offset, length, -value);
 	}
 
-	/** @see #sub(float[], float, int, int) */
+	/** @see #sub(float[], int, int, float) */
 	public static float[] sub(float[] items, float value) {
-		return sub(items, value, 0, items.length);
+		return sub(items, 0, items.length, value);
 	}
 
 	/** @return the given values with each element multiplied with the given factor */
-	public static float[] mul(float[] items, float factor, int offset, int length) {
+	public static float[] mul(float[] items, int offset, int length, float factor) {
 		for(int i = offset; i < offset + length; i++)
 			items[i] *= factor;
 		return items;
 	}
 
-	/** @see #mul(float[], float, int, int) */
+	/** @see #mul(float[], int, int, float) */
 	public static float[] mul(float[] items, float factor) {
-		return mul(items, factor, 0, items.length);
+		return mul(items, 0, items.length, factor);
 	}
 
 	/** @return the given values with each element divided by the given divisor */
-	public static float[] div(float[] items, float divisor, int offset, int length) {
-		return mul(items, 1 / divisor, offset, length);
+	public static float[] div(float[] items, int offset, int length, float divisor) {
+		return mul(items, offset, length, 1 / divisor);
 	}
 
-	/** @see #div(float[], float, int, int) */
+	/** @see #div(float[], int, int, float) */
 	public static float[] div(float[] items, float divisor) {
-		return div(items, divisor, 0, items.length);
+		return div(items, 0, items.length, divisor);
 	}
 
 	/** @param value the value from which to start
@@ -321,7 +321,7 @@ public class MathUtils {
 	 *  @param items the values to inspect
 	 *  @param minDiff the minimal difference to the given value
 	 *  @return the nearest to value in values, {@code NaN} if none is found */
-	public static float nearest(float value, float[] items, float minDiff, int offset, int length) {
+	public static float nearest(float value, float minDiff, float[] items, int offset, int length) {
 		if(value == Float.POSITIVE_INFINITY)
 			return max(items, offset, length);
 		if(value == Float.NEGATIVE_INFINITY)
@@ -340,15 +340,15 @@ public class MathUtils {
 		return nearest;
 	}
 
-	/** @see #nearest(float, float[], float, int, int) */
-	public static float nearest(float value, float[] items, float minDiff) {
-		return nearest(value, items, minDiff, 0, items.length);
+	/** @see #nearest(float, float, float[], int, int) */
+	public static float nearest(float value, float minDiff, float[] items) {
+		return nearest(value, minDiff, items, 0, items.length);
 	}
 
 	/** @return the nearest to value in values
-	 *  @see #nearest(float, float[], float, int, int) */
+	 *  @see #nearest(float, float, float[], int, int) */
 	public static float nearest(float value, float[] items, int offset, int length) {
-		return nearest(value, items, 0, offset, length);
+		return nearest(value, 0, items, offset, length);
 	}
 
 	/** @see #nearest(float, float[], int, int) */
@@ -361,7 +361,7 @@ public class MathUtils {
 	 *  @param min the desired minimal value in the array
 	 *  @param max the desired maximal value in the array
 	 *  @return the scaled array */
-	public static float[] scale(float[] items, float min, float max, int offset, int length) {
+	public static float[] scale(float[] items, int offset, int length, float min, float max) {
 		float tmp = amplitude2(items, offset, length) / (max - min);
 		for(int i = offset; i < offset + length; i++)
 			items[i] /= tmp;
@@ -373,9 +373,9 @@ public class MathUtils {
 		return items;
 	}
 
-	/** @see #scale(float[], float, float, int, int) */
+	/** @see #scale(float[], int, int, float, float) */
 	public static float[] scale(float[] items, float min, float max) {
-		return scale(items, min, max, 0, items.length);
+		return scale(items, 0, items.length, min, max);
 	}
 
 }
