@@ -697,6 +697,63 @@ public class GeometryUtils extends net.dermetfan.utils.math.GeometryUtils {
 		return intersects;
 	}
 
+	/** @see #clip(float[], float[], FloatArray) */
+	public static void clip(float[] polygon, float[] clip, FloatArray clipped) {
+		clip(polygon, 0, polygon.length, clip, 0, clip.length, clipped);
+	}
+
+	/** an implementation of the Sutherland-Hodgman algorithm
+	 *  @param polygon the polygon to clip
+	 *  @param clip the clipping polygon
+	 *  @param clipped the FloatArray to store the resulting clipped polygon in */
+	public static void clip(float[] polygon, int offset, int length, float[] clip, int clipOffset, int clipLength, FloatArray clipped) {
+		ArrayUtils.checkRegion(polygon, offset, length);
+		ArrayUtils.checkRegion(clip, clipOffset, clipLength);
+
+		int inside = areVerticesClockwise(clip, clipOffset, clipLength) ? -1 : 1;
+
+		FloatArray output = Pools.obtain(FloatArray.class), input = Pools.obtain(FloatArray.class);
+		output.clear();
+		output.addAll(polygon);
+
+		for(int i = clipOffset; i < clipOffset + clipLength; i += 2) {
+			float clipEdgeX1 = clip[ArrayUtils.repeat(clipOffset, clipLength, i)], clipEdgeY1 = clip[ArrayUtils.repeat(clipOffset, clipLength, i + 1)], clipEdgeX2 = clip[ArrayUtils.repeat(clipOffset, clipLength, i + 2)], clipEdgeY2 = clip[ArrayUtils.repeat(clipOffset, clipLength, i + 3)];
+			input.clear();
+			input.addAll(output);
+			output.clear();
+			float sX = input.get(input.size - 2), sY = input.get(input.size - 1);
+			for(int ii = 0; ii < input.size; ii += 2) {
+				float eX = input.get(ii), eY = input.get(ii + 1);
+				if(inside == Intersector.pointLineSide(clipEdgeX1, clipEdgeY1, clipEdgeX2, clipEdgeY2, eX, eY)) {
+					if(inside != Intersector.pointLineSide(clipEdgeX1, clipEdgeY1, clipEdgeX2, clipEdgeY2, sX, sY)) {
+						Intersector.intersectLines(sX, sY, eX, eY, clipEdgeX1, clipEdgeY1, clipEdgeX2, clipEdgeY2, vec2_0);
+						output.ensureCapacity(2);
+						output.add(vec2_0.x);
+						output.add(vec2_0.y);
+					}
+					output.ensureCapacity(2);
+					output.add(eX);
+					output.add(eY);
+				} else if(inside == Intersector.pointLineSide(clipEdgeX1, clipEdgeY1, clipEdgeX2, clipEdgeY2, sX, sY)) {
+					Intersector.intersectLines(sX, sY, eX, eY, clipEdgeX1, clipEdgeY1, clipEdgeX2, clipEdgeY2, vec2_0);
+					output.ensureCapacity(2);
+					output.add(vec2_0.x);
+					output.add(vec2_0.y);
+				}
+				sX = eX;
+				sY = eY;
+			}
+		}
+
+		clipped.clear();
+		clipped.addAll(output);
+
+		output.clear();
+		input.clear();
+		Pools.free(output);
+		Pools.free(input);
+	}
+
 	/** dispatch method
 	 *  @param shape the shape to reset
 	 *  @return the given shape for chaining */
