@@ -496,7 +496,7 @@ public class GeometryUtils {
 		}
 	}
 
-	/** @return the area contained by the given polygon */
+	/** @return the area contained by the given simple/non self intersecting polygon */
 	public static float polygonArea(float[] vertices, int offset, int length) {
 		ArrayUtils.checkRegion(vertices, offset, length);
 		if(length % 2 != 0)
