@@ -710,6 +710,8 @@ public class GeometryUtils extends net.dermetfan.utils.math.GeometryUtils {
 		ArrayUtils.checkRegion(polygon, offset, length);
 		ArrayUtils.checkRegion(clip, clipOffset, clipLength);
 
+		clipped.clear();
+
 		int inside = areVerticesClockwise(clip, clipOffset, clipLength) ? -1 : 1;
 
 		FloatArray output = Pools.obtain(FloatArray.class), input = Pools.obtain(FloatArray.class);
@@ -743,9 +745,10 @@ public class GeometryUtils extends net.dermetfan.utils.math.GeometryUtils {
 				sX = eX;
 				sY = eY;
 			}
+			if(output.size == 0)
+				break; // subject polygon and clip polygon don't overlap
 		}
 
-		clipped.clear();
 		clipped.addAll(output);
 
 		output.clear();
