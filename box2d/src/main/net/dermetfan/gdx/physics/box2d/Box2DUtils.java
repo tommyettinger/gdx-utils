@@ -16,8 +16,10 @@ package net.dermetfan.gdx.physics.box2d;
 
 import java.util.Arrays;
 
+import com.badlogic.gdx.math.Circle;
 import com.badlogic.gdx.math.Intersector;
 import com.badlogic.gdx.math.Polygon;
+import com.badlogic.gdx.math.Polyline;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Body;
@@ -1425,6 +1427,112 @@ public class Box2DUtils extends com.badlogic.gdx.physics.box2d.Box2DUtils {
 				i += 2;
 		}
 		return length / 2;
+	}
+
+	// as
+
+	/** @param circle the Circle to set according to the given shape
+	 *  @return the given Circle for chaining
+	 *  @since 0.11.1 */
+	public static Circle as(CircleShape shape, Circle circle) {
+		Vector2 position = shape.getPosition();
+		circle.set(position.x, position.y, shape.getRadius());
+		return circle;
+	}
+
+	/** @param polygon the Polygon to set according to the given shape
+	 *  @return the given Polygon for chaining
+	 *  @since 0.11.1 */
+	public static Polygon as(PolygonShape shape, Polygon polygon) {
+		float[] sVerts = vertices(shape), pVerts = polygon.getVertices();
+		if(pVerts.length != sVerts.length)
+			pVerts = new float[sVerts.length];
+		polygon.setVertices(pVerts);
+		System.arraycopy(sVerts, 0, pVerts, 0, pVerts.length);
+		return polygon;
+	}
+
+	/** @param polyline the Polyline to set according to the given shape
+	 *  @return the given Polyline for chaining
+	 *  @since 0.11.1 */
+	public static Polyline as(EdgeShape shape, Polyline polyline) {
+		float[] pVerts = polyline.getVertices();
+		if(pVerts.length != 4) {
+			pVerts = new float[4];
+			polyline = new Polyline(pVerts); // TODO see https://github.com/libgdx/libgdx/pull/3151
+		}
+		// polyline.setVertices(pVerts);
+		polyline.dirty();
+		System.arraycopy(vertices(shape), 0, pVerts, 0, 4);
+		return polyline;
+	}
+
+	/** @param polyline the Polyline to set according to the given shape
+	 *  @return the given Polyline for chaining
+	 *  @since 0.11.1 */
+	public static Polyline as(ChainShape shape, Polyline polyline) {
+		float[] sVerts = vertices(shape), pVerts = polyline.getVertices();
+		if(pVerts.length != sVerts.length) {
+			pVerts = new float[sVerts.length];
+			polyline = new Polyline(pVerts); // TODO see https://github.com/libgdx/libgdx/pull/3151
+		}
+		// polyline.setVertices(vertices);
+		polyline.dirty();
+		System.arraycopy(sVerts, 0, pVerts, 0, pVerts.length);
+		return polyline;
+	}
+
+	/** sets the given Circle to the Fixture's CircleShape, in world coordinates
+	 *  @throws IllegalArgumentException if the Fixture's Shape is not of {@link Type#Circle}
+	 *  @see #as(CircleShape, Circle)
+	 *  @since 0.11.1 */
+	public static Circle as(Fixture fixture, Circle circle) {
+		if(fixture.getShape().getType() != Type.Circle)
+			throw new IllegalArgumentException("the given Fixture isn't a circle");
+		as((CircleShape) fixture.getShape(), circle);
+		Body body = fixture.getBody();
+		vec2_0.set(circle.x, circle.y);
+		Vector2 pos = body.getPosition();
+		GeometryUtils.rotate(vec2_0, pos, body.getAngle());
+		circle.x = vec2_0.x;
+		circle.y = vec2_0.y;
+		return circle;
+	}
+
+	/** sets the given Polygon to the Fixture's PolygonShape, in world coordinates
+	 *  @throws IllegalArgumentException if the Fixture's Shape is not of {@link Type#Polygon}
+	 *  @see #as(PolygonShape, Polygon)
+	 *  @since 0.11.1 */
+	public static Polygon as(Fixture fixture, Polygon polygon) {
+		if(fixture.getShape().getType() != Type.Polygon)
+			throw new IllegalArgumentException("the given Fixture isn't a polygon");
+		as((PolygonShape) fixture.getShape(), polygon);
+		Body body = fixture.getBody();
+		Vector2 pos = body.getPosition();
+		polygon.setPosition(pos.x, pos.y);
+		polygon.setOrigin(pos.x, pos.y);
+		polygon.setRotation(body.getAngle() * com.badlogic.gdx.math.MathUtils.radiansToDegrees);
+		return polygon;
+	}
+
+	/** sets the given Polyline to the given Fixture's EdgeShape or ChainShape, in world coordinates
+	 *  @throws IllegalArgumentException if the Fixture's Shape is neither of {@link Type#Edge} nor {@link Type#Chain}
+	 *  @see #as(EdgeShape, Polyline)
+	 *  @see #as(ChainShape, Polyline)
+	 *  @since 0.11.1 */
+	public static Polyline as(Fixture fixture, Polyline polyline) {
+		if(fixture.getShape().getType() != Type.Edge && fixture.getShape().getType() != Type.Chain)
+			throw new IllegalArgumentException("the given Fixture is neither an edge nor a chain");
+		if(fixture.getShape().getType() == Type.Edge)
+			polyline = as((EdgeShape) fixture.getShape(), polyline); // TODO assignment shouldn't be necessary, see #as(EdgeShape, Polyline)
+		else
+			polyline = as((ChainShape) fixture.getShape(), polyline); // TODO assignment shouldn't be necessary, see #as(ChainShape, Polyline)
+		Body body = fixture.getBody();
+		Vector2 pos = body.getPosition();
+		polyline.setPosition(pos.x, pos.y);
+		polyline.setOrigin(pos.x, pos.y);
+		polyline.setRotation(body.getAngle() * com.badlogic.gdx.math.MathUtils.radiansToDegrees);
+		return polyline;
 	}
 
 	// various
