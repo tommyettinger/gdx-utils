@@ -1440,7 +1440,7 @@ public class Box2DUtils extends com.badlogic.gdx.physics.box2d.Box2DUtils {
 		return circle;
 	}
 
-	/** @param polygon the Polygon to set according to the given shape
+	/** @param polygon the Polygon which vertices to set according to the given shape
 	 *  @return the given Polygon for chaining
 	 *  @since 0.11.1 */
 	public static Polygon as(PolygonShape shape, Polygon polygon) {
@@ -1452,7 +1452,7 @@ public class Box2DUtils extends com.badlogic.gdx.physics.box2d.Box2DUtils {
 		return polygon;
 	}
 
-	/** @param polyline the Polyline to set according to the given shape
+	/** @param polyline the Polyline which vertices to set according to the given shape
 	 *  @return the given Polyline for chaining
 	 *  @since 0.11.1 */
 	public static Polyline as(EdgeShape shape, Polyline polyline) {
@@ -1467,7 +1467,7 @@ public class Box2DUtils extends com.badlogic.gdx.physics.box2d.Box2DUtils {
 		return polyline;
 	}
 
-	/** @param polyline the Polyline to set according to the given shape
+	/** @param polyline the Polyline which vertices to set according to the given shape
 	 *  @return the given Polyline for chaining
 	 *  @since 0.11.1 */
 	public static Polyline as(ChainShape shape, Polyline polyline) {
@@ -1489,6 +1489,7 @@ public class Box2DUtils extends com.badlogic.gdx.physics.box2d.Box2DUtils {
 	public static Circle as(Fixture fixture, Circle circle) {
 		if(fixture.getShape().getType() != Type.Circle)
 			throw new IllegalArgumentException("the given Fixture isn't a circle");
+		GeometryUtils.reset(circle);
 		as((CircleShape) fixture.getShape(), circle);
 		Body body = fixture.getBody();
 		vec2_0.set(circle.x, circle.y);
@@ -1506,6 +1507,7 @@ public class Box2DUtils extends com.badlogic.gdx.physics.box2d.Box2DUtils {
 	public static Polygon as(Fixture fixture, Polygon polygon) {
 		if(fixture.getShape().getType() != Type.Polygon)
 			throw new IllegalArgumentException("the given Fixture isn't a polygon");
+		GeometryUtils.reset(polygon);
 		as((PolygonShape) fixture.getShape(), polygon);
 		Body body = fixture.getBody();
 		Vector2 pos = body.getPosition();
@@ -1523,6 +1525,7 @@ public class Box2DUtils extends com.badlogic.gdx.physics.box2d.Box2DUtils {
 	public static Polyline as(Fixture fixture, Polyline polyline) {
 		if(fixture.getShape().getType() != Type.Edge && fixture.getShape().getType() != Type.Chain)
 			throw new IllegalArgumentException("the given Fixture is neither an edge nor a chain");
+		GeometryUtils.reset(polyline);
 		if(fixture.getShape().getType() == Type.Edge)
 			polyline = as((EdgeShape) fixture.getShape(), polyline); // TODO assignment shouldn't be necessary, see #as(EdgeShape, Polyline)
 		else
