@@ -1540,6 +1540,42 @@ public class Box2DUtils extends com.badlogic.gdx.physics.box2d.Box2DUtils {
 
 	// various
 
+	/** @param vertices the local vertices to convert to world vertices
+	 *  @param body the Body relative to which the given vertices are local
+	 *  @return the given vertices for chaining, converted to world vertices */
+	public static float[] toWorldVertices(float[] vertices, int offset, int length, Body body) {
+		ArrayUtils.checkRegion(vertices, offset, length);
+		for(int i = offset; i < offset + length; i += 2) {
+			Vector2 worldPoint = body.getWorldPoint(body.localPoint2.set(vertices[i], vertices[i + 1]));
+			vertices[i] = worldPoint.x;
+			vertices[i + 1] = worldPoint.y;
+		}
+		return vertices;
+	}
+
+	/** @see #toWorldVertices(float[], int, int, Body) */
+	public static float[] toWorldVertices(float[] vertices, Body body) {
+		return toWorldVertices(vertices, 0, vertices.length, body);
+	}
+
+	/** @param vertices the world vertices to convert to local vertices
+	 *  @param body the Body in which local coordinate system to convert the vertices
+	 *  @return the given vertices for chaining, converted to local vertices */
+	public static float[] toLocalVertices(float[] vertices, int offset, int length, Body body) {
+		ArrayUtils.checkRegion(vertices, offset, length);
+		for(int i = offset; i < offset + length; i += 2) {
+			Vector2 localPoint = body.getLocalPoint(body.localVector.set(vertices[i], vertices[i + 1]));
+			vertices[i] = localPoint.x;
+			vertices[i + 1] = localPoint.y;
+		}
+		return vertices;
+	}
+
+	/** @see #toLocalVertices(float[], int, int, Body) */
+	public static float[] toLocalVertices(float[] vertices, Body body) {
+		return toLocalVertices(vertices, 0, vertices.length, body);
+	}
+
 	/** @return whether the two given Transforms {@link Transform#vals values} equal
 	 *  @since 0.7.1 */
 	public static boolean equals(Transform a, Transform b) {
