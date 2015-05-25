@@ -89,7 +89,7 @@ public class ArrayPools {
 		if(array == null)
 			throw new IllegalArgumentException("array cannot be null");
 		@SuppressWarnings("unchecked")
-		ArrayPool<T> pool = (ArrayPool<T>) get(array.getClass().getComponentType()); // FIXME not GWT compatible, see https://github.com/libgdx/libgdx/issues/3168
+		ArrayPool<T> pool = (ArrayPool<T>) get(array.getClass().getComponentType());
 		pool.free(array);
 	}
 
