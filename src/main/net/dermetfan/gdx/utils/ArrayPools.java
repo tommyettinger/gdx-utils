@@ -23,6 +23,38 @@ public class ArrayPools {
 
 	private static final ObjectMap<Class, ArrayPool> typePools = new ObjectMap<>();
 
+	/** a static pool for float arrays */
+	private static FloatArrayPool floatPool;
+
+	/** a static pool for int arrays */
+	private static IntArrayPool intPool;
+
+	/** @return the {@link #floatPool} */
+	public static FloatArrayPool getFloatPool(int max, int maxEach) {
+		if(floatPool == null)
+			floatPool = new FloatArrayPool(max, maxEach);
+		return floatPool;
+	}
+
+	/** @return the {@link #intPool} */
+	public static IntArrayPool getIntPool(int max, int maxEach) {
+		if(intPool == null)
+			intPool = new IntArrayPool(max, maxEach);
+		return intPool;
+	}
+
+	/** calls {@link #getFloatPool(int, int)} with a max size of -1 (no max size) and a maxEach size of 100
+	 *  @see #getFloatPool(int, int) */
+	public static FloatArrayPool getFloatPool() {
+		return getFloatPool(-1, 100);
+	}
+
+	/** calls {@link #getIntPool(int, int)} with a max size of -1 (no max size) and a maxEach size of 100
+	 *  @see #getIntPool(int, int) */
+	public static IntArrayPool getIntPool() {
+		return getIntPool(-1, 100);
+	}
+
 	/** @param max note the max size is ignored if this is not the first time this pool has been requested
 	 *  @return a new {@link ReflectionArrayPool} or existing pool for the specified type, stored in a Class to {@link ArrayPool} map */
 	public static <T> ArrayPool<T> get(Class<T> type, int max, int maxEach) {

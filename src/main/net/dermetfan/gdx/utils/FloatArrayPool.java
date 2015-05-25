@@ -36,7 +36,7 @@ public class FloatArrayPool {
 		this.max = max;
 		this.maxEach = maxEach;
 
-		lists = new IntMap<>(max, 1);
+		lists = new IntMap<>(max < 0 ? 10 : max, 1);
 		listPool = new Pool<PooledLinkedList<float[]>>() {
 			@Override
 			protected PooledLinkedList<float[]> newObject() {
