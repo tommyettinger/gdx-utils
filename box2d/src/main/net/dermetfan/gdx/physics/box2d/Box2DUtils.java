@@ -1457,12 +1457,9 @@ public class Box2DUtils extends com.badlogic.gdx.physics.box2d.Box2DUtils {
 	 *  @since 0.11.1 */
 	public static Polyline as(EdgeShape shape, Polyline polyline) {
 		float[] pVerts = polyline.getVertices();
-		if(pVerts.length != 4) {
+		if(pVerts.length != 4)
 			pVerts = new float[4];
-			polyline = new Polyline(pVerts); // TODO see https://github.com/libgdx/libgdx/pull/3151
-		}
-		// polyline.setVertices(pVerts);
-		polyline.dirty();
+		polyline.setVertices(pVerts);
 		System.arraycopy(vertices(shape), 0, pVerts, 0, 4);
 		return polyline;
 	}
@@ -1472,12 +1469,9 @@ public class Box2DUtils extends com.badlogic.gdx.physics.box2d.Box2DUtils {
 	 *  @since 0.11.1 */
 	public static Polyline as(ChainShape shape, Polyline polyline) {
 		float[] sVerts = vertices(shape), pVerts = polyline.getVertices();
-		if(pVerts.length != sVerts.length) {
+		if(pVerts.length != sVerts.length)
 			pVerts = new float[sVerts.length];
-			polyline = new Polyline(pVerts); // TODO see https://github.com/libgdx/libgdx/pull/3151
-		}
-		// polyline.setVertices(vertices);
-		polyline.dirty();
+	 	polyline.setVertices(pVerts);
 		System.arraycopy(sVerts, 0, pVerts, 0, pVerts.length);
 		return polyline;
 	}
@@ -1527,9 +1521,9 @@ public class Box2DUtils extends com.badlogic.gdx.physics.box2d.Box2DUtils {
 			throw new IllegalArgumentException("the given Fixture is neither an edge nor a chain");
 		GeometryUtils.reset(polyline);
 		if(fixture.getShape().getType() == Type.Edge)
-			polyline = as((EdgeShape) fixture.getShape(), polyline); // TODO assignment shouldn't be necessary, see #as(EdgeShape, Polyline)
+			as((EdgeShape) fixture.getShape(), polyline);
 		else
-			polyline = as((ChainShape) fixture.getShape(), polyline); // TODO assignment shouldn't be necessary, see #as(ChainShape, Polyline)
+			as((ChainShape) fixture.getShape(), polyline);
 		Body body = fixture.getBody();
 		Vector2 pos = body.getPosition();
 		polyline.setPosition(pos.x, pos.y);
