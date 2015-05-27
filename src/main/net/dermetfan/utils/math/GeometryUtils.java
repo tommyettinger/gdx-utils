@@ -125,6 +125,80 @@ public class GeometryUtils {
 		return subY(items, 0, items.length, value);
 	}
 
+	/** @param items the items to multiply
+	 *  @param factorX the factor for x coordinates
+	 *  @param factorY the factor for y coordinates
+	 *  @return the given items for chaining */
+	public static float[] mul(float[] items, int offset, int length, float factorX, float factorY) {
+		for(int i = offset; i < offset + length; i += 2) {
+			items[i] *= factorX;
+			items[i + 1] *= factorY;
+		}
+		return items;
+	}
+
+	/** @see #mul(float[], int, int, float, float) */
+	public static float[] mul(float[] items, float factorX, float factorY) {
+		return mul(items, 0, items.length, factorX, factorY);
+	}
+
+	/** @see #mul(float[], int, int, float, float) */
+	public static float[] mulX(float[] items, int offset, int length, float factor) {
+		return mul(items, offset, length, factor, 1);
+	}
+
+	/** @see #mulX(float[], int, int, float) */
+	public static float[] mulX(float[] items, float factor) {
+		return mulX(items, 0, items.length, factor);
+	}
+
+	/** @see #mul(float[], int, int, float, float) */
+	public static float[] mulY(float[] items, int offset, int length, float factor) {
+		return mul(items, offset, length, 1, factor);
+	}
+
+	/** @see #mulY(float[], int, int, float) */
+	public static float[] mulY(float[] items, float factor) {
+		return mulY(items, 0, items.length, factor);
+	}
+
+	/** @param items the items to divide
+	 *  @param divisorX the divisor for x coordinates
+	 *  @param divisorY the divisor for y coordinates
+	 *  @return the given items for chaining */
+	public static float[] div(float[] items, int offset, int length, float divisorX, float divisorY) {
+		for(int i = offset; i < offset + length; i += 2) {
+			items[i] /= divisorX;
+			items[i + 1] /= divisorY;
+		}
+		return items;
+	}
+
+	/** @see #div(float[], int, int, float, float) */
+	public static float[] div(float[] items, float divisorX, float divisorY) {
+		return div(items, 0, items.length, divisorX, divisorY);
+	}
+
+	/** @see #div(float[], int, int, float, float) */
+	public static float[] divX(float[] items, int offset, int length, float divisor) {
+		return div(items, offset, length, divisor, 1);
+	}
+
+	/** @see #divX(float[], int, int, float) */
+	public static float[] divX(float[] items, float divisor) {
+		return divX(items, 0, items.length, divisor);
+	}
+
+	/** @see #div(float[], int, int, float, float) */
+	public static float[] divY(float[] items, int offset, int length, float divisor) {
+		return div(items, offset, length, 1, divisor);
+	}
+
+	/** @see #divY(float[], int, int, float) */
+	public static float[] divY(float[] items, float divisor) {
+		return divY(items, 0, items.length, divisor);
+	}
+
 	/** @param vertices the vertices which width to get
 	 *  @return the width of the given vertices */
 	public static float width(float[] vertices, int offset, int length) {
