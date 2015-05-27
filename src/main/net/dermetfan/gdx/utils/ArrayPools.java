@@ -30,7 +30,7 @@ public class ArrayPools {
 	/** a static pool for int arrays */
 	private static IntArrayPool intPool;
 
-	/** @param max note the max size is ignored if this is not the first time this pool has been requested
+	/** note the max and maxEach sizes are ignored if this is not the first time this pool has been requested
 	 *  @return a new {@link ReflectionArrayPool} or existing pool for the specified type, stored in a Class to {@link ArrayPool} map */
 	public static <T> ArrayPool<T> get(Class<T> type, int max, int maxEach) {
 		@SuppressWarnings("unchecked")
