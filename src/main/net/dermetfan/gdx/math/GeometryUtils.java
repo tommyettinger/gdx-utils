@@ -127,6 +127,42 @@ public class GeometryUtils extends net.dermetfan.utils.math.GeometryUtils {
 		return vertices;
 	}
 
+	/** @see #mul(float[], int, int, float, float) */
+	public static FloatArray mul(FloatArray vertices, float factorX, float factorY) {
+		mul(vertices.items, 0, vertices.size, factorX, factorY);
+		return vertices;
+	}
+
+	/** @see #mulX(float[], int, int, float) */
+	public static FloatArray mulX(FloatArray vertices, float factor) {
+		mulX(vertices.items, 0, vertices.size, factor);
+		return vertices;
+	}
+
+	/** @see #mulY(float[], int, int, float) */
+	public static FloatArray mulY(FloatArray vertices, float factor) {
+		mulY(vertices.items, 0, vertices.size, factor);
+		return vertices;
+	}
+
+	/** @see #div(float[], int, int, float, float) */
+	public static FloatArray div(FloatArray vertices, float divisorX, float divisorY) {
+		div(vertices.items, 0, vertices.size, divisorX, divisorY);
+		return vertices;
+	}
+
+	/** @see #divX(float[], int, int, float) */
+	public static FloatArray divX(FloatArray vertices, float divisor) {
+		divX(vertices.items, 0, vertices.size, divisor);
+		return vertices;
+	}
+
+	/** @see #divY(float[], int, int, float) */
+	public static FloatArray divY(FloatArray vertices, float divisor) {
+		divY(vertices.items, 0, vertices.size, divisor);
+		return vertices;
+	}
+
 	/** @return a Vector2 representing the size of a rectangle containing all given vertices */
 	public static Vector2 size(Array<Vector2> vertices, Vector2 output) {
 		return output.set(width(vertices), height(vertices));
@@ -300,7 +336,7 @@ public class GeometryUtils extends net.dermetfan.utils.math.GeometryUtils {
 	}
 
 	/** @see #reverse(float[]) */
-	public static FloatArray reverse2D(FloatArray vertices) {
+	public static FloatArray reverse(FloatArray vertices) {
 		reverse(vertices.items, 0, vertices.size);
 		return vertices;
 	}
