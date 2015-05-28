@@ -335,6 +335,18 @@ public class GeometryUtils extends net.dermetfan.utils.math.GeometryUtils {
 		return max(filterY(vertices));
 	}
 
+	/** @see #scale(float[], int, int, float, float, float, float) */
+	public static FloatArray scale(FloatArray vertices, float minX, float minY, float maxX, float maxY) {
+		scale(vertices.items, 0, vertices.size, minX, minY, maxX, maxY);
+		return vertices;
+	}
+
+	/** @see #scale(FloatArray, float, float, float, float) */
+	public static FloatArray scale(FloatArray vertices, Vector2 min, Vector2 max) {
+		return scale(vertices, min.x, min.y, max.x, max.y);
+	}
+
+
 	/** @see #reverse(float[]) */
 	public static FloatArray reverse(FloatArray vertices) {
 		reverse(vertices.items, 0, vertices.size);

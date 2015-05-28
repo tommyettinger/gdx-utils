@@ -148,7 +148,7 @@ public class MathUtilsTest {
 
 		// float rounding error
 		float min = 0, max = Float.MAX_VALUE / 3;
-		assertNotEquals(Math.abs(max - min), MathUtils.amplitude2(MathUtils.scale(values, 0, values.length, min, max), 0, values.length), com.badlogic.gdx.math.MathUtils.FLOAT_ROUNDING_ERROR);
+		assertNotEquals(Math.abs(max - min), MathUtils.amplitude2(MathUtils.scale(values, 0, values.length, min, max), 0, values.length), .000001f);
 		assertEquals(Math.abs(max - min), MathUtils.amplitude2(MathUtils.clamp(values, 0, values.length, min, max), 0, values.length), 0); // clamped amplitude must be correct
 	}
 
