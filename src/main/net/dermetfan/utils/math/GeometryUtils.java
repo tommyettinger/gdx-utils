@@ -397,6 +397,25 @@ public class GeometryUtils {
 		return x_dist * x_dist + y_dist * y_dist;
 	}
 
+	/** @param vertices the vertices to scale
+	 *  @param minX the desired minimal x coordinate
+	 *  @param minY the desired minimal y coordinate
+	 *  @param maxX the desired maximal x coordinate
+	 *  @param maxY the desired maximal y coordinate
+	 *  @return the given and scaled vertices for chaining */
+	public static float[] scale(float[] vertices, int offset, int length, float minX, float minY, float maxX, float maxY) {
+		divX(vertices, offset, length, width(vertices, offset, length) / (maxX - minX));
+		addX(vertices, offset, length, minX - minX(vertices, offset, length));
+		divY(vertices, offset, length, height(vertices, offset, length) / (maxY - minY));
+		addY(vertices, offset, length, minY - minY(vertices, offset, length));
+		return vertices;
+	}
+
+	/** @see #scale(float[], int, int, float, float, float, float) */
+	public static float[] scale(float[] vertices, float minX, float minY, float maxX, float maxY) {
+		return scale(vertices, 0, vertices.length, minX, minY, maxX, maxY);
+	}
+
 	/** @param vertices the vertices to reverse
 	 *  @return the reversed given vertices for chaining */
 	public static float[] reverse(float[] vertices, int offset, int length) {

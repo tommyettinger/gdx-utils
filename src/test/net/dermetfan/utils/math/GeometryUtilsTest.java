@@ -93,6 +93,20 @@ public class GeometryUtilsTest {
 	}
 
 	@Test
+	public void scale() {
+		assertArrayEquals(new float[] {0, 5, 5, 10}, GeometryUtils.scale(new float[] {50, 105, 55, 110}, 0, 5, 5, 10), 0);
+		float[] vertices = new float[] {0, 0, 5, 0, 10, 5, 5, 10, 2.5f, 7.5f, 0, 10};
+		GeometryUtils.scale(vertices, 25, 50, 100, 100);
+		float floatRoundingError = .0000076293944f;
+		assertEquals(75, GeometryUtils.width(vertices), floatRoundingError);
+		assertEquals(50, GeometryUtils.height(vertices), floatRoundingError);
+		assertEquals(25, GeometryUtils.minX(vertices), floatRoundingError);
+		assertEquals(50, GeometryUtils.minY(vertices), floatRoundingError);
+		assertEquals(100, GeometryUtils.maxX(vertices), floatRoundingError);
+		assertEquals(100, GeometryUtils.maxY(vertices), floatRoundingError);
+	}
+
+	@Test
 	public void reverse() {
 		assertArrayEquals(new float[] {4, 4, 3, 3, 2, 2, 1, 1, 0, 0}, GeometryUtils.reverse(new float[] {0, 0, 1, 1, 2, 2, 3, 3, 4, 4}), 0);
 		assertArrayEquals(new float[] {0, 0, 3, 3, 2, 2, 1, 1, 4, 4}, GeometryUtils.reverse(new float[] {0, 0, 1, 1, 2, 2, 3, 3, 4, 4}, 2, 6), 0);
