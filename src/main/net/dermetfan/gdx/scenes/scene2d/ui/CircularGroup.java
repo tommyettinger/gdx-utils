@@ -517,7 +517,7 @@ public class CircularGroup extends WidgetGroup {
 		/** @param angleOffset the {@link #angleOffset} to set so that if {@link #minAngleOffset} and {@link #maxAngleOffset} coincide on 360 degrees it doesn't get clamped */
 		private void setAngleOffset(float angleOffset) {
 			if(maxAngleOffset - minAngleOffset == 360)
-				CircularGroup.this.angleOffset = net.dermetfan.utils.math.MathUtils.normalize(angleOffset, minAngleOffset, maxAngleOffset);
+				CircularGroup.this.angleOffset = net.dermetfan.utils.math.MathUtils.normalize(angleOffset, minAngleOffset, maxAngleOffset, false, false);
 			else
 				CircularGroup.this.setAngleOffset(angleOffset);
 		}

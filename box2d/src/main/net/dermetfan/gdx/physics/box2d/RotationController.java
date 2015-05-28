@@ -87,7 +87,7 @@ public abstract class RotationController {
 		 *  @param target the setpoint
 		 *  @return gain * error normalized between -pi and pi */
 		public static float calculateTorque(float gain, float rotation, float target) {
-			return gain * net.dermetfan.utils.math.MathUtils.normalize(target - rotation, -MathUtils.PI, MathUtils.PI);
+			return gain * net.dermetfan.utils.math.MathUtils.normalize(target - rotation, -MathUtils.PI, MathUtils.PI, false, false);
 		}
 
 		/** @param body the Body to rotate

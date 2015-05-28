@@ -89,7 +89,7 @@ public class MathUtils {
 		return x1 * y2 + x2 * y3 + x3 * y1 - y1 * x2 - y2 * x3 - y3 * x1;
 	}
 
-	/** Normalizes/repeats the given value in the given interval [min, max] as if min and max were portals the value travels through. For example:<br>
+	/** Normalizes/repeats the given value in the given interval [min, max] as if min and max were portals the value travels through. For example (min and max are both inclusive):<br>
 	 *  <table summary="examples">
 	 *      <tr>
 	 *          <th>value</th>
@@ -116,36 +116,53 @@ public class MathUtils {
 	 *          <td>50</td>
 	 *      </tr>
 	 *  </table>
+	 *  min may be greater than max - if so, they will be swapped.
 	 *  @param value the value to normalize in the interval [min, max]
 	 *  @param min the minimum
 	 *  @param max the maximum
-	 *  @return the value repeated in the interval [min, max] */
-	public static float normalize(float value, float min, float max) {
+	 *  @param minExclusive whether the minimum is exclusive
+	 *  @param maxExclusive whether the maximum is exclusive
+	 *  @return the value repeated in the interval [min, max]
+	 *  @throws IllegalArgumentException if both minExclusive and maxExclusive are true */
+	public static float normalize(float value, float min, float max, boolean minExclusive, boolean maxExclusive) {
+		if(minExclusive && maxExclusive)
+			throw new IllegalArgumentException("min and max cannot both be exclusive");
 		if(min == max)
 			return min;
-		float oldMin = min, oldMax = max;
-		min = Math.min(min, max);
-		max = Math.max(oldMin, max);
-		float under = value < min ? Math.abs(min - value) : 0, over = value > max ? value - Math.abs(max) : 0;
-		if(under > 0)
-			return normalize(oldMax + (oldMax > oldMin ? -under : under), min, max);
+		if(min > max) {
+			float oldMin = min;
+			min = max;
+			max = oldMin;
+		}
+		float over = value > max ? value - max : 0;
 		if(over > 0)
-			return normalize(oldMin + (oldMin < oldMax ? over : -over), min, max);
+			return normalize(min + over, min, max, minExclusive, maxExclusive);
+		float under = value < min ? min - value : 0;
+		if(under > 0)
+			return normalize(max - under, min, max, minExclusive, maxExclusive);
+		if(maxExclusive && value == max)
+			return min;
+		if(minExclusive && value == min)
+			return max;
 		return value;
 	}
 
-	/** @see #normalize(float, float, float) */
-	public static int normalize(int value, int min, int max) {
+	/** @see #normalize(float, float, float, boolean, boolean) */
+	public static int normalize(int value, int min, int max, boolean minExclusive, boolean maxExclusive) {
+		if(minExclusive && maxExclusive)
+			throw new IllegalArgumentException("min and max cannot both be exclusive");
 		if(min == max)
 			return min;
-		int oldMin = min, oldMax = max;
-		min = Math.min(min, max);
-		max = Math.max(oldMin, max);
-		int under = value < min ? Math.abs(min - value) : 0, over = value > max ? value - Math.abs(max) : 0;
-		if(under > 0)
-			return normalize(oldMax + (oldMax > oldMin ? -under : under), min, max);
+		int over = value > max ? value - max : 0;
 		if(over > 0)
-			return normalize(oldMin + (oldMin < oldMax ? over : -over), min, max);
+			return normalize(min + over, min, max, minExclusive, maxExclusive);
+		int under = value < min ? min - value : 0;
+		if(under > 0)
+			return normalize(max - under, min, max, minExclusive, maxExclusive);
+		if(maxExclusive && value == max)
+			return min;
+		if(minExclusive && value == min)
+			return max;
 		return value;
 	}
 

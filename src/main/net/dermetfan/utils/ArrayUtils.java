@@ -138,10 +138,7 @@ public class ArrayUtils {
 	 *  @param index the index to repeat
 	 *  @return the repeated index */
 	public static int repeat(int offset, int length, int index) {
-		index = MathUtils.normalize(index, offset, offset + length);
-		if(index == offset + length)
-			index = offset;
-		return index;
+		return MathUtils.normalize(index, offset, offset + length, false, true);
 	}
 
 	/** @param array the array that may contain the given value
