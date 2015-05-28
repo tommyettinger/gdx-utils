@@ -1,6 +1,8 @@
 package net.dermetfan.utils.math;
 
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
@@ -9,6 +11,9 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertFalse;
 
 public class MathUtilsTest {
+
+	@Rule
+	public ExpectedException thrown = ExpectedException.none();
 
 	@Test
 	public void crossSum() {
@@ -81,48 +86,57 @@ public class MathUtilsTest {
 
 	@Test
 	public void normalize() {
-		assertEquals(50, MathUtils.normalize(150f, 0, 100), 0);
-		assertEquals(25, MathUtils.normalize(125f, 0, 25), 0);
-		assertEquals(25, MathUtils.normalize(125f, 0, 50), 0);
-		assertEquals(25, MathUtils.normalize(125f, 0, 100), 0);
-		assertEquals(25, MathUtils.normalize(25f, 0, 100), 0);
+		assertEquals(50, MathUtils.normalize(150f, 0, 100, false, false), 0);
+		assertEquals(25, MathUtils.normalize(125f, 0, 25, false, false), 0);
+		assertEquals(25, MathUtils.normalize(125f, 0, 50, false, false), 0);
+		assertEquals(25, MathUtils.normalize(125f, 0, 100, false, false), 0);
+		assertEquals(25, MathUtils.normalize(25f, 0, 100, false, false), 0);
 
-		assertEquals(-25, MathUtils.normalize(25f, 0, -100), 0);
-		assertEquals(75, MathUtils.normalize(-25f, 0, 100), 0);
-		assertEquals(-25, MathUtils.normalize(-25f, 0, -100), 0);
-		assertEquals(-25, MathUtils.normalize(125f, 0, -100), 0);
-		assertEquals(75, MathUtils.normalize(-125f, 0, 100), 0);
-		assertEquals(-75, MathUtils.normalize(-125f, 0, -100), 0);
-		assertEquals(-25, MathUtils.normalize(225f, 0, -100), 0);
-		assertEquals(75, MathUtils.normalize(-225f, 0, 100), 0);
-		assertEquals(-75, MathUtils.normalize(-225f, 0, -100), 0);
+		assertEquals(-75, MathUtils.normalize(25f, 0, -100, false, false), 0);
+		assertEquals(75, MathUtils.normalize(-25f, 0, 100, false, false), 0);
+		assertEquals(-25, MathUtils.normalize(-25f, 0, -100, false, false), 0);
+		assertEquals(-75, MathUtils.normalize(125f, 0, -100, false, false), 0);
+		assertEquals(75, MathUtils.normalize(-125f, 0, 100, false, false), 0);
+		assertEquals(-25, MathUtils.normalize(-125f, 0, -100, false, false), 0);
+		assertEquals(-75, MathUtils.normalize(225f, 0, -100, false, false), 0);
+		assertEquals(75, MathUtils.normalize(-225f, 0, 100, false, false), 0);
+		assertEquals(-25, MathUtils.normalize(-225f, 0, -100, false, false), 0);
 
-		assertEquals(0, MathUtils.normalize(0f, 0, -100), 0);
-		assertEquals(0, MathUtils.normalize(0f, 0, 100), 0);
+		assertEquals(0, MathUtils.normalize(0f, 0, -100, false, false), 0);
+		assertEquals(0, MathUtils.normalize(0f, 0, 100, false, false), 0);
 
-		assertEquals(0, MathUtils.normalize(0f, 0, 0), 0);
-		assertEquals(0, MathUtils.normalize(57f, 0, 0), 0);
-		assertEquals(0, MathUtils.normalize(-57f, 0, 0), 0);
+		assertEquals(0, MathUtils.normalize(0f, 0, 0, false, false), 0);
+		assertEquals(0, MathUtils.normalize(57f, 0, 0, false, false), 0);
+		assertEquals(0, MathUtils.normalize(-57f, 0, 0, false, false), 0);
 
-		assertEquals(0, MathUtils.normalize(200f, -100, 100), 0);
-		assertEquals(5, MathUtils.normalize(205f, -100, 100), 0);
+		assertEquals(0, MathUtils.normalize(200f, -100, 100, false, false), 0);
+		assertEquals(5, MathUtils.normalize(205f, -100, 100, false, false), 0);
 
-		assertEquals(25, MathUtils.normalize(25f, -100, 100), 0);
-		assertEquals(125, MathUtils.normalize(25f, 100, 200), 0);
-		assertEquals(0, MathUtils.normalize(0f, -100, 100), 0);
-		assertEquals(125, MathUtils.normalize(125f, 100, 200), 0);
-		assertEquals(100, MathUtils.normalize(100f, 100, 100), 0);
-		assertEquals(100, MathUtils.normalize(25f, 100, 100), 0);
-		assertEquals(-100, MathUtils.normalize(25f, -100, -100), 0);
+		assertEquals(25, MathUtils.normalize(25f, -100, 100, false, false), 0);
+		assertEquals(125, MathUtils.normalize(25f, 100, 200, false, false), 0);
+		assertEquals(0, MathUtils.normalize(0f, -100, 100, false, false), 0);
+		assertEquals(125, MathUtils.normalize(125f, 100, 200, false, false), 0);
+		assertEquals(100, MathUtils.normalize(100f, 100, 100, false, false), 0);
+		assertEquals(100, MathUtils.normalize(25f, 100, 100, false, false), 0);
+		assertEquals(-100, MathUtils.normalize(25f, -100, -100, false, false), 0);
 
-		assertEquals(90, MathUtils.normalize(-360f + 90, 0, 360), 0);
-		assertEquals(-90, MathUtils.normalize(360f + 90, 0, -360), 0);
-		assertEquals(-com.badlogic.gdx.math.MathUtils.PI, MathUtils.normalize(-com.badlogic.gdx.math.MathUtils.PI2 * 2.5f, 0, -com.badlogic.gdx.math.MathUtils.PI2), com.badlogic.gdx.math.MathUtils.PI / 20f);
+		assertEquals(90, MathUtils.normalize(-360f + 90, 0, 360, false, false), 0);
+		assertEquals(-270, MathUtils.normalize(360f + 90, 0, -360, false, false), 0);
+		final float PI = 3.1415927f;
+		assertEquals(-PI, MathUtils.normalize(-PI * 2 * 2.5f, 0, -PI * 2, false, false), PI / 20f);
 
-		assertEquals(150, MathUtils.normalize(150f, 100, 250), 0);
-		assertEquals(250, MathUtils.normalize(250f, 100, 250), 0);
-		assertEquals(150, MathUtils.normalize(300f, 100, 250), 0);
-		assertEquals(-50, MathUtils.normalize(-50f, -100, 250), 0);
+		assertEquals(150, MathUtils.normalize(150f, 100, 250, false, false), 0);
+		assertEquals(250, MathUtils.normalize(250f, 100, 250, false, false), 0);
+		assertEquals(150, MathUtils.normalize(300f, 100, 250, false, false), 0);
+		assertEquals(-50, MathUtils.normalize(-50f, -100, 250, false, false), 0);
+
+		assertEquals(5, MathUtils.normalize(15f, -5, 5, false, false), 0);
+		assertEquals(-5, MathUtils.normalize(-15f, -5, 5, false, false), 0);
+		assertEquals(-5, MathUtils.normalize(15f, -5, 5, false, true), 0);
+		assertEquals(5, MathUtils.normalize(-15f, -5, 5, true, false), 0);
+		assertEquals(0, MathUtils.normalize(10f, -5, 5, false, false), 0);
+		thrown.expect(IllegalArgumentException.class);
+		assertEquals(0, MathUtils.normalize(10f, -5, 5, true, true), 0);
 	}
 
 	@Test
