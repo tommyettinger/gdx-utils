@@ -114,8 +114,8 @@ public class AnnotationAssetManager extends AssetManager {
 			String className = location.substring(0, end);
 			name = location.substring(end + 1, method ? location.lastIndexOf("()") : 0);
 			try {
-				clazz = Class.forName(className);
-			} catch(ClassNotFoundException e) {
+				clazz = ClassReflection.forName(className);
+			} catch(ReflectionException e) {
 				throw new IllegalArgumentException("Failed to load AssetLoaderParameters from " + location + ": class " + className + " does not exist");
 			}
 		} else { // in container class
