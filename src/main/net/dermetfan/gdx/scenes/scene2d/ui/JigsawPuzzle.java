@@ -104,6 +104,9 @@ public class JigsawPuzzle {
 		return true;
 	}
 
+	/** called by {@link JigsawPuzzle.Target#placed(JigsawPuzzle.Piece) placed} when all pieces are placed correctly */
+	protected void solved() {}
+
 	/** @return the {@link #pieces} */
 	public Array<Piece> getPieces() {
 		return pieces;
@@ -203,13 +206,10 @@ public class JigsawPuzzle {
 
 	/** @author dermetfan
 	 *  @since 0.10.0 */
-	public static class Source extends DragAndDrop.Source {
+	public class Source extends DragAndDrop.Source {
 
 		/** the DragAndDrop currently using this Source */
 		private DragAndDrop dragAndDrop;
-
-		/** the puzzle */
-		private JigsawPuzzle puzzle;
 
 		/** the time it takes for the piece to move back */
 		private float moveBackDuration = .5f;
@@ -220,17 +220,15 @@ public class JigsawPuzzle {
 		/** temporary Vector2 for internal use */
 		private final Vector2 vec2 = new Vector2();
 
-		/** @param dragAndDrop the {@link #dragAndDrop}
-		 *  @param puzzle the {@link #puzzle} */
-		public Source(Group board, DragAndDrop dragAndDrop, JigsawPuzzle puzzle) {
+		/** @param dragAndDrop the {@link #dragAndDrop} */
+		public Source(Group board, DragAndDrop dragAndDrop) {
 			super(board);
 			this.dragAndDrop = dragAndDrop;
-			this.puzzle = puzzle;
 		}
 
 		/** @param moveBackDuration the {@link #moveBackDuration} */
-		public Source(final Group board, final DragAndDrop dragAndDrop, JigsawPuzzle puzzle, float moveBackDuration) {
-			this(board, dragAndDrop, puzzle);
+		public Source(final Group board, final DragAndDrop dragAndDrop, float moveBackDuration) {
+			this(board, dragAndDrop);
 			this.moveBackDuration = moveBackDuration;
 		}
 
@@ -238,7 +236,7 @@ public class JigsawPuzzle {
 		public Payload dragStart(InputEvent event, float x, float y, int pointer) {
 			Actor actor = getActor().hit(x, y, true); // get actor under pointer
 			// don't drag the board itself or anything that's not a piece of the puzzle
-			if(actor == getActor() || !(actor instanceof Piece) || !puzzle.getPieces().contains((Piece) actor, true))
+			if(actor == getActor() || !(actor instanceof Piece) || !JigsawPuzzle.this.getPieces().contains((Piece) actor, true))
 				return null;
 			payload.setDragActor(actor);
 
@@ -282,14 +280,9 @@ public class JigsawPuzzle {
 			this.dragAndDrop = dragAndDrop;
 		}
 
-		/** @return the {@link #puzzle} */
+		/** @return the enclosing JigsawPuzzle instance */
 		public JigsawPuzzle getPuzzle() {
-			return puzzle;
-		}
-
-		/** @param puzzle the {@link #puzzle} to set */
-		public void setPuzzle(JigsawPuzzle puzzle) {
-			this.puzzle = puzzle;
+			return JigsawPuzzle.this;
 		}
 
 		/** @return the {@link #moveBackDuration} */
@@ -306,18 +299,14 @@ public class JigsawPuzzle {
 
 	/** @author dermetfan
 	 *  @since 0.10.0 */
-	public static class Target extends DragAndDrop.Target {
-
-		/** the puzzle */
-		private JigsawPuzzle puzzle;
+	public class Target extends DragAndDrop.Target {
 
 		/** the distance by which each piece is allowed to be off */
 		private float tolerance;
 
 		/** @param tolerance the {@link #tolerance} */
-		public Target(Group group, JigsawPuzzle puzzle, float tolerance) {
+		public Target(Group group, float tolerance) {
 			super(group);
-			this.puzzle = puzzle;
 			this.tolerance = tolerance;
 		}
 
@@ -332,8 +321,8 @@ public class JigsawPuzzle {
 			Scene2DUtils.addAtStageCoordinates(dragged, (Group) getActor());
 			if(dragged instanceof Piece) {
 				Piece piece = (Piece) dragged;
-				for(int i = 0; i < puzzle.getPieces().size; i++) {
-					Piece ref = puzzle.getPieces().get(i);
+				for(int i = 0; i < JigsawPuzzle.this.getPieces().size; i++) {
+					Piece ref = JigsawPuzzle.this.getPieces().get(i);
 					if(ref == piece)
 						continue;
 					if(piece.isPlacedCorrectly(ref, tolerance)) {
@@ -348,23 +337,15 @@ public class JigsawPuzzle {
 		/** called by {@link JigsawPuzzle.Target#drop(DragAndDrop.Source, DragAndDrop.Payload, float, float, int) drop} when a piece is placed
 		 *  @param piece the placed piece */
 		protected void placed(Piece piece) {
-			if(puzzle.isSolved(tolerance))
-				solved();
+			if(JigsawPuzzle.this.isSolved(tolerance))
+				JigsawPuzzle.this.solved();
 		}
-
-		/** called by {@link JigsawPuzzle.Target#placed(JigsawPuzzle.Piece) placed} when all pieces are placed correctly */
-		protected void solved() {}
 
 		// getters and setters
 
-		/** @return the {@link #puzzle} */
+		/** @return the enclosing JigsawPuzzle instance */
 		public JigsawPuzzle getPuzzle() {
-			return puzzle;
-		}
-
-		/** @param puzzle the {@link #puzzle} to set */
-		public void setPuzzle(JigsawPuzzle puzzle) {
-			this.puzzle = puzzle;
+			return JigsawPuzzle.this;
 		}
 
 		/** @return the {@link #tolerance} */
