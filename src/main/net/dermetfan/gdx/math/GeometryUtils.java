@@ -346,7 +346,6 @@ public class GeometryUtils extends net.dermetfan.utils.math.GeometryUtils {
 		return scale(vertices, min.x, min.y, max.x, max.y);
 	}
 
-
 	/** @see #reverse(float[]) */
 	public static FloatArray reverse(FloatArray vertices) {
 		reverse(vertices.items, 0, vertices.size);
