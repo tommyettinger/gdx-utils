@@ -286,6 +286,16 @@ public abstract class RotationController {
 			this.gainD = gainD;
 		}
 
+		/** @return the {@link #angle} */
+		public Number getAngle() {
+			return angle;
+		}
+
+		/** @param angle the {@link #angle} to set */
+		public void setAngle(Number angle) {
+			this.angle = angle;
+		}
+
 		/** @return the {@link #target} */
 		public Vector2 getTarget() {
 			return target;
