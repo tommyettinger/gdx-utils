@@ -622,8 +622,9 @@ public class Box2DUtils extends com.badlogic.gdx.physics.box2d.Box2DUtils {
 	/** @return the minimal x value of the vertices of all fixtures of the the given Body */
 	public static float minX(Body body) {
 		float x = Float.POSITIVE_INFINITY, tmp;
-		for(Fixture fixture : body.getFixtureList())
-			if((tmp = minX(fixture)) < x)
+		Array<Fixture> fixtures = body.getFixtureList();
+		for(int i = 0; i < fixtures.size; i++)
+			if((tmp = minX(fixtures.get(i))) < x)
 				x = tmp;
 		return x;
 	}
@@ -631,8 +632,9 @@ public class Box2DUtils extends com.badlogic.gdx.physics.box2d.Box2DUtils {
 	/** @return the minimal y value of the vertices of all fixtures of the the given Body */
 	public static float minY(Body body) {
 		float y = Float.POSITIVE_INFINITY, tmp;
-		for(Fixture fixture : body.getFixtureList())
-			if((tmp = minY(fixture)) < y)
+		Array<Fixture> fixtures = body.getFixtureList();
+		for(int i = 0; i < fixtures.size; i++)
+			if((tmp = minY(fixtures.get(i))) < y)
 				y = tmp;
 		return y;
 	}
@@ -640,8 +642,9 @@ public class Box2DUtils extends com.badlogic.gdx.physics.box2d.Box2DUtils {
 	/** @return the maximal x value of the vertices of all fixtures of the the given Body */
 	public static float maxX(Body body) {
 		float x = Float.NEGATIVE_INFINITY, tmp;
-		for(Fixture fixture : body.getFixtureList())
-			if((tmp = maxX(fixture)) > x)
+		Array<Fixture> fixtures = body.getFixtureList();
+		for(int i = 0; i < fixtures.size; i++)
+			if((tmp = maxX(fixtures.get(i))) > x)
 				x = tmp;
 		return x;
 	}
@@ -649,8 +652,9 @@ public class Box2DUtils extends com.badlogic.gdx.physics.box2d.Box2DUtils {
 	/** @return the maximal y value of the vertices of all fixtures of the the given Body */
 	public static float maxY(Body body) {
 		float y = Float.NEGATIVE_INFINITY, tmp;
-		for(Fixture fixture : body.getFixtureList())
-			if((tmp = maxY(fixture)) > y)
+		Array<Fixture> fixtures = body.getFixtureList();
+		for(int i = 0; i < fixtures.size; i++)
+			if((tmp = maxY(fixtures.get(i))) > y)
 				y = tmp;
 		return y;
 	}
@@ -773,8 +777,9 @@ public class Box2DUtils extends com.badlogic.gdx.physics.box2d.Box2DUtils {
 	 *  @since 0.9.1 */
 	public static Rectangle aabb(Body body, Rectangle aabb) {
 		float minX = Float.POSITIVE_INFINITY, minY = Float.POSITIVE_INFINITY, maxX = Float.NEGATIVE_INFINITY, maxY = Float.NEGATIVE_INFINITY;
-		for(Fixture fixture : body.getFixtureList()) {
-			aabb(fixture, aabb);
+		Array<Fixture> fixtures = body.getFixtureList();
+		for(int i = 0; i < fixtures.size; i++) {
+			aabb(fixtures.get(i), aabb);
 			if(aabb.x < minX)
 				minX = aabb.x;
 			if(aabb.x + aabb.width > maxX)
@@ -808,8 +813,9 @@ public class Box2DUtils extends com.badlogic.gdx.physics.box2d.Box2DUtils {
 	public static Body clone(Body body, boolean shapes) {
 		Body clone = body.getWorld().createBody(createDef(body));
 		clone.setUserData(body.getUserData());
-		for(Fixture fixture : body.getFixtureList())
-			clone(fixture, clone, shapes);
+		Array<Fixture> fixtures = body.getFixtureList();
+		for(int i = 0; i < fixtures.size; i++)
+			clone(fixtures.get(i), clone, shapes);
 		return clone;
 	}
 
@@ -1182,8 +1188,9 @@ public class Box2DUtils extends com.badlogic.gdx.physics.box2d.Box2DUtils {
 		BodyDef bodyDef = createDef(body);
 		Body aBody = world.createBody(bodyDef), bBody = world.createBody(bodyDef);
 		boolean split = false;
-		for(Fixture fixture : body.getFixtureList())
-			split |= split(fixture, a, b, aBody, bBody, null);
+		Array<Fixture> fixtures = body.getFixtureList();
+		for(int i = 0; i < fixtures.size; i++)
+			split |= split(fixtures.get(i), a, b, aBody, bBody, null);
 		if(store != null)
 			store.clear();
 		if(aBody.getFixtureList().size == 0)
@@ -1593,8 +1600,9 @@ public class Box2DUtils extends com.badlogic.gdx.physics.box2d.Box2DUtils {
 	 *  @param sensor the parameter to pass to {@link Fixture#setSensor(boolean)}
 	 *  @see Fixture#setSensor(boolean) */
 	public static void setSensor(Body body, boolean sensor) {
-		for(Fixture fixture : body.getFixtureList())
-			fixture.setSensor(sensor);
+		Array<Fixture> fixtures = body.getFixtureList();
+		for(int i = 0; i < fixtures.size; i++)
+			fixtures.get(i).setSensor(sensor);
 	}
 
 	/** {@link Body#destroyFixture(Fixture) destroys} all fixtures of the given body
