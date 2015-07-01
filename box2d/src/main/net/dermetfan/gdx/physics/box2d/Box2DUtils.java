@@ -81,7 +81,7 @@ import static net.dermetfan.gdx.physics.box2d.Box2DUtils.Settings.maxPolygonVert
 
 /** provides methods for operations with Box2D {@link Body Bodies}, {@link Fixture Fixtures} and {@link Shape Shapes}
  *  @author dermetfan */
-public class Box2DUtils extends com.badlogic.gdx.physics.box2d.Box2DUtils {
+public class Box2DUtils {
 
 	/** b2Settings.h
 	 *  @author dermetfan
