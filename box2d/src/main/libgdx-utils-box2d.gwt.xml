@@ -2,8 +2,12 @@
 <!DOCTYPE module PUBLIC "-//Google Inc.//DTD Google Web Toolkit trunk//EN" "http://google-web-toolkit.googlecode.com/svn/trunk/distro-source/core/src/gwt-module.dtd">
 <module>
 	<inherits name="libgdx-utils" />
-	<source path="net/dermetfan/" />
-	<source path="com/badlogic/gdx/physics/box2d/" />
+	<source path="net/dermetfan/">
+		<exclude name="gdx/physics/box2d/WorldObserver.java" />
+	</source>
+	<source path="com/badlogic/gdx/physics/box2d/">
+		<exclude name="Box2DUtils.java" />
+	</source>
 
 	<extend-configuration-property name="gdx.reflect.include" value="net.dermetfan.utils.Pair" />
 	<extend-configuration-property name="gdx.reflect.include" value="net.dermetfan.gdx.physics.box2d.WorldObserver$BodyChange" />
