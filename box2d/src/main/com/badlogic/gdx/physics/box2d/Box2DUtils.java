@@ -14,7 +14,8 @@
 
 package com.badlogic.gdx.physics.box2d;
 
-/** placed in this package to have access to the protected {@code addr} fields
+/** Placed in this package to have access to the protected {@code addr} fields.
+ *  <strong>Does NOT work on HTML5!</strong>
  *  @author dermetfan
  *  @since 0.6.0 */
 public class Box2DUtils {

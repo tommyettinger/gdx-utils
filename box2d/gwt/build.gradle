@@ -1,6 +1,0 @@
-apply from: "$rootProject.projectDir/gradle/common.gradle"
-
-dependencies {
-	compile project(':box2d')
-	compile "com.badlogicgames.gdx:gdx-box2d-gwt:$libgdxVersion"
-}

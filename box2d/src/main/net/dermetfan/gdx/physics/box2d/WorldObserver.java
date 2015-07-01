@@ -44,7 +44,8 @@ import com.badlogic.gdx.utils.Pool;
 import com.badlogic.gdx.utils.Pool.Poolable;
 import com.badlogic.gdx.utils.Pools;
 
-/** notifies a {@link Listener} of changes in the world
+/** Notifies a {@link Listener} of changes in the world.
+ *  <strong>Does NOT work on HTML5!</strong>
  *  @author dermetfan
  *  @since 0.6.0 */
 public class WorldObserver {
