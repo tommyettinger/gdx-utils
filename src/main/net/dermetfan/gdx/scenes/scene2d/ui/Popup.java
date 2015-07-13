@@ -227,7 +227,7 @@ public class Popup<T extends Actor> implements EventListener {
 
 		/** Does nothing. Override this if you want to override only some methods.
 		 *  @author dermetfan */
-		public static class Adapter implements Behavior {
+		class Adapter implements Behavior {
 
 			/** @return {@code true} */
 			@Override
