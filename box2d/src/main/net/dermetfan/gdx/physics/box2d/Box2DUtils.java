@@ -853,7 +853,7 @@ public class Box2DUtils {
 			break;
 		case Polygon:
 			PolygonShape polyClone = (PolygonShape) (clone = (T) new PolygonShape()), poly = (PolygonShape) shape;
-			float[] vertices = new float[poly.getVertexCount()];
+			float[] vertices = new float[poly.getVertexCount() * 2];
 			for(int i = 0; i < vertices.length; i++) {
 				poly.getVertex(i, vec2_0);
 				vertices[i++] = vec2_0.x;
@@ -869,7 +869,7 @@ public class Box2DUtils {
 			break;
 		case Chain:
 			ChainShape chainClone = (ChainShape) (clone = (T) new ChainShape()), chain = (ChainShape) shape;
-			vertices = new float[chain.getVertexCount()];
+			vertices = new float[chain.getVertexCount() * 2];
 			for(int i = 0; i < vertices.length; i++) {
 				chain.getVertex(i, vec2_0);
 				vertices[i++] = vec2_0.x;
