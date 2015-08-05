@@ -836,6 +836,8 @@ public class Box2DUtils {
 		if(shape)
 			fixtureDef.shape = clone(fixture.getShape());
 		Fixture clone = body.createFixture(fixtureDef);
+		if(shape)
+			fixtureDef.shape.dispose();
 		clone.setUserData(clone.getUserData());
 		return clone;
 	}
@@ -854,10 +856,10 @@ public class Box2DUtils {
 		case Polygon:
 			PolygonShape polyClone = (PolygonShape) (clone = (T) new PolygonShape()), poly = (PolygonShape) shape;
 			float[] vertices = new float[poly.getVertexCount() * 2];
-			for(int i = 0; i < vertices.length; i++) {
-				poly.getVertex(i, vec2_0);
-				vertices[i++] = vec2_0.x;
-				vertices[i] = vec2_0.y;
+			for(int i = 0; i < vertices.length; i += 2) {
+				poly.getVertex(i / 2, vec2_0);
+				vertices[i] = vec2_0.x;
+				vertices[i + 1] = vec2_0.y;
 			}
 			polyClone.set(vertices);
 			break;
@@ -870,10 +872,10 @@ public class Box2DUtils {
 		case Chain:
 			ChainShape chainClone = (ChainShape) (clone = (T) new ChainShape()), chain = (ChainShape) shape;
 			vertices = new float[chain.getVertexCount() * 2];
-			for(int i = 0; i < vertices.length; i++) {
-				chain.getVertex(i, vec2_0);
-				vertices[i++] = vec2_0.x;
-				vertices[i] = vec2_0.y;
+			for(int i = 0; i < vertices.length; i += 2) {
+				chain.getVertex(i / 2, vec2_0);
+				vertices[i] = vec2_0.x;
+				vertices[i + 1] = vec2_0.y;
 			}
 			if(chain.isLooped())
 				chainClone.createLoop(vertices);
