@@ -278,7 +278,7 @@ public class WorldObserver {
 		/** A class that implements Listener. Does nothing. Subclass this if you only want to override some methods.
 		 *  @author dermetfan
 		 *  @since 0.7.1 */
-		public static class Adapter implements Listener {
+		class Adapter implements Listener {
 
 			@Override
 			public void setOn(WorldObserver observer) {}

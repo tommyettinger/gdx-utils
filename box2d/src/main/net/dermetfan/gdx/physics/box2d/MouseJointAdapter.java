@@ -120,18 +120,18 @@ public class MouseJointAdapter extends InputAdapter {
 	public interface Listener {
 
 		/** @return true to cancel the creation of the {@link MouseJointAdapter#joint joint} */
-		public boolean touched(Fixture fixture, Vector2 position);
+		boolean touched(Fixture fixture, Vector2 position);
 
 		/** @return true to cancel updating the target of {@link MouseJointAdapter#joint} */
-		public boolean dragged(MouseJoint joint, Vector2 oldPosition, Vector2 position);
+		boolean dragged(MouseJoint joint, Vector2 oldPosition, Vector2 position);
 
 		/** @return true to cancel destroying the {@link MouseJointAdapter#joint joint} */
-		public boolean released(MouseJoint joint, Vector2 position);
+		boolean released(MouseJoint joint, Vector2 position);
 
 		/** Does nothing and returns false. Use this if you want to override only some methods of the Listener.
 		 *  @author dermetfan
 		 *  @since 0.9.1 */
-		public static class Adapter implements Listener {
+		class Adapter implements Listener {
 
 			@Override
 			public boolean touched(Fixture fixture, Vector2 position) {

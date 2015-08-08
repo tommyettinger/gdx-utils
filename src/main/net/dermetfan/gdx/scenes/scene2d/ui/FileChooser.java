@@ -33,15 +33,15 @@ public abstract class FileChooser extends Table {
 	public interface Listener {
 
 		/** called when a single file was chosen */
-		public void choose(FileHandle file);
+		void choose(FileHandle file);
 
 		/** Called when multiple files were chosen.
 		 *  The Array given into the method will be {@link Pools#free(Object) returned} to the pool after the call, so make a copy if you need one.
 		 *  @see #choose(FileHandle) */
-		public void choose(Array<FileHandle> files);
+		void choose(Array<FileHandle> files);
 
 		/** Called when choosing one or more files was cancelled */
-		public void cancel();
+		void cancel();
 
 	}
 

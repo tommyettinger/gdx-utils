@@ -409,7 +409,7 @@ public class CircularGroup extends WidgetGroup {
 		 *  All method implementations return the default value.
 		 *  @author dermetfan
 		 *  @since 0.5.0 */
-		public static class Adapter implements Modifier {
+		class Adapter implements Modifier {
 
 			@Override
 			public float angle(float defaultAngle, Actor child, int index, int numChildren, CircularGroup group) {

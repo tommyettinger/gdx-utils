@@ -22,6 +22,6 @@ public interface Function<R, A> {
 
 	/** @param arg the argument
 	 *  @return the return value */
-	public R apply(A arg);
+	R apply(A arg);
 
 }

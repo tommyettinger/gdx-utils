@@ -24,6 +24,6 @@ public interface BiFunction<R, A1, A2> {
 	/** @param arg1 the first argument
 	 *  @param arg2 the second argument
 	 *  @return the return value */
-	public R apply(A1 arg1, A2 arg2);
+	R apply(A1 arg1, A2 arg2);
 
 }

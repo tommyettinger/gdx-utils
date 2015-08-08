@@ -38,7 +38,7 @@ public class Chain {
 		 *  @param length the desired length of the {@link Chain} that is being build
 		 *  @param chain the {@link Chain} this segment will be added to
 		 *  @return the created segment */
-		public Body createSegment(int index, int length, Chain chain);
+		Body createSegment(int index, int length, Chain chain);
 
 		/** connects two segments with each other using a {@link Connection}
 		 *  @param seg1 the first segment
@@ -46,7 +46,7 @@ public class Chain {
 		 *  @param seg2 the second segment
 		 *  @param seg2index the index of the second segment
 		 *  @return the created {@link Connection} */
-		public Connection createConnection(Body seg1, int seg1index, Body seg2, int seg2index);
+		Connection createConnection(Body seg1, int seg1index, Body seg2, int seg2index);
 
 	}
 

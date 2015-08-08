@@ -249,30 +249,30 @@ public class Breakable {
 		 *  @param normalImpulse the sum of the normal impulses of impulse
 		 *  @param tangentImpulse the sum of the tangent impulses of impulse
 		 *  @return true to cancel the destruction if one was going to occur */
-		public boolean strained(Fixture fixture, Breakable breakable, Contact contact, ContactImpulse impulse, float normalImpulse, float tangentImpulse);
+		boolean strained(Fixture fixture, Breakable breakable, Contact contact, ContactImpulse impulse, float normalImpulse, float tangentImpulse);
 
 		/** called by {@link Manager#strain(Joint, float)}
 		 *  @param joint the strained {@link Joint}
 		 *  @param breakable the {@link Breakable} instance causing this callback to be called
 		 *  @param reactionForce the {@link Joint#getReactionForce(float) reaction force}
 		 *  @return true to cancel the destruction if one was going to occur */
-		public boolean strained(Joint joint, Breakable breakable, Vector2 reactionForce, float reactionTorque);
+		boolean strained(Joint joint, Breakable breakable, Vector2 reactionForce, float reactionTorque);
 
 		/** called by {@link Manager#destroy(Body)}
 		 *  @return true to cancel the destruction */
-		public boolean destroyed(Body body, Breakable breakable);
+		boolean destroyed(Body body, Breakable breakable);
 
 		/** called by {@link Manager#destroy(Fixture)}
 		 *  @return true to cancel the destruction */
-		public boolean destroyed(Fixture fixture, Breakable breakable);
+		boolean destroyed(Fixture fixture, Breakable breakable);
 
 		/** called by {@link Manager#destroy(Joint)}
 		 *  @return true to cancel the destruction */
-		public boolean destroyed(Joint joint, Breakable breakable);
+		boolean destroyed(Joint joint, Breakable breakable);
 
 		/** Returns false in all methods implemented from {@link Callback}. Instantiate this if you want to only use a subset of the methods of {@link Callback}.
 		 *  @author dermetfan */
-		public static class Adapter implements Callback {
+		class Adapter implements Callback {
 
 			@Override
 			public boolean strained(Fixture fixture, Breakable breakable, Contact contact, ContactImpulse impulse, float normalImpulse, float tangentImpulse) {
