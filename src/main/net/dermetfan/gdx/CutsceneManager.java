@@ -51,15 +51,15 @@ public class CutsceneManager {
 	public interface Cutscene {
 
 		/** called by {@link CutsceneManager#start(Cutscene)} */
-		public void init();
+		void init();
 
 		/** called by {@link CutsceneManager#update(float)}
 		 *  @param delta the time passes since last update
 		 *  @return if the cutscene is finished */
-		public boolean update(float delta);
+		boolean update(float delta);
 
 		/** called by {@link CutsceneManager#end(Cutscene)} */
-		public void end();
+		void end();
 
 	}
 
