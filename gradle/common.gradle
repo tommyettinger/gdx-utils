@@ -7,11 +7,11 @@ ext {
 	libName = 'libgdx-utils'
 	nameAppendix = project == rootProject ? '' : (project.parent != rootProject ? project.parent.nameAppendix + '-' : '') + project.name
 	nameFull = libName + (nameAppendix.empty ? '' : "-$nameAppendix")
-	libgdxVersion = '1.6.4'
+	libgdxVersion = '1.6.5'
 }
 
 group = 'net.dermetfan.libgdx-utils'
-version = '0.13.1-SNAPSHOT'
+version = '0.13.1'
 
 apply plugin: 'java'
 apply plugin: 'maven'
