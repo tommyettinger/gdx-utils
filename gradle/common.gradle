@@ -11,7 +11,7 @@ ext {
 }
 
 group = 'net.dermetfan.libgdx-utils'
-version = '0.13.3-SNAPSHOT'
+version = '0.13.3'
 
 apply plugin: 'java'
 apply plugin: 'maven'
