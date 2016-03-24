@@ -19,7 +19,7 @@ package net.dermetfan.utils;
  *  @param <A1> the first argument type
  *  @param <A2> the second argument type
  *  @author dermetfan */
-public interface BiFunction<R, A1, A2> {
+public interface BiFunction<A1, A2, R> {
 
 	/** @param arg1 the first argument
 	 *  @param arg2 the second argument
