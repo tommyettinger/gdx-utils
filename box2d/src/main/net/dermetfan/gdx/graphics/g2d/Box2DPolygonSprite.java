@@ -50,7 +50,7 @@ public class Box2DPolygonSprite extends PolygonSprite {
 	private static final Vector2 vec2 = new Vector2();
 
 	/** the {@link #userDataAccessor} used by default */
-	public static final Function<Box2DPolygonSprite, Object> defaultUserDataAccessor = new Function<Box2DPolygonSprite, Object>() {
+	public static final Function<Object, Box2DPolygonSprite> defaultUserDataAccessor = new Function<Object, Box2DPolygonSprite>() {
 		@Override
 		public Box2DPolygonSprite apply(Object userData) {
 			return userData instanceof Box2DPolygonSprite ? (Box2DPolygonSprite) userData : null;
@@ -58,7 +58,7 @@ public class Box2DPolygonSprite extends PolygonSprite {
 	};
 
 	/** the {@link Function} used to get a {@link Box2DPolygonSprite} from the user data of a body or fixture */
-	private static Function<Box2DPolygonSprite, Object> userDataAccessor = defaultUserDataAccessor;
+	private static Function<Object, Box2DPolygonSprite> userDataAccessor = defaultUserDataAccessor;
 
 	/** @see #draw(Batch, World, boolean) */
 	public static void draw(Batch batch, World world) {
@@ -129,12 +129,12 @@ public class Box2DPolygonSprite extends PolygonSprite {
 	}
 
 	/** @return the {@link #userDataAccessor} */
-	public static Function<Box2DPolygonSprite, ?> getUserDataAccessor() {
+	public static Function<?, Box2DPolygonSprite> getUserDataAccessor() {
 		return userDataAccessor;
 	}
 
 	/** @param userDataAccessor the {@link #userDataAccessor} to set */
-	public static void setUserDataAccessor(Function<Box2DPolygonSprite, Object> userDataAccessor) {
+	public static void setUserDataAccessor(Function<Object, Box2DPolygonSprite> userDataAccessor) {
 		Box2DPolygonSprite.userDataAccessor = userDataAccessor != null ? userDataAccessor : defaultUserDataAccessor;
 	}
 

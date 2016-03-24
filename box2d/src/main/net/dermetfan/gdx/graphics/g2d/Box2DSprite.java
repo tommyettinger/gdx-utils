@@ -90,7 +90,7 @@ public class Box2DSprite extends Sprite {
 	}
 
 	/** the {@link #userDataAccessor} used by default */
-	public static final Function<Box2DSprite, Object> defaultUserDataAccessor = new Function<Box2DSprite, Object>() {
+	public static final Function<Object, Box2DSprite> defaultUserDataAccessor = new Function<Object, Box2DSprite>() {
 		@Override
 		public Box2DSprite apply(Object userData) {
 			return userData instanceof Box2DSprite ? (Box2DSprite) userData : null;
@@ -98,7 +98,7 @@ public class Box2DSprite extends Sprite {
 	};
 
 	/** the {@link Function} used to get a {@link Box2DSprite} from the user data of a body or fixture */
-	private static Function<Box2DSprite, Object> userDataAccessor = defaultUserDataAccessor;
+	private static Function<Object, Box2DSprite> userDataAccessor = defaultUserDataAccessor;
 
 	/** a {@link Comparator} used to sort {@link Box2DSprite Box2DSprites} by their {@link Box2DSprite#zIndex z index} in {@link #draw(Batch, World)} */
 	private static Comparator<Box2DSprite> zComparator = new Comparator<Box2DSprite>() {
@@ -277,12 +277,12 @@ public class Box2DSprite extends Sprite {
 	}
 
 	/** @return the {@link #userDataAccessor} */
-	public static Function<Box2DSprite, ?> getUserDataAccessor() {
+	public static Function<?, Box2DSprite> getUserDataAccessor() {
 		return userDataAccessor;
 	}
 
 	/** @param userDataAccessor the {@link #userDataAccessor} to set */
-	public static void setUserDataAccessor(Function<Box2DSprite, Object> userDataAccessor) {
+	public static void setUserDataAccessor(Function<Object, Box2DSprite> userDataAccessor) {
 		Box2DSprite.userDataAccessor = userDataAccessor != null ? userDataAccessor : defaultUserDataAccessor;
 	}
 

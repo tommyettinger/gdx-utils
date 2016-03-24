@@ -28,7 +28,7 @@ import net.dermetfan.utils.Function;
 public abstract class RotationController {
 
 	/** returns the argument if it is a RotationController */
-	public static final Function<RotationController, Object> defaultUserDataAccessor = new Function<RotationController, Object>() {
+	public static final Function<Object, RotationController> defaultUserDataAccessor = new Function<Object, RotationController>() {
 		@Override
 		public RotationController apply(Object arg) {
 			return arg instanceof RotationController ? (RotationController) arg : null;
@@ -36,7 +36,7 @@ public abstract class RotationController {
 	};
 
 	/** the Function used to extract a RotationController out of a Body's user data */
-	private static Function<RotationController, Object> userDataAccessor = defaultUserDataAccessor;
+	private static Function<Object, RotationController> userDataAccessor = defaultUserDataAccessor;
 
 	/** Calls {@link #applyTorque(World, boolean) applyTorque} for every Body with a RotationController in its user data.
 	 *  The RotationController is accessed using the {@link #userDataAccessor}.
@@ -68,12 +68,12 @@ public abstract class RotationController {
 	// getters and setters
 
 	/** @return the {@link #userDataAccessor} */
-	public static Function<RotationController, Object> getUserDataAccessor() {
+	public static Function<Object, RotationController> getUserDataAccessor() {
 		return userDataAccessor;
 	}
 
 	/** @param userDataAccessor The {@link #userDataAccessor} to set. If null, {@link #defaultUserDataAccessor} is set. */
-	public static void setUserDataAccessor(Function<RotationController, Object> userDataAccessor) {
+	public static void setUserDataAccessor(Function<Object, RotationController> userDataAccessor) {
 		RotationController.userDataAccessor = userDataAccessor != null ? userDataAccessor : defaultUserDataAccessor;
 	}
 

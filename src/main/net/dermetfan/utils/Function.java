@@ -18,7 +18,7 @@ package net.dermetfan.utils;
  *  @param <R> the return type
  *  @param <A> the argument type
  *  @author dermetfan */
-public interface Function<R, A> {
+public interface Function<A, R> {
 
 	/** @param arg the argument
 	 *  @return the return value */

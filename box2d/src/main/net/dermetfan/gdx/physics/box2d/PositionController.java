@@ -30,7 +30,7 @@ public abstract class PositionController {
 	protected static final Vector2 vec2 = new Vector2();
 
 	/** returns the argument if it is a PositionController */
-	public static final Function<PositionController, Object> defaultUserDataAccessor = new Function<PositionController, Object>() {
+	public static final Function<Object, PositionController> defaultUserDataAccessor = new Function<Object, PositionController>() {
 		@Override
 		public PositionController apply(Object arg) {
 			return arg instanceof PositionController ? (PositionController) arg : null;
@@ -38,7 +38,7 @@ public abstract class PositionController {
 	};
 
 	/** the Function used to extract a PositionController out of a Body's user data */
-	private static Function<PositionController, Object> userDataAccessor = defaultUserDataAccessor;
+	private static Function<Object, PositionController> userDataAccessor = defaultUserDataAccessor;
 
 	/** Calls {@link #applyForceToCenter(Body, boolean) applyForceToCenter} for every Body with a PositionController in its user data.
 	 *  The PositionController is accessed using the {@link #userDataAccessor}.
@@ -83,12 +83,12 @@ public abstract class PositionController {
 	// getters and setters
 
 	/** @return the {@link #userDataAccessor} */
-	public static Function<PositionController, Object> getUserDataAccessor() {
+	public static Function<Object, PositionController> getUserDataAccessor() {
 		return userDataAccessor;
 	}
 
 	/** @param userDataAccessor The {@link #userDataAccessor} to set. If null, {@link #defaultUserDataAccessor} is set. */
-	public static void setUserDataAccessor(Function<PositionController, Object> userDataAccessor) {
+	public static void setUserDataAccessor(Function<Object, PositionController> userDataAccessor) {
 		PositionController.userDataAccessor = userDataAccessor != null ? userDataAccessor : defaultUserDataAccessor;
 	}
 

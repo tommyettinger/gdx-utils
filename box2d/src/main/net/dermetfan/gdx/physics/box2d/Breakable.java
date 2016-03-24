@@ -48,7 +48,7 @@ public class Breakable {
 		public final Array<Joint> brokenJoints = new Array<>(1);
 
 		/** the {@link #userDataAccessor} used by default */
-		public static final Function<Breakable, Object> defaultUserDataAccessor = new Function<Breakable, Object>() {
+		public static final Function<Object, Breakable> defaultUserDataAccessor = new Function<Object, Breakable>() {
 
 			@Override
 			public Breakable apply(Object userData) {
@@ -58,7 +58,7 @@ public class Breakable {
 		};
 
 		/** the {@link net.dermetfan.utils.Function} used to access a Breakable in user data ({@link net.dermetfan.utils.Function#apply(Object) access} must return a Breakable) */
-		private Function<Breakable, Object> userDataAccessor = defaultUserDataAccessor;
+		private Function<Object, Breakable> userDataAccessor = defaultUserDataAccessor;
 
 		/** used for {@link World#getJoints(Array)} in {@link #strain(World, float)} */
 		private final Array<Joint> tmpJoints = new Array<>(0);
@@ -67,7 +67,7 @@ public class Breakable {
 		public Manager() {}
 
 		/** instantiates a new {@link Manager} with the given {@link #userDataAccessor} */
-		public Manager(Function<Breakable, Object> userDataAccessor) {
+		public Manager(Function<Object, Breakable> userDataAccessor) {
 			setUserDataAccessor(userDataAccessor);
 		}
 
@@ -226,12 +226,12 @@ public class Breakable {
 		}
 
 		/** @return the {@link #userDataAccessor} */
-		public Function<Breakable, Object> getUserDataAccessor() {
+		public Function<Object, Breakable> getUserDataAccessor() {
 			return userDataAccessor;
 		}
 
 		/** @param userDataAccessor the {@link #userDataAccessor} to set */
-		public void setUserDataAccessor(Function<Breakable, Object> userDataAccessor) {
+		public void setUserDataAccessor(Function<Object, Breakable> userDataAccessor) {
 			this.userDataAccessor = userDataAccessor != null ? userDataAccessor : defaultUserDataAccessor;
 		}
 

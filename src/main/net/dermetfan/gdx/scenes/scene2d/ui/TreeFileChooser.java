@@ -50,7 +50,7 @@ public class TreeFileChooser extends FileChooser {
 	}
 
 	/** @see #fileNode(FileHandle, FileFilter, Label.LabelStyle, Function) */
-	public static Node fileNode(FileHandle file, LabelStyle labelStyle, Function<Void, Node> nodeConsumer) {
+	public static Node fileNode(FileHandle file, LabelStyle labelStyle, Function<Node, Void> nodeConsumer) {
 		return fileNode(file, null, labelStyle, nodeConsumer);
 	}
 
@@ -62,8 +62,8 @@ public class TreeFileChooser extends FileChooser {
 	/** passes an Accessor that creates labels representing the file name (with slash if it's a folder) using the given label style to {@link #fileNode(FileHandle, FileFilter, net.dermetfan.utils.Function, net.dermetfan.utils.Function)} (labelSupplier)
 	 *  @param labelStyle the {@link LabelStyle} to use for created labels
 	 *  @see #fileNode(FileHandle, FileFilter, Function, Function) */
-	public static Node fileNode(FileHandle file, FileFilter filter, final LabelStyle labelStyle, Function<Void, Node> nodeConsumer) {
-		return fileNode(file, filter, new Function<Label, FileHandle>() {
+	public static Node fileNode(FileHandle file, FileFilter filter, final LabelStyle labelStyle, Function<Node, Void> nodeConsumer) {
+		return fileNode(file, filter, new Function<FileHandle, Label>() {
 			@Override
 			public Label apply(FileHandle file) {
 				String name = file.name();
@@ -79,7 +79,7 @@ public class TreeFileChooser extends FileChooser {
 	}
 
 	/** @see #fileNode(FileHandle, FileFilter, Function, Function) */
-	public static Node fileNode(FileHandle file, FileFilter filter, Function<Label, FileHandle> labelSupplier) {
+	public static Node fileNode(FileHandle file, FileFilter filter, Function<FileHandle, Label> labelSupplier) {
 		return fileNode(file, filter, labelSupplier, null);
 	}
 
@@ -89,7 +89,7 @@ public class TreeFileChooser extends FileChooser {
 	 *  @param labelSupplier supplies labels to use
 	 *  @param nodeConsumer Does something with nodes after they were created. May be null.
 	 *  @return the created Node */
-	public static Node fileNode(final FileHandle file, final FileFilter filter, final Function<Label, FileHandle> labelSupplier, final Function<Void, Node> nodeConsumer) {
+	public static Node fileNode(final FileHandle file, final FileFilter filter, final Function<FileHandle, Label> labelSupplier, final Function<Node, Void> nodeConsumer) {
 		Label label = labelSupplier.apply(file);
 
 		Node node;
