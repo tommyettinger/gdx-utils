@@ -7,7 +7,7 @@ syntax: glob
 *.iws
 *.ipr
 *.iml
-out/
+.idea/
 
 # Eclipse
 .project
