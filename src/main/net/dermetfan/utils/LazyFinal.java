@@ -21,8 +21,17 @@ public class LazyFinal<T> {
 
 	private T object;
 
-	/** if the {@link #object} has been set */
+	/** whether the {@link #object} has been set */
 	private boolean initialized;
+
+	/** Declaration. */
+	public LazyFinal() {}
+
+	/** Initialization.
+	 * @param object the object to initialize with */
+	public LazyFinal(T object) {
+		init(object);
+	}
 
 	/** @param object the {@link #object}
 	 *  @throws IllegalStateException if already {@link #initialized initialized} */
