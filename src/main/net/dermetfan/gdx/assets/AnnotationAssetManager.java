@@ -14,16 +14,11 @@
 
 package net.dermetfan.gdx.assets;
 
-import java.lang.annotation.Documented;
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
-
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.assets.AssetDescriptor;
 import com.badlogic.gdx.assets.AssetLoaderParameters;
 import com.badlogic.gdx.assets.AssetManager;
+import com.badlogic.gdx.assets.loaders.FileHandleResolver;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.utils.GdxRuntimeException;
 import com.badlogic.gdx.utils.reflect.ClassReflection;
@@ -31,325 +26,338 @@ import com.badlogic.gdx.utils.reflect.Field;
 import com.badlogic.gdx.utils.reflect.Method;
 import com.badlogic.gdx.utils.reflect.ReflectionException;
 
+import java.lang.annotation.Documented;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+
 /** an AssetManager that loads assets from annotated fields and methods using reflection
  *  @author dermetfan */
 public class AnnotationAssetManager extends AssetManager {
+    /** @param field the field which value to get
+     *  @param container An instance of the field's declaring class. May be null if it's static.
+     *  @return the value of the field */
+    private static Object get(Field field, Object container) {
+        if(container == null && !field.isStatic())
+            throw new IllegalArgumentException("field is not static but container instance is null: " + field.getName());
+        boolean accessible = field.isAccessible();
+        if(!accessible)
+            field.setAccessible(true);
+        Object obj = null;
+        try {
+            obj = field.get(container);
+        } catch(ReflectionException e) {
+            Gdx.app.error("AnnotationAssetManager", "could not access " + field, e);
+        }
+        if(!accessible)
+            field.setAccessible(false);
+        return obj;
+    }
 
-	/** @param field the field which value to get
-	 *  @param container An instance of the field's declaring class. May be null if it's static.
-	 *  @return the value of the field */
-	private static Object get(Field field, Object container) {
-		if(container == null && !field.isStatic())
-			throw new IllegalArgumentException("field is not static but container instance is null: " + field.getName());
-		boolean accessible = field.isAccessible();
-		if(!accessible)
-			field.setAccessible(true);
-		Object obj = null;
-		try {
-			obj = field.get(container);
-		} catch(ReflectionException e) {
-			Gdx.app.error("AnnotationAssetManager", "could not access " + field, e);
-		}
-		if(!accessible)
-			field.setAccessible(false);
-		return obj;
-	}
+    /** @param method the method to invoke
+     *  @param container An instance of the method's declaring class. May be null if it's static.
+     *  @param parameters the parameters with which to invoke the method
+     *  @return the return value of the method */
+    private static Object invoke(Method method, Object container, Object... parameters) {
+        if(container == null && !method.isStatic())
+            throw new IllegalArgumentException("method is not static but container instance is null: " + method.getName());
+        boolean accessible = method.isAccessible();
+        if(!accessible)
+            method.setAccessible(true);
+        Object obj = null;
+        try {
+            obj = method.invoke(container, parameters);
+        } catch(ReflectionException e) {
+            Gdx.app.error("AnnotationAssetManager", "could not invoke " + method, e);
+        }
+        if(!accessible)
+            method.setAccessible(false);
+        return obj;
+    }
 
-	/** @param method the method to invoke
-	 *  @param container An instance of the method's declaring class. May be null if it's static.
-	 *  @param parameters the parameters with which to invoke the method
-	 *  @return the return value of the method */
-	private static Object invoke(Method method, Object container, Object... parameters) {
-		if(container == null && !method.isStatic())
-			throw new IllegalArgumentException("method is not static but container instance is null: " + method.getName());
-		boolean accessible = method.isAccessible();
-		if(!accessible)
-			method.setAccessible(true);
-		Object obj = null;
-		try {
-			obj = method.invoke(container, parameters);
-		} catch(ReflectionException e) {
-			Gdx.app.error("AnnotationAssetManager", "could not invoke " + method, e);
-		}
-		if(!accessible)
-			method.setAccessible(false);
-		return obj;
-	}
+    /** @param pathObj the Object specifying a path of an asset
+     *  @return the path of the Asset specified by the given Object */
+    private static String getAssetPath(Object pathObj) {
+        if(pathObj instanceof FileHandle)
+            return ((FileHandle) pathObj).path();
+        if(pathObj instanceof AssetDescriptor)
+            return ((AssetDescriptor<?>) pathObj).fileName;
+        return pathObj.toString();
+    }
 
-	/** @param pathObj the Object specifying a path of an asset
-	 *  @return the path of the Asset specified by the given Object */
-	private static String getAssetPath(Object pathObj) {
-		if(pathObj instanceof FileHandle)
-			return ((FileHandle) pathObj).path();
-		if(pathObj instanceof AssetDescriptor)
-			return ((AssetDescriptor<?>) pathObj).fileName;
-		return pathObj.toString();
-	}
+    /** @param asset The Asset annotation the field or method pathObj was extracted from is annotated with. May be null if pathObj is an AssetDescriptor.
+     *  @param pathObj the Object specifying a path of an asset, extracted from the field or method annotated with the given Asset annotation
+     *  @return the type of the specified asset */
+    private static Class getAssetType(Asset asset, Object pathObj) {
+        if(pathObj instanceof AssetDescriptor)
+            return ((AssetDescriptor<?>) pathObj).type;
+        return asset.value();
+    }
 
-	/** @param asset The Asset annotation the field or method pathObj was extracted from is annotated with. May be null if pathObj is an AssetDescriptor.
-	 *  @param pathObj the Object specifying a path of an asset, extracted from the field or method annotated with the given Asset annotation
-	 *  @return the type of the specified asset */
-	private static Class getAssetType(Asset asset, Object pathObj) {
-		if(pathObj instanceof AssetDescriptor)
-			return ((AssetDescriptor<?>) pathObj).type;
-		return asset.value();
-	}
+    /** @param asset the Asset annotation the field or method pathObj was extracted from is annotated with
+     *  @param pathObj the Object specifying a path of an asset, extracted from the field or method annotated with the given Asset annotation
+     *  @param container An instance of the field's or method's declaring class. May be null if it's static.
+     *  @return the AssetLoaderParameters associated with the specified asset */
+    private static AssetLoaderParameters getAssetLoaderParameters(Asset asset, Object pathObj, Class containerType, Object container) {
+        if(pathObj instanceof AssetDescriptor)
+            return ((AssetDescriptor) pathObj).params;
+        if(asset.params().length() == 0)
+            return null;
 
-	/** @param asset the Asset annotation the field or method pathObj was extracted from is annotated with
-	 *  @param pathObj the Object specifying a path of an asset, extracted from the field or method annotated with the given Asset annotation
-	 *  @param container An instance of the field's or method's declaring class. May be null if it's static.
-	 *  @return the AssetLoaderParameters associated with the specified asset */
-	private static AssetLoaderParameters getAssetLoaderParameters(Asset asset, Object pathObj, Class containerType, Object container) {
-		if(pathObj instanceof AssetDescriptor)
-			return ((AssetDescriptor) pathObj).params;
-		if(asset.params().length() == 0)
-			return null;
+        String location = asset.params();
+        boolean method = location.endsWith("()"); // if a method contains the AssetLoaderParameters
+        Class<?> clazz; // class of the field or method containing the AssetLoaderParameters
+        String name; // the name of the field or method inside clazz
+        if(location.contains(".")) { // fully qualified path
+            int end = location.lastIndexOf('.');
+            String className = location.substring(0, end);
+            name = location.substring(end + 1, method ? location.lastIndexOf("()") : 0);
+            try {
+                clazz = ClassReflection.forName(className);
+            } catch(ReflectionException e) {
+                throw new IllegalArgumentException("Failed to load AssetLoaderParameters from " + location + ": class " + className + " does not exist");
+            }
+        } else { // in container class
+            clazz = containerType;
+            name = method ? location.substring(0, location.lastIndexOf("()")) : location;
+        }
 
-		String location = asset.params();
-		boolean method = location.endsWith("()"); // if a method contains the AssetLoaderParameters
-		Class<?> clazz; // class of the field or method containing the AssetLoaderParameters
-		String name; // the name of the field or method inside clazz
-		if(location.contains(".")) { // fully qualified path
-			int end = location.lastIndexOf('.');
-			String className = location.substring(0, end);
-			name = location.substring(end + 1, method ? location.lastIndexOf("()") : 0);
-			try {
-				clazz = ClassReflection.forName(className);
-			} catch(ReflectionException e) {
-				throw new IllegalArgumentException("Failed to load AssetLoaderParameters from " + location + ": class " + className + " does not exist");
-			}
-		} else { // in container class
-			clazz = containerType;
-			name = method ? location.substring(0, location.lastIndexOf("()")) : location;
-		}
+        if(method) {
+            Method m;
+            boolean withParams;
+            try {
+                m = ClassReflection.getDeclaredMethod(clazz, name, Class.class, String.class, Object.class);
+                withParams = true;
+            } catch(ReflectionException e) {
+                try {
+                    m = ClassReflection.getDeclaredMethod(clazz, name);
+                    withParams = false;
+                } catch(ReflectionException e1) {
+                    throw new GdxRuntimeException("failed to access method " + name, e1);
+                }
+            }
+            if(!ClassReflection.isAssignableFrom(AssetLoaderParameters.class, m.getReturnType()))
+                throw new IllegalArgumentException("AssetLoaderParameters supplier method does not return AssetLoaderParameters: " + m.getReturnType());
+            if(withParams)
+                return (AssetLoaderParameters) invoke(m, container, getAssetType(asset, pathObj), getAssetPath(pathObj), pathObj);
+            return (AssetLoaderParameters) invoke(m, container);
+        } else {
+            try {
+                Field f = ClassReflection.getDeclaredField(clazz, name);
+                return (AssetLoaderParameters) get(f, container);
+            } catch(ReflectionException e) {
+                throw new GdxRuntimeException("failed to access field " + name, e);
+            }
+        }
+    }
 
-		if(method) {
-			Method m;
-			boolean withParams;
-			try {
-				m = ClassReflection.getDeclaredMethod(clazz, name, Class.class, String.class, Object.class);
-				withParams = true;
-			} catch(ReflectionException e) {
-				try {
-					m = ClassReflection.getDeclaredMethod(clazz, name);
-					withParams = false;
-				} catch(ReflectionException e1) {
-					throw new GdxRuntimeException("failed to access method " + name, e1);
-				}
-			}
-			if(!ClassReflection.isAssignableFrom(AssetLoaderParameters.class, m.getReturnType()))
-				throw new IllegalArgumentException("AssetLoaderParameters supplier method does not return AssetLoaderParameters: " + m.getReturnType());
-			if(withParams)
-				return (AssetLoaderParameters) invoke(m, container, getAssetType(asset, pathObj), getAssetPath(pathObj), pathObj);
-			return (AssetLoaderParameters) invoke(m, container);
-		} else {
-			try {
-				Field f = ClassReflection.getDeclaredField(clazz, name);
-				return (AssetLoaderParameters) get(f, container);
-			} catch(ReflectionException e) {
-				throw new GdxRuntimeException("failed to access field " + name, e);
-			}
-		}
-	}
+    /** @param field the field which asset's path to get
+     *  @param container An instance of the field's declaring class. May be null if it's static.
+     *  @return the path of the given field's asset */
+    public static String getAssetPath(Field field, Object container) {
+        return getAssetPath(get(field, container));
+    }
 
-	/** @param field the field which asset's path to get
-	 *  @param container An instance of the field's declaring class. May be null if it's static.
-	 *  @return the path of the given field's asset */
-	public static String getAssetPath(Field field, Object container) {
-		return getAssetPath(get(field, container));
-	}
+    /** @see #getAssetPath(Field, Object) */
+    public static String getAssetPath(Field field) {
+        return getAssetPath(field, null);
+    }
 
-	/** @see #getAssetPath(Field, Object) */
-	public static String getAssetPath(Field field) {
-		return getAssetPath(field, null);
-	}
+    /** @param method the method which asset's path to get
+     *  @param container An instance of the method's declaring class. May be null if it's static.
+     *  @return the path of the given method's asset */
+    public static String getAssetPath(Method method, Object container) {
+        return getAssetPath(invoke(method, container));
+    }
 
-	/** @param method the method which asset's path to get
-	 *  @param container An instance of the method's declaring class. May be null if it's static.
-	 *  @return the path of the given method's asset */
-	public static String getAssetPath(Method method, Object container) {
-		return getAssetPath(invoke(method, container));
-	}
+    /** @see #getAssetPath(Method, Object) */
+    public static String getAssetPath(Method method) {
+        return getAssetPath(method, null);
+    }
 
-	/** @see #getAssetPath(Method, Object) */
-	public static String getAssetPath(Method method) {
-		return getAssetPath(method, null);
-	}
+    /** @param field the field which asset's type to get
+     *  @param container An instance of the field's declaring class. May be null if it's static.
+     *  @return the type of the given field's asset */
+    public static Class getAssetType(Field field, Object container) {
+        return getAssetType(field.isAnnotationPresent(Asset.class) ? field.getDeclaredAnnotation(Asset.class).getAnnotation(Asset.class) : null, get(field, container));
+    }
 
-	/** @param field the field which asset's type to get
-	 *  @param container An instance of the field's declaring class. May be null if it's static.
-	 *  @return the type of the given field's asset */
-	public static Class getAssetType(Field field, Object container) {
-		return getAssetType(field.isAnnotationPresent(Asset.class) ? field.getDeclaredAnnotation(Asset.class).getAnnotation(Asset.class) : null, get(field, container));
-	}
+    /** @see #getAssetType(Field, Object) */
+    public static Class getAssetType(Field field) {
+        return getAssetType(field, null);
+    }
 
-	/** @see #getAssetType(Field, Object) */
-	public static Class getAssetType(Field field) {
-		return getAssetType(field, null);
-	}
+    /** @param method the method which asset's type to get
+     *  @param container An instance of the method's declaring class. May be null if it's static.
+     *  @return the type of the given method's asset */
+    public static Class getAssetType(Method method, Object container) {
+        return getAssetType(method.isAnnotationPresent(Asset.class) ? method.getDeclaredAnnotation(Asset.class).getAnnotation(Asset.class) : null, invoke(method, container));
+    }
 
-	/** @param method the method which asset's type to get
-	 *  @param container An instance of the method's declaring class. May be null if it's static.
-	 *  @return the type of the given method's asset */
-	public static Class getAssetType(Method method, Object container) {
-		return getAssetType(method.isAnnotationPresent(Asset.class) ? method.getDeclaredAnnotation(Asset.class).getAnnotation(Asset.class) : null, invoke(method, container));
-	}
+    /** @see #getAssetType(Method, Object) */
+    public static Class getAssetType(Method method) {
+        return getAssetType(method, null);
+    }
 
-	/** @see #getAssetType(Method, Object) */
-	public static Class getAssetType(Method method) {
-		return getAssetType(method, null);
-	}
+    /** @param field the field which asset's AssetLoaderParameters to get
+     *  @param container An instance of the field's declaring class. May be null if it's static.
+     *  @return the AssetLoaderParameters to use with the given field's asset */
+    public static AssetLoaderParameters getAssetLoaderParameters(Field field, Object container) {
+        return getAssetLoaderParameters(field.isAnnotationPresent(Asset.class) ? field.getDeclaredAnnotation(Asset.class).getAnnotation(Asset.class) : null, get(field, container), field.getDeclaringClass(), container);
+    }
 
-	/** @param field the field which asset's AssetLoaderParameters to get
-	 *  @param container An instance of the field's declaring class. May be null if it's static.
-	 *  @return the AssetLoaderParameters to use with the given field's asset */
-	public static AssetLoaderParameters getAssetLoaderParameters(Field field, Object container) {
-		return getAssetLoaderParameters(field.isAnnotationPresent(Asset.class) ? field.getDeclaredAnnotation(Asset.class).getAnnotation(Asset.class) : null, get(field, container), field.getDeclaringClass(), container);
-	}
+    /** @see #getAssetLoaderParameters(Field, Object) */
+    public static AssetLoaderParameters getAssetLoaderParameters(Field field) {
+        return getAssetLoaderParameters(field, null);
+    }
 
-	/** @see #getAssetLoaderParameters(Field, Object) */
-	public static AssetLoaderParameters getAssetLoaderParameters(Field field) {
-		return getAssetLoaderParameters(field, null);
-	}
+    /** @param method the method which asset's AssetLoaderParameters to get
+     *  @param container An instance of the method's declaring class. May be null if it's static.
+     *  @return the AssetLoaderParameters to use with the given method's asset */
+    public static AssetLoaderParameters getAssetLoaderParameters(Method method, Object container) {
+        return getAssetLoaderParameters(method.isAnnotationPresent(Asset.class) ? method.getDeclaredAnnotation(Asset.class).getAnnotation(Asset.class) : null, invoke(method, container), method.getDeclaringClass(), container);
+    }
 
-	/** @param method the method which asset's AssetLoaderParameters to get
-	 *  @param container An instance of the method's declaring class. May be null if it's static.
-	 *  @return the AssetLoaderParameters to use with the given method's asset */
-	public static AssetLoaderParameters getAssetLoaderParameters(Method method, Object container) {
-		return getAssetLoaderParameters(method.isAnnotationPresent(Asset.class) ? method.getDeclaredAnnotation(Asset.class).getAnnotation(Asset.class) : null, invoke(method, container), method.getDeclaringClass(), container);
-	}
+    /** @see #getAssetLoaderParameters(Method, Object) */
+    public static AssetLoaderParameters getAssetLoaderParameters(Method method) {
+        return getAssetLoaderParameters(method, null);
+    }
 
-	/** @see #getAssetLoaderParameters(Method, Object) */
-	public static AssetLoaderParameters getAssetLoaderParameters(Method method) {
-		return getAssetLoaderParameters(method, null);
-	}
+    /** @param field the field from which to create a new AssetDescriptor
+     *  @param container An instance of the field's declaring class. May be null if it's static.
+     *  @return a new AssetDescriptor created from the given field */
+    public static <T> AssetDescriptor<T> createAssetDescriptor(Field field, Object container) {
+        Object pathObj = get(field, container);
+        if(pathObj instanceof AssetDescriptor)
+            return (AssetDescriptor<T>) pathObj;
+        if(!field.isAnnotationPresent(Asset.class))
+            throw new IllegalArgumentException("cannot create an AssetDescriptor from a field not annotated with @Asset");
+        Asset asset = field.getDeclaredAnnotation(Asset.class).getAnnotation(Asset.class);
+        return new AssetDescriptor<>(getAssetPath(pathObj), getAssetType(asset, pathObj), getAssetLoaderParameters(asset, pathObj, field.getDeclaringClass(), container));
+    }
 
-	/** @param field the field from which to create a new AssetDescriptor
-	 *  @param container An instance of the field's declaring class. May be null if it's static.
-	 *  @return a new AssetDescriptor created from the given field */
-	public static <T> AssetDescriptor<T> createAssetDescriptor(Field field, Object container) {
-		Object pathObj = get(field, container);
-		if(pathObj instanceof AssetDescriptor)
-			return (AssetDescriptor<T>) pathObj;
-		if(!field.isAnnotationPresent(Asset.class))
-			throw new IllegalArgumentException("cannot create an AssetDescriptor from a field not annotated with @Asset");
-		Asset asset = field.getDeclaredAnnotation(Asset.class).getAnnotation(Asset.class);
-		return new AssetDescriptor<>(getAssetPath(pathObj), getAssetType(asset, pathObj), getAssetLoaderParameters(asset, pathObj, field.getDeclaringClass(), container));
-	}
+    /** @see #createAssetDescriptor(Field, Object) */
+    public static <T> AssetDescriptor<T> createAssetDescriptor(Field field) {
+        return createAssetDescriptor(field, null);
+    }
 
-	/** @see #createAssetDescriptor(Field, Object) */
-	public static <T> AssetDescriptor<T> createAssetDescriptor(Field field) {
-		return createAssetDescriptor(field, null);
-	}
+    /** @param method the method from which to create a new AssetDescriptor
+     *  @param container An instance of the method's declaring class. May be null if it's static.
+     *  @return a new AssetDescriptor created from the given method */
+    public static <T> AssetDescriptor<T> createAssetDescriptor(Method method, Object container) {
+        Object pathObj = invoke(method, container);
+        if(pathObj instanceof AssetDescriptor)
+            return (AssetDescriptor<T>) pathObj;
+        if(!method.isAnnotationPresent(Asset.class))
+            throw new IllegalArgumentException("cannot create an AssetDescriptor from a method not annotated with @Asset");
+        Asset asset = method.getDeclaredAnnotation(Asset.class).getAnnotation(Asset.class);
+        return new AssetDescriptor<>(getAssetPath(pathObj), getAssetType(asset, pathObj), getAssetLoaderParameters(asset, pathObj, method.getDeclaringClass(), container));
+    }
 
-	/** @param method the method from which to create a new AssetDescriptor
-	 *  @param container An instance of the method's declaring class. May be null if it's static.
-	 *  @return a new AssetDescriptor created from the given method */
-	public static <T> AssetDescriptor<T> createAssetDescriptor(Method method, Object container) {
-		Object pathObj = invoke(method, container);
-		if(pathObj instanceof AssetDescriptor)
-			return (AssetDescriptor<T>) pathObj;
-		if(!method.isAnnotationPresent(Asset.class))
-			throw new IllegalArgumentException("cannot create an AssetDescriptor from a method not annotated with @Asset");
-		Asset asset = method.getDeclaredAnnotation(Asset.class).getAnnotation(Asset.class);
-		return new AssetDescriptor<>(getAssetPath(pathObj), getAssetType(asset, pathObj), getAssetLoaderParameters(asset, pathObj, method.getDeclaringClass(), container));
-	}
+    /** @see #createAssetDescriptor(Method, Object) */
+    public static <T> AssetDescriptor<T> createAssetDescriptor(Method method) {
+        return createAssetDescriptor(method, null);
+    }
 
-	/** @see #createAssetDescriptor(Method, Object) */
-	public static <T> AssetDescriptor<T> createAssetDescriptor(Method method) {
-		return createAssetDescriptor(method, null);
-	}
+    public AnnotationAssetManager(final FileHandleResolver resolver) {
+        super(resolver);
+    }
 
-	/** @param asset The @Asset annotation annotating the field or method obj was extracted from. May be null if obj is an AssetDescriptor.
-	 *  @param pathObj the Object describing the asset path, extracted from a field or method
-	 *  @param containerType The class containing the field or method obj was extracted from. May be null if obj is an AssetDescriptor or no AssetLoaderParameters are specified by the @Asset annotation.
-	 *  @param container The instance of containerType. May be null if the field or method containing the AssetLoaderParameters is static or no AssetLoaderParameters are specified by the @Asset annotation. */
-	private void load(Asset asset, Object pathObj, Class<?> containerType, Object container) {
-		if(pathObj instanceof Object[]) {
-			Object[] pathObjs = (Object[]) pathObj;
-			for(Object path : pathObjs)
-				load(asset, path, containerType, container);
-		} else
-			load(getAssetPath(pathObj), getAssetType(asset, pathObj), getAssetLoaderParameters(asset, pathObj, containerType, container));
-	}
+    public AnnotationAssetManager(final FileHandleResolver resolver, final boolean defaultLoaders) {
+        super(resolver, defaultLoaders);
+    }
 
-	/** @param container the class which fields and methods annotated with {@link Asset Asset} to load
-	 *  @param instance an instance of the container class */
-	private <T> void load(Class<T> container, T instance) {
-		for(Method method : ClassReflection.getDeclaredMethods(container)) {
-			if(!method.isAnnotationPresent(Asset.class))
-				continue;
-			Asset asset = method.getDeclaredAnnotation(Asset.class).getAnnotation(Asset.class);
-			if(asset.load())
-				load(method, instance);
-		}
-		for(Field field : ClassReflection.getDeclaredFields(container)) {
-			if(!field.isAnnotationPresent(Asset.class))
-				continue;
-			Asset asset = field.getDeclaredAnnotation(Asset.class).getAnnotation(Asset.class);
-			if(asset.load())
-				load(field, instance);
-		}
-	}
+    /** @param asset The @Asset annotation annotating the field or method obj was extracted from. May be null if obj is an AssetDescriptor.
+     *  @param pathObj the Object describing the asset path, extracted from a field or method
+     *  @param containerType The class containing the field or method obj was extracted from. May be null if obj is an AssetDescriptor or no AssetLoaderParameters are specified by the @Asset annotation.
+     *  @param container The instance of containerType. May be null if the field or method containing the AssetLoaderParameters is static or no AssetLoaderParameters are specified by the @Asset annotation. */
+    private void load(Asset asset, Object pathObj, Class<?> containerType, Object container) {
+        if(pathObj instanceof Object[]) {
+            Object[] pathObjs = (Object[]) pathObj;
+            for(Object path : pathObjs)
+                load(asset, path, containerType, container);
+        } else
+            load(getAssetPath(pathObj), getAssetType(asset, pathObj), getAssetLoaderParameters(asset, pathObj, containerType, container));
+    }
 
-	/** @see #load(Class, Object) */
-	@SuppressWarnings("unchecked")
-	public <T> void load(T container) {
-		load((Class<T>) container.getClass(), container);
-	}
+    /** @param container the class which fields and methods annotated with {@link Asset Asset} to load
+     *  @param instance an instance of the container class */
+    private <T> void load(Class<T> container, T instance) {
+        for(Method method : ClassReflection.getDeclaredMethods(container)) {
+            if(!method.isAnnotationPresent(Asset.class))
+                continue;
+            Asset asset = method.getDeclaredAnnotation(Asset.class).getAnnotation(Asset.class);
+            if(asset.load())
+                load(method, instance);
+        }
+        for(Field field : ClassReflection.getDeclaredFields(container)) {
+            if(!field.isAnnotationPresent(Asset.class))
+                continue;
+            Asset asset = field.getDeclaredAnnotation(Asset.class).getAnnotation(Asset.class);
+            if(asset.load())
+                load(field, instance);
+        }
+    }
 
-	/** @see #load(Class, Object) */
-	public void load(Class<?> container) {
-		load(container, null);
-	}
+    /** @see #load(Class, Object) */
+    @SuppressWarnings("unchecked")
+    public <T> void load(T container) {
+        load((Class<T>) container.getClass(), container);
+    }
 
-	/** @param field the field which value to load
-	 *  @param container An instance of the field's declaring class. May be null if it's static. */
-	public void load(Field field, Object container) {
-		load(field.isAnnotationPresent(Asset.class) ? field.getDeclaredAnnotation(Asset.class).getAnnotation(Asset.class) : null, get(field, container), field.getDeclaringClass(), container);
-	}
+    /** @see #load(Class, Object) */
+    public void load(Class<?> container) {
+        load(container, null);
+    }
 
-	/** @see #load(Field, Object) */
-	public void load(Field field) {
-		load(field, null);
-	}
+    /** @param field the field which value to load
+     *  @param container An instance of the field's declaring class. May be null if it's static. */
+    public void load(Field field, Object container) {
+        load(field.isAnnotationPresent(Asset.class) ? field.getDeclaredAnnotation(Asset.class).getAnnotation(Asset.class) : null, get(field, container), field.getDeclaringClass(), container);
+    }
 
-	/** @param method the method which return value to load
-	 *  @param container An instance of the method's declaring class. May be null if it's static. */
-	public void load(Method method, Object container) {
-		if(method.getParameterTypes().length != 0)
-			throw new IllegalArgumentException(method.getName() + " takes parameters. Methods that take parameters are not supported.");
-		if(method.getReturnType().isPrimitive())
-			throw new IllegalArgumentException(method.getName() + " returns " + method.getReturnType() + ". Methods that return primitives are not supported.");
-		load(method.isAnnotationPresent(Asset.class) ? method.getDeclaredAnnotation(Asset.class).getAnnotation(Asset.class) : null, invoke(method, container), method.getDeclaringClass(), container);
-	}
+    /** @see #load(Field, Object) */
+    public void load(Field field) {
+        load(field, null);
+    }
 
-	/** @see #load(Method, Object) */
-	public void load(Method method) {
-		load(method, null);
-	}
+    /** @param method the method which return value to load
+     *  @param container An instance of the method's declaring class. May be null if it's static. */
+    public void load(Method method, Object container) {
+        if(method.getParameterTypes().length != 0)
+            throw new IllegalArgumentException(method.getName() + " takes parameters. Methods that take parameters are not supported.");
+        if(method.getReturnType().isPrimitive())
+            throw new IllegalArgumentException(method.getName() + " returns " + method.getReturnType() + ". Methods that return primitives are not supported.");
+        load(method.isAnnotationPresent(Asset.class) ? method.getDeclaredAnnotation(Asset.class).getAnnotation(Asset.class) : null, invoke(method, container), method.getDeclaringClass(), container);
+    }
 
-	/** Provides information about assets that fields or methods represent.
-	 *  The toString value of the value of the field or return value of the method annotated is used as path (except for {@link FileHandle} and {@link AssetDescriptor} which get special treatment).
-	 *  Methods annotated with this annotation must not return a primitive and have no parameters.
-	 *  @author dermetfan */
-	@Documented
-	@Retention(RetentionPolicy.RUNTIME)
-	@Target({ElementType.FIELD, ElementType.METHOD})
-	public @interface Asset {
+    /** @see #load(Method, Object) */
+    public void load(Method method) {
+        load(method, null);
+    }
 
-		/** @return Whether this field or method should be loaded by {@link AnnotationAssetManager#load(Class, Object)}. Default is @{@code true}. */
-		boolean load() default true;
+    /** Provides information about assets that fields or methods represent.
+     *  The toString value of the value of the field or return value of the method annotated is used as path (except for {@link FileHandle} and {@link AssetDescriptor} which get special treatment).
+     *  Methods annotated with this annotation must not return a primitive and have no parameters.
+     *  @author dermetfan */
+    @Documented
+    @Retention(RetentionPolicy.RUNTIME)
+    @Target({ElementType.FIELD, ElementType.METHOD})
+    public @interface Asset {
 
-		/** @return the type of the asset this field or method represents */
-		Class<?> value() default void.class;
+        /** @return Whether this field or method should be loaded by {@link AnnotationAssetManager#load(Class, Object)}. Default is @{@code true}. */
+        boolean load() default true;
 
-		/** Methods referenced by this can either have no parameters or take a {@link Class}, {@link String} and {@link Object} in this order.
-		 *  The Class is the type of the asset, the String is the path of the asset and the Object is the value of the field or return value of the method from which the asset is being loaded.
-		 *  @return The fully qualified or simple name of a field or method providing AssetLoaderParameters.
-		 *  If the name is simple, the declaring class of this field or method is assumed to be the declaring class of the AssetLoaderParameters field or method as well. */
-		String params() default "";
+        /** @return the type of the asset this field or method represents */
+        Class<?> value() default void.class;
 
-	}
+        /** Methods referenced by this can either have no parameters or take a {@link Class}, {@link String} and {@link Object} in this order.
+         *  The Class is the type of the asset, the String is the path of the asset and the Object is the value of the field or return value of the method from which the asset is being loaded.
+         *  @return The fully qualified or simple name of a field or method providing AssetLoaderParameters.
+         *  If the name is simple, the declaring class of this field or method is assumed to be the declaring class of the AssetLoaderParameters field or method as well. */
+        String params() default "";
+
+    }
 
 }
