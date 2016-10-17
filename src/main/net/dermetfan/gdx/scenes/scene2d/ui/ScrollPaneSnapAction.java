@@ -117,11 +117,13 @@ public class ScrollPaneSnapAction extends Action {
 			visualScrollY = pane.getVisualScrollY();
 			if(!slotsUpdated)
 				updateSlots();
-			float currentSlot = indicateVertical ? getSnappedSlotY() : getSnappedSlotX();
-			int page = 0;
+			final float currentSlot = indicateVertical ? getSnappedSlotY() : getSnappedSlotX();
+			final int pages = slots.size / 2;
+			int page = -1;
 			float closestSmaller = Float.NEGATIVE_INFINITY, closestGreater = Float.POSITIVE_INFINITY;
-			for(int i = indicateVertical ? 1 : 0; i < slots.size; i += 2) {
-				float slot = slots.get(i), diff = currentSlot - slot;
+			for(int n = 0; n < pages; n++) {
+				final int i = n * 2 + (indicateVertical ? 1 : 0);
+				final float slot = slots.get(i), diff = currentSlot - slot;
 				if(diff >= 0) {
 					if(diff <= currentSlot - closestSmaller)
 						closestSmaller = slot;
@@ -130,7 +132,9 @@ public class ScrollPaneSnapAction extends Action {
 				if(slot <= currentSlot)
 					page++;
 			}
-			indicator.indicate(this, page, slots.size / 2, MathUtils.replaceNaN((currentSlot - closestSmaller) / (closestGreater - closestSmaller), 1));
+			assert page > -1 || pages == 0;
+			assert page != pages;
+			indicator.indicate(this, page, pages, MathUtils.replaceNaN((currentSlot - closestSmaller) / (closestGreater - closestSmaller), 1));
 		}
 
 		return false;
@@ -542,7 +546,7 @@ public class ScrollPaneSnapAction extends Action {
 	public interface Indicator {
 		/** Called by {@link #act(float) act} if the {@link ScrollPane#getVisualScrollX() visual scroll amount} changed.
 		 * @param action the instance calling this method
-		 * @param page the current slot index in a sorted sequence of all slots
+		 * @param page The current slot index in a sorted sequence of all slots. May be {@code -1} iff {@code pages} is {@code 0}.
 		 * @param pages the number of slots
 		 * @param progress how far the ScrollPane's visual scroll amount is to the next slot */
 		void indicate(final ScrollPaneSnapAction action, final int page, final int pages, final float progress);
