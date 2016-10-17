@@ -34,8 +34,8 @@ import net.dermetfan.utils.math.MathUtils;
  *  @since 0.10.0 */
 public class ScrollPaneSnapAction extends Action {
 
-	/** the target position all slots shall snap into */
-	private Value targetX, targetY;
+	/** the position all slots shall snap into */
+	private Value anchorX, anchorY;
 
 	/** the Indicator to notify (may be null) */
 	private Indicator indicator;
@@ -68,16 +68,16 @@ public class ScrollPaneSnapAction extends Action {
 	/** the last {@link ScrollPane#getVisualScrollX() visual scroll amount} of {@link #pane}, needed to know whether the {@link #indicator} must be notified */
 	private float visualScrollX = Float.NaN, visualScrollY = Float.NaN;
 
-	/** uses {@link Value#percentWidth(float) percentWidth(.5f)} and {@link Value#percentHeight(float) percentHeight(.5f)} as target */
+	/** uses {@link Value#percentWidth(float) percentWidth(.5f)} and {@link Value#percentHeight(float) percentHeight(.5f)} as anchor */
 	public ScrollPaneSnapAction() {
 		this(Value.percentWidth(.5f), Value.percentHeight(.5f));
 	}
 
-	/** @param targetX the {@link #targetX}
-	 *  @param targetY the {@link #targetY} */
-	public ScrollPaneSnapAction(Value targetX, Value targetY) {
-		this.targetX = targetX;
-		this.targetY = targetY;
+	/** @param anchorX the {@link #anchorX}
+	 *  @param anchorY the {@link #anchorY} */
+	public ScrollPaneSnapAction(Value anchorX, Value anchorY) {
+		this.anchorX = anchorX;
+		this.anchorY = anchorY;
 	}
 
 	@Override
@@ -152,8 +152,8 @@ public class ScrollPaneSnapAction extends Action {
 	@Override
 	public void reset() {
 		super.reset();
-		targetX = Value.percentWidth(.5f);
-		targetY = Value.percentHeight(.5f);
+		anchorX = Value.percentWidth(.5f);
+		anchorY = Value.percentHeight(.5f);
 		indicator = null;
 		indicateVertical = false;
 		slots.clear();
@@ -190,15 +190,15 @@ public class ScrollPaneSnapAction extends Action {
 		dirtyIndicator();
 	}
 
-	/** @param slot is set to the Slot closest to the target with the visual scroll amount
+	/** @param slot is set to the Slot closest to the anchor with the visual scroll amount
 	 *  @return true if a slot was found */
 	public boolean findClosestSlot(Vector2 slot) {
-		float targetX = this.targetX.get(pane) + pane.getVisualScrollX(), targetY = this.targetY.get(pane) + pane.getVisualScrollY();
+		float anchorX = this.anchorX.get(pane) + pane.getVisualScrollX(), anchorY = this.anchorY.get(pane) + pane.getVisualScrollY();
 		float closestDistance = Float.POSITIVE_INFINITY;
 		boolean found = false;
 		for(int i = 1; i < slots.size; i += 2) {
 			float slotX = slots.get(i - 1), slotY = slots.get(i);
-			float distance = Vector2.dst2(targetX, targetY, slotX, slotY);
+			float distance = Vector2.dst2(anchorX, anchorY, slotX, slotY);
 			if(distance <= closestDistance) {
 				closestDistance = distance;
 				slot.set(slotX, slotY);
@@ -216,6 +216,19 @@ public class ScrollPaneSnapAction extends Action {
 		else
 			snap(getSnappedSlotX(), getSnappedSlotY());
 		Pools.free(vec2);
+	}
+
+	/** Snaps to the slot on the given actor. */
+	public void snap(final Slot slot, final Actor actor) {
+		final Vector2 vec2 = Pools.obtain(Vector2.class);
+		slot.getSlot(actor, vec2);
+		snap(vec2);
+		Pools.free(vec2);
+	}
+
+	/** @see #snap(float, float) */
+	public void snap(final Vector2 slot) {
+		snap(slot.x, slot.y);
 	}
 
 	/** @param slotX the x coordinate of the slot to snap to
@@ -242,8 +255,8 @@ public class ScrollPaneSnapAction extends Action {
 
 	private void snap0(float slotX, float slotY) {
 		pane.fling(0, 0, 0);
-		pane.setScrollX(slotX - targetX.get(pane));
-		pane.setScrollY(slotY - targetY.get(pane));
+		pane.setScrollX(slotX - anchorX.get(pane));
+		pane.setScrollY(slotY - anchorY.get(pane));
 	}
 
 	/** forces the {@link #indicator} to be notified next time {@link #act(float) act} is called */
@@ -253,41 +266,41 @@ public class ScrollPaneSnapAction extends Action {
 
 	/** @return the slot x the given pane is currently snapped to (assuming it is) */
 	public float getSnappedSlotX() {
-		return pane.getScrollX() + targetX.get(pane);
+		return pane.getScrollX() + anchorX.get(pane);
 	}
 
 	/** @return the slot y the given pane is currently snapped to (assuming it is) */
 	public float getSnappedSlotY() {
-		return pane.getScrollY() + targetY.get(pane);
+		return pane.getScrollY() + anchorY.get(pane);
 	}
 
 	// getters and setters
 
-	/** @return the {@link #targetX} */
-	public Value getTargetX() {
-		return targetX;
+	/** @return the {@link #anchorX} */
+	public Value getAnchorX() {
+		return anchorX;
 	}
 
-	/** @param targetX the {@link #targetX} to set */
-	public void setTargetX(Value targetX) {
-		this.targetX = targetX;
+	/** @param anchorX the {@link #anchorX} to set */
+	public void setAnchorX(Value anchorX) {
+		this.anchorX = anchorX;
 	}
 
-	/** @return the {@link #targetY} */
-	public Value getTargetY() {
-		return targetY;
+	/** @return the {@link #anchorY} */
+	public Value getAnchorY() {
+		return anchorY;
 	}
 
-	/** @param targetY the {@link #targetY} to set */
-	public void setTargetY(Value targetY) {
-		this.targetY = targetY;
+	/** @param anchorY the {@link #anchorY} to set */
+	public void setAnchorY(Value anchorY) {
+		this.anchorY = anchorY;
 	}
 
-	/** @param targetX the {@link #targetX} to set
-	 *  @param targetY the {@link #targetY} to set */
-	public void setTarget(Value targetX, Value targetY) {
-		this.targetX = targetX;
-		this.targetY = targetY;
+	/** @param anchorX the {@link #anchorX} to set
+	 *  @param anchorY the {@link #anchorY} to set */
+	public void setAnchor(final Value anchorX, final Value anchorY) {
+		this.anchorX = anchorX;
+		this.anchorY = anchorY;
 	}
 
 	/** @return the {@link #indicator} */
@@ -421,9 +434,10 @@ public class ScrollPaneSnapAction extends Action {
 
 	}
 
-	/** convenience class, calls {@link ScrollPaneSnapAction#reportSlot(float, float)} on SnapEvents
-	 *  @author dermetfan
-	 *  @since 0.10.0 */
+	/** An actor with a slot added to its listeners can be snapped to.
+	 * Calls {@link #reportSlot(float, float) reportSlot} on {@link SlotSearchEvent SlotSearchEvents}.
+	 * @author dermetfan
+	 * @since 0.10.0 */
 	public static abstract class Slot implements EventListener {
 
 		/** calls {@link ScrollPaneSnapAction#reportSlot(float, float) reportSlot} if the event is a {@link SlotSearchEvent} */
@@ -521,18 +535,16 @@ public class ScrollPaneSnapAction extends Action {
 
 	}
 
-	/** indicates the position of the {@link #getSnappedSlotX() snapped} slot
-	 *  @author dermetfan
-	 *  @since 0.10.0 */
+	/** Indicates the position of the {@link #getSnappedSlotX() snapped} slot.
+	 * The axis reported is determined by {@link #indicateVertical}.
+	 * @author dermetfan
+	 * @since 0.10.0 */
 	public interface Indicator {
-
-		/** called by {@link #act(float) if the {@link ScrollPane#getVisualScrollX() visual scroll amount} changed
-		 *  @param action the instance calling this method
-		 *  @param page the current slot index in a sorted sequence of all slots
-		 *  @param pages the number of slots
-		 *  @param progress how far the ScrollPane's visual scroll amount is to the next slot */
-		void indicate(ScrollPaneSnapAction action, int page, int pages, float progress);
-
+		/** Called by {@link #act(float) act} if the {@link ScrollPane#getVisualScrollX() visual scroll amount} changed.
+		 * @param action the instance calling this method
+		 * @param page the current slot index in a sorted sequence of all slots
+		 * @param pages the number of slots
+		 * @param progress how far the ScrollPane's visual scroll amount is to the next slot */
+		void indicate(final ScrollPaneSnapAction action, final int page, final int pages, final float progress);
 	}
-
 }
