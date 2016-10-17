@@ -102,10 +102,10 @@ public class AnnotationAssetManager extends AssetManager {
     private static AssetLoaderParameters getAssetLoaderParameters(Asset asset, Object pathObj, Class containerType, Object container) {
         if(pathObj instanceof AssetDescriptor)
             return ((AssetDescriptor) pathObj).params;
-        if(asset.params().length() == 0)
+        if(asset.param().length() == 0)
             return null;
 
-        String location = asset.params();
+        String location = asset.param();
         boolean method = location.endsWith("()"); // if a method contains the AssetLoaderParameters
         Class<?> clazz; // class of the field or method containing the AssetLoaderParameters
         String name; // the name of the field or method inside clazz
@@ -355,6 +355,6 @@ public class AnnotationAssetManager extends AssetManager {
          *  The Class is the type of the asset, the String is the path of the asset and the Object is the value of the field or return value of the method from which the asset is being loaded.
          *  @return The fully qualified or simple name of a field or method providing AssetLoaderParameters.
          *  If the name is simple, the declaring class of this field or method is assumed to be the declaring class of the AssetLoaderParameters field or method as well. */
-        String params() default "";
+        String param() default "";
     }
 }
