@@ -33,7 +33,7 @@ import com.badlogic.gdx.graphics.g2d.TextureRegion;
 public class AnimatedSprite extends Sprite {
 
 	/** the {@link Animation} to display */
-	private Animation animation;
+	private Animation<TextureRegion> animation;
 
 	/** the current time of the {@link Animation} */
 	private float time;
@@ -52,7 +52,7 @@ public class AnimatedSprite extends Sprite {
 
 	/** creates a new {@link AnimatedSprite} with the given {@link Animation}
 	 *  @param animation the {@link #animation} to use */
-	public AnimatedSprite(Animation animation) {
+	public AnimatedSprite(Animation<TextureRegion> animation) {
 		super(animation.getKeyFrame(0));
 		this.animation = animation;
 	}
