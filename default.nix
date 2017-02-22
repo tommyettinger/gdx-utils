@@ -41,4 +41,6 @@ pkgs.stdenv.mkDerivation {
     install_project build libgdx-utils
     install_project box2d/build libgdx-utils-box2d
   '';
+
+  meta.maintainers = [ "serverkorken@gmail.com" ];
 }
