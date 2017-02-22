@@ -24,18 +24,18 @@ pkgs.stdenv.mkDerivation {
       local doc=$out/share/doc/$name
       mkdir -p $doc
       mv $build/docs/javadoc/ $doc
-      mv $build/libs/*-javadoc.jar $doc
-      echo file $doc/*-javadoc.jar >> $out/nix-support/hydra-build-products
+      mv $build/libs/$name-*-javadoc.jar $doc
+      echo file doc-dist $doc/$name-*-javadoc.jar >> $out/nix-support/hydra-build-products
 
       local src=$out/src
       mkdir -p $src
-      mv $build/libs/*-sources.jar $src
-      echo file $src/*-sources.jar >> $out/nix-support/hydra-build-products
+      mv $build/libs/$name-*-sources.jar $src
+      echo file source-dist $src/$name-*-sources.jar >> $out/nix-support/hydra-build-products
 
       local lib=$out/lib
       mkdir -p $lib
-      mv $build/libs/libgdx-utils-*.jar $lib
-      echo file binary-dist $lib/libgdx-utils-*.jar >> $out/nix-support/hydra-build-products
+      mv $build/libs/$name-*.jar $lib
+      echo file binary-dist $lib/$name-*.jar >> $out/nix-support/hydra-build-products
     }
 
     install_project build libgdx-utils
