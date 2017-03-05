@@ -260,6 +260,8 @@ public class AnnotationAssetManager extends AssetManager {
         return createAssetDescriptor(method, null);
     }
 
+    public AnnotationAssetManager() {}
+
     public AnnotationAssetManager(final FileHandleResolver resolver) {
         super(resolver);
     }
