@@ -113,10 +113,10 @@ public class ScrollPaneSnapAction extends Action {
 		}
 
 		if(indicator != null && (pane.getVisualScrollX() != visualScrollX || pane.getVisualScrollY() != visualScrollY)) {
-			visualScrollX = pane.getVisualScrollX();
-			visualScrollY = pane.getVisualScrollY();
 			if(!slotsUpdated)
 				updateSlots();
+			visualScrollX = pane.getVisualScrollX();
+			visualScrollY = pane.getVisualScrollY();
 			final float currentSlot = indicateVertical ? getSnappedSlotY() : getSnappedSlotX();
 			final int pages = slots.size / 2;
 			int page = -1;
