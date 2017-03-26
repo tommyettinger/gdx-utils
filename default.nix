@@ -42,5 +42,9 @@ pkgs.stdenv.mkDerivation {
     install_project box2d/build libgdx-utils-box2d
   '';
 
-  meta.maintainers = [ "serverkorken@gmail.com" ];
+  meta = with pkgs.lib; {
+    license = licenses.asl20;
+    homepage = http://dermetfan.net/libgdx-utils;
+    maintainers = [ "serverkorken@gmail.com" ];
+  };
 }
