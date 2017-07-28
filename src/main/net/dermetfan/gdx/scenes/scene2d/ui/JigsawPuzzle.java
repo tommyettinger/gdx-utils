@@ -242,7 +242,7 @@ public class JigsawPuzzle {
 
 			// put the actor in the right position under the pointer
 			((Group) getActor()).localToDescendantCoordinates(actor, vec2.set(x, y));
-			dragAndDrop.setDragActorPosition(-vec2.x, -vec2.y + actor.getHeight());
+			dragAndDrop.setDragActorPosition(actor.getWidth() - vec2.x, -vec2.y);
 
 			vec2.set(actor.getX(), actor.getY()); // set vec2 for dragStop (to the current position to be able to move the piece back)
 			return payload;
