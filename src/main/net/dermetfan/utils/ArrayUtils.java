@@ -182,6 +182,143 @@ public class ArrayUtils {
 		return false;
 	}
 
+	/** @param offset the region offset in the array
+	 * @param length the region length in the array
+	 * @param otherOffset the region offset in the other array
+	 * @param identity if {@code ==} comparison should be used instead of {@link Object#equals(Object) equals(Object)}
+	 * @return whether the specified region in both arrays matches
+	 * @since 0.13.5 */
+	public static boolean regionEquals(final Object[] array, final int offset, final int length, final Object[] other, final int otherOffset, final boolean identity) {
+		if (identity) {
+			for (int i = offset; i < offset + length; i++) {
+				if (array[i] != other[otherOffset + i - offset]) return false;
+			}
+		} else {
+			for (int i = offset; i < offset + length; i++) {
+				if (!array[i].equals(other[otherOffset + i - offset])) return false;
+			}
+		}
+		return true;
+	}
+
+	/** @see #regionEquals(Object[], int, int, Object[], int, boolean) */
+	public static boolean regionEquals(final Object[] array, final int offset, final int length, final Object[] other, final boolean identity) {
+		return regionEquals(array, offset, length, other, 0, identity);
+	}
+
+	/** @see #regionEquals(Object[], int, int, Object[], boolean) */
+	public static boolean regionEquals(final Object[] array, final int offset, final Object[] other, final boolean identity) {
+		return regionEquals(array, offset, other.length, other, identity);
+	}
+
+	/** @see #regionEquals(Object[], int, int, Object[], int, boolean) */
+	public static boolean regionEquals(final long[] array, final int offset, final int length, final long[] other, final int otherOffset) {
+		for (int i = offset; i < offset + length; i++) {
+			if (array[i] != other[otherOffset + i - offset]) return false;
+		}
+		return true;
+	}
+
+	/** @see #regionEquals(long[], int, int, long[], int) */
+	public static boolean regionEquals(final long[] array, final int offset, final int length, final long[] other) {
+		return regionEquals(array, offset, length, other, 0);
+	}
+
+	/** @see #regionEquals(long[], int, int, long[]) */
+	public static boolean regionEquals(final long[] array, final int offset, final long[] other) {
+		return regionEquals(array, offset, other.length, other);
+	}
+
+	/** @see #regionEquals(Object[], int, int, Object[], int, boolean) */
+	public static boolean regionEquals(final int[] array, final int offset, final int length, final int[] other, final int otherOffset) {
+		for (int i = offset; i < offset + length; i++) {
+			if (array[i] != other[otherOffset + i - offset]) return false;
+		}
+		return true;
+	}
+
+	/** @see #regionEquals(int[], int, int, int[], int) */
+	public static boolean regionEquals(final int[] array, final int offset, final int length, final int[] other) {
+		return regionEquals(array, offset, length, other, 0);
+	}
+
+	/** @see #regionEquals(int[], int, int, int[]) */
+	public static boolean regionEquals(final int[] array, final int offset, final int[] other) {
+		return regionEquals(array, offset, other.length, other);
+	}
+
+	/** @see #regionEquals(Object[], int, int, Object[], int, boolean) */
+	public static boolean regionEquals(final double[] array, final int offset, final int length, final double[] other, final int otherOffset, final double epsilon) {
+		for (int i = offset; i < offset + length; i++) {
+			if (Math.abs(array[i] - other[otherOffset + i - offset]) > epsilon) return false;
+		}
+		return true;
+	}
+
+	/** @see #regionEquals(double[], int, int, double[], int, double) */
+	public static boolean regionEquals(final double[] array, final int offset, final int length, final double[] other, final double epsilon) {
+		return regionEquals(array, offset, length, other, 0, epsilon);
+	}
+
+	/** @see #regionEquals(double[], int, int, double[], double) */
+	public static boolean regionEquals(final double[] array, final int offset, final double[] other, final double epsilon) {
+		return regionEquals(array, offset, other.length, other, epsilon);
+	}
+
+	/** @see #regionEquals(Object[], int, int, Object[], int, boolean) */
+	public static boolean regionEquals(final float[] array, final int offset, final int length, final float[] other, final int otherOffset, final float epsilon) {
+		for (int i = offset; i < offset + length; i++) {
+			if (Math.abs(array[i] - other[otherOffset + i - offset]) > epsilon) return false;
+		}
+		return true;
+	}
+
+	/** @see #regionEquals(float[], int, int, float[], int, float) */
+	public static boolean regionEquals(final float[] array, final int offset, final int length, final float[] other, final float epsilon) {
+		return regionEquals(array, offset, length, other, 0, epsilon);
+	}
+
+	/** @see #regionEquals(float[], int, int, float[], float) */
+	public static boolean regionEquals(final float[] array, final int offset, final float[] other, final float epsilon) {
+		return regionEquals(array, offset, other.length, other, epsilon);
+	}
+
+	/** @see #regionEquals(Object[], int, int, Object[], int, boolean) */
+	public static boolean regionEquals(final short[] array, final int offset, final int length, final short[] other, final int otherOffset) {
+		for (int i = offset; i < offset + length; i++) {
+			if (array[i] != other[otherOffset + i - offset]) return false;
+		}
+		return true;
+	}
+
+	/** @see #regionEquals(short[], int, int, short[], int) */
+	public static boolean regionEquals(final short[] array, final int offset, final int length, final short[] other) {
+		return regionEquals(array, offset, length, other, 0);
+	}
+
+	/** @see #regionEquals(short[], int, int, short[]) */
+	public static boolean regionEquals(final short[] array, final int offset, final short[] other) {
+		return regionEquals(array, offset, other.length, other);
+	}
+
+	/** @see #regionEquals(Object[], int, int, Object[], int, boolean) */
+	public static boolean regionEquals(final byte[] array, final int offset, final int length, final byte[] other, final int otherOffset) {
+		for (int i = offset; i < offset + length; i++) {
+			if (array[i] != other[otherOffset + i - offset]) return false;
+		}
+		return true;
+	}
+
+	/** @see #regionEquals(byte[], int, int, byte[], int) */
+	public static boolean regionEquals(final byte[] array, final int offset, final int length, final byte[] other) {
+		return regionEquals(array, offset, length, other, 0);
+	}
+
+	/** @see #regionEquals(byte[], int, int, byte[]) */
+	public static boolean regionEquals(final byte[] array, final int offset, final byte[] other) {
+		return regionEquals(array, offset, other.length, other);
+	}
+
 	/** @param obj the object to compare
 	 *  @param array the array which items to compare
 	 *  @return if the given object equals any of the items in the given array */

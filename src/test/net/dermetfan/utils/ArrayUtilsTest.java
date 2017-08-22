@@ -72,6 +72,48 @@ public class ArrayUtilsTest {
 	}
 
 	@Test
+	public void regionEquals() {
+		assertTrue(ArrayUtils.regionEquals(new Object[]{"1", "2", "3"}, 0, new Object[]{"1", "2", new String(new char[]{'3'})}, false));
+		assertFalse(ArrayUtils.regionEquals(new Object[]{"1", "2", "3"}, 0, new Object[]{"1", "2", new String(new char[]{'3'})}, true));
+		assertTrue(ArrayUtils.regionEquals(new Object[]{"1", "2", "3", "4", "5"}, 2, 3, new Object[]{"5", "4", "3", "4", "5", "0"}, 2, false));
+		assertFalse(ArrayUtils.regionEquals(new Object[]{"1", "2", "3", "4", "5"}, 2, 3, new Object[]{"5", "4", "3", "4", "5", "0"}, 1, false));
+
+		assertTrue(ArrayUtils.regionEquals(new long[]{1, 2, 3}, 0, new long[]{1, 2, 3}));
+		assertFalse(ArrayUtils.regionEquals(new long[]{1, 2, 3}, 0, new long[]{0, 2, 3}));
+		assertTrue(ArrayUtils.regionEquals(new long[]{1, 2, 3, 4, 5}, 2, 3, new long[]{2, 3, 4, 5}, 1));
+		assertFalse(ArrayUtils.regionEquals(new long[]{1, 2, 3, 4, 5}, 2, 3, new long[]{2, 3, 4, 5}, 0));
+
+		assertTrue(ArrayUtils.regionEquals(new int[]{1, 2, 3}, 0, new int[]{1, 2, 3}));
+		assertFalse(ArrayUtils.regionEquals(new int[]{1, 2, 3}, 0, new int[]{0, 2, 3}));
+		assertTrue(ArrayUtils.regionEquals(new int[]{1, 2, 3, 4, 5}, 2, 3, new int[]{2, 3, 4, 5}, 1));
+		assertFalse(ArrayUtils.regionEquals(new int[]{1, 2, 3, 4, 5}, 2, 3, new int[]{2, 3, 4, 5}, 0));
+
+		assertTrue(ArrayUtils.regionEquals(new short[]{1, 2, 3}, 0, new short[]{1, 2, 3}));
+		assertFalse(ArrayUtils.regionEquals(new short[]{1, 2, 3}, 0, new short[]{0, 2, 3}));
+		assertTrue(ArrayUtils.regionEquals(new short[]{1, 2, 3, 4, 5}, 2, 3, new short[]{2, 3, 4, 5}, 1));
+		assertFalse(ArrayUtils.regionEquals(new short[]{1, 2, 3, 4, 5}, 2, 3, new short[]{2, 3, 4, 5}, 0));
+
+		assertTrue(ArrayUtils.regionEquals(new byte[]{1, 2, 3}, 0, new byte[]{1, 2, 3}));
+		assertFalse(ArrayUtils.regionEquals(new byte[]{1, 2, 3}, 0, new byte[]{0, 2, 3}));
+		assertTrue(ArrayUtils.regionEquals(new byte[]{1, 2, 3, 4, 5}, 2, 3, new byte[]{2, 3, 4, 5}, 1));
+		assertFalse(ArrayUtils.regionEquals(new byte[]{1, 2, 3, 4, 5}, 2, 3, new byte[]{2, 3, 4, 5}, 0));
+
+		assertTrue(ArrayUtils.regionEquals(new double[]{1, 2, 3}, 0, new double[]{1, 2, 3}, 0));
+		assertFalse(ArrayUtils.regionEquals(new double[]{1, 2, 3}, 0, new double[]{0, 2, 3}, 0));
+		assertTrue(ArrayUtils.regionEquals(new double[]{1, 2, 3, 4, 5}, 2, 3, new double[]{2, 3, 4, 5}, 1, 0));
+		assertFalse(ArrayUtils.regionEquals(new double[]{1, 2, 3, 4, 5}, 2, 3, new double[]{2, 3, 4, 5}, 0, 0));
+		assertTrue(ArrayUtils.regionEquals(new double[]{0, 1.05, 1.1, 2}, 1, 3, new double[]{1, 1.03, 1.11, 2.05}, 1, .05));
+		assertFalse(ArrayUtils.regionEquals(new double[]{0, 1.05, 1.1, 2}, 1, 3, new double[]{1, 1.03, 1.11, 2.05}, 1, .049));
+
+		assertTrue(ArrayUtils.regionEquals(new float[]{1, 2, 3}, 0, new float[]{1, 2, 3}, 0));
+		assertFalse(ArrayUtils.regionEquals(new float[]{1, 2, 3}, 0, new float[]{0, 2, 3}, 0));
+		assertTrue(ArrayUtils.regionEquals(new float[]{1, 2, 3, 4, 5}, 2, 3, new float[]{2, 3, 4, 5}, 1, 0));
+		assertFalse(ArrayUtils.regionEquals(new float[]{1, 2, 3, 4, 5}, 2, 3, new float[]{2, 3, 4, 5}, 0, 0));
+		assertTrue(ArrayUtils.regionEquals(new float[]{0, 1.05f, 1.1f, 2}, 1, 3, new float[]{1, 1.03f, 1.11f, 2.05f}, 1, .05f));
+		assertFalse(ArrayUtils.regionEquals(new float[]{0, 1.05f, 1.1f, 2}, 1, 3, new float[]{1, 1.03f, 1.11f, 2.05f}, 1, .049f));
+	}
+
+	@Test
 	public void shift() {
 		String[] array = {"0", "1", "2", "3", "4", "5", "6", "7", "8", "9"};
 		ArrayUtils.shift(array, 0, array.length, -1);
