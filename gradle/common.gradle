@@ -7,19 +7,15 @@ ext {
 	libName = 'libgdx-utils'
 	nameAppendix = project == rootProject ? '' : (project.parent != rootProject ? project.parent.nameAppendix + '-' : '') + project.name
 	nameFull = libName + (nameAppendix.empty ? '' : "-$nameAppendix")
-	libgdxVersion = '1.9.6'
+	libgdxVersion = '1.9.10'
 }
 
 group = 'net.dermetfan.libgdx-utils'
-version = '0.13.5-SNAPSHOT'
+version = '0.13.6-SNAPSHOT'
 
 apply plugin: 'java'
 apply plugin: 'maven'
 apply plugin: 'signing'
-apply plugin: us.carrclan.david.gradle.site.SitePlugin // http://issues.gradle.org/browse/GRADLE-2136
-apply plugin: 'idea'
-apply plugin: 'eclipse'
-apply plugin: 'announce'
 
 repositories {
 	mavenCentral()
@@ -38,7 +34,6 @@ sourceSets {
 		resources.srcDirs = ['src/main']
 	}
 	test.java.srcDirs = ['src/test']
-	site.resources.srcDirs = [javadoc.destinationDir.parentFile, testReportDir.parentFile]
 }
 
 jar {
@@ -46,7 +41,7 @@ jar {
 	appendix = nameAppendix
 	manifest.attributes += [
 			'web': 'http://dermetfan.net',
-			'bitbucket': 'http://bitbucket.org/dermetfan/libgdx-utils',
+			'github': 'https://github.com/tommyettinger/gdx-utils',
 			'license': 'Apache-2.0',
 			'group': project.group,
 			'artifact': nameFull,
@@ -76,7 +71,8 @@ task distSources(type: Jar, group: 'distribution') {
 	classifier = 'sources'
 	destinationDir = jar.destinationDir
 	manifest = jar.manifest
-} << { announce.local.send "$nameFull $version", 'Distributed sources' }
+}
+distSources.doLast { announce.local.send "$nameFull $version", 'Distributed sources' }
 
 task distJavadoc(type: Jar, dependsOn: javadoc, group: 'distribution') {
 	description = 'Assembles a jar archive containing the javadoc.'
@@ -86,7 +82,8 @@ task distJavadoc(type: Jar, dependsOn: javadoc, group: 'distribution') {
 	classifier = 'javadoc'
 	destinationDir = jar.destinationDir
 	manifest = jar.manifest
-} << { announce.local.send "$nameFull $version", 'Distributed javadoc' }
+}
+distJavadoc.doLast { announce.local.send "$nameFull $version", 'Distributed javadoc' }
 
 task distBundle(type: Zip, dependsOn: [jar, distSources, distJavadoc], group: 'distribution') {
 	description = 'Assembles a zip archive containing the binary, source and javadoc archives as well as the LICENSE file.'
@@ -97,7 +94,8 @@ task distBundle(type: Zip, dependsOn: [jar, distSources, distJavadoc], group: 'd
 	baseName = libName
 	appendix = nameAppendix
 	destinationDir = jar.destinationDir
-} << { announce.local.send "$nameFull $version", 'Distributed bundle' }
+}
+distBundle.doLast { announce.local.send "$nameFull $version", 'Distributed bundle' }
 
 // upload
 
@@ -105,97 +103,23 @@ artifacts {
 	archives distSources, distJavadoc
 }
 
-uploadArchives {
-	doFirst { announce.local.send "$nameFull $version", 'Uploading archives artifacts...' }
-	repositories.mavenDeployer {
-		beforeDeployment { signing.signPom(it) }
-		repository(url: 'https://oss.sonatype.org/service/local/staging/deploy/maven2/') {
-			authentication(userName: property('sonatype_jira_username'), password: property('sonatype_jira_password'))
-		}
-		snapshotRepository(url: 'https://oss.sonatype.org/content/repositories/snapshots/') {
-			authentication(userName: property('sonatype_jira_username'), password: property('sonatype_jira_password'))
-		}
-		pom.withXml { asNode().appendNode('packaging', 'jar') } // http://issues.gradle.org/browse/GRADLE-1200
-		pom.project {
-			name nameFull
-			description "support library for libGDX${!nameAppendix.empty ? " ($nameAppendix module)" : ''}"
-			url 'http://dermetfan.net'
-			licenses {
-				license {
-					name 'Apache 2.0'
-					url 'http://apache.org/licenses/LICENSE-2.0.txt'
-				}
-			}
-			developers {
-				developer {
-					name 'Robin Stumm'
-					email 'serverkorken@gmail.com'
-					url 'http://dermetfan.net'
-					organization = 'dermetfan' // http://issues.gradle.org/browse/GRADLE-1200
-					organizationUrl 'http://dermetfan.net'
-				}
-			}
-			scm {
-				connection 'scm:hg:http://bitbucket.org/dermetfan/libgdx-utils'
-				developerConnection 'scm:hg:http://bitbucket.org/dermetfan/libgdx-utils'
-				url 'http://bitbucket.org/dermetfan/libgdx-utils'
-			}
-		}
-	}
-} << { announce.local.send "$nameFull $version",  'Uploaded archives artifacts'}
 
-site {
-	url = "ftp://dermetfan.net/$libName${nameAppendix.empty ? '' : '/' + nameAppendix}"
-	authenticationInfo {
-		userName = property 'site_ftp_username'
-		password = property 'site_ftp_password'
-	}
-}
-
-publishSite {
-	dependsOn javadoc
-	group = 'upload'
+task fixNewlines(description: 'makes sure all text files end with \\n') {
 	doFirst {
-		baseDir.mkdirs() // workaround issue #2 https://bitbucket.org/davidmc24/gradle-site-plugin/issue/2/publishsite-basedir-is-not-automatically
-		announce.local.send "$nameFull $version", "Uploading javadoc to ${url}..."
-	}
-} << { announce.local.send "$nameFull $version", "Uploaded javadoc to $url" }
-
-// signing
-
-signing.sign configurations.archives
-
-gradle.taskGraph.whenReady {
-	signArchives {
-		enabled = !version.endsWith('-SNAPSHOT') && gradle.taskGraph.hasTask(uploadArchives) // workaround for signing.setRequired(..)
-	} << { announce.local.send "$nameFull $version", 'Signed archives artifacts' }
-}
-
-// IDE integration
-
-eclipse {
-	project.name = nameFull
-	classpath {
-		sourceSets -= sourceSets.site
-		containers = ["org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-$targetCompatibility"]
-	}
-}
-
-task fixNewlines(description: 'makes sure all text files end with \\n') << {
-	int count = 0
-	fileTree(rootProject.projectDir).visit {
-		if(!it.file.isDirectory()) {
-			String mime = java.nio.file.Files.probeContentType(java.nio.file.Paths.get(it.file.path))
-			if(mime != null && (mime.startsWith('text/') || mime.equals('application/xml')) && !it.file.text.endsWith('\n')) {
-				it.file.text += '\n'
-				count++
+		int count = 0
+		fileTree(rootProject.projectDir).visit {
+			if (!it.file.isDirectory()) {
+				String mime = java.nio.file.Files.probeContentType(java.nio.file.Paths.get(it.file.path))
+				if (mime != null && (mime.startsWith('text/') || mime.equals('application/xml')) && !it.file.text.endsWith('\n')) {
+					it.file.text += '\n'
+					count++
+				}
 			}
 		}
+		if (count > 0)
+			announce.local.send nameFull, "added newline to $count ${count == 1 ? 'file' : 'files'}"
 	}
-	if(count > 0)
-		announce.local.send nameFull, "added newline to $count ${count == 1 ? 'file' : 'files'}"
 }
-
 defaultTasks 'fixNewlines'
 
 // methods

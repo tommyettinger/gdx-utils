@@ -14,20 +14,13 @@
 
 package net.dermetfan.gdx.scenes.scene2d.ui;
 
-import java.io.File;
-import java.io.FileFilter;
-
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
-import com.badlogic.gdx.scenes.scene2d.ui.Button;
+import com.badlogic.gdx.scenes.scene2d.ui.*;
 import com.badlogic.gdx.scenes.scene2d.ui.Button.ButtonStyle;
-import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Label.LabelStyle;
-import com.badlogic.gdx.scenes.scene2d.ui.ScrollPane;
 import com.badlogic.gdx.scenes.scene2d.ui.ScrollPane.ScrollPaneStyle;
-import com.badlogic.gdx.scenes.scene2d.ui.Skin;
-import com.badlogic.gdx.scenes.scene2d.ui.Tree;
 import com.badlogic.gdx.scenes.scene2d.ui.Tree.Node;
 import com.badlogic.gdx.scenes.scene2d.ui.Tree.TreeStyle;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
@@ -39,6 +32,9 @@ import com.badlogic.gdx.utils.Json.Serializable;
 import com.badlogic.gdx.utils.JsonValue;
 import com.badlogic.gdx.utils.Pools;
 import net.dermetfan.utils.Function;
+
+import java.io.File;
+import java.io.FileFilter;
 
 /** A {@link FileChooser} that uses a {@link Tree}. <strong>DO NOT FORGET TO {@link #add(FileHandle) ADD ROOTS}!</strong>
  *  @author dermetfan */
@@ -84,7 +80,7 @@ public class TreeFileChooser extends FileChooser {
 	}
 
 	/** creates an anonymous subclass of {@link Node} that recursively adds the children of the given file to it when being {@link Node#setExpanded(boolean) expanded} for the first time
-	 *  @param file the file to put in {@link Node#setObject(Object)}
+	 *  @param file the file to put in {@link Node#setValue(Object)}
 	 *  @param filter Filters children from being added. May be null to accept all files.
 	 *  @param labelSupplier supplies labels to use
 	 *  @param nodeConsumer Does something with nodes after they were created. May be null.
@@ -94,7 +90,7 @@ public class TreeFileChooser extends FileChooser {
 
 		Node node;
 		if(file.isDirectory()) {
-			final Node dummy = new Node(new Actor());
+			final Node dummy = new TreeNode(new Actor());
 
 			node = new Node(label) {
 				private boolean childrenAdded;
@@ -123,8 +119,8 @@ public class TreeFileChooser extends FileChooser {
 			if(nodeConsumer != null)
 				nodeConsumer.apply(dummy);
 		} else
-			node = new Node(label);
-		node.setObject(file);
+			node = new TreeNode(label);
+		node.setValue(file);
 
 		if(nodeConsumer != null)
 			nodeConsumer.apply(node);
@@ -155,7 +151,7 @@ public class TreeFileChooser extends FileChooser {
 				return;
 			}
 			if(!isDirectoriesChoosable()) {
-				Object lastObj = selection.getLastSelected().getObject();
+				Object lastObj = selection.getLastSelected().getValue();
 				if(lastObj instanceof FileHandle) {
 					FileHandle file = (FileHandle) lastObj;
 					if(file.isDirectory()) {
@@ -182,7 +178,7 @@ public class TreeFileChooser extends FileChooser {
 				@SuppressWarnings("unchecked")
 				Array<FileHandle> files = Pools.obtain(Array.class);
 				for(Node node : selection) {
-					Object object = node.getObject();
+					Object object = node.getValue();
 					if(object instanceof FileHandle) {
 						FileHandle file = (FileHandle) object;
 						if(isDirectoriesChoosable() || !file.isDirectory())
@@ -193,7 +189,7 @@ public class TreeFileChooser extends FileChooser {
 				files.clear();
 				Pools.free(files);
 			} else {
-				Object object = selection.getLastSelected().getObject();
+				Object object = selection.getLastSelected().getValue();
 				if(object instanceof FileHandle) {
 					FileHandle file = (FileHandle) object;
 					if(isDirectoriesChoosable() || !file.isDirectory())
@@ -367,5 +363,15 @@ public class TreeFileChooser extends FileChooser {
 		}
 
 	}
+	
+	public static class TreeNode extends Node<TreeNode, Object, Actor>
+	{
+		public TreeNode(Actor actor) {
+			super(actor);
+		}
 
+		public TreeNode() {
+			super();
+		}
+	}
 }
