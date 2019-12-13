@@ -1,4 +1,9 @@
+group 'com.github.tommyettinger.gdx-utils'
+version '0.13.6-SNAPSHOT'
+
 apply from: 'gradle/common.gradle'
+
+println("The root project has name $project.name")
 
 dependencies {
 	api "com.badlogicgames.gdx:gdx:$libgdxVersion"

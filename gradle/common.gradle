@@ -10,9 +10,6 @@ ext {
 	libgdxVersion = '1.9.10'
 }
 
-group 'net.dermetfan.libgdx-utils'
-version '0.13.6-SNAPSHOT'
-
 apply plugin: 'java-library'
 apply plugin: 'maven'
 apply plugin: 'signing'
@@ -39,17 +36,23 @@ sourceSets {
 jar {
 	archiveBaseName = libName
 	archiveAppendix = nameAppendix
-	manifest.attributes += [
-			'web': 'http://dermetfan.net',
-			'github': 'https://github.com/tommyettinger/gdx-utils',
-			'license': 'Apache-2.0',
-			'group': project.group,
-			'artifact': nameFull,
-			'version': project.version,
-			'libGDX': libgdxVersion,
-			'java': targetCompatibility,
-			'timestamp': System.currentTimeMillis()
-	]
+
+	archiveBaseName.set(libName)
+	manifest {
+		attributes 'Implementation-Title': libName, 'Implementation-Version': archiveVersion
+	}
+
+//	manifest.attributes += [
+//			'web': 'http://dermetfan.net',
+//			'github': 'https://github.com/tommyettinger/gdx-utils',
+//			'license': 'Apache-2.0',
+//			'group': project.group,
+//			'artifact': nameFull,
+//			'version': project.version,
+//			'libGDX': libgdxVersion,
+//			'java': targetCompatibility,
+//			'timestamp': System.currentTimeMillis()
+//	]
 }
 
 javadoc {
