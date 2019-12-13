@@ -9,7 +9,7 @@
 		<exclude name="Box2DUtils.java" />
 	</source>
 
-	<extend-configuration-property name="gdx.reflect.include" value="net.dermetfan.utils.Pair" />
+	<extend-configuration-property name="gdx.reflect.include" value="Pair" />
 	<extend-configuration-property name="gdx.reflect.include" value="net.dermetfan.gdx.physics.box2d.WorldObserver$BodyChange" />
 	<extend-configuration-property name="gdx.reflect.include" value="net.dermetfan.gdx.physics.box2d.WorldObserver$FixtureChange" />
 	<extend-configuration-property name="gdx.reflect.include" value="net.dermetfan.gdx.physics.box2d.WorldObserver$JointChange" />
