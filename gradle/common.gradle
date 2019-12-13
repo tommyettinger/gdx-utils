@@ -10,8 +10,8 @@ ext {
 	libgdxVersion = '1.9.10'
 }
 
-group = 'net.dermetfan.libgdx-utils'
-version = '0.13.6-SNAPSHOT'
+group 'net.dermetfan.libgdx-utils'
+version '0.13.6-SNAPSHOT'
 
 apply plugin: 'java-library'
 apply plugin: 'maven'
