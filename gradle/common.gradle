@@ -13,7 +13,7 @@ ext {
 group = 'net.dermetfan.libgdx-utils'
 version = '0.13.6-SNAPSHOT'
 
-apply plugin: 'java'
+apply plugin: 'java-library'
 apply plugin: 'maven'
 apply plugin: 'signing'
 
@@ -37,8 +37,8 @@ sourceSets {
 }
 
 jar {
-	baseName = libName
-	appendix = nameAppendix
+	archiveBaseName = libName
+	archiveAppendix = nameAppendix
 	manifest.attributes += [
 			'web': 'http://dermetfan.net',
 			'github': 'https://github.com/tommyettinger/gdx-utils',
@@ -66,32 +66,32 @@ task distSources(type: Jar, group: 'distribution') {
 	description = 'Assembles a jar archive containing the main sources and resources.'
 	from sourceSets.main.java
 	from sourceSets.main.resources
-	baseName = libName
-	appendix = nameAppendix
-	classifier = 'sources'
-	destinationDir = jar.destinationDir
+	archiveBaseName = libName
+	archiveAppendix = nameAppendix
+	archiveClassifier = 'sources'
+	destinationDirectory = jar.destinationDirectory
 	manifest = jar.manifest
 }
 
 task distJavadoc(type: Jar, dependsOn: javadoc, group: 'distribution') {
 	description = 'Assembles a jar archive containing the javadoc.'
 	from javadoc.destinationDir
-	baseName = libName
-	appendix = nameAppendix
-	classifier = 'javadoc'
-	destinationDir = jar.destinationDir
+	archiveBaseName = libName
+	archiveAppendix = nameAppendix
+	archiveClassifier = 'javadoc'
+	destinationDirectory = jar.destinationDirectory
 	manifest = jar.manifest
 }
 
 task distBundle(type: Zip, dependsOn: [jar, distSources, distJavadoc], group: 'distribution') {
 	description = 'Assembles a zip archive containing the binary, source and javadoc archives as well as the LICENSE file.'
-	from jar.archivePath
-	from distSources.archivePath
-	from distJavadoc.archivePath
+	from jar.archiveFile
+	from distSources.archiveFile
+	from distJavadoc.archiveFile
 	from "$rootDir/LICENSE"
-	baseName = libName
-	appendix = nameAppendix
-	destinationDir = jar.destinationDir
+	archiveBaseName = libName
+	archiveAppendix = nameAppendix
+	destinationDirectory = jar.destinationDirectory
 }
 
 // upload
