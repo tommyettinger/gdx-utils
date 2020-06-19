@@ -1,0 +1,12 @@
+net.dermetfan.gdx
+net.dermetfan.gdx.assets
+net.dermetfan.gdx.graphics.g2d
+net.dermetfan.gdx.maps
+net.dermetfan.gdx.maps.tiled
+net.dermetfan.gdx.math
+net.dermetfan.gdx.scenes.scene2d
+net.dermetfan.gdx.scenes.scene2d.ui
+net.dermetfan.gdx.scenes.scene2d.utils
+net.dermetfan.gdx.utils
+net.dermetfan.utils
+net.dermetfan.utils.math

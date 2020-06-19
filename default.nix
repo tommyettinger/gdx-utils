@@ -44,7 +44,7 @@ pkgs.stdenv.mkDerivation {
 
   meta = with pkgs.lib; {
     license = licenses.asl20;
-    homepage = http://dermetfan.net/libgdx-utils;
+    homepage = https://github.com/tommyettinger/gdx-utils;
     maintainers = [ "serverkorken@gmail.com" ];
   };
 }
