@@ -3,14 +3,16 @@ An updated fork of dermetfan's famed library.
 
 BitBucket has deleted their Mercurial repositories, including gdx-utils, so a backup is needed.
 Also, libgdx-utils was stuck on version 1.9.6 of libGDX, and now we can update to 1.9.10, plus a Gradle update.
+LibGDX is on 1.9.11 now and a new version is in the works, but libgdx-utils should be compatiible with those versions
+thanks to Gradle, without needing a new release here.
 
 - [libgdx-utils API Documentation](https://tommyettinger.github.io/gdx-utils/libgdx-utils/apidocs/index.html)
 - [libgdx-utils-box2d API Documentation](https://tommyettinger.github.io/gdx-utils/libgdx-utils-box2d/apidocs/index.html)
 - Build Status: just check [JitPack](https://jitpack.io/#tommyettinger/gdx-utils); tell it to build any release or commit you want.
-- [~~Wiki~~](http://bitbucket.org/dermetfan/libgdx-utils/wiki)
-  - The wiki is down permanently; blame BitBucket and Atlassian.
+- [Wiki](https://man.sr.ht/~dermetfan/libgdx-utils/)
+  - The wiki is back up again on SourceHut!
 - [~~Homepage~~](http://dermetfan.net/libgdx-utils.php)
-  - The homepage is also down; dermetfan is doing something different.
+  - The homepage is down; dermetfan is doing something different. The wiki should be most of what matters.
 
 # Philosophy #
 
