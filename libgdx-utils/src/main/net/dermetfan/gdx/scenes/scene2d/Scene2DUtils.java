@@ -56,7 +56,8 @@ public class Scene2DUtils {
 		c.setPointer(e.getPointer());
 		c.setType(e.getType());
 		c.setRelatedActor(e.getRelatedActor());
-		c.setScrollAmount(e.getScrollAmount());
+		c.setScrollAmountX(e.getScrollAmountX());
+		c.setScrollAmountY(e.getScrollAmountY());
 	}
 
 	/** @param pos the coordinates
