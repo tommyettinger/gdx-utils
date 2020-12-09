@@ -2,9 +2,10 @@
 An updated fork of dermetfan's famed library.
 
 BitBucket has deleted their Mercurial repositories, including gdx-utils, so a backup is needed.
-Also, libgdx-utils was stuck on version 1.9.6 of libGDX, and now we can update to 1.9.10, plus a Gradle update.
-LibGDX is on 1.9.11 now and a new version is in the works, but libgdx-utils should be compatiible with those versions
-thanks to Gradle, without needing a new release here.
+Also, libgdx-utils was stuck on version 1.9.6 of libGDX, and now we can update to 1.9.12, plus a Gradle update.
+LibGDX is on 1.9.12 now and a new version is in the works, but libgdx-utils should be compatible with those versions
+thanks to Gradle, without needing a new release here. There were some backwards-incompatible changes in 1.9.12 relative
+to 1.9.11, but now gdx-utils is compatible with 1.9.12 thanks to @barkholt . Updating is encouraged; use JitPack.
 
 - [libgdx-utils API Documentation](https://tommyettinger.github.io/gdx-utils/libgdx-utils/apidocs/index.html)
 - [libgdx-utils-box2d API Documentation](https://tommyettinger.github.io/gdx-utils/libgdx-utils-box2d/apidocs/index.html)
