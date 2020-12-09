@@ -9,7 +9,7 @@ buildscript {
 }
 
 group 'com.github.tommyettinger'
-version '0.13.6'
+version '0.13.7'
 
 apply plugin: 'java-library'
 apply plugin: 'com.bmuschko.nexus'
@@ -18,7 +18,7 @@ ext {
 	libName = project.name
 	nameAppendix = ''
 	nameFull = libName + (nameAppendix.empty ? '' : "-$nameAppendix")
-	libgdxVersion = '1.9.10'
+	libgdxVersion = '1.9.12'
 }
 
 repositories {

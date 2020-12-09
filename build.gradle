@@ -19,5 +19,5 @@ nexusStaging {
 
 
 group 'com.github.tommyettinger'
-version '0.13.6'
+version '0.13.7'
 
