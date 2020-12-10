@@ -10,6 +10,8 @@ or you can use the standard Sonatype Maven Central repository for at least versi
 
 ```groovy
 api "com.github.tommyettinger:libgdx-utils:0.13.7"
+// optional:
+api "com.github.tommyettinger:libgdx-utils-box2d:0.13.7"
 ```
 
 - [libgdx-utils API Documentation](https://tommyettinger.github.io/gdx-utils/libgdx-utils/apidocs/index.html)
