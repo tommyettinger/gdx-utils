@@ -5,7 +5,12 @@ BitBucket has deleted their Mercurial repositories, including gdx-utils, so a ba
 Also, libgdx-utils was stuck on version 1.9.6 of libGDX, and now we can update to 1.9.12, plus a Gradle update.
 LibGDX is on 1.9.12 now and a new version is in the works, but libgdx-utils should be compatible with those versions
 thanks to Gradle, without needing a new release here. There were some backwards-incompatible changes in 1.9.12 relative
-to 1.9.11, but now gdx-utils is compatible with 1.9.12 thanks to @barkholt . Updating is encouraged; use JitPack.
+to 1.9.11, but now gdx-utils is compatible with 1.9.12 thanks to @barkholt . Updating is encouraged; you can use JitPack,
+or you can use the standard Sonatype Maven Central repository for at least version 0.13.7. Dependency for Gradle:
+
+```groovy
+api "com.github.tommyettinger:libgdx-utils:0.13.7"
+```
 
 - [libgdx-utils API Documentation](https://tommyettinger.github.io/gdx-utils/libgdx-utils/apidocs/index.html)
 - [libgdx-utils-box2d API Documentation](https://tommyettinger.github.io/gdx-utils/libgdx-utils-box2d/apidocs/index.html)

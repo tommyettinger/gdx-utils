@@ -27,7 +27,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.Widget;
 import com.badlogic.gdx.utils.Json;
 import com.badlogic.gdx.utils.JsonValue;
 
-/** Provides useful methods for {@link com.badlogic.gdx.scenes.scene2d.ui scene2d.ui}.
+/** Provides useful methods for {@code com.badlogic.gdx.scenes.scene2d.ui}.
  *  @author dermetfan
  *  @since 0.7.1 */
 public class UIUtils {

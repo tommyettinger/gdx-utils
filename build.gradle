@@ -17,7 +17,6 @@ nexusStaging {
     packageGroup = 'com.github.tommyettinger'
 }
 
-
 group 'com.github.tommyettinger'
 version '0.13.7'
 
