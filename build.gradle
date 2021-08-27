@@ -2,7 +2,7 @@ buildscript {
     repositories {
         mavenCentral()
         maven { url "http://oss.sonatype.org/content/repositories/snapshots/" }
-        jcenter()
+        gradlePluginPortal()
     }
     dependencies {
         classpath 'com.bmuschko:gradle-nexus-plugin:2.3.1'
@@ -18,5 +18,5 @@ nexusStaging {
 }
 
 group 'com.github.tommyettinger'
-version '0.13.7'
+version '0.13.8-SNAPSHOT'
 

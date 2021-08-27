@@ -67,7 +67,7 @@ public class TmxMapWriter extends XmlWriter {
 
 	/** the encoding of {@link TiledMapTileLayer layer} data
 	 *  @author dermetfan */
-	public static enum Format {
+	public enum Format {
 		XML, CSV, Base64, Base64Zlib, Base64Gzip
 	}
 
@@ -269,7 +269,7 @@ public class TmxMapWriter extends XmlWriter {
 						if(tile == null)
 							continue;
 						element("tile");
-						attribute("gid", tile.getId());
+						attribute("gid", tile.getId() & 0xFFFFFFFFL);
 						pop();
 					}
 				}
@@ -280,7 +280,7 @@ public class TmxMapWriter extends XmlWriter {
 				for(int x = 0; x < layer.getWidth(); x++) {
 					Cell cell = layer.getCell(x, y);
 					TiledMapTile tile = cell != null ? cell.getTile() : null;
-					csv.append(tile != null ? tile.getId() : 0);
+					csv.append(tile != null ? (tile.getId() & 0xFFFFFFFFL) : 0);
 					if(x + 1 < layer.getWidth() || y - 1 > -1)
 						csv.append(',');
 				}
