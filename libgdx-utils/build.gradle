@@ -1,7 +1,7 @@
 buildscript {
 	repositories {
 		mavenCentral()
-		jcenter()
+		gradlePluginPortal()
 	}
 	dependencies {
 		classpath 'com.bmuschko:gradle-nexus-plugin:2.3.1'
@@ -10,7 +10,7 @@ buildscript {
 }
 
 group 'com.github.tommyettinger'
-version '0.13.7'
+version '0.13.8-SNAPSHOT'
 
 apply plugin: 'java-library'
 apply plugin: 'com.bmuschko.nexus'
@@ -19,7 +19,7 @@ ext {
 	libName = project.name
 	nameAppendix = ''
 	nameFull = libName
-	libgdxVersion = '1.9.12'
+	libgdxVersion = '1.10.0'
 }
 
 repositories {
@@ -27,7 +27,7 @@ repositories {
 	mavenLocal()
 	maven { url 'https://oss.sonatype.org/content/repositories/releases/' }
 	maven { url 'https://oss.sonatype.org/content/repositories/snapshots/' }
-	jcenter()
+	gradlePluginPortal()
 }
 
 [compileJava, compileTestJava, javadoc]*.options*.encoding = 'UTF-8'
