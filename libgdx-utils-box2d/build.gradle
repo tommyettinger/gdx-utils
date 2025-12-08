@@ -83,14 +83,9 @@ compileTestJava {
 javadoc {
     destinationDir = file("../docs/$libName/apidocs")
     options {
-        links('https://javadoc.io/doc/com.badlogicgames.gdx/gdx/latest/')
+        links('https://javadoc.io/doc/com.badlogicgames.gdx/gdx/1.14.0/element-list')
     }
 }
-
-apply plugin: 'idea'
-// This makes IDEA avoid including generated JavaDocs (which are HTML files) in any search results.
-// If you changed where JavaDocs are published above, you should change the next line, too.
-idea.module.excludeDirs += [file("../docs/")]
 
 jar {
     archiveBaseName.set(libName)

@@ -13,6 +13,11 @@ buildscript {
 apply plugin: 'java-library'
 apply plugin: 'com.vanniktech.maven.publish'
 
+apply plugin: 'idea'
+// This makes IDEA avoid including generated JavaDocs (which are HTML files) in any search results.
+// If you changed where JavaDocs are published above, you should change the next line, too.
+idea.module.excludeDirs += [file("docs/")]
+
 group = 'com.github.tommyettinger'
 version = '0.13.8-SNAPSHOT'
 

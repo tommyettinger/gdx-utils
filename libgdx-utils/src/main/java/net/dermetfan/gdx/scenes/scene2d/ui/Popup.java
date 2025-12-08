@@ -289,7 +289,7 @@ public class Popup<T extends Actor> implements EventListener {
 
 		/** Calls {@link Behavior#handle(Event, Popup)} on all Behaviors in order and returns the first returned non-null Reaction if it {@link Reaction#handles handles} the event.
 		 *  If it does not handle the event but another Reaction does, the handling version of the Reaction is returned:
-		 *  <table summary="handling and non-handling Reaction pairs">
+		 *  <table>
 		 *      <tr>
 		 *          <th>non-handling</th>
 		 *          <th>handling</th>
