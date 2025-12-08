@@ -1,10 +1,18 @@
 buildscript {
     repositories {
+        mavenLocal()
         mavenCentral()
+        maven { url = 'https://central.sonatype.com/repository/maven-snapshots/' }
         gradlePluginPortal()
+    }
+    dependencies {
+        classpath 'com.vanniktech:gradle-maven-publish-plugin:0.35.0'
     }
 }
 
-group 'com.github.tommyettinger'
-version '0.13.8-SNAPSHOT'
+apply plugin: 'java-library'
+apply plugin: 'com.vanniktech.maven.publish'
+
+group = 'com.github.tommyettinger'
+version = '0.13.8-SNAPSHOT'
 
