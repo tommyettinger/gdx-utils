@@ -84,7 +84,7 @@ compileTestJava {
 javadoc {
     destinationDir = file("../docs/$libName/apidocs")
     options {
-        links('https://javadoc.io/doc/com.badlogicgames.gdx/gdx/1.14.0/element-list')
+        links('https://javadoc.io/doc/com.badlogicgames.gdx/gdx/1.14.0/index.html')
     }
 }
 

@@ -91,6 +91,7 @@ public class MathUtils {
 
 	/** Normalizes/repeats the given value in the given interval [min, max] as if min and max were portals the value travels through. For example (min and max are both inclusive):<br>
 	 *  <table>
+	 *      <caption>examples</caption>
 	 *      <tr>
 	 *          <th>value</th>
 	 *          <th>min</th>
