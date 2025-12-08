@@ -48,7 +48,6 @@ import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Base64Coder;
 import com.badlogic.gdx.utils.FloatArray;
 import com.badlogic.gdx.utils.Pools;
-import com.badlogic.gdx.utils.StringBuilder;
 import com.badlogic.gdx.utils.XmlWriter;
 import net.dermetfan.gdx.math.GeometryUtils;
 

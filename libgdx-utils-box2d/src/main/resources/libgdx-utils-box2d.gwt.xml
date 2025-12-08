@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE module PUBLIC "-//Google Inc.//DTD Google Web Toolkit trunk//EN" "http://google-web-toolkit.googlecode.com/svn/trunk/distro-source/core/src/gwt-module.dtd">
+<!DOCTYPE module PUBLIC "-//Google Inc.//DTD Google Web Toolkit trunk//EN"
+        "https://www.gwtproject.org/doctype/2.11.0/gwt-module.dtd">
 <module>
 	<inherits name="libgdx-utils" />
 	<source path="net/dermetfan/">
@@ -9,7 +10,7 @@
 		<exclude name="Box2DUtils.java" />
 	</source>
 
-	<extend-configuration-property name="gdx.reflect.include" value="Pair" />
+	<extend-configuration-property name="gdx.reflect.include" value="net.dermetfan.utils.Pair" />
 	<extend-configuration-property name="gdx.reflect.include" value="net.dermetfan.gdx.physics.box2d.WorldObserver$BodyChange" />
 	<extend-configuration-property name="gdx.reflect.include" value="net.dermetfan.gdx.physics.box2d.WorldObserver$FixtureChange" />
 	<extend-configuration-property name="gdx.reflect.include" value="net.dermetfan.gdx.physics.box2d.WorldObserver$JointChange" />

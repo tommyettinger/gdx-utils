@@ -30,7 +30,6 @@ import com.badlogic.gdx.maps.tiled.TiledMapTileSets;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Array;
-import com.badlogic.gdx.utils.StringBuilder;
 import com.badlogic.gdx.utils.reflect.ClassReflection;
 
 /** provides useful methods for dealing with maps

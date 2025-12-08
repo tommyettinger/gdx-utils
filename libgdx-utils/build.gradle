@@ -4,30 +4,39 @@ buildscript {
 		gradlePluginPortal()
 	}
 	dependencies {
-		classpath 'com.bmuschko:gradle-nexus-plugin:2.3.1'
+        classpath 'com.vanniktech:gradle-maven-publish-plugin:0.35.0'
 	}
-
 }
 
-group 'com.github.tommyettinger'
-version '0.13.8-SNAPSHOT'
+group = 'com.github.tommyettinger'
+version = '0.13.8-SNAPSHOT'
 
 apply plugin: 'java-library'
-apply plugin: 'com.bmuschko.nexus'
+apply plugin: 'com.vanniktech.maven.publish'
 
 ext {
 	libName = project.name
 	nameAppendix = ''
 	nameFull = libName
-	libgdxVersion = '1.10.0'
+	libgdxVersion = '1.14.0'
 }
 
+
+import com.vanniktech.maven.publish.JavaLibrary
+import com.vanniktech.maven.publish.JavadocJar
+
+// This just makes sure that a Javadoc JAR and a sources JAR are produced.
+mavenPublishing {
+    configure(new JavaLibrary(new JavadocJar.Javadoc(), true))
+}
+
+// This sets the Javadoc JAR to have hopefully the correct name. This may need adjustment.
+plainJavadocJar.archiveBaseName.set(libName)
+
 repositories {
-	mavenCentral()
-	mavenLocal()
-	maven { url 'https://oss.sonatype.org/content/repositories/releases/' }
-	maven { url 'https://oss.sonatype.org/content/repositories/snapshots/' }
-	gradlePluginPortal()
+    mavenCentral()
+    mavenLocal()
+    gradlePluginPortal()
 }
 
 [compileJava, compileTestJava, javadoc]*.options*.encoding = 'UTF-8'
@@ -35,65 +44,64 @@ repositories {
 // Disable JDK 8's doclint
 // http://blog.joda.org/2014/02/turning-off-doclint-in-jdk-8-javadoc.html
 if (JavaVersion.current().isJava8Compatible()) {
-	allprojects {
-		tasks.withType(Javadoc) {
-			// The -quiet is because of some sort of weird JDK JavaCompiler bug:
-			// https://discuss.gradle.org/t/passing-arguments-to-compiler-and-javadoc/1661
-			options.addStringOption('Xdoclint:none', '-quiet')
-		}
-	}
+    allprojects {
+        tasks.withType(Javadoc) {
+            // The -quiet is because of some sort of weird JDK JavaCompiler bug:
+            // https://discuss.gradle.org/t/passing-arguments-to-compiler-and-javadoc/1661
+            options.addStringOption('Xdoclint:all,-missing', '-quiet')
+        }
+    }
 }
 
-javadoc.destinationDir = file("../docs/$libName/apidocs")
+java.sourceCompatibility = "8"
 
-sourceCompatibility = 1.7
-
-sourceSets {
-	main.java.srcDirs = ['src/main']
-	main.resources.srcDirs = ['src/main']
-	test.java.srcDirs = ['src/test']
+compileJava {
+    // The default Java language level this targets is 8, which is as low as current
+    // (Java 20 and newer) JDKs will permit you to target.
+    // You must use 8 if any libraries you use need Java 8, which now includes libGDX.
+    sourceCompatibility = "8"
+    targetCompatibility = "8"
+    if (JavaVersion.current().isJava9Compatible()) {
+        options.release.set(8)
+    }
 }
+
+compileTestJava {
+    // LWJGL3 needs Java 8 starting in libGDX 1.11.0, which forces tests that use LWJGL3
+    // to use Java 8 or higher. Using options.release enforces compatibility with Java 8,
+    // including how NIO Buffers behave (which broke compatibility in Java 9).
+    sourceCompatibility = "8"
+    targetCompatibility = "8"
+    if (JavaVersion.current().isJava9Compatible()) {
+        options.release.set(8)
+    }
+}
+
+// JavaDocs will be published inside the docs/ folder, which you can easily put on GitHub Pages
+// in your repo settings.
+// You may instead want to remove this line if frequent doc changes use up too much repo space,
+// or if you use a different version control host that doesn't host HTML like this.
+javadoc {
+    destinationDir = file("../docs/$libName/apidocs")
+    options {
+        links('https://javadoc.io/doc/com.badlogicgames.gdx/gdx/latest/')
+    }
+}
+
+apply plugin: 'idea'
+// This makes IDEA avoid including generated JavaDocs (which are HTML files) in any search results.
+// If you changed where JavaDocs are published above, you should change the next line, too.
+idea.module.excludeDirs += [file("../docs/")]
 
 jar {
-	archiveBaseName.set(libName)
-	archiveAppendix.set(nameAppendix)
-	manifest {
-		attributes 'Implementation-Title': libName, 'Implementation-Version': archiveVersion
-	}
+    archiveBaseName.set(libName)
+    archiveAppendix.set(nameAppendix)
+    manifest {
+        attributes 'Implementation-Title': libName, 'Implementation-Version': archiveVersion
+    }
 }
 
 dependencies {
 	api "com.badlogicgames.gdx:gdx:$libgdxVersion"
-	testImplementation 'junit:junit:4.12'
-}
-
-modifyPom {
-	project {
-		name 'libgdx-utils'
-		description "An updated fork of dermetfan's famed library for libGDX convenience."
-		url 'https://github.com/tommyettinger/gdx-utils'
-		inceptionYear '2019'
-
-		scm {
-			url 'https://github.com/tommyettinger/gdx-utils'
-			connection 'scm:https://tommyettinger@github.com/tommyettinger/gdx-utils.git'
-			developerConnection 'scm:git://github.com/tommyettinger/gdx-utils.git'
-		}
-
-		licenses {
-			license {
-				name 'Apache License 2.0'
-				url 'http://www.apache.org/licenses/LICENSE-2.0'
-				distribution 'repo'
-			}
-		}
-
-		developers {
-			developer {
-				id 'tommyettinger'
-				name 'Tommy Ettinger'
-				email 'tommy.ettinger@gmail.com'
-			}
-		}
-	}
+	testImplementation 'junit:junit:4.13.2'
 }

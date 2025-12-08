@@ -1,1 +1,1 @@
-include 'libgdx-utils', 'libgdx-utils-box2d', 'libgdx-utils-box2d:gwt'
+include 'libgdx-utils', 'libgdx-utils-box2d'
