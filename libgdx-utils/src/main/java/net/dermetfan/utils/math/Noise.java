@@ -16,15 +16,19 @@ package net.dermetfan.utils.math;
 
 import java.util.Random;
 
+import com.badlogic.gdx.math.Vector2;
 import net.dermetfan.utils.ArrayUtils;
-import net.dermetfan.utils.Function;
-import net.dermetfan.utils.Pair;
+import net.dermetfan.utils.ToFloatFunction;
 
 import static net.dermetfan.utils.ArrayUtils.getRepeated;
 
-/** provides noise algorithms
+/** Provides static methods for continuous noise using a midpoint-displacement algorithm.
+ *  This can fill in a 2D float array with noise that changes gradually, rather than simply
+ *  the "TV static" that using all random values would produce.
  *  @author dermetfan */
-public abstract class Noise {
+public final class Noise {
+	private Noise(){
+	}
 
 	/** the seed used by {@link #random} */
 	private static long seed = -1;
@@ -46,13 +50,13 @@ public abstract class Noise {
 		return values;
 	}
 
-	/** @see #midpointDisplacement(int, float, float, boolean, net.dermetfan.utils.Function, int, int) */
+	/** @see #midpointDisplacement(int, float, float, boolean, net.dermetfan.utils.ToFloatFunction, int, int) */
 	public static float[][] midpointDisplacement(int n, float smoothness, float range, int scaleX, int scaleY) {
 		return midpointDisplacement(n, range, smoothness, true, null, scaleX, scaleY);
 	}
 
-	/** @see #midpointDisplacement(int, float, float, boolean, net.dermetfan.utils.Function, int, int) */
-	public static float[][] midpointDisplacement(int n, float smoothness, float range, Function<Pair<Float, Float>, Float> init, int scaleX, int scaleY) {
+	/** @see #midpointDisplacement(int, float, float, boolean, net.dermetfan.utils.ToFloatFunction, int, int) */
+	public static float[][] midpointDisplacement(int n, float smoothness, float range, ToFloatFunction<Vector2> init, int scaleX, int scaleY) {
 		return midpointDisplacement(n, range, smoothness, false, init, scaleX, scaleY);
 	}
 
@@ -61,16 +65,10 @@ public abstract class Noise {
 		return midpointDisplacement(n, range, smoothness, false, init, scaleX, scaleY);
 	}
 
-	/** @see #midpointDisplacement(int, float, float, boolean, net.dermetfan.utils.Function, int, int) */
+	/** @see #midpointDisplacement(int, float, float, boolean, net.dermetfan.utils.ToFloatFunction, int, int) */
 	public static float[][] midpointDisplacement(int n, float smoothness, float range, boolean initializeRandomly, final float init, int scaleX, int scaleY) {
-		return midpointDisplacement(n, range, smoothness, initializeRandomly, initializeRandomly ? null : new Function<Pair<Float, Float>, Float>() {
-
-			@Override
-			public Float apply(Pair<Float, Float> object) {
-				return init;
-			}
-
-		}, scaleX, scaleY);
+		return midpointDisplacement(n, range, smoothness, initializeRandomly, initializeRandomly ? null :
+			(Vector2 object) -> init, scaleX, scaleY);
 	}
 
 	/** generates a height map using the midpoint-displacement algorithm
@@ -82,16 +80,16 @@ public abstract class Noise {
 	 *  @param scaleX scale of the x axis
 	 *  @param scaleY scale of the y axis
 	 *  @return a height map generated using the midpoint-displacement algorithm */
-	private static float[][] midpointDisplacement(int n, float smoothness, float range, boolean initializeRandomly, Function<Pair<Float, Float>, Float> init, int scaleX, int scaleY) {
+	private static float[][] midpointDisplacement(int n, float smoothness, float range, boolean initializeRandomly, ToFloatFunction<Vector2> init, int scaleX, int scaleY) {
 		if(n < 0)
 			throw new IllegalArgumentException("n must be >= 0: " + n);
 		range /= 2; // divide range by two to avoid doing it later for random(-range, range) calls
 
-		int x, y, power = (int) Math.pow(2, n), width = scaleX * power + 1, height = scaleY * power + 1, step;
+		int x, y, power = 1 << n, width = scaleX * power + 1, height = scaleY * power + 1, step;
 		float[][] map = new float[width][height];
 		boolean sy, sx;
 
-		Pair<Float, Float> coord = new Pair<>();
+		Vector2 coord = new Vector2();
 
 		for(x = 0; x < width; x += power)
 			for(y = 0; y < height; y += power)
@@ -113,8 +111,8 @@ public abstract class Noise {
 		return map;
 	}
 
-	/** @see #diamondSquare(int, float, float, boolean, boolean, boolean, net.dermetfan.utils.Function, int, int) */
-	public static float[][] diamondSquare(int n, float smoothness, float range, boolean wrapX, boolean wrapY, Function<Pair<Float, Float>, Float> init, int scaleX, int scaleY) {
+	/** @see #diamondSquare(int, float, float, boolean, boolean, boolean, net.dermetfan.utils.ToFloatFunction, int, int) */
+	public static float[][] diamondSquare(int n, float smoothness, float range, boolean wrapX, boolean wrapY, ToFloatFunction<Vector2> init, int scaleX, int scaleY) {
 		return diamondSquare(n, smoothness, range, wrapX, wrapY, false, init, scaleX, scaleY);
 	}
 
@@ -129,16 +127,9 @@ public abstract class Noise {
 	}
 
 	/** @param init the value to initialize every coordinate with
-	 *  @see #diamondSquare(int, float, float, boolean, boolean, boolean, net.dermetfan.utils.Function, int, int) */
+	 *  @see #diamondSquare(int, float, float, boolean, boolean, boolean, net.dermetfan.utils.ToFloatFunction, int, int) */
 	public static float[][] diamondSquare(int n, float smoothness, float range, boolean wrapX, boolean wrapY, boolean initializeRandomly, final float init, int scaleX, int scaleY) {
-		return diamondSquare(n, smoothness, range, wrapX, wrapY, initializeRandomly, initializeRandomly ? null : new Function<Pair<Float, Float>, Float>() {
-
-			@Override
-			public Float apply(Pair<Float, Float> object) {
-				return init;
-			}
-
-		}, scaleX, scaleY);
+		return diamondSquare(n, smoothness, range, wrapX, wrapY, initializeRandomly, initializeRandomly ? null : (Vector2 object) -> init, scaleX, scaleY);
 	}
 
 	/** generates a height map using the diamond-square algorithm
@@ -152,20 +143,21 @@ public abstract class Noise {
 	 *  @param scaleX scale of the x axis
 	 *  @param scaleY scale of the y axis
 	 *  @return a height map generated using the diamond-square algorithm */
-	private static float[][] diamondSquare(int n, float smoothness, float range, boolean wrapX, boolean wrapY, boolean initializeRandomly, Function<Pair<Float, Float>, Float> init, int scaleX, int scaleY) {
+	private static float[][] diamondSquare(int n, float smoothness, float range, boolean wrapX, boolean wrapY, boolean initializeRandomly, ToFloatFunction<Vector2> init, int scaleX, int scaleY) {
 		if(n < 0)
 			throw new IllegalArgumentException("n must be >= 0: " + n);
 		range /= 2; // divide range by two to avoid doing it later for random(-range, range) calls
 
-		int power = (int) Math.pow(2, n), width = scaleX * power + 1, height = scaleY * power + 1, x, y;
-		float map[][] = new float[width][height], avg;
+		int power = 1 << n, width = scaleX * power + 1, height = scaleY * power + 1, x, y;
+		float[][] map = new float[width][height];
+		float avg;
 
-		Pair<Float, Float> coord = new Pair<>();
+		Vector2 coord = new Vector2();
 
 		// seed the grid
 		for(x = 0; x < width; x += power)
 			for(y = 0; y < height; y += power)
-				map[x][y] = initializeRandomly ? random(-range, range) : init.apply(coord.set((float) x, (float) y));
+				map[x][y] = initializeRandomly ? random(-range, range) : init.apply(coord.set(x, y));
 
 		for(power /= 2; power > 0; power /= 2, range /= smoothness) {
 			// square step
@@ -195,10 +187,12 @@ public abstract class Noise {
 
 	/** @param seedEnabled if {@link #seed} should be used */
 	public static void setSeedEnabled(boolean seedEnabled) {
-		if(Noise.seedEnabled = seedEnabled)
+		Noise.seedEnabled = seedEnabled;
+		if(Noise.seedEnabled)
 			random.setSeed(seed);
 		else
-			random = new Random();
+			random.setSeed((long) ((Math.random() - 0.5) * 4.503599627370496E15) ^
+				(long) ((Math.random() - 0.5) * 1.8446744073709552E19)); // use a random seed
 	}
 
 	/** @return the {@link #seedEnabled} */
@@ -219,6 +213,15 @@ public abstract class Noise {
 	/** @return the {@link #random} */
 	public static Random getRandom() {
 		return random;
+	}
+
+	/**
+	 * Allows changing the random number generator implementation to any other Random instance.
+	 * @param random any Random instance, such as a {@link com.badlogic.gdx.math.RandomXS128}; if null, will be ignored
+	 */
+	public static void setRandom(Random random) {
+		if(random != null)
+			Noise.random = random;
 	}
 
 }
