@@ -158,47 +158,56 @@ public class MathUtils {
 	 * @throws IllegalArgumentException if both minExclusive and maxExclusive are true
 	 */
 	public static float normalize(float value, float min, float max, boolean minExclusive, boolean maxExclusive) {
-		if(minExclusive && maxExclusive)
-			throw new IllegalArgumentException("min and max cannot both be exclusive");
-		if(min == max)
-			return min;
-		if(min > max) {
-			float oldMin = min;
-			min = max;
-			max = oldMin;
+		if(minExclusive && maxExclusive) throw new IllegalArgumentException("min and max cannot both be exclusive");
+		if(min == max) return min;
+		if(max < min) {
+			float t = max;
+			max = min;
+			min = t;
 		}
-		float over = value > max ? value - max : 0;
-		if(over > 0)
-			return normalize(min + over, min, max, minExclusive, maxExclusive);
-		float under = value < min ? min - value : 0;
-		if(under > 0)
-			return normalize(max - under, min, max, minExclusive, maxExclusive);
-		if(maxExclusive && value == max)
-			return min;
-		if(minExclusive && value == min)
-			return max;
-		return value;
+		if(value >= min && value <= max) {
+			if(minExclusive && value == min) return max;
+			else if(maxExclusive && value == max) return min;
+			return value;
+		}
+		if(value >= min) {
+			float mod = (value - min) % (max - min);
+			if(mod == 0f) return (maxExclusive ? min : max);
+			return mod + min;
+		}
+		else {
+			float mod = (value - max) % (max - min);
+			if(mod == 0f) return (minExclusive ? max : min);
+			return mod + max;
+		}
 	}
 
 	/**
 	 * @see #normalize(float, float, float, boolean, boolean)
 	 */
 	public static int normalize(int value, int min, int max, boolean minExclusive, boolean maxExclusive) {
-		if(minExclusive && maxExclusive)
-			throw new IllegalArgumentException("min and max cannot both be exclusive");
-		if(min == max)
-			return min;
-		int over = value > max ? value - max : 0;
-		if(over > 0)
-			return normalize(min + over, min, max, minExclusive, maxExclusive);
-		int under = value < min ? min - value : 0;
-		if(under > 0)
-			return normalize(max - under, min, max, minExclusive, maxExclusive);
-		if(maxExclusive && value == max)
-			return min;
-		if(minExclusive && value == min)
-			return max;
-		return value;
+		if(minExclusive && maxExclusive) throw new IllegalArgumentException("min and max cannot both be exclusive");
+		if(min == max) return min;
+		if(max < min) {
+			int t = max;
+			max = min;
+			min = t;
+		}
+		if(value >= min && value <= max) {
+			if(minExclusive && value == min) return max;
+			else if(maxExclusive && value == max) return min;
+			return value;
+		}
+		if(value >= min) {
+			int mod = (value - min) % (max - min);
+			if(mod == 0f) return (maxExclusive ? min : max);
+			return mod + min;
+		}
+		else {
+			int mod = (value - max) % (max - min);
+			if(mod == 0f) return (minExclusive ? max : min);
+			return mod + max;
+		}
 	}
 
 	/**
