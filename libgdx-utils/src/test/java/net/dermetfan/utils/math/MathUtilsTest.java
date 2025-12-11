@@ -4,16 +4,9 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.*;
 
 public class MathUtilsTest {
-
-	@Rule
-	public ExpectedException thrown = ExpectedException.none();
 
 	@Test
 	public void crossSum() {
@@ -86,6 +79,7 @@ public class MathUtilsTest {
 
 	@Test
 	public void normalize() {
+		// float version
 		assertEquals(50, MathUtils.normalize(150f, 0, 100, false, false), 0);
 		assertEquals(25, MathUtils.normalize(125f, 0, 25, false, false), 0);
 		assertEquals(25, MathUtils.normalize(125f, 0, 50, false, false), 0);
@@ -135,8 +129,57 @@ public class MathUtilsTest {
 		assertEquals(-5, MathUtils.normalize(15f, -5, 5, false, true), 0);
 		assertEquals(5, MathUtils.normalize(-15f, -5, 5, true, false), 0);
 		assertEquals(0, MathUtils.normalize(10f, -5, 5, false, false), 0);
-		thrown.expect(IllegalArgumentException.class);
-		assertEquals(0, MathUtils.normalize(10f, -5, 5, true, true), 0);
+		assertThrows(IllegalArgumentException.class, () -> MathUtils.normalize(10f, -5, 5, true, true));
+
+		// int version
+		assertEquals(50, MathUtils.normalize(150, 0, 100, false, false), 0);
+		assertEquals(25, MathUtils.normalize(125, 0, 25, false, false), 0);
+		assertEquals(25, MathUtils.normalize(125, 0, 50, false, false), 0);
+		assertEquals(25, MathUtils.normalize(125, 0, 100, false, false), 0);
+		assertEquals(25, MathUtils.normalize(25, 0, 100, false, false), 0);
+
+		assertEquals(-75, MathUtils.normalize(25, 0, -100, false, false), 0);
+		assertEquals(75, MathUtils.normalize(-25, 0, 100, false, false), 0);
+		assertEquals(-25, MathUtils.normalize(-25, 0, -100, false, false), 0);
+		assertEquals(-75, MathUtils.normalize(125, 0, -100, false, false), 0);
+		assertEquals(75, MathUtils.normalize(-125, 0, 100, false, false), 0);
+		assertEquals(-25, MathUtils.normalize(-125, 0, -100, false, false), 0);
+		assertEquals(-75, MathUtils.normalize(225, 0, -100, false, false), 0);
+		assertEquals(75, MathUtils.normalize(-225, 0, 100, false, false), 0);
+		assertEquals(-25, MathUtils.normalize(-225, 0, -100, false, false), 0);
+
+		assertEquals(0, MathUtils.normalize(0, 0, -100, false, false), 0);
+		assertEquals(0, MathUtils.normalize(0, 0, 100, false, false), 0);
+
+		assertEquals(0, MathUtils.normalize(0, 0, 0, false, false), 0);
+		assertEquals(0, MathUtils.normalize(57, 0, 0, false, false), 0);
+		assertEquals(0, MathUtils.normalize(-57, 0, 0, false, false), 0);
+
+		assertEquals(0, MathUtils.normalize(200, -100, 100, false, false), 0);
+		assertEquals(5, MathUtils.normalize(205, -100, 100, false, false), 0);
+
+		assertEquals(25, MathUtils.normalize(25, -100, 100, false, false), 0);
+		assertEquals(125, MathUtils.normalize(25, 100, 200, false, false), 0);
+		assertEquals(0, MathUtils.normalize(0, -100, 100, false, false), 0);
+		assertEquals(125, MathUtils.normalize(125, 100, 200, false, false), 0);
+		assertEquals(100, MathUtils.normalize(100, 100, 100, false, false), 0);
+		assertEquals(100, MathUtils.normalize(25, 100, 100, false, false), 0);
+		assertEquals(-100, MathUtils.normalize(25, -100, -100, false, false), 0);
+
+		assertEquals(90, MathUtils.normalize(-360 + 90, 0, 360, false, false), 0);
+		assertEquals(-270, MathUtils.normalize(360 + 90, 0, -360, false, false), 0);
+
+		assertEquals(150, MathUtils.normalize(150, 100, 250, false, false), 0);
+		assertEquals(250, MathUtils.normalize(250, 100, 250, false, false), 0);
+		assertEquals(150, MathUtils.normalize(300, 100, 250, false, false), 0);
+		assertEquals(-50, MathUtils.normalize(-50, -100, 250, false, false), 0);
+
+		assertEquals(5, MathUtils.normalize(15, -5, 5, false, false), 0);
+		assertEquals(-5, MathUtils.normalize(-15, -5, 5, false, false), 0);
+		assertEquals(-5, MathUtils.normalize(15, -5, 5, false, true), 0);
+		assertEquals(5, MathUtils.normalize(-15, -5, 5, true, false), 0);
+		assertEquals(0, MathUtils.normalize(10, -5, 5, false, false), 0);
+		assertThrows(IllegalArgumentException.class, () -> MathUtils.normalize(10, -5, 5, true, true));
 	}
 
 	@Test
@@ -145,8 +188,8 @@ public class MathUtilsTest {
 		assertEquals(1.1f, MathUtils.nearest(3, values, 0, values.length), 0);
 		assertEquals(83232, MathUtils.nearest(Float.POSITIVE_INFINITY, values, 0, values.length), 0);
 		assertEquals(-53424.23f, MathUtils.nearest(Float.NEGATIVE_INFINITY, 100, values, 0, values.length), 0);
-		assertEquals(200, MathUtils.nearest(100, 100, new float[] {-300, 200, 180}, 0, 3), 0);
-		assertTrue(Float.isNaN(MathUtils.nearest(0, 350, new float[] {-300, 200, 180})));
+		assertEquals(200, MathUtils.nearest(100, 100, new float[]{-300, 200, 180}, 0, 3), 0);
+		assertTrue(Float.isNaN(MathUtils.nearest(0, 350, new float[]{-300, 200, 180})));
 	}
 
 	@Test
@@ -168,32 +211,32 @@ public class MathUtilsTest {
 
 	@Test
 	public void elementAtSum() {
-		assertEquals("2", MathUtils.elementAtSum(5, new float[] {1, 2, 3, 4, 5}, new String[] {"0", "1", "2", "3", "4", "5"}));
+		assertEquals("2", MathUtils.elementAtSum(5, new float[]{1, 2, 3, 4, 5}, new String[]{"0", "1", "2", "3", "4", "5"}));
 	}
 
 	@Test
 	public void abs() {
-		assertArrayEquals(new float[] {1, 1, 0}, MathUtils.abs(new float[] {1, -1, 0}, 0, 3), 0);
+		assertArrayEquals(new float[]{1, 1, 0}, MathUtils.abs(new float[]{1, -1, 0}, 0, 3), 0);
 	}
 
 	@Test
 	public void add() {
-		assertArrayEquals(new float[] {0, 1, 2}, MathUtils.add(new float[] {-1, 0, 1}, 0, 3, 1), 0);
+		assertArrayEquals(new float[]{0, 1, 2}, MathUtils.add(new float[]{-1, 0, 1}, 0, 3, 1), 0);
 	}
 
 	@Test
 	public void sub() {
-		assertArrayEquals(new float[] {0, 1, 2}, MathUtils.sub(new float[] {1, 2, 3}, 0, 3, 1), 0);
+		assertArrayEquals(new float[]{0, 1, 2}, MathUtils.sub(new float[]{1, 2, 3}, 0, 3, 1), 0);
 	}
 
 	@Test
 	public void mul() {
-		assertArrayEquals(new float[] {0, 1, 2}, MathUtils.mul(new float[] {0, .5f, 1}, 0, 3, 2), 0);
+		assertArrayEquals(new float[]{0, 1, 2}, MathUtils.mul(new float[]{0, .5f, 1}, 0, 3, 2), 0);
 	}
 
 	@Test
 	public void div() {
-		assertArrayEquals(new float[] {0, 1, 2}, MathUtils.div(new float[] {0, 2, 4}, 0, 3, 2), 0);
+		assertArrayEquals(new float[]{0, 1, 2}, MathUtils.div(new float[]{0, 2, 4}, 0, 3, 2), 0);
 	}
 
 }
