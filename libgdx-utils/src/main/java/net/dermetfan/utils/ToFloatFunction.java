@@ -14,14 +14,13 @@
 
 package net.dermetfan.utils;
 
-/** A basic rip-off of {@code java.util.function.Function} from Java 8.
- *  @param <R> the return type
+/** A basic rip-off of {@code java.util.function.ToDoubleFunction} from Java 8, but returning a float.
  *  @param <A> the argument type
- *  @author dermetfan */
-public interface Function<A, R> {
+ */
+public interface ToFloatFunction<A> {
 
 	/** @param arg the argument
 	 *  @return the return value */
-	R apply(A arg);
+	float apply(A arg);
 
 }

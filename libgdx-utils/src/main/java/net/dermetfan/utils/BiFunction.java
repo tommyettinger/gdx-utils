@@ -14,7 +14,7 @@
 
 package net.dermetfan.utils;
 
-/** A basic rip-off of {@link java.util.function.BiFunction} from Java 8.
+/** A basic rip-off of {@code java.util.function.BiFunction} from Java 8.
  *  @param <R> the return type
  *  @param <A1> the first argument type
  *  @param <A2> the second argument type
